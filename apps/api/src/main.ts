@@ -64,7 +64,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  const port = Number(process.env.API_PORT ?? 4000);
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`Varnarc API listening on http://localhost:${port}${API_PREFIX}`);

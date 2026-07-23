@@ -45,7 +45,6 @@ FROM node:20-alpine AS runner
 RUN addgroup -S varnarc && adduser -S varnarc -G varnarc
 WORKDIR /app
 ENV NODE_ENV=production
-ENV API_PORT=4000
 
 COPY --from=build --chown=varnarc:varnarc /app/apps/api/dist ./dist
 COPY --from=build --chown=varnarc:varnarc /app/apps/api/package.json ./package.json
@@ -53,9 +52,9 @@ COPY --from=build --chown=varnarc:varnarc /app/node_modules ./node_modules
 COPY --from=build --chown=varnarc:varnarc /app/packages/database/prisma ./packages/database/prisma
 
 USER varnarc
-EXPOSE 4000
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:4000/api/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "const p=process.env.PORT||process.env.API_PORT||8080; fetch('http://127.0.0.1:'+p+'/api/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "dist/main.js"]

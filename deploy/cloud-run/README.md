@@ -43,7 +43,16 @@ gcloud builds submit --config cloudbuild.yaml \
   --substitutions _SERVICE_NAME=admin,_DOCKERFILE=docker/Dockerfile.admin,_REGION=asia-southeast1
 ```
 
-Set build-time env for web/admin images (`NEXT_PUBLIC_*`) in the Cloud Run build settings or trigger substitutions.
+### API service (Cloud Run source deploy)
+
+Cloud Run injects `PORT=8080` by default. The API listens on `PORT` first (then `API_PORT`, then `4000`).
+
+| Setting | Value |
+|---------|-------|
+| **Container port** | `8080` (default) or `4000` if you set `API_PORT=4000` and `--port 4000` |
+| **Dockerfile** | `docker/Dockerfile.api` |
+
+If you use port `4000`, set **Container port** to `4000` in Cloud Run and add env `API_PORT=4000`.
 
 ## Prerequisites
 
