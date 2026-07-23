@@ -25,10 +25,16 @@ for (const candidate of [
 }
 
 async function bootstrap() {
+  // eslint-disable-next-line no-console
+  console.log('[startup] Booting Varnarc API…');
   await initOpenTelemetry();
   validateStartupEnv();
+  // eslint-disable-next-line no-console
+  console.log('[startup] Environment validation passed');
 
   const app = await NestFactory.create(AppModule);
+  // eslint-disable-next-line no-console
+  console.log('[startup] Nest application created');
 
   const { SecurityConfigService } = await import('./modules/security/security.service');
   const securityConfig = app.get(SecurityConfigService);

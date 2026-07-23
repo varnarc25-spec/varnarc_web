@@ -16,7 +16,14 @@ export class SecurityConfigService implements OnModuleInit {
   constructor(@Inject(REPOS) private readonly repos: Repositories) {}
 
   async onModuleInit() {
-    await this.refresh();
+    try {
+      await this.refresh();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[security] Settings load skipped: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   async refresh() {

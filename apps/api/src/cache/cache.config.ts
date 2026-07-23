@@ -18,14 +18,22 @@ export function buildCacheModule(): DynamicModule {
   return CacheModule.registerAsync({
     isGlobal: true,
     useFactory: async () => {
-      const store = await redisStore({
-        url: redisUrl,
-        ttl: 30_000,
-      });
-      return {
-        store: () => store,
-        ttl: 30_000,
-      };
+      try {
+        const store = await redisStore({
+          url: redisUrl,
+          ttl: 30_000,
+        });
+        return {
+          store: () => store,
+          ttl: 30_000,
+        };
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[cache] Redis unavailable (${err instanceof Error ? err.message : String(err)}); using in-memory cache`,
+        );
+        return { ttl: 30_000 };
+      }
     },
   });
 }

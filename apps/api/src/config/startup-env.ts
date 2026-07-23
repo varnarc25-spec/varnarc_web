@@ -31,6 +31,10 @@ export function validateStartupEnv(env: NodeJS.ProcessEnv = process.env): void {
 
   if (missing.length) {
     const message = `Missing required environment variables: ${missing.join(', ')}`;
+    // eslint-disable-next-line no-console
+    console.error(
+      `[startup] ${message}. Present keys: DATABASE_URL=${Boolean(env.DATABASE_URL?.trim())}, AUTH0_DOMAIN=${Boolean(env.AUTH0_DOMAIN?.trim())}, AUTH0_AUDIENCE=${Boolean(env.AUTH0_AUDIENCE?.trim())}, SEARCH_ENGINE=${env.SEARCH_ENGINE ?? '(default)'}, REDIS_URL=${Boolean(env.REDIS_URL?.trim())}`,
+    );
     if (isProd) {
       throw new Error(message);
     }
