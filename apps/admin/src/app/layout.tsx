@@ -1,3 +1,4 @@
+import { isAuth0Configured } from '@varnarc/auth';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import type { CurrentUser } from '@varnarc/types';
@@ -22,6 +23,10 @@ async function syncAndLoadUser(): Promise<{
   currentUser: CurrentUser | null;
   sessionPicture: string | null;
 }> {
+  if (!isAuth0Configured()) {
+    return { currentUser: null, sessionPicture: null };
+  }
+
   const session = await auth0.getSession();
   if (!session?.user) return { currentUser: null, sessionPicture: null };
 
@@ -62,7 +67,7 @@ async function syncAndLoadUser(): Promise<{
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const pathname = (await headers()).get('x-middleware-pathname') ?? '';
   const onAuthRoute = pathname.startsWith('/auth');
-  const session = await auth0.getSession();
+  const session = isAuth0Configured() ? await auth0.getSession() : null;
 
   // Auth routes (login/logout/callback) render without the admin chrome.
   if (!session?.user || onAuthRoute) {

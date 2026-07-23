@@ -1,11 +1,10 @@
 import { auth0 } from '@/lib/auth0';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
 export async function getApiAccessToken(): Promise<string | null> {
   try {
     const audience = process.env.AUTH0_AUDIENCE;
-    const result = await auth0.getAccessToken(
-      audience ? { audience } : undefined,
-    );
+    const result = await auth0.getAccessToken(audience ? { audience } : undefined);
     return result?.token ?? null;
   } catch (error) {
     console.error('[auth] getAccessToken failed', error);
@@ -18,7 +17,7 @@ export async function apiServerFetch<T>(
   init: RequestInit = {},
 ): Promise<{ data: T | null; error: string | null; status: number }> {
   const token = await getApiAccessToken();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+  const apiUrl = getApiBaseUrl();
 
   if (!token) {
     return { data: null, error: 'Not authenticated', status: 401 };
@@ -37,9 +36,7 @@ export async function apiServerFetch<T>(
     });
   } catch (error) {
     const message =
-      error instanceof Error && error.message
-        ? error.message
-        : 'API server unreachable';
+      error instanceof Error && error.message ? error.message : 'API server unreachable';
     return { data: null, error: message, status: 503 };
   }
 
@@ -67,7 +64,7 @@ export async function fetchPublicCategoryTree<
     children?: Array<{ id: string; name: string; slug: string }>;
   }>,
 >(): Promise<T> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+  const apiUrl = getApiBaseUrl();
   try {
     const res = await fetch(`${apiUrl}/categories/tree`, { cache: 'no-store' });
     const json = (await res.json()) as { data?: T };
