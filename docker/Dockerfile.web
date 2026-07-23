@@ -1,3 +1,6 @@
+# Build from the monorepo root:
+#   docker build -f docker/Dockerfile.web -t varnarc-web:local .
+# Cloud Run "Deploy from source" uses the root Dockerfile instead (same build, correct context).
 FROM node:20-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
 WORKDIR /app

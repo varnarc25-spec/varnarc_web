@@ -1,0 +1,43 @@
+# gcloud upload rules for Cloud Run / Cloud Build source deploy.
+# Defaults mirror .gitignore; explicitly allow monorepo root files required by Docker.
+
+.gcloudignore
+.git
+.gitignore
+.github
+
+# Dependencies and build artifacts (rebuilt inside the image)
+node_modules/
+.pnpm-store/
+**/.next/
+**/dist/
+**/.turbo/
+**/coverage/
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+deploy/gcp/secrets.env
+
+# IDE / agent tooling
+.cursor/
+.idea/
+.vscode/
+agent-transcripts/
+terminals/
+
+# Docs and tests (not needed in container builds)
+**/*.md
+!docker/**/*.md
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+e2e/
+docs/
+
+# OS / logs
+.DS_Store
+**/*.log

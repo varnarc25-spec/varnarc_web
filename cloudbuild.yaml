@@ -1,0 +1,31 @@
+# Cloud Build config for monorepo Docker builds.
+# Build context is always the repository root (.), not the docker/ subdirectory.
+#
+# Cloud Run "Deploy from repository":
+#   - Source location / build context: /  (repository root)
+#   - Dockerfile: Dockerfile  (this file builds web; use docker/Dockerfile.* for other services)
+#
+# Manual build:
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions _SERVICE_NAME=web,_IMAGE_TAG=latest
+
+substitutions:
+  _SERVICE_NAME: web
+  _DOCKERFILE: docker/Dockerfile.web
+  _IMAGE_TAG: latest
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - ${_DOCKERFILE}
+      - -t
+      - ${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${_IMAGE_TAG}
+      - .
+
+images:
+  - ${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${_IMAGE_TAG}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
