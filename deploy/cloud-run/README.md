@@ -29,11 +29,18 @@ If Cloud Build logs show `Sending build context to Docker daemon ~18kB`, Cloud R
 
 Set **Build context directory** to `/` (repo root), not `docker/`. The Dockerfile path and build context are separate fields in the Cloud Run build configuration.
 
-For **admin** or **api** via Cloud Build trigger, use `cloudbuild.yaml` with substitutions:
+All three service Dockerfiles (`docker/Dockerfile.web`, `docker/Dockerfile.api`, `docker/Dockerfile.admin`) auto-fetch the full repo when Cloud Run uses `docker/` as build context.
+
+For **api** or **admin** via Cloud Build trigger, use `cloudbuild.yaml` with substitutions:
 
 ```bash
+# API
 gcloud builds submit --config cloudbuild.yaml \
-  --substitutions _SERVICE_NAME=api,_DOCKERFILE=docker/Dockerfile.api,_IMAGE_TAG=latest
+  --substitutions _SERVICE_NAME=api,_DOCKERFILE=docker/Dockerfile.api,_REGION=asia-southeast1
+
+# Admin
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions _SERVICE_NAME=admin,_DOCKERFILE=docker/Dockerfile.admin,_REGION=asia-southeast1
 ```
 
 Set build-time env for web/admin images (`NEXT_PUBLIC_*`) in the Cloud Run build settings or trigger substitutions.

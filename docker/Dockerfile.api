@@ -1,21 +1,43 @@
+# Build from monorepo root (local/CI):
+#   docker build -f docker/Dockerfile.api -t varnarc-api:local .
+#
+# Cloud Run may use docker/ as build context (~18 KB). When package.json is missing,
+# this stage fetches the full repository from GitHub.
+FROM alpine AS src
+RUN apk add --no-cache curl tar git
+WORKDIR /work
+COPY . .
+ARG REPO_URL=https://github.com/varnarc25-spec/varnarc_web
+ARG GIT_REF=main
+RUN if [ ! -f package.json ]; then \
+      echo "package.json not in build context; fetching ${REPO_URL}@${GIT_REF}"; \
+      rm -rf /work/* /work/.[!.]* 2>/dev/null || true; \
+      if curl -fsSL "${REPO_URL}/archive/${GIT_REF}.tar.gz" | tar xz --strip-components=1; then \
+        echo "Fetched source archive"; \
+      else \
+        git clone --depth 1 "${REPO_URL}.git" . && \
+        (git fetch --depth 1 origin "${GIT_REF}" && git checkout FETCH_HEAD) || git checkout "${GIT_REF}"; \
+      fi; \
+    fi
+
 FROM node:20-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.json .npmrc ./
-COPY apps/api/package.json apps/api/
-COPY packages/types/package.json packages/types/
-COPY packages/utils/package.json packages/utils/
-COPY packages/config/package.json packages/config/
-COPY packages/validation/package.json packages/validation/
-COPY packages/auth/package.json packages/auth/
-COPY packages/database/package.json packages/database/
-COPY packages/database/prisma packages/database/prisma
+COPY --from=src /work/package.json /work/pnpm-workspace.yaml /work/pnpm-lock.yaml* /work/turbo.json /work/tsconfig.base.json /work/.npmrc ./
+COPY --from=src /work/apps/api/package.json apps/api/
+COPY --from=src /work/packages/types/package.json packages/types/
+COPY --from=src /work/packages/utils/package.json packages/utils/
+COPY --from=src /work/packages/config/package.json packages/config/
+COPY --from=src /work/packages/validation/package.json packages/validation/
+COPY --from=src /work/packages/auth/package.json packages/auth/
+COPY --from=src /work/packages/database/package.json packages/database/
+COPY --from=src /work/packages/database/prisma packages/database/prisma
 RUN pnpm install --frozen-lockfile || pnpm install
 
 FROM deps AS build
-COPY . .
+COPY --from=src /work .
 RUN pnpm --filter @varnarc/database generate
 RUN pnpm --filter @varnarc/api... build
 
