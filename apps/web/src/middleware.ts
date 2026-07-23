@@ -8,6 +8,18 @@ export async function middleware(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname;
 
+    // Auth0 redirects here with ?error= when login fails (e.g. wrong audience).
+    // Handle before auth0.middleware — otherwise the SDK throws and returns 500.
+    if (pathname === '/auth/callback' && request.nextUrl.searchParams.has('error')) {
+      const description =
+        request.nextUrl.searchParams.get('error_description') ??
+        request.nextUrl.searchParams.get('error') ??
+        'Login failed';
+      const home = new URL('/', request.url);
+      home.searchParams.set('login_error', description);
+      return NextResponse.redirect(home);
+    }
+
     if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
       const redirect = await resolveSeoRedirect(pathname);
       if (redirect) {
