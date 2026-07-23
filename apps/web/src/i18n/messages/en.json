@@ -1,0 +1,24 @@
+{
+  "common": {
+    "brand": "Varnarc",
+    "search": "Search",
+    "login": "Login / Sign up",
+    "viewAll": "View all",
+    "subscribe": "Subscribe",
+    "loading": "Loading",
+    "retry": "Try again"
+  },
+  "home": {
+    "headline": "Your All-in-One Platform for Finance, Home, Automobiles & Smart Tools",
+    "subhead": "Calculators, Guides, Product Reviews and Expert Advice to make your life simpler and smarter."
+  },
+  "nav": {
+    "home": "Home",
+    "finance": "Finance",
+    "construction": "Home & Construction",
+    "automobile": "Automobile",
+    "calculators": "Calculators",
+    "reviews": "Reviews",
+    "directory": "Directory"
+  }
+}

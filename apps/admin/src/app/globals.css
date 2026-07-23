@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "@varnarc/ui/styles.css";
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--varnarc-bg);
+  color: var(--varnarc-ink);
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--varnarc-subtle);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

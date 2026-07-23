@@ -1,0 +1,42 @@
+# Dependencies and build artifacts
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/.playwright
+**/playwright-report
+**/test-results
+
+# Git and IDE
+.git
+.gitignore
+.github
+.cursor
+.vscode
+.idea
+**/*.md
+!docker/**/*.md
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and OS
+**/*.log
+.DS_Store
+Thumbs.db
+
+# Tests and docs (not needed in images)
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+e2e
+docs
+
+# Agent / misc
+agent-transcripts
+terminals

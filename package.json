@@ -1,0 +1,68 @@
+{
+  "name": "varnarc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Varnarc Platform monorepo",
+  "packageManager": "pnpm@9.6.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@varnarc/web",
+    "dev:admin": "turbo run dev --filter=@varnarc/admin",
+    "dev:api": "turbo run dev --filter=@varnarc/api",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,yml,yaml,cjs,mjs}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json,yml,yaml,cjs,mjs}\"",
+    "prepare": "husky",
+    "db:generate": "pnpm --filter @varnarc/database generate",
+    "db:migrate": "pnpm --filter @varnarc/database migrate:dev",
+    "db:seed": "pnpm --filter @varnarc/database seed",
+    "db:seed:homepage": "pnpm --filter @varnarc/database seed:homepage",
+    "db:seed:calculator-articles": "pnpm --filter @varnarc/database seed:calculator-articles",
+    "catalog:import": "tsx scripts/catalog/import.ts",
+    "catalog:reindex": "pnpm --filter @varnarc/database exec tsx scripts/reindex-search.ts",
+    "docker:up": "DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml up --build",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:infra": "docker compose -f docker/docker-compose.infra.yml --profile local-db up -d",
+    "docker:validate": "bash scripts/docker/validate.sh",
+    "deploy:migrate": "bash scripts/deploy/migrate.sh",
+    "deploy:smoke": "bash scripts/deploy/smoke-test.sh",
+    "gcp:deploy": "bash scripts/gcp/deploy-all.sh",
+    "gcp:alerts": "bash deploy/gcp/setup-alerts.sh",
+    "gcp:pubsub-cache": "bash deploy/gcp/setup-pubsub-cache.sh",
+    "cdn:purge": "bash scripts/cdn/cloudflare-purge.sh",
+    "lighthouse:ci": "lhci autorun",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.29.0",
+    "@lhci/cli": "^0.15.1",
+    "@types/node": "^22.15.32",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.5.3",
+    "prisma": "6.19.3",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json,yml,yaml,cjs,mjs}": [
+      "prettier --write"
+    ]
+  }
+}

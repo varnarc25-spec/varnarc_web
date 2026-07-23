@@ -1,0 +1,19 @@
+:root {
+  --varnarc-brand: #0b3d5c;
+  --varnarc-accent: #c45c26;
+  --varnarc-bg: #f7f9fb;
+  --varnarc-surface: #ffffff;
+  --varnarc-ink: #142033;
+  --varnarc-subtle: #5b677a;
+  --varnarc-muted: #eef3f7;
+  --varnarc-border: #d8dee9;
+}
+
+.dark {
+  --varnarc-bg: #0f1720;
+  --varnarc-surface: #16202b;
+  --varnarc-ink: #e8eef5;
+  --varnarc-subtle: #9aa8ba;
+  --varnarc-muted: #1e2a38;
+  --varnarc-border: #2a394a;
+}

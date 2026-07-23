@@ -1,0 +1,18 @@
+---
+description: NestJS API conventions for apps/api
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# NestJS Backend Rules
+
+- Feature modules under `apps/api/src/modules/<feature>/`
+- Thin controllers; inject services; use `@RequirePermissions()` from `@varnarc/auth`
+- Zod schemas in `@varnarc/validation`; validate with `ZodValidationPipe`
+- Inject `REPOS` from `database.module` — use repository methods, not raw Prisma in services
+- Return `ok(data)` / `okCursor(page)` from `common/utils/response`
+- Log security-relevant events via `SecurityEventsService` when appropriate
+- Add Vitest specs in `apps/api/test/` or colocated `*.spec.ts`
+- Register module in `app.module.ts`; add Swagger `@ApiTags` on controllers
+
+Copy-paste prompt: `cursor/prompts/backend.md`

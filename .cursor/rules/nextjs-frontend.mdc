@@ -1,0 +1,17 @@
+---
+description: Next.js App Router rules for web and admin apps
+globs: apps/web/**/*.{ts,tsx},apps/admin/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js Frontend Rules
+
+- Server Components by default; `'use client'` only for interactivity
+- Data fetching: `apiServerFetch` in server components; TanStack Query in client islands
+- UI from `@varnarc/ui`; permissions via `@varnarc/auth` `hasPermission()`
+- Admin BFF routes under `apps/admin/src/app/api/admin/` proxy to NestJS API
+- Loading, empty, and error states on all data pages
+- Use semantic HTML; keyboard-accessible controls
+- Security headers via `withSecurityHeaders()` in `next.config.ts`
+
+Copy-paste prompt: `cursor/prompts/frontend.md` or `cursor/prompts/admin.md`

@@ -1,0 +1,24 @@
+export type UserProfile = {
+  id: string;
+  auth0UserId: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  username: string | null;
+  phone: string | null;
+  bio: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  language: string | null;
+  timezone: string | null;
+  website: string | null;
+  profileVisibility: 'PUBLIC' | 'PRIVATE';
+  avatarUrl: string | null;
+  socialLinks?: Record<string, string> | null;
+  status: string;
+  emailVerified: boolean;
+  roles: string[];
+  permissions?: string[];
+};

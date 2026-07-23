@@ -1,0 +1,17 @@
+---
+description: Prisma schema and repository conventions
+globs: packages/database/**/*
+alwaysApply: false
+---
+
+# Database Rules
+
+- Schema: `packages/database/prisma/schema.prisma`
+- UUID PKs, `snake_case` columns (`@map`), soft deletes (`deletedAt`) where applicable
+- Migrations in `prisma/migrations/` — never edit applied migrations
+- Repositories in `packages/database/src/repositories/`; export via `createRepositories()`
+- Cursor pagination via `paginateWithCursor` from `packages/database/src/pagination`
+- Seed permissions in `packages/database/src/seed.ts` when adding RBAC keys
+- Zod schemas in `@varnarc/validation` mirror API inputs
+
+Copy-paste prompt: `cursor/prompts/database.md`

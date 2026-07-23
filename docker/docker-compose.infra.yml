@@ -1,0 +1,67 @@
+# Infrastructure only — use with host-run `pnpm dev` for hot reload.
+name: varnarc-infra
+
+networks:
+  varnarc_internal:
+    driver: bridge
+
+volumes:
+  redis_data:
+  postgres_data:
+  opensearch_data:
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - varnarc_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    profiles: [local-db]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: varnarc
+      POSTGRES_PASSWORD: varnarc
+      POSTGRES_DB: varnarc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - varnarc_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U varnarc -d varnarc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  opensearch:
+    profiles: [search]
+    image: opensearchproject/opensearch:2.17.0
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - varnarc_internal
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s

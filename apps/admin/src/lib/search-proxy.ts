@@ -1,0 +1,22 @@
+import { NextResponse } from 'next/server';
+import { getApiAccessToken } from '@/lib/api';
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+
+export async function proxySearch(path: string, method: string, body?: unknown) {
+  const token = await getApiAccessToken();
+  if (!token) {
+    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  }
+  const res = await fetch(`${apiUrl}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    cache: 'no-store',
+  });
+  const json = await res.json().catch(() => ({}));
+  return NextResponse.json(json, { status: res.status });
+}

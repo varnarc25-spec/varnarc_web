@@ -1,0 +1,3125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  PENDING
+  DELETED
+  @@map("user_status")
+}
+
+enum PublishStatus {
+  DRAFT
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  @@map("publish_status")
+}
+
+enum MediaResourceType {
+  IMAGE
+  VIDEO
+  RAW
+  DOCUMENT
+  @@map("media_resource_type")
+}
+
+enum AdStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  ENDED
+  ARCHIVED
+  @@map("ad_status")
+}
+
+enum AdType {
+  ADSENSE
+  BANNER
+  HTML
+  JAVASCRIPT
+  AFFILIATE
+  SPONSORED
+  NATIVE
+  CTA
+  INTERNAL
+  @@map("ad_type")
+}
+
+enum AdProvider {
+  GOOGLE_ADSENSE
+  DIRECT
+  AFFILIATE
+  INTERNAL
+  @@map("ad_provider")
+}
+
+enum AdContentType {
+  IMAGE
+  HTML
+  JAVASCRIPT
+  TEXT
+  SCRIPT_SLOT
+  @@map("ad_content_type")
+}
+
+enum AdRotationMode {
+  SEQUENTIAL
+  RANDOM
+  WEIGHTED
+  PRIORITY
+  @@map("ad_rotation_mode")
+}
+
+enum CalculationStatus {
+  SUCCESS
+  FAILED
+  PENDING
+  @@map("calculation_status")
+}
+
+enum AiJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  @@map("ai_job_status")
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+  @@map("notification_channel")
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  @@map("subscription_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  @@map("payment_status")
+}
+
+enum BusinessStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+  @@map("business_status")
+}
+
+enum ListingType {
+  FREE
+  VERIFIED
+  FEATURED
+  SPONSORED
+  PREMIUM
+  @@map("listing_type")
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  @@map("verification_status")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  CLOSED
+  @@map("lead_status")
+}
+
+enum DirectoryEventType {
+  VIEW
+  PROFILE_CLICK
+  WEBSITE_CLICK
+  PHONE_CLICK
+  WHATSAPP_CLICK
+  EMAIL_CLICK
+  LEAD_REQUEST
+  SEARCH
+  @@map("directory_event_type")
+}
+
+enum AiPricingModel {
+  FREE
+  FREEMIUM
+  SUBSCRIPTION
+  PAY_AS_YOU_GO
+  ENTERPRISE
+  LIFETIME
+  @@map("ai_pricing_model")
+}
+
+enum AiToolEventType {
+  VIEW
+  OUTBOUND_CLICK
+  AFFILIATE_CLICK
+  BOOKMARK
+  SEARCH
+  COMPARE
+  @@map("ai_tool_event_type")
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+model User {
+  id            String     @id @default(uuid()) @db.Uuid
+  auth0UserId   String     @unique @map("auth0_user_id")
+  username      String?    @unique
+  email         String     @unique
+  firstName     String?    @map("first_name")
+  lastName      String?    @map("last_name")
+  displayName   String?    @map("display_name")
+  avatarUrl     String?    @map("avatar_url")
+  avatarMediaId String?    @map("avatar_media_id") @db.Uuid
+  bio           String?
+  phone         String?
+  country       String?
+  state         String?
+  city          String?
+  language      String?
+  timezone      String?
+  website       String?
+  socialLinks   Json?      @map("social_links")
+  profileVisibility ProfileVisibility @default(PUBLIC) @map("profile_visibility")
+  status        UserStatus @default(ACTIVE)
+  emailVerified Boolean    @default(false) @map("email_verified")
+  lastLoginAt   DateTime?  @map("last_login_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  deletedAt     DateTime?  @map("deleted_at")
+  createdBy     String?    @map("created_by") @db.Uuid
+  updatedBy     String?    @map("updated_by") @db.Uuid
+
+  roles             UserRole[]
+  loginHistory      LoginHistory[]
+  auditLogs         AuditLog[]
+  securityEvents    SecurityEvent[]
+  articles          Article[]           @relation("ArticleAuthor")
+  comments          Comment[]
+  savedCalculations SavedCalculation[]
+  subscriptions     Subscription[]
+  notifications     UserNotification[]
+  pageViews         PageView[]
+  reviews           Review[]            @relation("ReviewAuthor")
+  userReviews       UserReview[]
+  businesses        Business[]          @relation("BusinessOwner")
+  businessReviews   BusinessReview[]
+  leadRequests      LeadRequest[]
+  aiJobs            AiJob[]
+  bookmarks         Bookmark[]
+  preferences       UserPreference?
+  activities        UserActivity[]
+  contentSubscriptions UserContentSubscription[]
+  aiToolBookmarks   AiToolBookmark[]
+  aiToolViews       AiToolRecentlyViewed[]
+  aiCategoryFollows AiCategoryFollow[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([username])
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  slug        String           @unique
+  name        String
+  description String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  deletedAt   DateTime?        @map("deleted_at")
+  createdBy   String?          @map("created_by") @db.Uuid
+  updatedBy   String?          @map("updated_by") @db.Uuid
+  users       UserRole[]
+  permissions RolePermission[]
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  slug        String           @unique
+  name        String
+  module      String
+  description String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  deletedAt   DateTime?        @map("deleted_at")
+  createdBy   String?          @map("created_by") @db.Uuid
+  updatedBy   String?          @map("updated_by") @db.Uuid
+  roles       RolePermission[]
+  @@index([module])
+  @@map("permissions")
+}
+
+model UserRole {
+  userId     String   @map("user_id") @db.Uuid
+  roleId     String   @map("role_id") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model LoginHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  ipAddress       String?  @map("ip_address")
+  device          String?
+  browser         String?
+  operatingSystem String?  @map("operating_system")
+  country         String?
+  loginTime       DateTime @default(now()) @map("login_time")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, loginTime])
+  @@map("login_history")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  oldValue  Json?    @map("old_value")
+  newValue  Json?    @map("new_value")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([entity, entityId])
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+
+model SecurityEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  eventType   String   @map("event_type")
+  severity    String   @default("info")
+  description String
+  status      String   @default("open")
+  userId      String?  @map("user_id") @db.Uuid
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([eventType, createdAt])
+  @@index([severity, status])
+  @@index([userId, createdAt])
+  @@map("security_events")
+}
+
+model Bookmark {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  entityType     String    @map("entity_type")
+  entityId       String    @map("entity_id") @db.Uuid
+  collectionName String?   @map("collection_name")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@index([userId, collectionName])
+  @@map("bookmarks")
+}
+
+model UserPreference {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @unique @map("user_id") @db.Uuid
+  theme                String?
+  language             String?
+  timezone             String?
+  notificationSettings Json?    @map("notification_settings")
+  privacySettings      Json?    @map("privacy_settings")
+  newsletterOptIn      Boolean  @default(false) @map("newsletter_opt_in")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_preferences")
+}
+
+model UserActivity {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  activityType String   @map("activity_type")
+  entityType   String?  @map("entity_type")
+  entityId     String?  @map("entity_id") @db.Uuid
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@map("user_activity")
+}
+
+model UserContentSubscription {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  subscriptionType String   @map("subscription_type")
+  target           String
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, subscriptionType, target])
+  @@index([userId])
+  @@map("user_content_subscriptions")
+}
+
+model Setting {
+  id        String    @id @default(uuid()) @db.Uuid
+  key       String    @unique
+  value     Json
+  group     String    @default("general")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy String?   @map("created_by") @db.Uuid
+  updatedBy String?   @map("updated_by") @db.Uuid
+  @@index([group])
+  @@map("settings")
+}
+
+model FeatureFlag {
+  id          String    @id @default(uuid()) @db.Uuid
+  key         String    @unique
+  name        String
+  description String?
+  enabled     Boolean   @default(false)
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  @@map("feature_flags")
+}
+
+model Theme {
+  id                String       @id @default(uuid()) @db.Uuid
+  slug              String       @unique
+  name              String
+  description       String?
+  tokens            Json
+  fonts             Json?
+  colors            Json?
+  branding          Json?
+  cssVars           Json?        @map("css_vars")
+  isDefault         Boolean      @default(false) @map("is_default")
+  isSystem          Boolean      @default(false) @map("is_system")
+  tenantKey         String?      @map("tenant_key")
+  season            String?
+  scheduledFrom     DateTime?    @map("scheduled_from")
+  scheduledUntil    DateTime?    @map("scheduled_until")
+  marketplaceListed Boolean      @default(false) @map("marketplace_listed")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  deletedAt         DateTime?    @map("deleted_at")
+  createdBy         String?      @map("created_by") @db.Uuid
+  updatedBy         String?      @map("updated_by") @db.Uuid
+  assets            ThemeAsset[]
+  @@index([tenantKey])
+  @@index([marketplaceListed])
+  @@index([scheduledFrom, scheduledUntil])
+  @@map("themes")
+}
+
+model ThemeAsset {
+  id        String      @id @default(uuid()) @db.Uuid
+  themeId   String      @map("theme_id") @db.Uuid
+  type      String
+  mediaId   String?     @map("media_id") @db.Uuid
+  url       String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  theme     Theme       @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  media     MediaAsset? @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  @@unique([themeId, type])
+  @@index([themeId])
+  @@map("theme_assets")
+}
+
+model Menu {
+  id        String     @id @default(uuid()) @db.Uuid
+  slug      String     @unique
+  name      String
+  location  String
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+  createdBy String?    @map("created_by") @db.Uuid
+  updatedBy String?    @map("updated_by") @db.Uuid
+  items     MenuItem[]
+  @@index([location])
+  @@map("menus")
+}
+
+model MenuItem {
+  id        String     @id @default(uuid()) @db.Uuid
+  menuId    String     @map("menu_id") @db.Uuid
+  parentId  String?    @map("parent_id") @db.Uuid
+  label     String
+  href      String?
+  sortOrder Int        @default(0) @map("sort_order")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+  createdBy String?    @map("created_by") @db.Uuid
+  updatedBy String?    @map("updated_by") @db.Uuid
+  menu     Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent   MenuItem?  @relation("MenuItemTree", fields: [parentId], references: [id])
+  children MenuItem[] @relation("MenuItemTree")
+  @@index([menuId, sortOrder])
+  @@map("menu_items")
+}
+model MediaFolder {
+  id        String        @id @default(uuid()) @db.Uuid
+  parentId  String?       @map("parent_id") @db.Uuid
+  name      String
+  slug      String
+  path      String?
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+  createdBy String?       @map("created_by") @db.Uuid
+  updatedBy String?       @map("updated_by") @db.Uuid
+  parent   MediaFolder?  @relation("MediaFolderTree", fields: [parentId], references: [id])
+  children MediaFolder[] @relation("MediaFolderTree")
+  assets   MediaAsset[]
+  @@unique([parentId, slug])
+  @@map("media_folders")
+}
+
+model MediaAlbum {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String            @unique
+  description String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at")
+  createdBy   String?           @map("created_by") @db.Uuid
+  updatedBy   String?           @map("updated_by") @db.Uuid
+  assets      MediaAlbumAsset[]
+  @@map("media_albums")
+}
+
+model MediaTag {
+  id        String          @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String          @unique
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  deletedAt DateTime?       @map("deleted_at")
+  assets    MediaAssetTag[]
+  @@map("media_tags")
+}
+
+model MediaAsset {
+  id           String            @id @default(uuid()) @db.Uuid
+  folderId     String?           @map("folder_id") @db.Uuid
+  publicId     String            @unique @map("public_id")
+  url          String
+  secureUrl    String            @map("secure_url")
+  resourceType MediaResourceType @default(IMAGE) @map("resource_type")
+  originalName String?           @map("original_name")
+  fileName     String?           @map("file_name")
+  mimeType     String?           @map("mime_type")
+  format       String?
+  bytes        Int?
+  width        Int?
+  height       Int?
+  duration     Int?
+  thumbnailUrl String?           @map("thumbnail_url")
+  alt          String?
+  caption      String?
+  description  String?
+  metadata     Json?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  deletedAt    DateTime?         @map("deleted_at")
+  createdBy    String?           @map("created_by") @db.Uuid
+  updatedBy    String?           @map("updated_by") @db.Uuid
+  folder      MediaFolder?       @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  versions    MediaAssetVersion[]
+  albums      MediaAlbumAsset[]
+  tags        MediaAssetTag[]
+  usage       MediaUsage[]
+  articles    Article[]          @relation("ArticleFeaturedImage")
+  themeAssets ThemeAsset[]
+  @@index([folderId])
+  @@index([resourceType])
+  @@map("media_assets")
+}
+
+model MediaUsage {
+  id         String     @id @default(uuid()) @db.Uuid
+  assetId    String     @map("asset_id") @db.Uuid
+  entityType String     @map("entity_type")
+  entityId   String     @map("entity_id") @db.Uuid
+  fieldName  String?    @map("field_name")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  asset      MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@unique([assetId, entityType, entityId, fieldName])
+  @@index([assetId])
+  @@map("media_usage")
+}
+
+model MediaAssetVersion {
+  id        String     @id @default(uuid()) @db.Uuid
+  assetId   String     @map("asset_id") @db.Uuid
+  url       String
+  width     Int?
+  height    Int?
+  label     String?
+  createdAt DateTime   @default(now()) @map("created_at")
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@index([assetId])
+  @@map("media_asset_versions")
+}
+
+model MediaAlbumAsset {
+  albumId   String @map("album_id") @db.Uuid
+  assetId   String @map("asset_id") @db.Uuid
+  sortOrder Int    @default(0) @map("sort_order")
+  album MediaAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@id([albumId, assetId])
+  @@map("media_album_assets")
+}
+
+model MediaAssetTag {
+  assetId String @map("asset_id") @db.Uuid
+  tagId   String @map("tag_id") @db.Uuid
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tag   MediaTag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([assetId, tagId])
+  @@map("media_asset_tags")
+}
+
+model Category {
+  id          String        @id @default(uuid()) @db.Uuid
+  parentId    String?       @map("parent_id") @db.Uuid
+  name        String
+  slug        String        @unique
+  description String?
+  status      PublishStatus @default(DRAFT)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  articles Article[]
+  @@index([status, slug])
+  @@map("categories")
+}
+
+model Tag {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  articles  ArticleTag[]
+  @@map("tags")
+}
+
+model Article {
+  id              String        @id @default(uuid()) @db.Uuid
+  authorId        String        @map("author_id") @db.Uuid
+  categoryId      String?       @map("category_id") @db.Uuid
+  featuredImageId String?       @map("featured_image_id") @db.Uuid
+  title           String
+  slug            String        @unique
+  excerpt         String?
+  content         String
+  status          PublishStatus @default(DRAFT)
+  publishedAt     DateTime?     @map("published_at")
+  isFeatured      Boolean       @default(false) @map("is_featured")
+  readingTimeMinutes Int?       @map("reading_time_minutes")
+  metadata        Json?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+  createdBy       String?       @map("created_by") @db.Uuid
+  updatedBy       String?       @map("updated_by") @db.Uuid
+  author        User             @relation("ArticleAuthor", fields: [authorId], references: [id])
+  category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  featuredImage MediaAsset?      @relation("ArticleFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
+  versions      ArticleVersion[]
+  tags          ArticleTag[]
+  comments      Comment[]
+  relatedFrom   ArticleRelated[] @relation("ArticleRelatedFrom")
+  relatedTo     ArticleRelated[] @relation("ArticleRelatedTo")
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([authorId, publishedAt])
+  @@index([isFeatured, status])
+  @@map("articles")
+}
+
+model ArticleRelated {
+  articleId String @map("article_id") @db.Uuid
+  relatedId String @map("related_id") @db.Uuid
+  sortOrder Int    @default(0) @map("sort_order")
+  article Article @relation("ArticleRelatedFrom", fields: [articleId], references: [id], onDelete: Cascade)
+  related Article @relation("ArticleRelatedTo", fields: [relatedId], references: [id], onDelete: Cascade)
+  @@id([articleId, relatedId])
+  @@index([articleId, sortOrder])
+  @@map("article_related")
+}
+
+model PageVersion {
+  id        String   @id @default(uuid()) @db.Uuid
+  pageId    String   @map("page_id") @db.Uuid
+  title     String
+  content   String?
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by") @db.Uuid
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@unique([pageId, version])
+  @@map("page_versions")
+}
+
+model ArticleVersion {
+  id        String   @id @default(uuid()) @db.Uuid
+  articleId String   @map("article_id") @db.Uuid
+  title     String
+  content   String
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by") @db.Uuid
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  @@unique([articleId, version])
+  @@map("article_versions")
+}
+
+model ArticleTag {
+  articleId String @map("article_id") @db.Uuid
+  tagId     String @map("tag_id") @db.Uuid
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+model Comment {
+  id        String        @id @default(uuid()) @db.Uuid
+  articleId String        @map("article_id") @db.Uuid
+  userId    String?       @map("user_id") @db.Uuid
+  parentId  String?       @map("parent_id") @db.Uuid
+  body      String
+  status    PublishStatus @default(DRAFT)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+  article  Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  parent   Comment?  @relation("CommentTree", fields: [parentId], references: [id])
+  children Comment[] @relation("CommentTree")
+  @@index([articleId, status])
+  @@map("comments")
+}
+
+model Page {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  content     String?
+  status      PublishStatus @default(DRAFT)
+  publishedAt DateTime?     @map("published_at")
+  metadata    Json?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  versions    PageVersion[]
+  @@index([status, slug])
+  @@map("pages")
+}
+
+model SeoMetadata {
+  id             String   @id @default(uuid()) @db.Uuid
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id") @db.Uuid
+  title          String?
+  description    String?
+  metaKeywords   String?  @map("meta_keywords")
+  canonicalUrl   String?  @map("canonical_url")
+  ogImage        String?  @map("og_image")
+  robots         String?
+  twitterCard    String?  @map("twitter_card")
+  schemaType     String?  @map("schema_type")
+  language       String?
+  structuredData Json?    @map("structured_data")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  @@unique([entityType, entityId])
+  @@index([entityType])
+  @@map("seo_metadata")
+}
+
+model SeoRedirect {
+  id           String   @id @default(uuid()) @db.Uuid
+  sourcePath   String   @unique @map("source_path") @db.VarChar(500)
+  targetPath   String   @map("target_path") @db.VarChar(1000)
+  redirectType Int      @default(301) @map("redirect_type")
+  status       String   @default("ACTIVE") @db.VarChar(20)
+  hitCount     Int      @default(0) @map("hit_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  @@index([status])
+  @@map("seo_redirects")
+}
+
+model SeoAudit {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String?  @map("entity_type") @db.VarChar(80)
+  entityId   String?  @map("entity_id") @db.Uuid
+  issueType  String   @map("issue_type") @db.VarChar(80)
+  severity   String   @default("warning") @db.VarChar(20)
+  message    String
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  @@index([resolved])
+  @@index([entityType, entityId])
+  @@index([issueType])
+  @@map("seo_audits")
+}
+
+model HomepageLayout {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String        @unique
+  status      PublishStatus @default(DRAFT)
+  publishedAt DateTime?     @map("published_at")
+  isDefault   Boolean       @default(false) @map("is_default")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  sections    HomepageSection[]
+  @@index([status])
+  @@map("homepage_layouts")
+}
+
+model HomepageSection {
+  id        String    @id @default(uuid()) @db.Uuid
+  layoutId  String    @map("layout_id") @db.Uuid
+  name      String
+  sortOrder Int       @default(0) @map("sort_order")
+  settings  Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  layout          HomepageLayout   @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  widgetInstances WidgetInstance[]
+  @@index([layoutId, sortOrder])
+  @@map("homepage_sections")
+}
+
+model Widget {
+  id          String    @id @default(uuid()) @db.Uuid
+  slug        String    @unique
+  name        String
+  description String?
+  schema      Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  instances   WidgetInstance[]
+  @@map("widgets")
+}
+
+model WidgetInstance {
+  id        String    @id @default(uuid()) @db.Uuid
+  sectionId String    @map("section_id") @db.Uuid
+  widgetId  String    @map("widget_id") @db.Uuid
+  sortOrder Int       @default(0) @map("sort_order")
+  settings  Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  section HomepageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  widget  Widget          @relation(fields: [widgetId], references: [id], onDelete: Restrict)
+  @@index([sectionId, sortOrder])
+  @@map("widget_instances")
+}
+model Sponsor {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String    @unique
+  website   String?
+  logoUrl   String?   @map("logo_url")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy String?   @map("created_by") @db.Uuid
+  updatedBy String?   @map("updated_by") @db.Uuid
+  campaigns AdCampaign[]
+  @@map("sponsors")
+}
+
+model AdPlacement {
+  id           String         @id @default(uuid()) @db.Uuid
+  slug         String         @unique
+  name         String
+  description  String?
+  location     String?
+  width        Int?
+  height       Int?
+  rotationMode AdRotationMode @default(PRIORITY) @map("rotation_mode")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+  ads          Advertisement[]
+  @@map("ad_placements")
+}
+
+model AdCampaign {
+  id          String    @id @default(uuid()) @db.Uuid
+  sponsorId   String?   @map("sponsor_id") @db.Uuid
+  name        String
+  slug        String    @unique
+  description String?
+  status      AdStatus  @default(DRAFT)
+  startsAt    DateTime? @map("starts_at")
+  endsAt      DateTime? @map("ends_at")
+  budget      Decimal?  @db.Decimal(12, 2)
+  priority    Int       @default(0)
+  maxImpressions Int?   @map("max_impressions")
+  maxClicks   Int?      @map("max_clicks")
+  utmSource   String?   @map("utm_source")
+  utmMedium   String?   @map("utm_medium")
+  utmCampaign String?   @map("utm_campaign")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  sponsor Sponsor?        @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+  ads     Advertisement[]
+  @@index([status, startsAt])
+  @@map("ad_campaigns")
+}
+
+model Advertisement {
+  id            String        @id @default(uuid()) @db.Uuid
+  campaignId    String        @map("campaign_id") @db.Uuid
+  placementId   String?       @map("placement_id") @db.Uuid
+  name          String
+  slug          String        @unique
+  type          AdType        @default(BANNER)
+  provider      AdProvider    @default(DIRECT)
+  contentType   AdContentType @default(IMAGE) @map("content_type")
+  status        AdStatus      @default(DRAFT)
+  creativeUrl   String?       @map("creative_url")
+  htmlContent   String?       @map("html_content")
+  javascriptCode String?      @map("javascript_code")
+  targetUrl     String?       @map("target_url")
+  adsenseSlot   String?       @map("adsense_slot")
+  adsenseClient String?       @map("adsense_client")
+  priority      Int           @default(0)
+  weight        Int           @default(1)
+  maxImpressions Int?         @map("max_impressions")
+  maxClicks     Int?          @map("max_clicks")
+  startsAt      DateTime?     @map("starts_at")
+  endsAt        DateTime?     @map("ends_at")
+  targeting     Json?
+  metadata      Json?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+  createdBy     String?       @map("created_by") @db.Uuid
+  updatedBy     String?       @map("updated_by") @db.Uuid
+  campaign    AdCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  placement   AdPlacement?   @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  impressions AdImpression[]
+  clicks      AdClick[]
+  @@index([campaignId, status])
+  @@index([placementId, status])
+  @@index([type, status])
+  @@map("advertisements")
+}
+
+model AdImpression {
+  id        String   @id @default(uuid()) @db.Uuid
+  adId      String   @map("ad_id") @db.Uuid
+  sessionId String?  @map("session_id")
+  pagePath  String?  @map("page_path")
+  userAgent String?  @map("user_agent")
+  referrer  String?
+  device    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  ad Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+  @@index([adId, createdAt])
+  @@map("ad_impressions")
+}
+
+model AdClick {
+  id             String   @id @default(uuid()) @db.Uuid
+  adId           String   @map("ad_id") @db.Uuid
+  sessionId      String?  @map("session_id")
+  pagePath       String?  @map("page_path")
+  destinationUrl String?  @map("destination_url")
+  referrer       String?
+  userAgent      String?  @map("user_agent")
+  device         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  ad Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+  @@index([adId, createdAt])
+  @@map("ad_clicks")
+}
+
+model CalculatorCategory {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String       @unique
+  description String?
+  sortOrder   Int          @default(0) @map("sort_order")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  calculators Calculator[]
+  @@map("calculator_categories")
+}
+
+model Calculator {
+  id             String        @id @default(uuid()) @db.Uuid
+  slug           String        @unique
+  name           String
+  description    String?
+  icon           String?
+  categoryId     String?       @map("category_id") @db.Uuid
+  status         PublishStatus @default(DRAFT)
+  version        Int           @default(1)
+  formula        String?
+  resultTemplate Json?         @map("result_template")
+  settings       Json?
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  category CalculatorCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  fields         CalculatorField[]
+  versions       CalculatorVersion[]
+  history        CalculationHistory[]
+  saved          SavedCalculation[]
+  analytics      CalculatorAnalyticsEvent[]
+  @@index([status, slug])
+  @@index([categoryId])
+  @@map("calculators")
+}
+
+model CalculatorField {
+  id           String    @id @default(uuid()) @db.Uuid
+  calculatorId String    @map("calculator_id") @db.Uuid
+  key          String
+  label        String
+  fieldType    String    @map("field_type")
+  defaultValue String?   @map("default_value")
+  sortOrder    Int       @default(0) @map("sort_order")
+  required     Boolean   @default(true)
+  options      Json?
+  validation   Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  calculator Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  @@unique([calculatorId, key])
+  @@index([calculatorId, sortOrder])
+  @@map("calculator_fields")
+}
+
+model CalculatorVersion {
+  id        String   @id @default(uuid()) @db.Uuid
+  calculatorId String @map("calculator_id") @db.Uuid
+  version   Int
+  formula   String?
+  settings  Json?
+  snapshot  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by") @db.Uuid
+  calculator Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  @@unique([calculatorId, version])
+  @@index([calculatorId])
+  @@map("calculator_versions")
+}
+
+model CalculationHistory {
+  id           String            @id @default(uuid()) @db.Uuid
+  calculatorId String            @map("calculator_id") @db.Uuid
+  userId       String?           @map("user_id") @db.Uuid
+  inputs       Json
+  outputs      Json?
+  status       CalculationStatus @default(PENDING)
+  durationMs   Int?              @map("duration_ms")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  calculator Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  @@index([calculatorId, createdAt])
+  @@index([userId, createdAt])
+  @@map("calculation_history")
+}
+
+model CalculatorAnalyticsEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  calculatorId String   @map("calculator_id") @db.Uuid
+  eventType    String   @map("event_type")
+  sessionId    String?  @map("session_id")
+  userId       String?  @map("user_id") @db.Uuid
+  device       String?
+  referrer     String?
+  durationMs   Int?     @map("duration_ms")
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  calculator Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  @@index([calculatorId, eventType, createdAt])
+  @@map("calculator_analytics_events")
+}
+
+model SavedCalculation {
+  id           String    @id @default(uuid()) @db.Uuid
+  calculatorId String    @map("calculator_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  name         String
+  inputs       Json
+  outputs      Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  calculator Calculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, calculatorId])
+  @@map("saved_calculations")
+}
+
+model FinanceCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  loans       Loan[]
+  creditCards CreditCard[]
+  insurance   InsuranceProduct[]
+  investments InvestmentProduct[]
+  faqs        FinanceFaq[]
+  guides      FinanceGuide[]
+  @@index([sortOrder])
+  @@map("finance_categories")
+}
+
+model Bank {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String
+  slug          String        @unique
+  logoUrl       String?       @map("logo_url")
+  logoMediaId   String?       @map("logo_media_id") @db.Uuid
+  website       String?
+  description   String?
+  status        PublishStatus @default(DRAFT)
+  featured      Boolean       @default(false)
+  seoTitle      String?       @map("seo_title")
+  seoDescription String?      @map("seo_description")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+  createdBy     String?       @map("created_by") @db.Uuid
+  updatedBy     String?       @map("updated_by") @db.Uuid
+  loans         Loan[]
+  creditCards   CreditCard[]
+  rates         InterestRate[]
+  @@index([status])
+  @@map("banks")
+}
+
+model Loan {
+  id             String           @id @default(uuid()) @db.Uuid
+  bankId         String           @map("bank_id") @db.Uuid
+  categoryId     String?          @map("category_id") @db.Uuid
+  name           String
+  slug           String
+  loanType       String           @map("loan_type")
+  description    String?
+  interestRate   Decimal?         @map("interest_rate") @db.Decimal(8, 4)
+  processingFee  Decimal?         @map("processing_fee") @db.Decimal(8, 4)
+  tenureMin      Int?             @map("tenure_min")
+  tenureMax      Int?             @map("tenure_max")
+  maxAmount      Decimal?         @map("max_amount") @db.Decimal(14, 2)
+  eligibility    String?
+  affiliateUrl   String?          @map("affiliate_url")
+  pros           String?
+  cons           String?
+  featured       Boolean          @default(false)
+  status         PublishStatus    @default(DRAFT)
+  reviewProductId String?         @map("review_product_id") @db.Uuid
+  metadata       Json?
+  seoTitle       String?          @map("seo_title")
+  seoDescription String?          @map("seo_description")
+  publishedAt    DateTime?        @map("published_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+  createdBy      String?          @map("created_by") @db.Uuid
+  updatedBy      String?          @map("updated_by") @db.Uuid
+  bank           Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  category       FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  rates          InterestRate[]
+  @@unique([bankId, slug])
+  @@index([loanType])
+  @@index([status])
+  @@index([categoryId])
+  @@map("loans")
+}
+
+model CreditCard {
+  id             String           @id @default(uuid()) @db.Uuid
+  bankId         String           @map("bank_id") @db.Uuid
+  categoryId     String?          @map("category_id") @db.Uuid
+  name           String
+  slug           String
+  description    String?
+  annualFee      Decimal?         @map("annual_fee") @db.Decimal(12, 2)
+  joiningFee     Decimal?         @map("joining_fee") @db.Decimal(12, 2)
+  rewards        String?
+  cashback       String?
+  loungeAccess   Boolean          @default(false) @map("lounge_access")
+  affiliateUrl   String?          @map("affiliate_url")
+  pros           String?
+  cons           String?
+  featured       Boolean          @default(false)
+  status         PublishStatus    @default(DRAFT)
+  reviewProductId String?         @map("review_product_id") @db.Uuid
+  metadata       Json?
+  seoTitle       String?          @map("seo_title")
+  seoDescription String?          @map("seo_description")
+  publishedAt    DateTime?        @map("published_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+  createdBy      String?          @map("created_by") @db.Uuid
+  updatedBy      String?          @map("updated_by") @db.Uuid
+  bank           Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  category       FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@unique([bankId, slug])
+  @@index([status])
+  @@map("credit_cards")
+}
+
+model InsuranceProduct {
+  id             String           @id @default(uuid()) @db.Uuid
+  categoryId     String?          @map("category_id") @db.Uuid
+  providerName   String           @map("provider_name")
+  name           String
+  slug           String           @unique
+  coverage       String?
+  premium        Decimal?         @db.Decimal(12, 2)
+  benefits       String?
+  affiliateUrl   String?          @map("affiliate_url")
+  featured       Boolean          @default(false)
+  status         PublishStatus    @default(DRAFT)
+  reviewProductId String?         @map("review_product_id") @db.Uuid
+  metadata       Json?
+  seoTitle       String?          @map("seo_title")
+  seoDescription String?          @map("seo_description")
+  publishedAt    DateTime?        @map("published_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+  createdBy      String?          @map("created_by") @db.Uuid
+  updatedBy      String?          @map("updated_by") @db.Uuid
+  category       FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([status])
+  @@map("insurance_products")
+}
+
+model InvestmentProduct {
+  id              String           @id @default(uuid()) @db.Uuid
+  categoryId      String?          @map("category_id") @db.Uuid
+  providerName    String           @map("provider_name")
+  name            String
+  slug            String           @unique
+  riskLevel       String?          @map("risk_level")
+  expectedReturn  Decimal?         @map("expected_return") @db.Decimal(8, 4)
+  lockInPeriod    String?          @map("lock_in_period")
+  affiliateUrl    String?          @map("affiliate_url")
+  featured        Boolean          @default(false)
+  status          PublishStatus    @default(DRAFT)
+  reviewProductId String?          @map("review_product_id") @db.Uuid
+  metadata        Json?
+  seoTitle        String?          @map("seo_title")
+  seoDescription  String?          @map("seo_description")
+  publishedAt     DateTime?        @map("published_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  deletedAt       DateTime?        @map("deleted_at")
+  createdBy       String?          @map("created_by") @db.Uuid
+  updatedBy       String?          @map("updated_by") @db.Uuid
+  category        FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([status])
+  @@index([riskLevel])
+  @@map("investment_products")
+}
+
+model InterestRate {
+  id            String    @id @default(uuid()) @db.Uuid
+  loanId        String?   @map("loan_id") @db.Uuid
+  bankId        String?   @map("bank_id") @db.Uuid
+  productType   String?   @map("product_type")
+  providerId    String?   @map("provider_id") @db.Uuid
+  rate          Decimal   @db.Decimal(8, 4)
+  minTenure     Int?      @map("min_tenure")
+  maxTenure     Int?      @map("max_tenure")
+  source        String?
+  effectiveFrom DateTime  @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     String?   @map("created_by") @db.Uuid
+  updatedBy     String?   @map("updated_by") @db.Uuid
+  loan          Loan?     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  bank          Bank?     @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  @@index([loanId, effectiveFrom])
+  @@index([productType, effectiveFrom])
+  @@index([bankId])
+  @@map("interest_rates")
+}
+
+model FinanceFaq {
+  id         String    @id @default(uuid()) @db.Uuid
+  categoryId String?   @map("category_id") @db.Uuid
+  question   String
+  answer     String
+  sortOrder  Int       @default(0) @map("sort_order")
+  status     PublishStatus @default(PUBLISHED)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  createdBy  String?   @map("created_by") @db.Uuid
+  updatedBy  String?   @map("updated_by") @db.Uuid
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([status, sortOrder])
+  @@map("finance_faqs")
+}
+
+model FinanceGlossaryTerm {
+  id         String    @id @default(uuid()) @db.Uuid
+  term       String
+  slug       String    @unique
+  definition String
+  status     PublishStatus @default(PUBLISHED)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  createdBy  String?   @map("created_by") @db.Uuid
+  updatedBy  String?   @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("finance_glossary_terms")
+}
+
+model FinanceGuide {
+  id             String        @id @default(uuid()) @db.Uuid
+  categoryId     String?       @map("category_id") @db.Uuid
+  title          String
+  slug           String        @unique
+  summary        String?
+  body           String?
+  status         PublishStatus @default(DRAFT)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  category       FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([status])
+  @@map("finance_guides")
+}
+
+model AffiliateClick {
+  id          String   @id @default(uuid()) @db.Uuid
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id") @db.Uuid
+  affiliateUrl String  @map("affiliate_url")
+  userId      String?  @map("user_id") @db.Uuid
+  sessionId   String?  @map("session_id")
+  referrer    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("affiliate_clicks")
+}
+
+model AffiliateLead {
+  id           String   @id @default(uuid()) @db.Uuid
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id") @db.Uuid
+  affiliateUrl String?  @map("affiliate_url")
+  leadType     String   @default("interest") @map("lead_type")
+  name         String?
+  email        String?
+  phone        String?
+  sessionId    String?  @map("session_id")
+  referrer     String?
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("affiliate_leads")
+}
+
+model FinanceComparison {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  entityType  String        @map("entity_type")
+  entityIds   Json          @map("entity_ids")
+  status      PublishStatus @default(DRAFT)
+  publishedAt DateTime?     @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("finance_comparisons")
+}
+
+model FinanceRateFeed {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  provider     String
+  endpointUrl  String?   @map("endpoint_url")
+  productType  String?   @map("product_type")
+  enabled      Boolean   @default(true)
+  lastSyncedAt DateTime? @map("last_synced_at")
+  lastStatus   String?   @map("last_status")
+  config       Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    String?   @map("created_by") @db.Uuid
+  updatedBy    String?   @map("updated_by") @db.Uuid
+  @@map("finance_rate_feeds")
+}
+
+model LoanEligibilityCheck {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  loanType   String   @map("loan_type")
+  income     Decimal  @db.Decimal(14, 2)
+  amount     Decimal  @db.Decimal(14, 2)
+  tenureMonths Int?   @map("tenure_months")
+  result     Json
+  createdAt  DateTime @default(now()) @map("created_at")
+  @@index([userId, createdAt])
+  @@map("loan_eligibility_checks")
+}
+
+model CreditScoreCheck {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  panMasked String?  @map("pan_masked")
+  provider  String   @default("mock")
+  score     Int?
+  band      String?
+  result    Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([userId, createdAt])
+  @@map("credit_score_checks")
+}
+
+model FinancePortfolio {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @default("My portfolio")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  holdings  FinancePortfolioHolding[]
+  @@index([userId])
+  @@map("finance_portfolios")
+}
+
+model FinancePortfolioHolding {
+  id          String   @id @default(uuid()) @db.Uuid
+  portfolioId String   @map("portfolio_id") @db.Uuid
+  symbol      String?
+  name        String
+  assetType   String   @map("asset_type")
+  quantity    Decimal  @db.Decimal(14, 4)
+  avgCost     Decimal? @map("avg_cost") @db.Decimal(14, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  portfolio   FinancePortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  @@index([portfolioId])
+  @@map("finance_portfolio_holdings")
+}
+
+model FinanceGoal {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  title        String
+  targetAmount Decimal   @map("target_amount") @db.Decimal(14, 2)
+  currentAmount Decimal  @default(0) @map("current_amount") @db.Decimal(14, 2)
+  targetDate   DateTime? @map("target_date")
+  status       String    @default("active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  @@index([userId, status])
+  @@map("finance_goals")
+}
+
+model ConstructionCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  materials   ConstructionMaterial[]
+  templates   CostTemplate[]
+  @@index([sortOrder])
+  @@map("construction_categories")
+}
+
+model ConstructionBrand {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String
+  slug           String        @unique
+  logoUrl        String?       @map("logo_url")
+  logoMediaId    String?       @map("logo_media_id") @db.Uuid
+  website        String?
+  description    String?
+  featured       Boolean       @default(false)
+  status         PublishStatus @default(DRAFT)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  materials      ConstructionMaterial[]
+  @@index([status])
+  @@map("construction_brands")
+}
+
+model ConstructionMaterial {
+  id               String                @id @default(uuid()) @db.Uuid
+  categoryId       String?               @map("category_id") @db.Uuid
+  brandId          String?               @map("brand_id") @db.Uuid
+  name             String
+  slug             String                @unique
+  description      String?
+  specifications   Json?
+  unit             String
+  unitCost         Decimal?              @map("unit_cost") @db.Decimal(12, 2)
+  approximatePrice Decimal?              @map("approximate_price") @db.Decimal(12, 2)
+  availabilityRegion String?             @map("availability_region")
+  affiliateUrl     String?               @map("affiliate_url")
+  mediaId          String?               @map("media_id") @db.Uuid
+  imageUrl         String?               @map("image_url")
+  featured         Boolean               @default(false)
+  sponsored        Boolean               @default(false)
+  status           PublishStatus         @default(DRAFT)
+  rating           Decimal?              @db.Decimal(3, 2)
+  seoTitle         String?               @map("seo_title")
+  seoDescription   String?               @map("seo_description")
+  publishedAt      DateTime?             @map("published_at")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  deletedAt        DateTime?             @map("deleted_at")
+  createdBy        String?               @map("created_by") @db.Uuid
+  updatedBy        String?               @map("updated_by") @db.Uuid
+  category         ConstructionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  brand            ConstructionBrand?    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  projectItems     ConstructionProjectItem[]
+  @@index([status])
+  @@index([categoryId])
+  @@index([brandId])
+  @@map("construction_materials")
+}
+
+model CostTemplate {
+  id               String                @id @default(uuid()) @db.Uuid
+  categoryId       String?               @map("category_id") @db.Uuid
+  name             String
+  slug             String                @unique
+  description      String?
+  category         String?               // legacy string category label
+  formulaReference String?               @map("formula_reference")
+  items            Json?
+  laborPercent     Decimal?              @map("labor_percent") @db.Decimal(5, 2)
+  contingencyPercent Decimal?            @map("contingency_percent") @db.Decimal(5, 2)
+  status           PublishStatus         @default(DRAFT)
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  deletedAt        DateTime?             @map("deleted_at")
+  createdBy        String?               @map("created_by") @db.Uuid
+  updatedBy        String?               @map("updated_by") @db.Uuid
+  constructionCategory ConstructionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  estimators       ConstructionEstimator[]
+  @@index([status])
+  @@map("cost_templates")
+}
+
+model ConstructionEstimator {
+  id         String        @id @default(uuid()) @db.Uuid
+  name       String
+  slug       String        @unique
+  templateId String?       @map("template_id") @db.Uuid
+  settings   Json?
+  status     PublishStatus @default(DRAFT)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  deletedAt  DateTime?     @map("deleted_at")
+  createdBy  String?       @map("created_by") @db.Uuid
+  updatedBy  String?       @map("updated_by") @db.Uuid
+  template   CostTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  @@map("construction_estimators")
+}
+
+model ConstructionProject {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  name          String
+  projectType   String    @map("project_type")
+  areaSqft      Decimal?  @map("area_sqft") @db.Decimal(12, 2)
+  region        String?
+  estimatedCost Decimal?  @map("estimated_cost") @db.Decimal(14, 2)
+  breakdown     Json?
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  items         ConstructionProjectItem[]
+  @@index([userId, createdAt])
+  @@map("construction_projects")
+}
+
+model ConstructionProjectItem {
+  id            String               @id @default(uuid()) @db.Uuid
+  projectId     String               @map("project_id") @db.Uuid
+  materialId    String?              @map("material_id") @db.Uuid
+  name          String?
+  quantity      Decimal              @db.Decimal(14, 4)
+  unitCost      Decimal?             @map("unit_cost") @db.Decimal(12, 2)
+  estimatedCost Decimal?             @map("estimated_cost") @db.Decimal(14, 2)
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  project       ConstructionProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  material      ConstructionMaterial? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  @@index([projectId])
+  @@map("construction_project_items")
+}
+
+model ConstructionFaq {
+  id         String        @id @default(uuid()) @db.Uuid
+  question   String
+  answer     String
+  sortOrder  Int           @default(0) @map("sort_order")
+  status     PublishStatus @default(PUBLISHED)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  deletedAt  DateTime?     @map("deleted_at")
+  createdBy  String?       @map("created_by") @db.Uuid
+  updatedBy  String?       @map("updated_by") @db.Uuid
+  @@index([status, sortOrder])
+  @@map("construction_faqs")
+}
+
+model ConstructionGuide {
+  id             String        @id @default(uuid()) @db.Uuid
+  title          String
+  slug           String        @unique
+  summary        String?
+  body           String?
+  status         PublishStatus @default(DRAFT)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("construction_guides")
+}
+
+model ConstructionChecklist {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  description String?
+  items       Json
+  projectType String?       @map("project_type")
+  status      PublishStatus @default(PUBLISHED)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("construction_checklists")
+}
+
+model ConstructionComparison {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  entityType  String        @default("materials") @map("entity_type")
+  entityIds   Json          @map("entity_ids")
+  status      PublishStatus @default(PUBLISHED)
+  publishedAt DateTime?     @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("construction_comparisons")
+}
+
+model AutomobileManufacturer {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String
+  slug           String        @unique
+  logoUrl        String?       @map("logo_url")
+  logoMediaId    String?       @map("logo_media_id") @db.Uuid
+  country        String?
+  foundedYear    Int?          @map("founded_year")
+  website        String?
+  description    String?
+  featured       Boolean       @default(false)
+  status         PublishStatus @default(DRAFT)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  vehicles       AutomobileVehicle[]
+  @@index([status])
+  @@map("automobile_manufacturers")
+}
+
+model AutomobileVehicle {
+  id                   String        @id @default(uuid()) @db.Uuid
+  manufacturerId       String        @map("manufacturer_id") @db.Uuid
+  name                 String
+  slug                 String        @unique
+  model                String
+  variant              String        @default("")
+  modelYear            Int?          @map("model_year")
+  category             String?
+  bodyType             String?       @map("body_type")
+  fuelType             String?       @map("fuel_type")
+  transmission         String?
+  engineCapacity       String?       @map("engine_capacity")
+  horsepower           Decimal?      @db.Decimal(8, 2)
+  torque               Decimal?      @db.Decimal(8, 2)
+  mileage              Decimal?      @db.Decimal(8, 2)
+  seatingCapacity      Int?          @map("seating_capacity")
+  groundClearance      Decimal?      @map("ground_clearance") @db.Decimal(8, 2)
+  bootSpace            Decimal?      @map("boot_space") @db.Decimal(8, 2)
+  safetyRating         Decimal?      @map("safety_rating") @db.Decimal(3, 1)
+  exShowroomPrice      Decimal?      @map("ex_showroom_price") @db.Decimal(14, 2)
+  estimatedOnRoadPrice Decimal?      @map("estimated_on_road_price") @db.Decimal(14, 2)
+  warranty             String?
+  description          String?
+  specifications       Json?
+  pros                 Json?
+  cons                 Json?
+  imageUrl             String?       @map("image_url")
+  brochureUrl          String?       @map("brochure_url")
+  brochureMediaId      String?       @map("brochure_media_id") @db.Uuid
+  videoUrl             String?       @map("video_url")
+  affiliateUrl         String?       @map("affiliate_url")
+  expertRating         Decimal?      @map("expert_rating") @db.Decimal(3, 2)
+  featured             Boolean       @default(false)
+  sponsored            Boolean       @default(false)
+  status               PublishStatus @default(DRAFT)
+  seoTitle             String?       @map("seo_title")
+  seoDescription       String?       @map("seo_description")
+  publishedAt          DateTime?     @map("published_at")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  deletedAt            DateTime?     @map("deleted_at")
+  createdBy            String?       @map("created_by") @db.Uuid
+  updatedBy            String?       @map("updated_by") @db.Uuid
+  manufacturer         AutomobileManufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  maintenanceSchedules AutomobileMaintenanceSchedule[]
+  images               AutomobileVehicleImage[]
+  reviewLinks          AutomobileVehicleReview[]
+  @@unique([manufacturerId, model, variant])
+  @@index([status])
+  @@index([manufacturerId])
+  @@index([category])
+  @@index([fuelType])
+  @@map("automobile_vehicles")
+}
+
+model AutomobileVehicleImage {
+  id           String    @id @default(uuid()) @db.Uuid
+  vehicleId    String    @map("vehicle_id") @db.Uuid
+  mediaId      String?   @map("media_id") @db.Uuid
+  imageUrl     String?   @map("image_url")
+  altText      String?   @map("alt_text")
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  vehicle      AutomobileVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  @@index([vehicleId, displayOrder])
+  @@map("automobile_vehicle_images")
+}
+
+model AutomobileVehicleReview {
+  vehicleId String @map("vehicle_id") @db.Uuid
+  reviewId  String @map("review_id") @db.Uuid
+  vehicle   AutomobileVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  review    Review            @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  @@id([vehicleId, reviewId])
+  @@map("automobile_vehicle_reviews")
+}
+
+model AutomobileMaintenanceSchedule {
+  id              String    @id @default(uuid()) @db.Uuid
+  vehicleId       String    @map("vehicle_id") @db.Uuid
+  title           String
+  serviceInterval String    @map("service_interval")
+  estimatedCost   Decimal?  @map("estimated_cost") @db.Decimal(12, 2)
+  notes           String?
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       String?   @map("created_by") @db.Uuid
+  updatedBy       String?   @map("updated_by") @db.Uuid
+  vehicle         AutomobileVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  @@index([vehicleId])
+  @@map("automobile_maintenance_schedules")
+}
+
+model AutomobileFaq {
+  id        String        @id @default(uuid()) @db.Uuid
+  question  String
+  answer    String
+  sortOrder Int           @default(0) @map("sort_order")
+  status    PublishStatus @default(PUBLISHED)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+  createdBy String?       @map("created_by") @db.Uuid
+  updatedBy String?       @map("updated_by") @db.Uuid
+  @@index([status, sortOrder])
+  @@map("automobile_faqs")
+}
+
+model AutomobileGuide {
+  id             String        @id @default(uuid()) @db.Uuid
+  title          String
+  slug           String        @unique
+  summary        String?
+  body           String?
+  status         PublishStatus @default(DRAFT)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("automobile_guides")
+}
+
+model AutomobileComparison {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  entityType  String        @default("vehicles") @map("entity_type")
+  entityIds   Json          @map("entity_ids")
+  status      PublishStatus @default(PUBLISHED)
+  publishedAt DateTime?     @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  @@index([status])
+  @@map("automobile_comparisons")
+}
+
+model Product {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  category    String?
+  description String?
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  reviews         Review[]
+  comparisonItems ComparisonItem[]
+  @@index([category])
+  @@map("products")
+}
+
+model Review {
+  id           String        @id @default(uuid()) @db.Uuid
+  productId    String        @map("product_id") @db.Uuid
+  authorId     String?       @map("author_id") @db.Uuid
+  reviewType   String        @default("editorial") @map("review_type")
+  entityType   String?       @map("entity_type")
+  entityId     String?       @map("entity_id") @db.Uuid
+  title        String
+  slug         String        @unique
+  summary      String?
+  body         String?
+  verdict      String?
+  recommendation String?
+  status       PublishStatus @default(DRAFT)
+  overallScore Decimal?      @map("overall_score") @db.Decimal(4, 2)
+  featuredMediaId String?    @map("featured_media_id") @db.Uuid
+  metadata        Json?
+  seoTitle     String?       @map("seo_title")
+  seoDescription String?     @map("seo_description")
+  viewCount    Int           @default(0) @map("view_count")
+  publishedAt  DateTime?     @map("published_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  deletedAt    DateTime?     @map("deleted_at")
+  createdBy    String?       @map("created_by") @db.Uuid
+  updatedBy    String?       @map("updated_by") @db.Uuid
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  author   User?           @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  sections ReviewSection[]
+  scores   ReviewScore[]
+  pros     ReviewPro[]
+  cons     ReviewCon[]
+  vehicleLinks AutomobileVehicleReview[]
+  userReviews UserReview[]
+  @@index([productId, status])
+  @@index([status, publishedAt])
+  @@index([entityType, entityId])
+  @@index([reviewType])
+  @@map("reviews")
+}
+
+model UserReview {
+  id         String        @id @default(uuid()) @db.Uuid
+  entityType String        @map("entity_type")
+  entityId   String        @map("entity_id") @db.Uuid
+  productId  String?       @map("product_id") @db.Uuid
+  reviewId   String?       @map("review_id") @db.Uuid
+  userId     String        @map("user_id") @db.Uuid
+  rating     Decimal       @db.Decimal(3, 2)
+  title      String?
+  comment    String?
+  status     PublishStatus @default(REVIEW)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  deletedAt  DateTime?     @map("deleted_at")
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review     Review?       @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  helpfulVotes ReviewHelpfulness[]
+  @@unique([userId, entityType, entityId])
+  @@index([entityType, entityId, status])
+  @@index([status])
+  @@map("user_reviews")
+}
+
+model ReviewHelpfulness {
+  id           String   @id @default(uuid()) @db.Uuid
+  userReviewId String   @map("user_review_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  vote         Int
+  createdAt    DateTime @default(now()) @map("created_at")
+  userReview   UserReview @relation(fields: [userReviewId], references: [id], onDelete: Cascade)
+  @@unique([userReviewId, userId])
+  @@map("review_helpfulness")
+}
+
+model ReviewSection {
+  id        String   @id @default(uuid()) @db.Uuid
+  reviewId  String   @map("review_id") @db.Uuid
+  title     String
+  body      String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  @@index([reviewId, sortOrder])
+  @@map("review_sections")
+}
+
+model ReviewScore {
+  id       String  @id @default(uuid()) @db.Uuid
+  reviewId String  @map("review_id") @db.Uuid
+  label    String
+  score    Decimal @db.Decimal(4, 2)
+  maxScore Decimal @default(10) @map("max_score") @db.Decimal(4, 2)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  @@index([reviewId])
+  @@map("review_scores")
+}
+
+model ReviewPro {
+  id       String @id @default(uuid()) @db.Uuid
+  reviewId String @map("review_id") @db.Uuid
+  text     String
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  @@index([reviewId])
+  @@map("review_pros")
+}
+
+model ReviewCon {
+  id       String @id @default(uuid()) @db.Uuid
+  reviewId String @map("review_id") @db.Uuid
+  text     String
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  @@index([reviewId])
+  @@map("review_cons")
+}
+
+model ComparisonTemplate {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  entityType  String    @map("entity_type")
+  description String?
+  attributes  Json      @default("[]")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  comparisons Comparison[]
+  @@index([entityType])
+  @@map("comparison_templates")
+}
+
+model Comparison {
+  id               String        @id @default(uuid()) @db.Uuid
+  templateId       String?       @map("template_id") @db.Uuid
+  title            String
+  slug             String        @unique
+  description      String?
+  comparisonType   String?       @map("comparison_type")
+  entityType       String?       @map("entity_type")
+  recommendation   String?
+  winnerEntityType String?       @map("winner_entity_type")
+  winnerEntityId   String?       @map("winner_entity_id") @db.Uuid
+  seoTitle         String?       @map("seo_title")
+  seoDescription   String?       @map("seo_description")
+  viewCount        Int           @default(0) @map("view_count")
+  status           PublishStatus @default(DRAFT)
+  publishedAt      DateTime?     @map("published_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+  createdBy        String?       @map("created_by") @db.Uuid
+  updatedBy        String?       @map("updated_by") @db.Uuid
+  template   ComparisonTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  items      ComparisonItem[]
+  attributes ComparisonAttribute[]
+  @@index([status, slug])
+  @@index([entityType])
+  @@index([comparisonType])
+  @@map("comparisons")
+}
+
+model ComparisonItem {
+  id           String  @id @default(uuid()) @db.Uuid
+  comparisonId String  @map("comparison_id") @db.Uuid
+  productId    String  @map("product_id") @db.Uuid
+  entityType   String? @map("entity_type")
+  entityId     String? @map("entity_id") @db.Uuid
+  label        String?
+  sortOrder    Int     @default(0) @map("sort_order")
+  comparison Comparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values     ComparisonValue[]
+  @@unique([comparisonId, productId])
+  @@index([entityType, entityId])
+  @@map("comparison_items")
+}
+
+model ComparisonAttribute {
+  id           String @id @default(uuid()) @db.Uuid
+  comparisonId String @map("comparison_id") @db.Uuid
+  key          String
+  label        String
+  valueType    String @default("text") @map("value_type")
+  groupKey     String? @map("group_key")
+  values       Json
+  sortOrder    Int    @default(0) @map("sort_order")
+  comparison Comparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+  cellValues ComparisonValue[]
+  @@unique([comparisonId, key])
+  @@map("comparison_attributes")
+}
+
+model ComparisonValue {
+  id                    String @id @default(uuid()) @db.Uuid
+  comparisonItemId      String @map("comparison_item_id") @db.Uuid
+  comparisonAttributeId String @map("comparison_attribute_id") @db.Uuid
+  value                 Json
+  highlight             String?
+  item      ComparisonItem      @relation(fields: [comparisonItemId], references: [id], onDelete: Cascade)
+  attribute ComparisonAttribute @relation(fields: [comparisonAttributeId], references: [id], onDelete: Cascade)
+  @@unique([comparisonItemId, comparisonAttributeId])
+  @@map("comparison_values")
+}
+
+model BusinessCategory {
+  id        String    @id @default(uuid()) @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  name      String
+  slug      String    @unique
+  icon      String?
+  description String?
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  parent     BusinessCategory?      @relation("BusinessCategoryTree", fields: [parentId], references: [id])
+  children   BusinessCategory[]     @relation("BusinessCategoryTree")
+  businesses BusinessCategoryLink[]
+  @@index([parentId])
+  @@map("business_categories")
+}
+
+model Business {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ownerId            String?            @map("owner_id") @db.Uuid
+  name               String
+  slug               String             @unique
+  description        String?
+  website            String?
+  email              String?
+  phone              String?
+  whatsapp           String?
+  contactPerson      String?            @map("contact_person")
+  socialLinks        Json?              @map("social_links")
+  logoUrl            String?            @map("logo_url")
+  coverImageUrl      String?            @map("cover_image_url")
+  listingType        ListingType        @default(FREE) @map("listing_type")
+  verificationStatus VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  featured           Boolean            @default(false)
+  sponsored          Boolean            @default(false)
+  seoTitle           String?            @map("seo_title")
+  seoDescription     String?            @map("seo_description")
+  pricing            String?
+  certifications     Json?
+  faqs               Json?
+  status             BusinessStatus     @default(PENDING)
+  viewCount          Int                @default(0) @map("view_count")
+  metadata           Json?
+  publishedAt        DateTime?          @map("published_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+  createdBy          String?            @map("created_by") @db.Uuid
+  updatedBy          String?            @map("updated_by") @db.Uuid
+  owner      User?                  @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  locations  BusinessLocation[]
+  services   BusinessService[]
+  products   BusinessProduct[]
+  media      BusinessMedia[]
+  hours      BusinessHours[]
+  categories BusinessCategoryLink[]
+  reviews    BusinessReview[]
+  leads      LeadRequest[]
+  events     DirectoryEvent[]
+  aiTools    AiTool[]
+  @@index([status, slug])
+  @@index([featured, sponsored])
+  @@index([verificationStatus])
+  @@index([listingType])
+  @@map("businesses")
+}
+
+model BusinessCategoryLink {
+  businessId String @map("business_id") @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+  business Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category BusinessCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  @@id([businessId, categoryId])
+  @@map("business_category_links")
+}
+
+model BusinessLocation {
+  id             String    @id @default(uuid()) @db.Uuid
+  businessId     String    @map("business_id") @db.Uuid
+  label          String?
+  address1       String
+  address2       String?
+  city           String
+  state          String?
+  district       String?
+  locality       String?
+  postalCode     String?   @map("postal_code")
+  country        String
+  latitude       Decimal?  @db.Decimal(10, 7)
+  longitude      Decimal?  @db.Decimal(10, 7)
+  googleMapsUrl  String?   @map("google_maps_url")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@index([city, country])
+  @@index([state, city])
+  @@index([latitude, longitude])
+  @@map("business_locations")
+}
+
+model BusinessService {
+  id          String    @id @default(uuid()) @db.Uuid
+  businessId  String    @map("business_id") @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@map("business_services")
+}
+
+model BusinessProduct {
+  id          String    @id @default(uuid()) @db.Uuid
+  businessId  String    @map("business_id") @db.Uuid
+  name        String
+  description String?
+  price       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@map("business_products")
+}
+
+model BusinessMedia {
+  id         String    @id @default(uuid()) @db.Uuid
+  businessId String    @map("business_id") @db.Uuid
+  mediaId    String?   @map("media_id") @db.Uuid
+  url        String?
+  kind       String    @default("gallery")
+  sortOrder  Int       @default(0) @map("sort_order")
+  caption    String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId, kind])
+  @@map("business_media")
+}
+
+model BusinessHours {
+  id         String    @id @default(uuid()) @db.Uuid
+  businessId String    @map("business_id") @db.Uuid
+  day        Int
+  openTime   String?   @map("open_time")
+  closeTime  String?   @map("close_time")
+  isClosed   Boolean   @default(false) @map("is_closed")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, day])
+  @@index([businessId])
+  @@map("business_hours")
+}
+
+model LeadRequest {
+  id         String     @id @default(uuid()) @db.Uuid
+  businessId String     @map("business_id") @db.Uuid
+  userId     String?    @map("user_id") @db.Uuid
+  name       String
+  email      String?
+  phone      String?
+  message    String?
+  leadType   String     @default("contact") @map("lead_type")
+  status     LeadStatus @default(NEW)
+  metadata   Json?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  deletedAt  DateTime?  @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([businessId, status])
+  @@index([status, createdAt])
+  @@map("lead_requests")
+}
+
+model DirectoryEvent {
+  id         String             @id @default(uuid()) @db.Uuid
+  businessId String?            @map("business_id") @db.Uuid
+  eventType  DirectoryEventType @map("event_type")
+  metadata   Json?
+  createdAt  DateTime           @default(now()) @map("created_at")
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  @@index([eventType, createdAt])
+  @@index([businessId, eventType])
+  @@map("directory_events")
+}
+
+model BusinessReview {
+  id         String    @id @default(uuid()) @db.Uuid
+  businessId String    @map("business_id") @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  rating     Int
+  title      String?
+  body       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([businessId, rating])
+  @@map("business_reviews")
+}
+
+model AiCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  parentId    String?   @map("parent_id") @db.Uuid
+  name        String
+  slug        String    @unique
+  icon        String?
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  parent   AiCategory?  @relation("AiCategoryTree", fields: [parentId], references: [id])
+  children AiCategory[] @relation("AiCategoryTree")
+  tools    AiTool[]
+  follows  AiCategoryFollow[]
+  @@index([parentId])
+  @@map("ai_categories")
+}
+
+model AiCategoryFollow {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category AiCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  @@unique([userId, categoryId])
+  @@index([userId, createdAt])
+  @@index([categoryId])
+  @@map("ai_category_follows")
+}
+
+model AiTool {
+  id               String         @id @default(uuid()) @db.Uuid
+  categoryId       String?        @map("category_id") @db.Uuid
+  companyId        String?        @map("company_id") @db.Uuid
+  name             String
+  slug             String         @unique
+  description      String?
+  shortDescription String?        @map("short_description")
+  logoUrl          String?        @map("logo_url")
+  coverImageUrl    String?        @map("cover_image_url")
+  pricingModel     AiPricingModel @default(FREEMIUM) @map("pricing_model")
+  pricingDetails   String?        @map("pricing_details")
+  monthlyPrice     String?        @map("monthly_price")
+  annualPrice      String?        @map("annual_price")
+  freePlan         Boolean        @default(false) @map("free_plan")
+  freeTrial        Boolean        @default(false) @map("free_trial")
+  apiAvailable     Boolean        @default(false) @map("api_available")
+  website          String?
+  documentation    String?
+  affiliateUrl     String?        @map("affiliate_url")
+  platforms        Json?
+  languages        Json?
+  faqs             Json?
+  featured         Boolean        @default(false)
+  sponsored        Boolean        @default(false)
+  seoTitle         String?        @map("seo_title")
+  seoDescription   String?        @map("seo_description")
+  status           PublishStatus  @default(DRAFT)
+  viewCount        Int            @default(0) @map("view_count")
+  bookmarkCount    Int            @default(0) @map("bookmark_count")
+  metadata         Json?
+  publishedAt      DateTime?      @map("published_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  deletedAt        DateTime?      @map("deleted_at")
+  createdBy        String?        @map("created_by") @db.Uuid
+  updatedBy        String?        @map("updated_by") @db.Uuid
+  category     AiCategory?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  company      Business?              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  features     AiToolFeature[]
+  integrations AiToolIntegration[]
+  screenshots  AiToolScreenshot[]
+  bookmarks    AiToolBookmark[]
+  events       AiToolEvent[]
+  recentlyViewed AiToolRecentlyViewed[]
+  @@index([status, slug])
+  @@index([featured, sponsored])
+  @@index([pricingModel])
+  @@index([categoryId])
+  @@index([companyId])
+  @@map("ai_tools")
+}
+
+model AiToolFeature {
+  id        String    @id @default(uuid()) @db.Uuid
+  toolId    String    @map("tool_id") @db.Uuid
+  name      String    @map("feature_name")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  tool AiTool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  @@unique([toolId, name])
+  @@index([toolId])
+  @@map("ai_features")
+}
+
+model AiToolIntegration {
+  id        String    @id @default(uuid()) @db.Uuid
+  toolId    String    @map("tool_id") @db.Uuid
+  name      String    @map("integration_name")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  tool AiTool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  @@unique([toolId, name])
+  @@index([toolId])
+  @@map("ai_integrations")
+}
+
+model AiToolScreenshot {
+  id        String    @id @default(uuid()) @db.Uuid
+  toolId    String    @map("tool_id") @db.Uuid
+  mediaId   String?   @map("media_id") @db.Uuid
+  url       String?
+  caption   String?
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  tool AiTool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  @@index([toolId, sortOrder])
+  @@map("tool_screenshots")
+}
+
+model AiToolBookmark {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  toolId         String    @map("tool_id") @db.Uuid
+  collectionName String?   @map("collection_name")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool AiTool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  @@unique([userId, toolId])
+  @@index([userId, collectionName])
+  @@index([toolId])
+  @@map("user_bookmarks")
+}
+
+model AiToolRecentlyViewed {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  toolId    String   @map("tool_id") @db.Uuid
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool AiTool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  @@unique([userId, toolId])
+  @@index([userId, viewedAt])
+  @@map("ai_tool_recently_viewed")
+}
+
+model AiToolEvent {
+  id        String          @id @default(uuid()) @db.Uuid
+  toolId    String?         @map("tool_id") @db.Uuid
+  eventType AiToolEventType @map("event_type")
+  metadata  Json?
+  createdAt DateTime        @default(now()) @map("created_at")
+  tool AiTool? @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  @@index([toolId, eventType, createdAt])
+  @@index([eventType, createdAt])
+  @@map("ai_tool_events")
+}
+
+model AiModel {
+  id        String    @id @default(uuid()) @db.Uuid
+  slug      String    @unique
+  name      String
+  provider  String
+  metadata  Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  prompts   AiPrompt[]
+  jobs      AiJob[]
+  @@map("ai_models")
+}
+
+model AiPrompt {
+  id        String    @id @default(uuid()) @db.Uuid
+  modelId   String?   @map("model_id") @db.Uuid
+  slug      String    @unique
+  name      String
+  template  String
+  variables Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy String?   @map("created_by") @db.Uuid
+  updatedBy String?   @map("updated_by") @db.Uuid
+  model AiModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+  jobs  AiJob[]
+  @@map("ai_prompts")
+}
+
+model AiJob {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String?     @map("user_id") @db.Uuid
+  modelId   String?     @map("model_id") @db.Uuid
+  promptId  String?     @map("prompt_id") @db.Uuid
+  status    AiJobStatus @default(QUEUED)
+  input     Json
+  output    Json?
+  error     String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  user    User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  model   AiModel?           @relation(fields: [modelId], references: [id], onDelete: SetNull)
+  prompt  AiPrompt?          @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  content GeneratedContent[]
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("ai_jobs")
+}
+
+model GeneratedContent {
+  id        String    @id @default(uuid()) @db.Uuid
+  jobId     String    @map("job_id") @db.Uuid
+  title     String?
+  body      String
+  metadata  Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  job AiJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  @@index([jobId])
+  @@map("generated_content")
+}
+model AnalyticsSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  sessionKey  String    @unique @map("session_key")
+  userId      String?   @map("user_id") @db.Uuid
+  source      String?
+  medium      String?
+  campaign    String?
+  device      String?
+  country     String?
+  startedAt   DateTime  @default(now()) @map("started_at")
+  endedAt     DateTime? @map("ended_at")
+  pageViews   PageView[]
+  clickEvents ClickEvent[]
+  trafficSources TrafficSource[]
+  analyticsEvents AnalyticsEvent[]
+  @@index([startedAt])
+  @@index([userId])
+  @@map("analytics_sessions")
+}
+
+model PageView {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String?  @map("session_id") @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  path      String
+  referrer  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  session AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  user    User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([path, createdAt])
+  @@index([userId, createdAt])
+  @@map("page_views")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  sessionId  String?  @map("session_id") @db.Uuid
+  eventType  String   @map("event_type")
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id") @db.Uuid
+  path       String?
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  session    AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  @@index([eventType, createdAt])
+  @@index([entityType, entityId])
+  @@index([sessionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("analytics_events")
+}
+
+model AnalyticsAggregate {
+  id          String   @id @default(uuid()) @db.Uuid
+  entityType  String?  @map("entity_type")
+  entityId    String?  @map("entity_id") @db.Uuid
+  metricName  String   @map("metric_name")
+  metricValue Float    @map("metric_value")
+  period      String
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@index([period, periodStart])
+  @@index([metricName, periodStart])
+  @@index([metricName, period, periodStart, entityType, entityId])
+  @@map("analytics_aggregates")
+}
+
+model TrafficSource {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String?  @map("session_id") @db.Uuid
+  source    String?
+  medium    String?
+  campaign  String?
+  referrer  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  session   AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  @@index([source, createdAt])
+  @@index([campaign, createdAt])
+  @@map("traffic_sources")
+}
+
+model SystemMetric {
+  id          String   @id @default(uuid()) @db.Uuid
+  metricName  String   @map("metric_name")
+  metricValue Float    @map("metric_value")
+  metadata    Json?
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  @@index([metricName, recordedAt])
+  @@map("system_metrics")
+}
+
+model AffiliateConversion {
+  id          String   @id @default(uuid()) @db.Uuid
+  partner     String
+  entityType  String?  @map("entity_type")
+  entityId    String?  @map("entity_id") @db.Uuid
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Decimal  @default(0) @db.Decimal(14, 2)
+  periodStart DateTime? @map("period_start")
+  periodEnd   DateTime? @map("period_end")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@index([partner])
+  @@index([entityType, entityId])
+  @@map("affiliate_conversions")
+}
+
+model AnalyticsSavedReport {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  reportType  String   @map("report_type")
+  filters     Json?
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@index([createdBy])
+  @@map("analytics_saved_reports")
+}
+
+enum SearchEntityType {
+  ARTICLE
+  PAGE
+  CMS_CATEGORY
+  TAG
+  GUIDE
+  LOAN
+  BANK
+  CREDIT_CARD
+  INSURANCE
+  MATERIAL
+  BRAND
+  VEHICLE
+  MANUFACTURER
+  DEALER
+  BUSINESS
+  BUSINESS_SERVICE
+  VENDOR
+  AI_TOOL
+  AI_CATEGORY
+  CALCULATOR
+  FORMULA_PAGE
+  REVIEW
+  COMPARISON
+  MEDIA
+  @@map("search_entity_type")
+}
+
+model SearchIndex {
+  id             String           @id @default(uuid()) @db.Uuid
+  entityType     SearchEntityType @map("entity_type")
+  entityId       String           @map("entity_id") @db.Uuid
+  title          String
+  summary        String?
+  content        String?
+  keywords       String?
+  tags           String?
+  slug           String
+  url            String
+  thumbnail      String?
+  category       String?
+  location       String?
+  author         String?
+  brand          String?
+  priceMin       Decimal?         @map("price_min") @db.Decimal(12, 2)
+  priceMax       Decimal?         @map("price_max") @db.Decimal(12, 2)
+  vehicleType    String?          @map("vehicle_type")
+  fuelType       String?          @map("fuel_type")
+  loanType       String?          @map("loan_type")
+  materialType   String?          @map("material_type")
+  seoTitle       String?          @map("seo_title")
+  seoDescription String?          @map("seo_description")
+  language       String           @default("en")
+  status         PublishStatus    @default(PUBLISHED)
+  featured       Boolean          @default(false)
+  sponsored      Boolean          @default(false)
+  verified       Boolean          @default(false)
+  rating         Float?
+  viewCount      Int              @default(0) @map("view_count")
+  publishedAt    DateTime?        @map("published_at")
+  searchVector   Unsupported("tsvector")? @map("search_vector")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([entityType, entityId])
+  @@index([entityType, status])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([slug])
+  @@index([location])
+  @@index([brand])
+  @@index([rating])
+  @@map("search_index")
+}
+
+model SearchQuery {
+  id          String   @id @default(uuid()) @db.Uuid
+  query       String
+  results     Int?
+  clicked     Boolean  @default(false)
+  latencyMs   Int?     @map("latency_ms")
+  userId      String?  @map("user_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  resultClicks SearchResultClick[]
+  @@index([query])
+  @@index([createdAt])
+  @@index([results])
+  @@map("search_queries")
+}
+
+model SearchResultClick {
+  id         String            @id @default(uuid()) @db.Uuid
+  queryId    String?           @map("query_id") @db.Uuid
+  entityType SearchEntityType  @map("entity_type")
+  entityId   String            @map("entity_id") @db.Uuid
+  url        String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+  query      SearchQuery?      @relation(fields: [queryId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([queryId])
+  @@map("search_result_clicks")
+}
+
+model PopularSearch {
+  id          String   @id @default(uuid()) @db.Uuid
+  keyword     String   @unique
+  searchCount Int      @default(0) @map("search_count")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@index([searchCount])
+  @@map("popular_searches")
+}
+
+model ClickEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String?  @map("session_id") @db.Uuid
+  eventName String   @map("event_name")
+  target    String?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  session AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  @@index([eventName, createdAt])
+  @@map("click_events")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique
+  status         String    @default("subscribed")
+  subscribedAt   DateTime  @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  @@index([status])
+  @@map("newsletter_subscribers")
+}
+
+model NewsletterTemplate {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String    @unique
+  subject   String
+  bodyHtml  String    @map("body_html")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy String?   @map("created_by") @db.Uuid
+  updatedBy String?   @map("updated_by") @db.Uuid
+  campaigns NewsletterCampaign[]
+  @@map("newsletter_templates")
+}
+
+model NewsletterCampaign {
+  id          String        @id @default(uuid()) @db.Uuid
+  templateId  String?       @map("template_id") @db.Uuid
+  name        String
+  slug        String        @unique
+  status      PublishStatus @default(DRAFT)
+  scheduledAt DateTime?     @map("scheduled_at")
+  sentAt      DateTime?     @map("sent_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  template NewsletterTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  @@index([status, scheduledAt])
+  @@map("newsletter_campaigns")
+}
+
+model NotificationTemplate {
+  id        String              @id @default(uuid()) @db.Uuid
+  slug      String              @unique
+  name      String
+  channel   NotificationChannel @default(IN_APP)
+  subject   String?
+  body      String
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+  deletedAt DateTime?           @map("deleted_at")
+  createdBy String?             @map("created_by") @db.Uuid
+  updatedBy String?             @map("updated_by") @db.Uuid
+  notifications Notification[]
+  @@map("notification_templates")
+}
+
+model Notification {
+  id         String              @id @default(uuid()) @db.Uuid
+  templateId String?             @map("template_id") @db.Uuid
+  channel    NotificationChannel @default(IN_APP)
+  title      String
+  body       String
+  metadata   Json?
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+  deletedAt  DateTime?           @map("deleted_at")
+  template NotificationTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  users    UserNotification[]
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model UserNotification {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  notificationId String    @map("notification_id") @db.Uuid
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  @@unique([userId, notificationId])
+  @@index([userId, readAt])
+  @@map("user_notifications")
+}
+
+model Plan {
+  id           String    @id @default(uuid()) @db.Uuid
+  slug         String    @unique
+  name         String
+  description  String?
+  priceMonthly Decimal?  @map("price_monthly") @db.Decimal(12, 2)
+  priceYearly  Decimal?  @map("price_yearly") @db.Decimal(12, 2)
+  features     Json?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    String?   @map("created_by") @db.Uuid
+  updatedBy    String?   @map("updated_by") @db.Uuid
+  subscriptions Subscription[]
+  @@map("plans")
+}
+
+model Subscription {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @map("user_id") @db.Uuid
+  planId     String             @map("plan_id") @db.Uuid
+  status     SubscriptionStatus @default(TRIALING)
+  startsAt   DateTime           @default(now()) @map("starts_at")
+  endsAt     DateTime?          @map("ends_at")
+  canceledAt DateTime?          @map("canceled_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+  deletedAt  DateTime?          @map("deleted_at")
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan      @relation(fields: [planId], references: [id], onDelete: Restrict)
+  invoices Invoice[]
+  @@index([userId, status])
+  @@index([planId, status])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id             String        @id @default(uuid()) @db.Uuid
+  subscriptionId String?       @map("subscription_id") @db.Uuid
+  number         String        @unique
+  amount         Decimal       @db.Decimal(12, 2)
+  currency       String        @default("USD")
+  status         PaymentStatus @default(PENDING)
+  issuedAt       DateTime      @default(now()) @map("issued_at")
+  dueAt          DateTime?     @map("due_at")
+  paidAt         DateTime?     @map("paid_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  payments     Payment[]
+  @@index([status, issuedAt])
+  @@map("invoices")
+}
+
+model Payment {
+  id          String        @id @default(uuid()) @db.Uuid
+  invoiceId   String?       @map("invoice_id") @db.Uuid
+  amount      Decimal       @db.Decimal(12, 2)
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  provider    String?
+  providerRef String?       @map("provider_ref")
+  paidAt      DateTime?     @map("paid_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+  invoice      Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+model Transaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  paymentId String?  @map("payment_id") @db.Uuid
+  type      String
+  amount    Decimal  @db.Decimal(12, 2)
+  currency  String   @default("USD")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  @@index([paymentId, createdAt])
+  @@map("transactions")
+}
+
+model Language {
+  id        String    @id @default(uuid()) @db.Uuid
+  code      String    @unique
+  name      String
+  isDefault Boolean   @default(false) @map("is_default")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  values    TranslationValue[]
+  @@map("languages")
+}
+
+model TranslationKey {
+  id        String    @id @default(uuid()) @db.Uuid
+  namespace String    @default("common")
+  key       String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  values    TranslationValue[]
+  @@unique([namespace, key])
+  @@map("translation_keys")
+}
+
+model TranslationValue {
+  id         String   @id @default(uuid()) @db.Uuid
+  keyId      String   @map("key_id") @db.Uuid
+  languageId String   @map("language_id") @db.Uuid
+  value      String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  key      TranslationKey @relation(fields: [keyId], references: [id], onDelete: Cascade)
+  language Language       @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  @@unique([keyId, languageId])
+  @@map("translation_values")
+}
+
+model ApiRequestLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  requestId    String   @map("request_id")
+  method       String
+  path         String
+  statusCode   Int      @map("status_code")
+  durationMs   Int      @map("duration_ms")
+  userId       String?  @map("user_id") @db.Uuid
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([statusCode, createdAt])
+  @@map("api_request_logs")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  keyPrefix  String    @map("key_prefix")
+  keyHash    String    @unique @map("key_hash")
+  scopes     String[]  @default([])
+  enabled    Boolean   @default(true)
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdBy  String?   @map("created_by") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([keyPrefix])
+  @@map("api_keys")
+}
+
+model WebhookEndpoint {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  url        String
+  secret     String?
+  events     String[]  @default([])
+  enabled    Boolean   @default(true)
+  createdBy  String?   @map("created_by") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  deliveries WebhookDelivery[]
+
+  @@map("webhook_endpoints")
+}
+
+model WebhookDelivery {
+  id           String   @id @default(uuid()) @db.Uuid
+  endpointId   String   @map("endpoint_id") @db.Uuid
+  event        String
+  payload      Json
+  statusCode   Int?     @map("status_code")
+  success      Boolean  @default(false)
+  errorMessage String?  @map("error_message")
+  attempt      Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at")
+  endpoint     WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId, createdAt])
+  @@map("webhook_deliveries")
+}

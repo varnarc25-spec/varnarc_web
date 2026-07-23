@@ -1,0 +1,66 @@
+-- Advertisement system expansion (required scope)
+
+ALTER TYPE "ad_status" ADD VALUE IF NOT EXISTS 'SCHEDULED';
+ALTER TYPE "ad_status" ADD VALUE IF NOT EXISTS 'ARCHIVED';
+
+DO $$ BEGIN
+  CREATE TYPE "ad_type" AS ENUM ('ADSENSE', 'BANNER', 'HTML', 'JAVASCRIPT', 'AFFILIATE', 'SPONSORED', 'NATIVE', 'CTA', 'INTERNAL');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE "ad_provider" AS ENUM ('GOOGLE_ADSENSE', 'DIRECT', 'AFFILIATE', 'INTERNAL');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE "ad_content_type" AS ENUM ('IMAGE', 'HTML', 'JAVASCRIPT', 'TEXT', 'SCRIPT_SLOT');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE "ad_rotation_mode" AS ENUM ('SEQUENTIAL', 'RANDOM', 'WEIGHTED', 'PRIORITY');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+ALTER TABLE "ad_placements"
+  ADD COLUMN IF NOT EXISTS "location" TEXT,
+  ADD COLUMN IF NOT EXISTS "rotation_mode" "ad_rotation_mode" NOT NULL DEFAULT 'PRIORITY';
+
+ALTER TABLE "ad_campaigns"
+  ADD COLUMN IF NOT EXISTS "description" TEXT,
+  ADD COLUMN IF NOT EXISTS "priority" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "max_impressions" INTEGER,
+  ADD COLUMN IF NOT EXISTS "max_clicks" INTEGER,
+  ADD COLUMN IF NOT EXISTS "utm_source" TEXT,
+  ADD COLUMN IF NOT EXISTS "utm_medium" TEXT,
+  ADD COLUMN IF NOT EXISTS "utm_campaign" TEXT;
+
+ALTER TABLE "advertisements"
+  ADD COLUMN IF NOT EXISTS "type" "ad_type" NOT NULL DEFAULT 'BANNER',
+  ADD COLUMN IF NOT EXISTS "provider" "ad_provider" NOT NULL DEFAULT 'DIRECT',
+  ADD COLUMN IF NOT EXISTS "content_type" "ad_content_type" NOT NULL DEFAULT 'IMAGE',
+  ADD COLUMN IF NOT EXISTS "html_content" TEXT,
+  ADD COLUMN IF NOT EXISTS "javascript_code" TEXT,
+  ADD COLUMN IF NOT EXISTS "adsense_slot" TEXT,
+  ADD COLUMN IF NOT EXISTS "adsense_client" TEXT,
+  ADD COLUMN IF NOT EXISTS "priority" INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "weight" INTEGER NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS "max_impressions" INTEGER,
+  ADD COLUMN IF NOT EXISTS "max_clicks" INTEGER,
+  ADD COLUMN IF NOT EXISTS "starts_at" TIMESTAMP(3),
+  ADD COLUMN IF NOT EXISTS "ends_at" TIMESTAMP(3),
+  ADD COLUMN IF NOT EXISTS "targeting" JSONB;
+
+CREATE INDEX IF NOT EXISTS "advertisements_type_status_idx" ON "advertisements"("type", "status");
+
+ALTER TABLE "ad_impressions"
+  ADD COLUMN IF NOT EXISTS "user_agent" TEXT,
+  ADD COLUMN IF NOT EXISTS "referrer" TEXT,
+  ADD COLUMN IF NOT EXISTS "device" TEXT;
+
+ALTER TABLE "ad_clicks"
+  ADD COLUMN IF NOT EXISTS "destination_url" TEXT,
+  ADD COLUMN IF NOT EXISTS "referrer" TEXT,
+  ADD COLUMN IF NOT EXISTS "user_agent" TEXT,
+  ADD COLUMN IF NOT EXISTS "device" TEXT;

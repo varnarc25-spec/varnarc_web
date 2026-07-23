@@ -1,0 +1,36 @@
+---
+description: Varnarc global AI rules — architecture, stack, and quality bar
+alwaysApply: true
+---
+
+# Varnarc Platform — Global Rules
+
+Read `AI_RULES.md` and `cursor/README.md` before implementing.
+
+## Stack (locked)
+
+- **Apps:** `apps/web` (Next.js 15), `apps/admin`, `apps/api` (NestJS)
+- **Packages:** `@varnarc/*` — types, validation, database, auth, ui, config
+- **DB:** Neon PostgreSQL + Prisma (via `@varnarc/database` repositories)
+- **Auth:** Auth0 + RBAC guards
+- **Cache:** Redis | **Deploy:** Docker + GCP Cloud Run | **CI:** GitHub Actions
+
+## Non-negotiables
+
+- TypeScript strict mode; no `any` without justification
+- Production-ready code — no placeholders, no TODOs for core paths
+- Smallest correct diff; no drive-by refactors
+- Validate all external input (Zod + `ZodValidationPipe`)
+- RBAC on protected API routes; standard response envelope (`ok()`, `okCursor()`)
+- Business logic in services; Prisma only in repositories — never in controllers
+- Update docs + tests when behavior changes
+- Run `pnpm lint`, `pnpm typecheck`, `pnpm test` before finishing
+
+## Workflow
+
+1. Analyze existing code in impacted modules
+2. Implement across all layers (DB → API → admin/web → packages)
+3. Write tests for non-trivial logic
+4. Update `docs/*-IMPLEMENTATION.md` when adding a module feature
+
+Prompt templates: `cursor/prompts/`. Master prompt: `cursor/MASTER.md`.
