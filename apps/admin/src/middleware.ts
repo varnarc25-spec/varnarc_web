@@ -15,32 +15,37 @@ function logoutRedirect(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const authResponse = await auth0.middleware(request);
+  try {
+    const { pathname } = request.nextUrl;
+    const authResponse = await auth0.middleware(request);
 
-  if (isPublicPath(pathname)) {
+    if (isPublicPath(pathname)) {
+      authResponse.headers.set('x-middleware-pathname', pathname);
+      return authResponse;
+    }
+
+    const session = await auth0.getSession(request);
+    if (!session?.user) {
+      const login = new URL('/auth/login', request.nextUrl.origin);
+      login.searchParams.set('returnTo', request.nextUrl.toString());
+      return NextResponse.redirect(login);
+    }
+
+    try {
+      const audience = process.env.AUTH0_AUDIENCE;
+      await auth0.getAccessToken(request, authResponse as NextResponse, {
+        ...(audience ? { audience } : {}),
+      });
+    } catch {
+      return logoutRedirect(request);
+    }
+
     authResponse.headers.set('x-middleware-pathname', pathname);
     return authResponse;
+  } catch (err) {
+    console.error('[middleware] Fatal auth error:', err);
+    throw err;
   }
-
-  const session = await auth0.getSession(request);
-  if (!session?.user) {
-    const login = new URL('/auth/login', request.nextUrl.origin);
-    login.searchParams.set('returnTo', request.nextUrl.toString());
-    return NextResponse.redirect(login);
-  }
-
-  try {
-    const audience = process.env.AUTH0_AUDIENCE;
-    await auth0.getAccessToken(request, authResponse as NextResponse, {
-      ...(audience ? { audience } : {}),
-    });
-  } catch {
-    return logoutRedirect(request);
-  }
-
-  authResponse.headers.set('x-middleware-pathname', pathname);
-  return authResponse;
 }
 
 export const config = {

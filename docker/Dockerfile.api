@@ -50,7 +50,8 @@ RUN set -e; \
     SRC_ROOT="$(dirname "$(find /app/node_modules/.pnpm -path '*/.prisma/client' -type d | head -n1)")"; \
     CLIENT_PKG="$(find /deploy/node_modules/.pnpm -path '*/@prisma/client' -type d | head -n1)"; \
     DEST_NODE_MODULES="$(dirname "$(dirname "$CLIENT_PKG")")"; \
-    cp -r "$SRC_ROOT" "$DEST_NODE_MODULES/"
+    cp -r "$SRC_ROOT" "$DEST_NODE_MODULES/"; \
+    test -f "$DEST_NODE_MODULES/.prisma/client/index.js" || (echo "ERROR: Prisma client not copied into deploy bundle" && exit 1)
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache openssl

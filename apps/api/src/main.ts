@@ -25,8 +25,15 @@ for (const candidate of [
 }
 
 async function bootstrap() {
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   // eslint-disable-next-line no-console
-  console.log('[startup] Booting Varnarc API…');
+  console.log('[startup] Booting Varnarc API…', {
+    port,
+    nodeEnv: process.env.NODE_ENV,
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    hasAuth0Domain: Boolean(process.env.AUTH0_DOMAIN),
+    hasAuth0Audience: Boolean(process.env.AUTH0_AUDIENCE),
+  });
   await initOpenTelemetry();
   validateStartupEnv();
   // eslint-disable-next-line no-console
@@ -70,7 +77,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console
   console.log(`Varnarc API listening on http://0.0.0.0:${port}${API_PREFIX}`);
@@ -79,7 +85,6 @@ async function bootstrap() {
 }
 
 void bootstrap().catch((err: unknown) => {
-  // eslint-disable-next-line no-console
   console.error('[startup] Fatal error:', err);
   process.exit(1);
 });
