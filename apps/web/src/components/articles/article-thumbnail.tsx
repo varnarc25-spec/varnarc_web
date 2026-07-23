@@ -10,7 +10,7 @@ const sizeClasses: Record<ThumbnailSize, { box: string; iconScale: string }> = {
 };
 
 export function ArticleThumbnail({
-  title,
+  title: _title,
   imageUrl,
   category,
   categorySlug,
@@ -30,7 +30,6 @@ export function ArticleThumbnail({
   if (imageUrl) {
     return (
       <div className={`relative overflow-hidden bg-slate-100 ${sizes.box} ${className}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
       </div>
     );

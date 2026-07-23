@@ -1,6 +1,6 @@
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
-let cache = new Map<string, { value: boolean; expires: number }>();
+const cache = new Map<string, { value: boolean; expires: number }>();
 
 export async function isFeatureEnabled(key: string): Promise<boolean> {
   const now = Date.now();

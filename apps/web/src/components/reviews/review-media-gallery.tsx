@@ -22,7 +22,7 @@ export function parseReviewMedia(metadata: unknown): ReviewMediaMetadata {
           if (!url && !mediaId) return null;
           return { mediaId, url, caption };
         })
-        .filter((row): row is ReviewMediaItem => row != null)
+        .filter((row) => row != null)
     : [];
   const videoUrl = typeof root.videoUrl === 'string' && root.videoUrl ? root.videoUrl : null;
   return { gallery, videoUrl };

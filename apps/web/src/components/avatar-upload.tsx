@@ -60,7 +60,6 @@ export function AvatarUpload({
     <div className="flex items-center gap-4">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--varnarc-muted)] text-lg font-semibold text-[var(--varnarc-ink)]">
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="" className="h-full w-full object-cover" />
         ) : (
           initials || '?'
