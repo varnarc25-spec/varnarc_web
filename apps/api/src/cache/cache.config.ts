@@ -22,6 +22,7 @@ export function buildCacheModule(): DynamicModule {
         const store = await redisStore({
           url: redisUrl,
           ttl: 30_000,
+          socket: { connectTimeout: 5_000 },
         });
         return {
           store: () => store,

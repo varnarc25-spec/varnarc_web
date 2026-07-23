@@ -31,7 +31,12 @@ export async function createBullMqAnalyticsBackend(
     const { Queue, Worker } = await import('bullmq');
     const IORedis = (await import('ioredis')).default;
 
-    const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null });
+    const connection = new IORedis(redisUrl, {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      connectTimeout: 5_000,
+    });
+    await connection.connect();
 
     const queue = new Queue<BatchPayload>(QUEUE_NAME, { connection });
 
