@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isAuth0Configured } from '@varnarc/auth';
+import { getAppBaseUrl, isAuth0Configured } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 
 const PUBLIC = ['/auth'];
@@ -9,9 +9,10 @@ function isPublicPath(pathname: string) {
   return PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-function logoutRedirect(request: NextRequest) {
-  const logout = new URL('/auth/logout', request.nextUrl.origin);
-  logout.searchParams.set('returnTo', `${request.nextUrl.origin}/auth/login`);
+function logoutRedirect() {
+  const base = getAppBaseUrl();
+  const logout = new URL(`${base}/auth/logout`);
+  logout.searchParams.set('returnTo', `${base}/auth/login`);
   return NextResponse.redirect(logout);
 }
 
@@ -65,8 +66,10 @@ export async function middleware(request: NextRequest) {
 
     const session = await auth0.getSession(request);
     if (!session?.user) {
-      const login = new URL('/auth/login', request.nextUrl.origin);
-      login.searchParams.set('returnTo', request.nextUrl.toString());
+      const base = getAppBaseUrl();
+      const login = new URL(`${base}/auth/login`);
+      const path = request.nextUrl.pathname + request.nextUrl.search;
+      login.searchParams.set('returnTo', `${base}${path}`);
       return NextResponse.redirect(login);
     }
 
@@ -76,7 +79,7 @@ export async function middleware(request: NextRequest) {
         ...(audience ? { audience } : {}),
       });
     } catch {
-      return logoutRedirect(request);
+      return logoutRedirect();
     }
 
     authResponse.headers.set('x-middleware-pathname', pathname);

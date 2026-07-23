@@ -1,6 +1,12 @@
 import type { RoleSlug } from '@varnarc/types';
 
-export { isAuth0Configured, AUTH0_CALLBACK_PATH, AUTH0_LOGIN_PATH, AUTH0_LOGOUT_PATH } from './auth0-env';
+export {
+  isAuth0Configured,
+  getAppBaseUrl,
+  AUTH0_CALLBACK_PATH,
+  AUTH0_LOGIN_PATH,
+  AUTH0_LOGOUT_PATH,
+} from './auth0-env';
 
 /** Granular permissions — stored in DB, checked by NestJS guards. */
 export const PERMISSIONS = {
@@ -136,7 +142,8 @@ export const ROLE_DEFINITIONS: Record<
   },
   admin: {
     name: 'Administrator',
-    description: 'Administrative access excluding destructive platform ops reserved for super admin',
+    description:
+      'Administrative access excluding destructive platform ops reserved for super admin',
     permissions: Object.values(PERMISSIONS),
   },
   editor: {
