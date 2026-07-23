@@ -1,18 +1,17 @@
-# Cloud Build config for monorepo Docker builds.
-# Build context is always the repository root (.), not the docker/ subdirectory.
+# Monorepo Cloud Build — always uses repository root (.) as Docker build context.
 #
-# Cloud Run "Deploy from repository":
-#   - Source location / build context: /  (repository root)
-#   - Dockerfile: Dockerfile  (this file builds web; use docker/Dockerfile.* for other services)
+# Cloud Run console (recommended):
+#   Source location / Dockerfile: Dockerfile
+#   Build context directory: /   (repository root)
 #
 # Manual build:
 #   gcloud builds submit --config cloudbuild.yaml \
-#     --substitutions _SERVICE_NAME=web,_IMAGE_TAG=latest
+#     --substitutions _REGION=asia-southeast1
 
 substitutions:
   _SERVICE_NAME: web
-  _DOCKERFILE: docker/Dockerfile.web
-  _IMAGE_TAG: latest
+  _DOCKERFILE: Dockerfile
+  _REGION: asia-southeast1
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -21,11 +20,13 @@ steps:
       - -f
       - ${_DOCKERFILE}
       - -t
-      - ${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${_IMAGE_TAG}
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$COMMIT_SHA
+      - --build-arg
+      - GIT_REF=$COMMIT_SHA
       - .
 
 images:
-  - ${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${_SERVICE_NAME}:${_IMAGE_TAG}
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE_NAME}:$COMMIT_SHA
 
 options:
   logging: CLOUD_LOGGING_ONLY

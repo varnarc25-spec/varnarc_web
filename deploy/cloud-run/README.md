@@ -12,12 +12,22 @@ Deploy three services from the monorepo Docker images:
 
 This repository is a **pnpm + Turborepo monorepo**. Workspace root files (`package.json`, `pnpm-lock.yaml`, etc.) live at the **repository root**, not inside `docker/`.
 
+### Diagnosing build context
+
+If Cloud Build logs show `Sending build context to Docker daemon ~18kB`, Cloud Run is using **`docker/` as the build context** (not the repo root). The Dockerfiles auto-fetch the full repo from GitHub in that case.
+
+### Recommended Cloud Run settings
+
 | Setting | Value |
 |---------|-------|
 | **Repository** | `varnarc25-spec/varnarc_web` |
-| **Source location / build context** | `/` (repository root) |
-| **Dockerfile** | `Dockerfile` (web service) |
-| **Do not use** | `docker/Dockerfile.web` alone — Cloud Run sets build context to the Dockerfile directory, so `COPY package.json` fails |
+| **Source location / Dockerfile** | `Dockerfile` |
+| **Build context directory** | `/` (repository root) |
+| **Port** | `3000` |
+
+### If you must keep `docker/Dockerfile.web`
+
+Set **Build context directory** to `/` (repo root), not `docker/`. The Dockerfile path and build context are separate fields in the Cloud Run build configuration.
 
 For **admin** or **api** via Cloud Build trigger, use `cloudbuild.yaml` with substitutions:
 
