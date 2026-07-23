@@ -54,7 +54,62 @@ Cloud Run injects `PORT=8080` by default. The API listens on `PORT` first (then 
 
 If you use port `4000`, set **Container port** to `4000` in Cloud Run and add env `API_PORT=4000`.
 
-## Prerequisites
+### API startup failure after successful build
+
+If the image builds but deploy fails with *"failed to start and listen on PORT=8080"*, the container is usually **crashing before `listen()`** — not a port bug.
+
+In production the API **requires** these env vars (see `apps/api/src/config/startup-env.ts`):
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `DATABASE_URL` | Yes | Neon PostgreSQL connection string |
+| `AUTH0_DOMAIN` | Yes (prod) | Auth0 tenant domain |
+| `AUTH0_AUDIENCE` | Yes (prod) | API audience identifier |
+| `OPENSEARCH_URL` | Yes (prod default) | Unless you set `SEARCH_ENGINE=postgres-fts` |
+
+**Minimum to get API running without OpenSearch:**
+
+1. Create secrets in Secret Manager (`./deploy/gcp/setup-secrets.sh`)
+2. In Cloud Run → **varnarc-api** → **Edit & deploy** → **Variables & secrets**:
+
+| Type | Name | Value |
+|------|------|-------|
+| Secret | `DATABASE_URL` | `DATABASE_URL:latest` |
+| Secret | `AUTH0_DOMAIN` | `AUTH0_DOMAIN:latest` |
+| Secret | `AUTH0_AUDIENCE` | `AUTH0_AUDIENCE:latest` |
+| Env var | `NODE_ENV` | `production` |
+| Env var | `SEARCH_ENGINE` | `postgres-fts` |
+
+3. Grant the Cloud Run runtime service account `roles/secretmanager.secretAccessor` on each secret.
+
+**gcloud example** (replace region/project):
+
+```bash
+export PROJECT_ID=myweb-503314
+export REGION=asia-south1
+export RUNTIME_SA="$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')-compute@developer.gserviceaccount.com"
+
+for s in DATABASE_URL AUTH0_DOMAIN AUTH0_AUDIENCE; do
+  gcloud secrets add-iam-policy-binding "$s" \
+    --member="serviceAccount:${RUNTIME_SA}" \
+    --role="roles/secretmanager.secretAccessor"
+done
+
+gcloud run services update varnarc-api \
+  --region="$REGION" \
+  --set-secrets="DATABASE_URL=DATABASE_URL:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_AUDIENCE=AUTH0_AUDIENCE:latest" \
+  --set-env-vars="NODE_ENV=production,SEARCH_ENGINE=postgres-fts"
+```
+
+Check logs for the real error:
+
+```bash
+gcloud logging read \
+  'resource.type="cloud_run_revision" AND resource.labels.service_name="varnarc-api"' \
+  --limit=20 --format='value(textPayload)'
+```
+
+Look for `[startup] Fatal error:` or `Missing required environment variables`.
 
 - GCP project with Artifact Registry and Cloud Run enabled
 - GitHub secrets (see `.github/workflows/deploy.yml`)

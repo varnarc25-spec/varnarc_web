@@ -65,11 +65,15 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1/docs', app, document);
 
   const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console
-  console.log(`Varnarc API listening on http://localhost:${port}${API_PREFIX}`);
+  console.log(`Varnarc API listening on http://0.0.0.0:${port}${API_PREFIX}`);
   // eslint-disable-next-line no-console
-  console.log(`Swagger docs at http://localhost:${port}/api/v1/docs`);
+  console.log(`Swagger docs at http://0.0.0.0:${port}/api/v1/docs`);
 }
 
-void bootstrap();
+void bootstrap().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error('[startup] Fatal error:', err);
+  process.exit(1);
+});
