@@ -1,6 +1,7 @@
 /**
- * Fail fast in production when critical dependencies are missing.
- * Development allows partial configuration for incremental setup.
+ * Log missing configuration at startup. Does not block listening on PORT —
+ * Cloud Run only requires the process to bind to PORT; /api/v1/ready reports
+ * degraded/unconfigured dependencies.
  */
 import { resolveSearchEngine } from '@varnarc/config';
 
@@ -25,21 +26,20 @@ export function validateStartupEnv(env: NodeJS.ProcessEnv = process.env): void {
     }
     const engine = resolveSearchEngine(env);
     if (engine === 'opensearch' && !env.OPENSEARCH_URL?.trim()) {
-      missing.push('OPENSEARCH_URL (production defaults to opensearch; set SEARCH_ENGINE=postgres-fts to override)');
+      missing.push('OPENSEARCH_URL (set SEARCH_ENGINE=postgres-fts to skip)');
     }
   }
 
   if (missing.length) {
-    const message = `Missing required environment variables: ${missing.join(', ')}`;
+    const message = `Missing environment variables: ${missing.join(', ')}`;
     // eslint-disable-next-line no-console
     console.error(
-      `[startup] ${message}. Present keys: DATABASE_URL=${Boolean(env.DATABASE_URL?.trim())}, AUTH0_DOMAIN=${Boolean(env.AUTH0_DOMAIN?.trim())}, AUTH0_AUDIENCE=${Boolean(env.AUTH0_AUDIENCE?.trim())}, SEARCH_ENGINE=${env.SEARCH_ENGINE ?? '(default)'}, REDIS_URL=${Boolean(env.REDIS_URL?.trim())}`,
+      `[startup] ${message}. Present: DATABASE_URL=${Boolean(env.DATABASE_URL?.trim())}, AUTH0_DOMAIN=${Boolean(env.AUTH0_DOMAIN?.trim())}, AUTH0_AUDIENCE=${Boolean(env.AUTH0_AUDIENCE?.trim())}, SEARCH_ENGINE=${env.SEARCH_ENGINE ?? '(default)'}`,
     );
-    if (isProd) {
-      throw new Error(message);
-    }
     // eslint-disable-next-line no-console
-    console.warn(`[startup] ${message}`);
+    console.warn(
+      '[startup] Starting in degraded mode — bind /api/v1/ready for dependency status. Add secrets via Cloud Run → Variables & secrets.',
+    );
   }
 
   for (const warning of warnings) {

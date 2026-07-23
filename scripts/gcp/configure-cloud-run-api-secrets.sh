@@ -51,6 +51,9 @@ gcloud run services update "$SERVICE_NAME" \
   --region="$GCP_REGION" \
   --set-secrets="$SECRET_BINDINGS" \
   --set-env-vars="NODE_ENV=production,SEARCH_ENGINE=postgres-fts" \
+  --memory=1Gi \
+  --cpu=1 \
+  --startup-probe=type=http,path=/api/v1/health,port=8080,initialDelaySeconds=15,periodSeconds=10,failureThreshold=12 \
   --quiet
 
 echo ""

@@ -10,6 +10,16 @@ Deploy three services from the monorepo Docker images:
 
 ## Deploy from Source (Cloud Run console / GitHub)
 
+### Why every Git push shows the same PORT=8080 error
+
+| What happens on each push | What does NOT happen |
+|---------------------------|----------------------|
+| Cloud Build builds a new Docker image | Secrets are **not** added from Git |
+| Cloud Run deploys that image as a new revision | `DATABASE_URL` / Auth0 are **not** in the repo |
+| Container must bind to `PORT=8080` to pass deploy | Pushing code does **not** configure Secret Manager |
+
+**Git deploy only updates the image.** Secrets must be configured **once** on the Cloud Run service (console or `configure-cloud-run-api-secrets.sh`).
+
 This repository is a **pnpm + Turborepo monorepo**. Workspace root files (`package.json`, `pnpm-lock.yaml`, etc.) live at the **repository root**, not inside `docker/`.
 
 ### Diagnosing build context
