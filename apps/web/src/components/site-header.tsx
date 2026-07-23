@@ -24,13 +24,17 @@ function initials(name: string): string {
 function HeaderSearch({ className = '' }: { className?: string }) {
   return (
     <div className={className}>
-      <SearchAutocomplete inputId="header-search" placeholder="Search calculators, guides, tools..." />
+      <SearchAutocomplete
+        inputId="header-search"
+        placeholder="Search calculators, guides, tools..."
+      />
     </div>
   );
 }
 
 export function SiteHeader({
   user,
+  authConfigured = false,
   navItems: navProp,
   siteName,
   tagline,
@@ -47,10 +51,11 @@ export function SiteHeader({
   tagline?: string | null;
   logoUrl?: string | null;
   stickyHeader?: boolean;
+  /** Set from server via isAuth0Configured() — NEXT_PUBLIC_* is build-time only. */
+  authConfigured?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const authConfigured = process.env.NEXT_PUBLIC_AUTH0_CONFIGURED === 'true';
   const items = navProp?.length
     ? navProp
     : navItems.map((item) => ({ label: item.label, href: item.href }));
@@ -92,26 +97,34 @@ export function SiteHeader({
             <ThemeToggle />
             {user ? <NotificationBell /> : null}
             {user ? (
-              <Link
-                href="/profile"
-                className="hidden items-center gap-2 text-sm text-[var(--varnarc-ink)] sm:inline-flex"
-              >
-                {user.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 rounded-full object-cover ring-1 ring-[var(--varnarc-border)]"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--varnarc-accent)] text-xs font-semibold text-white">
-                    {initials(user.displayName || user.email)}
-                  </span>
-                )}
-                <span className="max-w-[120px] truncate">{user.displayName}</span>
-              </Link>
+              <>
+                <Link
+                  href="/profile"
+                  className="hidden items-center gap-2 text-sm text-[var(--varnarc-ink)] sm:inline-flex"
+                >
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full object-cover ring-1 ring-[var(--varnarc-border)]"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--varnarc-accent)] text-xs font-semibold text-white">
+                      {initials(user.displayName || user.email)}
+                    </span>
+                  )}
+                  <span className="max-w-[120px] truncate">{user.displayName}</span>
+                </Link>
+                <Link
+                  href="/auth/logout"
+                  className="hidden text-sm text-[var(--varnarc-subtle)] hover:text-[var(--varnarc-ink)] sm:inline"
+                >
+                  Log out
+                </Link>
+              </>
             ) : authConfigured ? (
               <Link
                 href="/auth/login"
@@ -137,7 +150,10 @@ export function SiteHeader({
 
       <div className="hidden bg-[var(--varnarc-brand)] lg:block">
         <div className="site-container flex h-11 items-center">
-          <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-white" aria-label="Primary">
+          <nav
+            className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-white"
+            aria-label="Primary"
+          >
             {items.map((item) => {
               const active = pathname === item.href;
               return (
@@ -182,6 +198,14 @@ export function SiteHeader({
                   className="rounded-lg bg-[var(--varnarc-accent)] px-3 py-2.5 text-center text-sm font-semibold text-white"
                 >
                   Login / Sign up
+                </Link>
+              ) : user ? (
+                <Link
+                  href="/auth/logout"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg border border-[var(--varnarc-border)] px-3 py-2.5 text-center text-sm font-medium text-[var(--varnarc-ink)]"
+                >
+                  Log out
                 </Link>
               ) : null}
             </nav>
