@@ -45,6 +45,7 @@ FROM node:20-alpine AS runner
 RUN addgroup -S varnarc && adduser -S varnarc -G varnarc
 WORKDIR /app
 ENV NODE_ENV=production
+ENV SEARCH_ENGINE=postgres-fts
 
 COPY --from=build --chown=varnarc:varnarc /app/apps/api/dist ./dist
 COPY --from=build --chown=varnarc:varnarc /app/apps/api/package.json ./package.json
