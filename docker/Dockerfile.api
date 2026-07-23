@@ -21,6 +21,7 @@ RUN if [ ! -f package.json ]; then \
     fi
 
 FROM node:20-alpine AS base
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@9.6.0 --activate
 WORKDIR /app
 
@@ -40,18 +41,20 @@ FROM deps AS build
 COPY --from=src /work .
 RUN pnpm --filter @varnarc/database generate
 RUN pnpm --filter @varnarc/api... build
+# Portable production bundle (resolves workspace:* deps without monorepo symlinks).
+RUN pnpm deploy --filter=@varnarc/api --prod /deploy
+# pnpm deploy copies @prisma/client but not the generated engine — generate inside /deploy.
+ENV DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build"
+RUN pnpm exec prisma generate --schema=/deploy/node_modules/@varnarc/database/prisma/schema.prisma
 
 FROM node:20-alpine AS runner
+RUN apk add --no-cache openssl
 RUN addgroup -S varnarc && adduser -S varnarc -G varnarc
 WORKDIR /app
 ENV NODE_ENV=production
 ENV SEARCH_ENGINE=postgres-fts
 
-# Monorepo workspace packages — required for node_modules/@varnarc/* symlinks at runtime.
-COPY --from=build --chown=varnarc:varnarc /app/packages ./packages
-COPY --from=build --chown=varnarc:varnarc /app/apps/api/dist ./dist
-COPY --from=build --chown=varnarc:varnarc /app/apps/api/package.json ./package.json
-COPY --from=build --chown=varnarc:varnarc /app/node_modules ./node_modules
+COPY --from=build --chown=varnarc:varnarc /deploy ./
 
 USER varnarc
 EXPOSE 8080
