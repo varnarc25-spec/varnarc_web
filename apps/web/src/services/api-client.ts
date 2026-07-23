@@ -33,9 +33,9 @@ export class ApiError extends Error {
   }
 }
 
-export function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-}
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
+
+export { getApiBaseUrl };
 
 /**
  * Public (unauthenticated) API fetch — for articles, homepage, directory, etc.

@@ -1,4 +1,3 @@
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 const SESSION_KEY = 'vn_analytics_session';
 
 export type AnalyticsEventType =
@@ -57,10 +56,11 @@ export function trackAnalyticsEvent(payload: {
     sessionId: getAnalyticsSessionId(),
     path: payload.path ?? (typeof window !== 'undefined' ? window.location.pathname : undefined),
     referrer:
-      payload.referrer ?? (typeof document !== 'undefined' ? document.referrer || undefined : undefined),
+      payload.referrer ??
+      (typeof document !== 'undefined' ? document.referrer || undefined : undefined),
   };
 
-  void fetch(`${apiUrl}/analytics/events`, {
+  void fetch('/api/analytics/events', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

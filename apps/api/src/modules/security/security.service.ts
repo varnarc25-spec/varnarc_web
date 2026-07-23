@@ -19,7 +19,6 @@ export class SecurityConfigService implements OnModuleInit {
     try {
       await this.refresh();
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.warn(
         `[security] Settings load skipped: ${err instanceof Error ? err.message : String(err)}`,
       );
@@ -35,6 +34,8 @@ export class SecurityConfigService implements OnModuleInit {
     const envOrigins = [
       process.env.NEXT_PUBLIC_APP_URL,
       process.env.NEXT_PUBLIC_ADMIN_URL,
+      process.env.WEB_APP_URL,
+      process.env.ADMIN_APP_URL,
     ].filter((value): value is string => Boolean(value?.trim()));
 
     const configured = [...settings.corsOrigins, ...settings.allowedOrigins, ...envOrigins];
@@ -48,8 +49,8 @@ export class SecurityConfigService implements OnModuleInit {
   getCorsOrigins() {
     if (!this.corsOrigins.length) {
       return [
-        process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
-        process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:3001',
+        process.env.WEB_APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+        process.env.ADMIN_APP_URL ?? process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:3001',
       ];
     }
     return this.corsOrigins;

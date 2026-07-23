@@ -68,11 +68,22 @@ for name in "${AVAILABLE_SECRETS[@]}"; do
   SECRET_BINDINGS+="${name}=${name}:latest"
 done
 
+ENV_EXTRA="${ENV_EXTRA:-}"
+WEB_APP_URL="${WEB_APP_URL:-}"
+ADMIN_APP_URL="${ADMIN_APP_URL:-}"
+ENV_VARS="NODE_ENV=production,SEARCH_ENGINE=postgres-fts"
+if [[ -n "$WEB_APP_URL" ]]; then
+  ENV_VARS+=",WEB_APP_URL=${WEB_APP_URL}"
+fi
+if [[ -n "$ADMIN_APP_URL" ]]; then
+  ENV_VARS+=",ADMIN_APP_URL=${ADMIN_APP_URL}"
+fi
+
 echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION)"
 gcloud run services update "$SERVICE_NAME" \
   --region="$GCP_REGION" \
   --set-secrets="$SECRET_BINDINGS" \
-  --set-env-vars="NODE_ENV=production,SEARCH_ENGINE=postgres-fts" \
+  --set-env-vars="$ENV_VARS" \
   --memory=1Gi \
   --cpu=1 \
   --startup-probe=type=http,path=/api/v1/health,port=8080,initialDelaySeconds=15,periodSeconds=10,failureThreshold=12 \

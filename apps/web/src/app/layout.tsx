@@ -13,6 +13,7 @@ import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
+import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import type { CurrentUser } from '@varnarc/types';
@@ -190,6 +191,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
+        {(() => {
+          const runtimeEnvScript = getRuntimePublicEnvScript();
+          return runtimeEnvScript ? (
+            <script dangerouslySetInnerHTML={{ __html: runtimeEnvScript }} />
+          ) : null;
+        })()}
         {fontsHref ? (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />

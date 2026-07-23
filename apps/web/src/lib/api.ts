@@ -1,5 +1,8 @@
 import { auth0 } from '@/lib/auth0';
-import { getApiBaseUrl, type ApiEnvelope, ApiError } from '@/services/api-client';
+import type { ApiEnvelope, ApiError } from '@/services/api-client';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
+
+export { getApiBaseUrl };
 
 export async function getApiAccessToken(): Promise<string | null> {
   try {
@@ -15,7 +18,12 @@ export async function getApiAccessToken(): Promise<string | null> {
 export async function apiServerFetch<T>(
   path: string,
   init: RequestInit = {},
-): Promise<{ data: T | null; error: string | null; status: number; meta?: Record<string, unknown> }> {
+): Promise<{
+  data: T | null;
+  error: string | null;
+  status: number;
+  meta?: Record<string, unknown>;
+}> {
   const token = await getApiAccessToken();
   const apiUrl = getApiBaseUrl();
 
@@ -42,7 +50,9 @@ export async function apiServerFetch<T>(
   if (!res.ok) {
     return {
       data: null,
-      error: (json as { error?: { message?: string } }).error?.message || `Request failed (${res.status})`,
+      error:
+        (json as { error?: { message?: string } }).error?.message ||
+        `Request failed (${res.status})`,
       status: res.status,
     };
   }
@@ -55,4 +65,4 @@ export async function apiServerFetch<T>(
   };
 }
 
-export { ApiError, getApiBaseUrl };
+export { ApiError };

@@ -5,8 +5,6 @@ import { usePathname } from 'next/navigation';
 import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 import { getAnalyticsSessionId } from '@/lib/analytics-client';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-
 function sendVitals(path: string, metrics: Metric[]) {
   if (!metrics.length) return;
 
@@ -26,7 +24,7 @@ function sendVitals(path: string, metrics: Metric[]) {
     })),
   };
 
-  void fetch(`${apiUrl}/analytics/vitals`, {
+  void fetch('/api/analytics/vitals', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
