@@ -39,7 +39,15 @@ esac
 gcloud config set project "$GCP_PROJECT_ID"
 
 PROJECT_NUMBER="$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')"
-RUNTIME_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+CONFIGURED_SA="$(gcloud run services describe "$SERVICE_NAME" \
+  --region="$GCP_REGION" \
+  --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || true)"
+if [[ -n "$CONFIGURED_SA" ]]; then
+  RUNTIME_SA="$CONFIGURED_SA"
+else
+  RUNTIME_SA="$DEFAULT_SA"
+fi
 
 REQUIRED_SECRETS=(AUTH0_SECRET AUTH0_CLIENT_SECRET AUTH0_DOMAIN AUTH0_AUDIENCE)
 MISSING=()
@@ -67,7 +75,7 @@ for name in AUTH0_SECRET "$CLIENT_SECRET_SECRET" AUTH0_DOMAIN AUTH0_AUDIENCE; do
   gcloud secrets add-iam-policy-binding "$name" \
     --member="serviceAccount:${RUNTIME_SA}" \
     --role="roles/secretmanager.secretAccessor" \
-    --quiet >/dev/null
+    --quiet
   echo "  OK $name"
 done
 

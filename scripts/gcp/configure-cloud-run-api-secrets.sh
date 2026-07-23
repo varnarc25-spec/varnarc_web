@@ -16,18 +16,30 @@ SERVICE_NAME="${SERVICE_NAME:-varnarc-api}"
 gcloud config set project "$GCP_PROJECT_ID"
 
 PROJECT_NUMBER="$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')"
-RUNTIME_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+CONFIGURED_SA="$(gcloud run services describe "$SERVICE_NAME" \
+  --region="$GCP_REGION" \
+  --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || true)"
+if [[ -n "$CONFIGURED_SA" ]]; then
+  RUNTIME_SA="$CONFIGURED_SA"
+else
+  RUNTIME_SA="$DEFAULT_SA"
+fi
 
 REQUIRED_SECRETS=(DATABASE_URL AUTH0_DOMAIN AUTH0_AUDIENCE)
+# Bind only secrets that exist (e.g. DATABASE_URL only until Auth0 is added).
+AVAILABLE_SECRETS=()
 MISSING=()
 for name in "${REQUIRED_SECRETS[@]}"; do
-  if ! gcloud secrets describe "$name" >/dev/null 2>&1; then
+  if gcloud secrets describe "$name" >/dev/null 2>&1; then
+    AVAILABLE_SECRETS+=("$name")
+  else
     MISSING+=("$name")
   fi
 done
 
-if ((${#MISSING[@]})); then
-  echo "Missing secrets in Secret Manager: ${MISSING[*]}"
+if ((${#AVAILABLE_SECRETS[@]} == 0)); then
+  echo "No secrets found in Secret Manager."
   echo "Create them first:"
   echo "  cp deploy/gcp/secrets.env.example deploy/gcp/secrets.env"
   echo "  # fill values, then:"
@@ -35,16 +47,26 @@ if ((${#MISSING[@]})); then
   exit 1
 fi
 
+if ((${#MISSING[@]})); then
+  echo "Note: optional secrets not in Secret Manager yet: ${MISSING[*]}"
+fi
+
 echo "Granting secretAccessor to Cloud Run runtime SA: $RUNTIME_SA"
-for name in "${REQUIRED_SECRETS[@]}"; do
+for name in "${AVAILABLE_SECRETS[@]}"; do
   gcloud secrets add-iam-policy-binding "$name" \
     --member="serviceAccount:${RUNTIME_SA}" \
     --role="roles/secretmanager.secretAccessor" \
-    --quiet >/dev/null
+    --quiet
   echo "  OK $name"
 done
 
-SECRET_BINDINGS="DATABASE_URL=DATABASE_URL:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_AUDIENCE=AUTH0_AUDIENCE:latest"
+SECRET_BINDINGS=""
+for name in "${AVAILABLE_SECRETS[@]}"; do
+  if [[ -n "$SECRET_BINDINGS" ]]; then
+    SECRET_BINDINGS+=","
+  fi
+  SECRET_BINDINGS+="${name}=${name}:latest"
+done
 
 echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION)"
 gcloud run services update "$SERVICE_NAME" \
