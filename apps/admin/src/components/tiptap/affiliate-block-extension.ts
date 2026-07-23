@@ -1,4 +1,5 @@
 import { Node } from '@tiptap/core';
+import type { Editor } from '@tiptap/react';
 
 export type AffiliateBlockAttrs = {
   label: string;
@@ -45,7 +46,7 @@ export const AffiliateBlockExtension = Node.create({
   },
 });
 
-export function insertAffiliateBlock(editor: { chain: () => { focus: () => { insertContent: (content: unknown) => { run: () => boolean } } } }) {
+export function insertAffiliateBlock(editor: Editor) {
   const label = window.prompt('Button label', 'Apply now')?.trim();
   if (!label) return;
   const url = window.prompt('Affiliate URL', 'https://')?.trim();

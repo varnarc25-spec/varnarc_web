@@ -44,8 +44,11 @@ RUN pnpm --filter @varnarc/api... build
 # Portable production bundle (resolves workspace:* deps without monorepo symlinks).
 RUN pnpm deploy --filter=@varnarc/api --prod /deploy
 # pnpm deploy copies @prisma/client but not the generated engine — generate inside /deploy.
+# Use the monorepo prisma CLI (/app); pnpm exec from /deploy triggers a broken npm auto-install.
+WORKDIR /deploy
 ENV DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build"
-RUN pnpm exec prisma generate --schema=/deploy/node_modules/@varnarc/database/prisma/schema.prisma
+RUN /app/node_modules/.bin/prisma generate \
+  --schema=./node_modules/@varnarc/database/prisma/schema.prisma
 
 FROM node:20-alpine AS runner
 RUN apk add --no-cache openssl
