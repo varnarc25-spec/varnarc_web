@@ -33,7 +33,6 @@ docker/           Container definitions
 ## Getting started
 
 ```bash
-cd project
 pnpm install
 cp .env.example .env
 
