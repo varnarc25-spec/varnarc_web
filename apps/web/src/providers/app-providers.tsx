@@ -11,13 +11,15 @@ import { UserThemeSync } from '@/providers/user-theme-sync';
 export function AppProviders({
   children,
   themeStyleBlock,
+  isAuthenticated = false,
 }: {
   children: ReactNode;
   themeStyleBlock?: string | null;
+  isAuthenticated?: boolean;
 }) {
   return (
     <ThemeProvider styleBlock={themeStyleBlock}>
-      <UserThemeSync />
+      <UserThemeSync enabled={isAuthenticated} />
       <I18nProvider>
         <QueryProvider>
           <UiStoreProvider>

@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { LocaleSwitch } from '@/components/shared/locale-switch';
 import { SearchAutocomplete } from '@/components/search/search-autocomplete';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { AuthNavLink } from '@/components/auth-nav-link';
 
 function initials(name: string): string {
   return (
@@ -118,21 +119,21 @@ export function SiteHeader({
                   )}
                   <span className="max-w-[120px] truncate">{user.displayName}</span>
                 </Link>
-                <Link
+                <AuthNavLink
                   href="/auth/logout"
                   className="hidden text-sm text-[var(--varnarc-subtle)] hover:text-[var(--varnarc-ink)] sm:inline"
                 >
                   Log out
-                </Link>
+                </AuthNavLink>
               </>
             ) : authConfigured ? (
-              <Link
+              <AuthNavLink
                 href="/auth/login"
                 className="hidden items-center gap-2 text-sm text-[var(--varnarc-subtle)] sm:inline-flex"
               >
                 <User className="h-4 w-4" />
                 Login / Sign up
-              </Link>
+              </AuthNavLink>
             ) : null}
 
             <button
@@ -192,21 +193,21 @@ export function SiteHeader({
                 </Link>
               ))}
               {!user && authConfigured ? (
-                <Link
+                <AuthNavLink
                   href="/auth/login"
                   onClick={() => setOpen(false)}
                   className="rounded-lg bg-[var(--varnarc-accent)] px-3 py-2.5 text-center text-sm font-semibold text-white"
                 >
                   Login / Sign up
-                </Link>
+                </AuthNavLink>
               ) : user ? (
-                <Link
+                <AuthNavLink
                   href="/auth/logout"
                   onClick={() => setOpen(false)}
                   className="rounded-lg border border-[var(--varnarc-border)] px-3 py-2.5 text-center text-sm font-medium text-[var(--varnarc-ink)]"
                 >
                   Log out
-                </Link>
+                </AuthNavLink>
               ) : null}
             </nav>
           </div>

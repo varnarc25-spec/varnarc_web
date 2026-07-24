@@ -6,10 +6,11 @@ import { useTheme } from 'next-themes';
 type Prefs = { theme?: string | null };
 
 /** Applies saved user theme preference from the API. */
-export function UserThemeSync() {
+export function UserThemeSync({ enabled = false }: { enabled?: boolean }) {
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     (async () => {
       try {
@@ -27,7 +28,7 @@ export function UserThemeSync() {
     return () => {
       cancelled = true;
     };
-  }, [setTheme]);
+  }, [setTheme, enabled]);
 
   useEffect(() => {
     function onPrefsSaved(e: Event) {

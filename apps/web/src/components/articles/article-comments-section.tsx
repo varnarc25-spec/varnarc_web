@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { AuthNavLink } from '@/components/auth-nav-link';
 
 export type ArticleComment = {
   id: string;
@@ -137,13 +138,17 @@ function CommentRow({
                 {displayName(comment.user)}
               </Link>
             ) : (
-              <span className="font-medium text-[var(--varnarc-ink)]">{displayName(comment.user)}</span>
+              <span className="font-medium text-[var(--varnarc-ink)]">
+                {displayName(comment.user)}
+              </span>
             )}
             <time className="text-xs text-[var(--varnarc-subtle)]">
               {new Date(comment.createdAt).toLocaleString()}
             </time>
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--varnarc-ink)]">{comment.body}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--varnarc-ink)]">
+            {comment.body}
+          </p>
           <div className="mt-2 flex flex-wrap gap-3 text-xs">
             {canComment ? (
               <button
@@ -175,7 +180,11 @@ function CommentRow({
                 placeholder="Write a reply…"
                 className="w-full rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 py-2 text-sm"
               />
-              <Button type="button" disabled={loading || !replyBody.trim()} onClick={() => void submitReply()}>
+              <Button
+                type="button"
+                disabled={loading || !replyBody.trim()}
+                onClick={() => void submitReply()}
+              >
                 {loading ? 'Posting…' : 'Post reply'}
               </Button>
             </div>
@@ -276,7 +285,10 @@ export function ArticleCommentsSection({
 
       {canComment ? (
         <div className="mt-6 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
-          <label htmlFor="article-comment" className="text-sm font-medium text-[var(--varnarc-ink)]">
+          <label
+            htmlFor="article-comment"
+            className="text-sm font-medium text-[var(--varnarc-ink)]"
+          >
             Join the discussion
           </label>
           <textarea
@@ -288,7 +300,11 @@ export function ArticleCommentsSection({
             className="mt-2 w-full rounded-md border border-[var(--varnarc-border)] bg-white px-3 py-2 text-sm"
           />
           <div className="mt-3 flex items-center gap-3">
-            <Button type="button" disabled={loading || !body.trim()} onClick={() => void submitComment()}>
+            <Button
+              type="button"
+              disabled={loading || !body.trim()}
+              onClick={() => void submitComment()}
+            >
               {loading ? 'Posting…' : 'Post comment'}
             </Button>
             {message ? <p className="text-sm text-[var(--varnarc-subtle)]">{message}</p> : null}
@@ -296,9 +312,9 @@ export function ArticleCommentsSection({
         </div>
       ) : (
         <p className="mt-4 text-sm text-[var(--varnarc-subtle)]">
-          <Link href="/auth/login" className="text-[#f97316] hover:underline">
+          <AuthNavLink href="/auth/login" className="text-[#f97316] hover:underline">
             Sign in
-          </Link>{' '}
+          </AuthNavLink>{' '}
           to leave a comment.
         </p>
       )}
@@ -316,7 +332,9 @@ export function ArticleCommentsSection({
             onDeleted={onDeleted}
           />
         ) : (
-          <p className="text-sm text-[var(--varnarc-subtle)]">No comments yet. Be the first to share your view.</p>
+          <p className="text-sm text-[var(--varnarc-subtle)]">
+            No comments yet. Be the first to share your view.
+          </p>
         )}
       </div>
     </section>

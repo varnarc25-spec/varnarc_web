@@ -207,7 +207,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         ) : null}
       </head>
       <body className={sans.className}>
-        <AppProviders themeStyleBlock={activeTheme?.cssStyleBlock}>
+        <AppProviders
+          themeStyleBlock={activeTheme?.cssStyleBlock}
+          isAuthenticated={Boolean(headerUser)}
+        >
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-[var(--varnarc-brand)] focus:px-4 focus:py-2 focus:text-white"

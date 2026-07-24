@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { ConstructionTimelinePhase } from '@/services/construction';
 import { getEstimateReportUrl } from '@/services/construction';
+import { AuthNavLink } from '@/components/auth-nav-link';
 
 export function ConstructionPlannerClient({
   templates,
@@ -12,7 +13,12 @@ export function ConstructionPlannerClient({
   unauthorized,
 }: {
   templates: Array<{ slug: string; name: string }>;
-  projects: Array<{ id: string; name: string; estimatedCost?: number | string | null; areaSqft?: number | string | null }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    estimatedCost?: number | string | null;
+    areaSqft?: number | string | null;
+  }>;
   timeline: ConstructionTimelinePhase[];
   unauthorized?: boolean;
 }) {
@@ -50,9 +56,12 @@ export function ConstructionPlannerClient({
 
         {unauthorized ? (
           <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            <Link href="/auth/login?returnTo=/construction/planner" className="font-medium underline">
+            <AuthNavLink
+              href="/auth/login?returnTo=/construction/planner"
+              className="font-medium underline"
+            >
               Sign in
-            </Link>{' '}
+            </AuthNavLink>{' '}
             to attach saved project budgets.
           </p>
         ) : projects.length ? (
@@ -77,19 +86,28 @@ export function ConstructionPlannerClient({
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Template</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              Template
+            </label>
             <select
               className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
               value={templateSlug}
               onChange={(e) => setTemplateSlug(e.target.value)}
             >
-              {(templates.length ? templates : [{ slug: 'house-construction', name: 'House construction' }]).map((t) => (
-                <option key={t.slug} value={t.slug}>{t.name}</option>
+              {(templates.length
+                ? templates
+                : [{ slug: 'house-construction', name: 'House construction' }]
+              ).map((t) => (
+                <option key={t.slug} value={t.slug}>
+                  {t.name}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Area (sq ft)</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              Area (sq ft)
+            </label>
             <input
               className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
               type="number"
@@ -99,7 +117,9 @@ export function ConstructionPlannerClient({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Quality</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              Quality
+            </label>
             <select
               className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
               value={quality}
@@ -112,9 +132,13 @@ export function ConstructionPlannerClient({
           </div>
           <div className="flex items-end">
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Saved budget</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Saved budget
+              </div>
               <div className="mt-1 font-extrabold text-[#0b1f3a]">
-                {selectedProject?.estimatedCost != null ? `₹${selectedProject.estimatedCost}` : 'Run an estimate'}
+                {selectedProject?.estimatedCost != null
+                  ? `₹${selectedProject.estimatedCost}`
+                  : 'Run an estimate'}
               </div>
             </div>
           </div>
@@ -150,7 +174,9 @@ export function ConstructionPlannerClient({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-extrabold text-[#0b1f3a]">Construction timeline</h2>
-            <p className="mt-1 text-sm text-slate-600">Typical residential build phases and durations.</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Typical residential build phases and durations.
+            </p>
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
             ~{totalWeeks} weeks
@@ -158,15 +184,22 @@ export function ConstructionPlannerClient({
         </div>
         <ol className="mt-5 space-y-3">
           {timeline.map((phase, index) => (
-            <li key={phase.label} className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
+            <li
+              key={phase.label}
+              className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
+            >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-xs font-bold text-white">
                 {index + 1}
               </span>
               <div>
                 <p className="text-sm font-semibold text-[#0b1f3a]">{phase.label}</p>
-                {phase.description ? <p className="mt-1 text-xs text-slate-600">{phase.description}</p> : null}
+                {phase.description ? (
+                  <p className="mt-1 text-xs text-slate-600">{phase.description}</p>
+                ) : null}
                 {phase.durationWeeks ? (
-                  <p className="mt-1 text-xs font-medium text-slate-500">{phase.durationWeeks} weeks</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    {phase.durationWeeks} weeks
+                  </p>
                 ) : null}
               </div>
             </li>
