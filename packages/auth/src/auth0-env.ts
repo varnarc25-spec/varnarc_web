@@ -17,9 +17,9 @@ export function getAppBaseUrl(
 ): string {
   const url =
     env.APP_BASE_URL?.trim() ||
-    env.NEXT_PUBLIC_ADMIN_URL?.trim() ||
     env.NEXT_PUBLIC_APP_URL?.trim() ||
-    'http://localhost:3001';
+    env.NEXT_PUBLIC_ADMIN_URL?.trim() ||
+    'http://localhost:3000';
   return url.replace(/\/$/, '');
 }
 
@@ -56,7 +56,6 @@ export function resolveAppBaseUrl(
   return `${proto}://${host}`;
 }
 
-/** Server-component variant using next/headers(). */
 export function resolveAppBaseUrlFromHeaders(
   headers: HeaderLike,
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
@@ -74,6 +73,17 @@ export function resolveAppBaseUrlFromHeaders(
 
   const proto = headers.get('x-forwarded-proto')?.split(',')[0]?.trim() || 'https';
   return `${proto}://${host}`;
+}
+
+/**
+ * Options for Auth0Client. Only pass appBaseUrl when APP_BASE_URL is set explicitly.
+ * Otherwise the SDK infers the callback URL from the request host (Cloud Run / custom domain).
+ */
+export function getAuth0ClientOptions(
+  env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+): { appBaseUrl?: string } {
+  const appBaseUrl = env.APP_BASE_URL?.trim();
+  return appBaseUrl ? { appBaseUrl } : {};
 }
 
 export function appBaseUrlMatchesHost(

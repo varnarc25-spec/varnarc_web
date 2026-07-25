@@ -5,6 +5,7 @@ export {
   getAppBaseUrl,
   resolveAppBaseUrl,
   resolveAppBaseUrlFromHeaders,
+  getAuth0ClientOptions,
   appBaseUrlMatchesHost,
   AUTH0_CALLBACK_PATH,
   AUTH0_LOGIN_PATH,
