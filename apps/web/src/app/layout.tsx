@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { headers } from 'next/headers';
 import { DM_Sans, Fraunces } from 'next/font/google';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
@@ -13,7 +14,7 @@ import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
-import { isAuth0Configured } from '@varnarc/auth';
+import { isAuth0Configured, appBaseUrlMatchesHost } from '@varnarc/auth';
 import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
@@ -103,7 +104,17 @@ export type HeaderUser = {
 async function loadHeaderUser(): Promise<HeaderUser | null> {
   if (!isAuth0Configured()) return null;
 
-  const session = await auth0.getSession();
+  const host = (await headers()).get('host');
+  if (!host || !appBaseUrlMatchesHost(host)) return null;
+
+  let session;
+  try {
+    session = await auth0.getSession();
+  } catch (error) {
+    console.error('[auth] getSession failed; treating as logged out', error);
+    return null;
+  }
+
   if (!session?.user) return null;
 
   const sessionUser = session.user as {

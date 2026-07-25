@@ -23,6 +23,20 @@ export function getAppBaseUrl(
   return url.replace(/\/$/, '');
 }
 
+/** True when the incoming Host matches APP_BASE_URL (Auth0 cookies/URLs are host-bound). */
+export function appBaseUrlMatchesHost(
+  host: string,
+  env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+): boolean {
+  const normalizedHost = host.trim().toLowerCase();
+  if (!normalizedHost) return false;
+  try {
+    return new URL(getAppBaseUrl(env)).host.toLowerCase() === normalizedHost;
+  } catch {
+    return false;
+  }
+}
+
 export const AUTH0_CALLBACK_PATH = '/auth/callback';
 export const AUTH0_LOGIN_PATH = '/auth/login';
 export const AUTH0_LOGOUT_PATH = '/auth/logout';

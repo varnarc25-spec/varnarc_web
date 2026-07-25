@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isAuth0Configured } from '@varnarc/auth';
+import { isAuth0Configured, appBaseUrlMatchesHost } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 import { getMaintenanceStatus } from './lib/maintenance';
 import { resolveSeoRedirect } from './lib/seo-redirects';
@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    if (!isAuth0Configured()) {
+    if (!isAuth0Configured() || !appBaseUrlMatchesHost(request.nextUrl.host)) {
       return NextResponse.next();
     }
 

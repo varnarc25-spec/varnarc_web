@@ -3,6 +3,7 @@ import type { RoleSlug } from '@varnarc/types';
 export {
   isAuth0Configured,
   getAppBaseUrl,
+  appBaseUrlMatchesHost,
   AUTH0_CALLBACK_PATH,
   AUTH0_LOGIN_PATH,
   AUTH0_LOGOUT_PATH,
