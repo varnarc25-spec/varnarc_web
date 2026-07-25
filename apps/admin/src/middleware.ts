@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { getAppBaseUrl, isAuth0Configured } from '@varnarc/auth';
+import { isAuth0Configured, resolveAppBaseUrl } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 
 const PUBLIC = ['/auth'];
@@ -9,8 +9,8 @@ function isPublicPath(pathname: string) {
   return PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-function logoutRedirect() {
-  const base = getAppBaseUrl();
+function logoutRedirect(request: NextRequest) {
+  const base = resolveAppBaseUrl(request);
   const logout = new URL(`${base}/auth/logout`);
   logout.searchParams.set('returnTo', `${base}/auth/login`);
   return NextResponse.redirect(logout);
@@ -25,12 +25,13 @@ function authNotConfiguredResponse() {
   <p>The <code>varnarc-admin</code> Cloud Run service is missing Auth0 secrets or env vars.</p>
   <p>Run:</p>
   <pre style="background:#f4f4f5;padding:1rem;overflow:auto">export GCP_PROJECT_ID=myweb-503314
-export APP_BASE_URL=https://varnarc-admin-414895350436.us-central1.run.app
-export API_URL=https://varnarc-api-414895350436.us-central1.run.app/api/v1
+export GCP_REGION=us-central1
+export APP_BASE_URL=https://admin.varnarc.com
+export API_URL=https://api.varnarc.com/api/v1
 export AUTH0_CLIENT_ID=&lt;your-admin-auth0-client-id&gt;
 ./scripts/gcp/configure-cloud-run-frontend.sh admin</pre>
-  <p>Then add your admin callback URL to Auth0 Allowed Callback URLs
-  (e.g. <code>https://varnarc-admin-….run.app/auth/callback</code>).</p>
+  <p>Then add to Auth0 Allowed Callback URLs:
+  <code>https://admin.varnarc.com/auth/callback</code></p>
 </body>
 </html>`;
   return new NextResponse(html, {
@@ -66,7 +67,7 @@ export async function middleware(request: NextRequest) {
 
     const session = await auth0.getSession(request);
     if (!session?.user) {
-      const base = getAppBaseUrl();
+      const base = resolveAppBaseUrl(request);
       const login = new URL(`${base}/auth/login`);
       const path = request.nextUrl.pathname + request.nextUrl.search;
       login.searchParams.set('returnTo', `${base}${path}`);
@@ -79,7 +80,7 @@ export async function middleware(request: NextRequest) {
         ...(audience ? { audience } : {}),
       });
     } catch {
-      return logoutRedirect();
+      return logoutRedirect(request);
     }
 
     authResponse.headers.set('x-middleware-pathname', pathname);
