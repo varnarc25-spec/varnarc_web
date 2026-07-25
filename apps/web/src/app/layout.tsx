@@ -101,6 +101,8 @@ export type HeaderUser = {
 };
 
 async function loadHeaderUser(): Promise<HeaderUser | null> {
+  if (!isAuth0Configured()) return null;
+
   const session = await auth0.getSession();
   if (!session?.user) return null;
 

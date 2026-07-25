@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { isAuth0Configured } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 import { getMaintenanceStatus } from './lib/maintenance';
 import { resolveSeoRedirect } from './lib/seo-redirects';
@@ -46,6 +47,10 @@ export async function middleware(request: NextRequest) {
       }
     }
 
+    if (!isAuth0Configured()) {
+      return NextResponse.next();
+    }
+
     const authResponse = await auth0.middleware(request);
 
     try {
@@ -63,7 +68,8 @@ export async function middleware(request: NextRequest) {
     return authResponse;
   } catch (err) {
     console.error('[middleware] Fatal auth error:', err);
-    throw err;
+    // Public site must stay reachable when Auth0 is misconfigured on Cloud Run.
+    return NextResponse.next();
   }
 }
 
