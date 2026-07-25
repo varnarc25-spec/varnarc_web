@@ -2,11 +2,11 @@
 
 ## Modes
 
-| Setup | Invalidation channel | When to use |
-|-------|---------------------|-------------|
-| **Global Redis** (Upstash Global) | Redis pub/sub `varnarc:cache:invalidate` | Simplest multi-region |
-| **Regional Redis** | GCP Pub/Sub topic + per-region subscription | Data residency / regional Redis |
-| **Single region** | Local clear only | Default dev/staging |
+| Setup                             | Invalidation channel                        | When to use                     |
+| --------------------------------- | ------------------------------------------- | ------------------------------- |
+| **Global Redis** (Upstash Global) | Redis pub/sub `varnarc:cache:invalidate`    | Simplest multi-region           |
+| **Regional Redis**                | GCP Pub/Sub topic + per-region subscription | Data residency / regional Redis |
+| **Single region**                 | Local clear only                            | Default dev/staging             |
 
 ## Bootstrap Pub/Sub
 
@@ -23,7 +23,7 @@ GCP_PROJECT_ID=your-project
 CACHE_PUBSUB_TOPIC=varnarc-cache-invalidate
 CACHE_PUBSUB_SUBSCRIPTION=varnarc-cache-invalidate-sub
 CACHE_INVALIDATION_SUBSCRIBE=true        # set false on one-shot workers if needed
-APP_REGION=asia-southeast1               # optional metadata
+APP_REGION=us-central1               # optional metadata
 ```
 
 ## How it works

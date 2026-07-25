@@ -4,15 +4,15 @@
 #
 # Usage (admin):
 #   export GCP_PROJECT_ID=myweb-503314
-#   export GCP_REGION=asia-south1
-#   export APP_BASE_URL=https://varnarc-admin-414895350436.asia-south1.run.app
-#   export API_URL=https://varnarc-api-XXXX.asia-south1.run.app/api/v1
+#   export GCP_REGION=us-central1
+#   export APP_BASE_URL=https://varnarc-admin-414895350436.us-central1.run.app
+#   export API_URL=https://varnarc-api-XXXX.us-central1.run.app/api/v1
 #   export AUTH0_CLIENT_ID=your-admin-auth0-client-id
 #   ./scripts/gcp/configure-cloud-run-frontend.sh admin
 #
 # Usage (web):
-#   export APP_BASE_URL=https://varnarc-web-XXXX.asia-south1.run.app
-#   export API_URL=https://varnarc-api-XXXX.asia-south1.run.app/api/v1
+#   export APP_BASE_URL=https://varnarc-web-XXXX.us-central1.run.app
+#   export API_URL=https://varnarc-api-XXXX.us-central1.run.app/api/v1
 #   export AUTH0_CLIENT_ID=your-web-auth0-client-id
 #   ./scripts/gcp/configure-cloud-run-frontend.sh web
 
@@ -24,7 +24,7 @@ SERVICE="${1:?Usage: $0 admin|web}"
 : "${API_URL:?Set API_URL to the API base (https://.../api/v1)}"
 : "${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID for this Auth0 Regular Web Application}"
 
-GCP_REGION="${GCP_REGION:-asia-south1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 CLIENT_SECRET_SECRET="${CLIENT_SECRET_SECRET:-AUTH0_CLIENT_SECRET}"
 
 case "$SERVICE" in

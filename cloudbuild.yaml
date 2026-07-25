@@ -6,12 +6,12 @@
 #
 # Manual build:
 #   gcloud builds submit --config cloudbuild.yaml \
-#     --substitutions _REGION=asia-southeast1
+#     --substitutions _REGION=us-central1
 
 substitutions:
   _SERVICE_NAME: web
   _DOCKERFILE: Dockerfile
-  _REGION: asia-southeast1
+  _REGION: us-central1
 
 steps:
   - name: gcr.io/cloud-builders/docker

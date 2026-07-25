@@ -3,7 +3,7 @@ set -euo pipefail
 
 SERVICE="${1:?Usage: $0 api|web|admin}"
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-GCP_REGION="${GCP_REGION:-asia-southeast1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 SERVICE_SUFFIX="${SERVICE_SUFFIX:-}"
 AR_REPO="${AR_REPO:-varnarc}"

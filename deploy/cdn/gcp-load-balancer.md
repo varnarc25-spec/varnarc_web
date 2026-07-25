@@ -17,7 +17,7 @@ Internet → Global HTTPS LB → Cloud CDN (web only) → Serverless NEG → Clo
 
 ```bash
 gcloud compute network-endpoint-groups create varnarc-web-neg \
-  --region=asia-southeast1 \
+  --region=us-central1 \
   --network-endpoint-type=serverless \
   --cloud-run-service=varnarc-web
 ```

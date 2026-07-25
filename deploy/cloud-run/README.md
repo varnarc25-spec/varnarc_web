@@ -2,20 +2,20 @@
 
 Deploy three services from the monorepo Docker images:
 
-| Service | Image | Port | Dockerfile |
-|---------|-------|------|------------|
-| `varnarc-api` | API | 4000 | `docker/Dockerfile.api` |
-| `varnarc-web` | Public site | 3000 | `docker/Dockerfile.web` |
+| Service         | Image        | Port | Dockerfile                |
+| --------------- | ------------ | ---- | ------------------------- |
+| `varnarc-api`   | API          | 4000 | `docker/Dockerfile.api`   |
+| `varnarc-web`   | Public site  | 3000 | `docker/Dockerfile.web`   |
 | `varnarc-admin` | Admin portal | 3001 | `docker/Dockerfile.admin` |
 
 ## Deploy from Source (Cloud Run console / GitHub)
 
 ### Why every Git push shows the same PORT=8080 error
 
-| What happens on each push | What does NOT happen |
-|---------------------------|----------------------|
-| Cloud Build builds a new Docker image | Secrets are **not** added from Git |
-| Cloud Run deploys that image as a new revision | `DATABASE_URL` / Auth0 are **not** in the repo |
+| What happens on each push                         | What does NOT happen                               |
+| ------------------------------------------------- | -------------------------------------------------- |
+| Cloud Build builds a new Docker image             | Secrets are **not** added from Git                 |
+| Cloud Run deploys that image as a new revision    | `DATABASE_URL` / Auth0 are **not** in the repo     |
 | Container must bind to `PORT=8080` to pass deploy | Pushing code does **not** configure Secret Manager |
 
 **Git deploy only updates the image.** Secrets must be configured **once** on the Cloud Run service (console or `configure-cloud-run-api-secrets.sh`).
@@ -28,12 +28,12 @@ If Cloud Build logs show `Sending build context to Docker daemon ~18kB`, Cloud R
 
 ### Recommended Cloud Run settings
 
-| Setting | Value |
-|---------|-------|
-| **Repository** | `varnarc25-spec/varnarc_web` |
-| **Source location / Dockerfile** | `Dockerfile` |
-| **Build context directory** | `/` (repository root) |
-| **Port** | `3000` |
+| Setting                          | Value                        |
+| -------------------------------- | ---------------------------- |
+| **Repository**                   | `varnarc25-spec/varnarc_web` |
+| **Source location / Dockerfile** | `Dockerfile`                 |
+| **Build context directory**      | `/` (repository root)        |
+| **Port**                         | `3000`                       |
 
 ### If you must keep `docker/Dockerfile.web`
 
@@ -46,35 +46,35 @@ For **api** or **admin** via Cloud Build trigger, use `cloudbuild.yaml` with sub
 ```bash
 # API
 gcloud builds submit --config cloudbuild.yaml \
-  --substitutions _SERVICE_NAME=api,_DOCKERFILE=docker/Dockerfile.api,_REGION=asia-southeast1
+  --substitutions _SERVICE_NAME=api,_DOCKERFILE=docker/Dockerfile.api,_REGION=us-central1
 
 # Admin
 gcloud builds submit --config cloudbuild.yaml \
-  --substitutions _SERVICE_NAME=admin,_DOCKERFILE=docker/Dockerfile.admin,_REGION=asia-southeast1
+  --substitutions _SERVICE_NAME=admin,_DOCKERFILE=docker/Dockerfile.admin,_REGION=us-central1
 ```
 
 ### API service (Cloud Run source deploy)
 
 Cloud Run injects `PORT=8080` by default. The API listens on `PORT` first (then `API_PORT`, then `4000`).
 
-| Setting | Value |
-|---------|-------|
+| Setting            | Value                                                                   |
+| ------------------ | ----------------------------------------------------------------------- |
 | **Container port** | `8080` (default) or `4000` if you set `API_PORT=4000` and `--port 4000` |
-| **Dockerfile** | `docker/Dockerfile.api` |
+| **Dockerfile**     | `docker/Dockerfile.api`                                                 |
 
 If you use port `4000`, set **Container port** to `4000` in Cloud Run and add env `API_PORT=4000`.
 
 ### API startup failure after successful build
 
-If the image builds but deploy fails with *"failed to start and listen on PORT=8080"*, the container is usually **crashing before `listen()`** — not a port bug.
+If the image builds but deploy fails with _"failed to start and listen on PORT=8080"_, the container is usually **crashing before `listen()`** — not a port bug.
 
 In production the API **requires** these env vars (see `apps/api/src/config/startup-env.ts`):
 
-| Variable | Required | Notes |
-|----------|----------|-------|
-| `DATABASE_URL` | Yes | Neon PostgreSQL connection string |
-| `AUTH0_DOMAIN` | Yes (prod) | Auth0 tenant domain |
-| `AUTH0_AUDIENCE` | Yes (prod) | API audience identifier |
+| Variable         | Required           | Notes                                       |
+| ---------------- | ------------------ | ------------------------------------------- |
+| `DATABASE_URL`   | Yes                | Neon PostgreSQL connection string           |
+| `AUTH0_DOMAIN`   | Yes (prod)         | Auth0 tenant domain                         |
+| `AUTH0_AUDIENCE` | Yes (prod)         | API audience identifier                     |
 | `OPENSEARCH_URL` | Yes (prod default) | Unless you set `SEARCH_ENGINE=postgres-fts` |
 
 **Minimum to get API running without OpenSearch:**
@@ -82,13 +82,13 @@ In production the API **requires** these env vars (see `apps/api/src/config/star
 1. Create secrets in Secret Manager (`./deploy/gcp/setup-secrets.sh`)
 2. In Cloud Run → **varnarc-api** → **Edit & deploy** → **Variables & secrets**:
 
-| Type | Name | Value |
-|------|------|-------|
-| Secret | `DATABASE_URL` | `DATABASE_URL:latest` |
-| Secret | `AUTH0_DOMAIN` | `AUTH0_DOMAIN:latest` |
-| Secret | `AUTH0_AUDIENCE` | `AUTH0_AUDIENCE:latest` |
-| Env var | `NODE_ENV` | `production` |
-| Env var | `SEARCH_ENGINE` | `postgres-fts` |
+| Type    | Name             | Value                   |
+| ------- | ---------------- | ----------------------- |
+| Secret  | `DATABASE_URL`   | `DATABASE_URL:latest`   |
+| Secret  | `AUTH0_DOMAIN`   | `AUTH0_DOMAIN:latest`   |
+| Secret  | `AUTH0_AUDIENCE` | `AUTH0_AUDIENCE:latest` |
+| Env var | `NODE_ENV`       | `production`            |
+| Env var | `SEARCH_ENGINE`  | `postgres-fts`          |
 
 3. Grant the Cloud Run runtime service account `roles/secretmanager.secretAccessor` on each secret.
 
@@ -96,7 +96,7 @@ In production the API **requires** these env vars (see `apps/api/src/config/star
 
 ```bash
 export PROJECT_ID=myweb-503314
-export REGION=asia-south1
+export REGION=us-central1
 export RUNTIME_SA="$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')-compute@developer.gserviceaccount.com"
 
 for s in DATABASE_URL AUTH0_DOMAIN AUTH0_AUDIENCE; do
@@ -131,7 +131,7 @@ Look for `[startup] Fatal error:` or `Missing required environment variables`.
 
 ```bash
 export GCP_PROJECT_ID=your-project
-export GCP_REGION=asia-southeast1
+export GCP_REGION=us-central1
 export REGISTRY="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/varnarc"
 
 gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev"
@@ -201,9 +201,9 @@ See `deploy/gcp/README.md` for full GCP setup (IAM, Secret Manager, Workload Ide
 
 ## Environments
 
-| Environment | Branch | Cloud Run suffix | Approval |
-|-------------|--------|------------------|----------|
-| Staging | `develop` | `-staging` | Automatic on push |
-| Production | `main` | (none) | GitHub environment protection |
+| Environment | Branch    | Cloud Run suffix | Approval                      |
+| ----------- | --------- | ---------------- | ----------------------------- |
+| Staging     | `develop` | `-staging`       | Automatic on push             |
+| Production  | `main`    | (none)           | GitHub environment protection |
 
 See `deploy/environments.md` for variable matrix.

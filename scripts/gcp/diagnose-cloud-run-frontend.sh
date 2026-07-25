@@ -3,7 +3,7 @@
 #
 # Usage:
 #   export GCP_PROJECT_ID=myweb-503314
-#   export GCP_REGION=asia-south1
+#   export GCP_REGION=us-central1
 #   ./scripts/gcp/diagnose-cloud-run-frontend.sh admin
 #   ./scripts/gcp/diagnose-cloud-run-frontend.sh web
 
@@ -11,7 +11,7 @@ set -euo pipefail
 
 SERVICE="${1:?Usage: $0 admin|web}"
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-GCP_REGION="${GCP_REGION:-asia-south1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 
 case "$SERVICE" in
   admin) SERVICE_NAME="varnarc-admin" ;;

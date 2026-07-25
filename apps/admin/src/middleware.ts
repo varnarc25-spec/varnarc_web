@@ -25,8 +25,8 @@ function authNotConfiguredResponse() {
   <p>The <code>varnarc-admin</code> Cloud Run service is missing Auth0 secrets or env vars.</p>
   <p>Run:</p>
   <pre style="background:#f4f4f5;padding:1rem;overflow:auto">export GCP_PROJECT_ID=myweb-503314
-export APP_BASE_URL=https://varnarc-admin-414895350436.asia-south1.run.app
-export API_URL=https://varnarc-api-414895350436.asia-south1.run.app/api/v1
+export APP_BASE_URL=https://varnarc-admin-414895350436.us-central1.run.app
+export API_URL=https://varnarc-api-414895350436.us-central1.run.app/api/v1
 export AUTH0_CLIENT_ID=&lt;your-admin-auth0-client-id&gt;
 ./scripts/gcp/configure-cloud-run-frontend.sh admin</pre>
   <p>Then add your admin callback URL to Auth0 Allowed Callback URLs

@@ -10,7 +10,7 @@
 set -euo pipefail
 
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-GCP_REGION="${GCP_REGION:-asia-south1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 SERVICE_NAME="${SERVICE_NAME:-varnarc-api}"
 
 if (($# < 1)); then

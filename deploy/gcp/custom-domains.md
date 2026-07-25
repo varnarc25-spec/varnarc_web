@@ -4,11 +4,11 @@ Cloud Run provides **managed SSL** when you map a custom domain.
 
 ## Domain layout (example)
 
-| Host | Service |
-|------|---------|
-| `varnarc.com` | `varnarc-web` |
-| `www.varnarc.com` | `varnarc-web` |
-| `api.varnarc.com` | `varnarc-api` |
+| Host                | Service         |
+| ------------------- | --------------- |
+| `varnarc.com`       | `varnarc-web`   |
+| `www.varnarc.com`   | `varnarc-web`   |
+| `api.varnarc.com`   | `varnarc-api`   |
 | `admin.varnarc.com` | `varnarc-admin` |
 
 ## Map domain (Cloud Run)
@@ -17,7 +17,7 @@ Cloud Run provides **managed SSL** when you map a custom domain.
 gcloud run domain-mappings create \
   --service varnarc-api \
   --domain api.varnarc.com \
-  --region asia-southeast1
+  --region us-central1
 ```
 
 Repeat for web and admin. Follow the DNS records shown in the command output.

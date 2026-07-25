@@ -3,7 +3,7 @@
 set -euo pipefail
 
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-GCP_REGION="${GCP_REGION:-asia-southeast1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 AR_REPO="${AR_REPO:-varnarc}"
 
 echo "Project: $GCP_PROJECT_ID  Region: $GCP_REGION"

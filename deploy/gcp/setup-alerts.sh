@@ -4,7 +4,7 @@ set -euo pipefail
 
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
 
-GCP_REGION="${GCP_REGION:-asia-southeast1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 API_HOST="${API_HOST:-api.example.com}"
 WEB_HOST="${WEB_HOST:-www.example.com}"
 ALERT_EMAIL="${ALERT_EMAIL:-}"

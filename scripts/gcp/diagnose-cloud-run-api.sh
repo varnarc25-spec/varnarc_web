@@ -3,13 +3,13 @@
 #
 # Usage:
 #   export GCP_PROJECT_ID=myweb-503314
-#   export GCP_REGION=asia-south1
+#   export GCP_REGION=us-central1
 #   ./scripts/gcp/diagnose-cloud-run-api.sh
 
 set -euo pipefail
 
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-GCP_REGION="${GCP_REGION:-asia-south1}"
+GCP_REGION="${GCP_REGION:-us-central1}"
 SERVICE_NAME="${SERVICE_NAME:-varnarc-api}"
 
 gcloud config set project "$GCP_PROJECT_ID" >/dev/null
