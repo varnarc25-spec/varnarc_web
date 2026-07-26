@@ -14,7 +14,7 @@ import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
-import { isAuth0Configured, appBaseUrlMatchesHost } from '@varnarc/auth';
+import { isAuth0Configured, isAuthUiEnabled, appBaseUrlMatchesHost } from '@varnarc/auth';
 import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
@@ -233,7 +233,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <div className="flex min-h-screen w-full flex-col">
             <SiteHeader
               user={headerUser}
-              authConfigured={isAuth0Configured()}
+              authConfigured={isAuthUiEnabled()}
               navItems={nav}
               siteName={branding.siteName}
               tagline={branding.siteTagline}

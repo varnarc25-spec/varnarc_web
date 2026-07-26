@@ -22,5 +22,11 @@ export function getApiBaseUrl(): string {
     return window.__VARNARC_PUBLIC_ENV__.apiUrl.replace(/\/$/, '');
   }
   const fromEnv = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL;
-  return (fromEnv ?? 'http://localhost:4000/api/v1').replace(/\/$/, '');
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, '');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://api.varnarc.com/api/v1';
+  }
+  return 'http://localhost:4000/api/v1';
 }

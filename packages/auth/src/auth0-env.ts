@@ -11,6 +11,15 @@ export function isAuth0Configured(
   );
 }
 
+/** Show login/signup in the header when Auth0 is configured or explicitly enabled on Cloud Run. */
+export function isAuthUiEnabled(
+  env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+): boolean {
+  if (isAuth0Configured(env)) return true;
+  if (env.NEXT_PUBLIC_AUTH0_CONFIGURED === 'true') return true;
+  return Boolean(env.AUTH0_CLIENT_ID?.trim() && env.AUTH0_DOMAIN?.trim());
+}
+
 /** Public app URL — prefer APP_BASE_URL on Cloud Run (request.origin may be 0.0.0.0:8080). */
 export function getAppBaseUrl(
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,

@@ -2,6 +2,7 @@ import type { RoleSlug } from '@varnarc/types';
 
 export {
   isAuth0Configured,
+  isAuthUiEnabled,
   getAppBaseUrl,
   resolveAppBaseUrl,
   resolveAppBaseUrlFromHeaders,
