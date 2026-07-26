@@ -129,7 +129,7 @@ export function SiteHeader({
             ) : authConfigured ? (
               <AuthNavLink
                 href="/auth/login"
-                className="hidden items-center gap-2 text-sm text-[var(--varnarc-subtle)] sm:inline-flex"
+                className="inline-flex items-center gap-2 text-sm text-[var(--varnarc-subtle)] hover:text-[var(--varnarc-ink)]"
               >
                 <User className="h-4 w-4" />
                 Login / Sign up

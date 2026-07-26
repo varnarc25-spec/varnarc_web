@@ -3,11 +3,18 @@
  * No secrets — server packages own Auth0Client instances.
  */
 
+/** OAuth client id — runtime env or build-time public fallback. */
+export function getAuth0ClientId(
+  env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+): string | undefined {
+  return env.AUTH0_CLIENT_ID?.trim() || env.NEXT_PUBLIC_AUTH0_CLIENT_ID?.trim() || undefined;
+}
+
 export function isAuth0Configured(
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
 ): boolean {
   return Boolean(
-    env.AUTH0_DOMAIN && env.AUTH0_CLIENT_ID && env.AUTH0_CLIENT_SECRET && env.AUTH0_SECRET,
+    env.AUTH0_DOMAIN && getAuth0ClientId(env) && env.AUTH0_CLIENT_SECRET && env.AUTH0_SECRET,
   );
 }
 
@@ -17,7 +24,10 @@ export function isAuthUiEnabled(
 ): boolean {
   if (isAuth0Configured(env)) return true;
   if (env.NEXT_PUBLIC_AUTH0_CONFIGURED === 'true') return true;
-  return Boolean(env.AUTH0_CLIENT_ID?.trim() && env.AUTH0_DOMAIN?.trim());
+  if (env.AUTH0_CLIENT_ID?.trim() && env.AUTH0_DOMAIN?.trim()) return true;
+  // Build-time public client id (safe to expose) when runtime secrets are mounted but CLIENT_ID env is missing.
+  if (env.NEXT_PUBLIC_AUTH0_CLIENT_ID?.trim() && env.AUTH0_DOMAIN?.trim()) return true;
+  return false;
 }
 
 /** Public app URL — prefer APP_BASE_URL on Cloud Run (request.origin may be 0.0.0.0:8080). */
@@ -101,8 +111,18 @@ export function appBaseUrlMatchesHost(
 ): boolean {
   const normalizedHost = host.trim().toLowerCase();
   if (!normalizedHost) return false;
+  if (normalizedHost.startsWith('0.0.0.0') || normalizedHost.startsWith('127.0.0.1')) {
+    return false;
+  }
+
+  const fromEnv = getAppBaseUrl(env);
+  if (isLocalAppBase(fromEnv)) {
+    // APP_BASE_URL unset on Cloud Run — accept the request host (custom domain or *.run.app).
+    return true;
+  }
+
   try {
-    return new URL(getAppBaseUrl(env)).host.toLowerCase() === normalizedHost;
+    return new URL(fromEnv).host.toLowerCase() === normalizedHost;
   } catch {
     return false;
   }

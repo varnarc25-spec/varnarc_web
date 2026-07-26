@@ -26,13 +26,9 @@ case "$SERVICE" in
   web)
     PORT=3000
     WANT_SECRETS=(AUTH0_SECRET AUTH0_CLIENT_SECRET AUTH0_DOMAIN AUTH0_AUDIENCE)
-    ENV_VARS="NODE_ENV=production,PORT=3000"
-    if [[ -n "${APP_BASE_URL:-}" ]]; then
-      ENV_VARS="${ENV_VARS},APP_BASE_URL=${APP_BASE_URL}"
-    fi
-    if [[ -n "${API_URL:-}" ]]; then
-      ENV_VARS="${ENV_VARS},API_URL=${API_URL}"
-    fi
+    APP_BASE_URL="${APP_BASE_URL:-https://varnarc.com}"
+    API_URL="${API_URL:-https://api.varnarc.com/api/v1}"
+    ENV_VARS="NODE_ENV=production,PORT=3000,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL}"
     if [[ -n "${AUTH0_CLIENT_ID:-}" ]]; then
       ENV_VARS="${ENV_VARS},AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
     fi
@@ -42,13 +38,9 @@ case "$SERVICE" in
   admin)
     PORT=3001
     WANT_SECRETS=(AUTH0_SECRET AUTH0_CLIENT_SECRET AUTH0_DOMAIN AUTH0_AUDIENCE)
-    ENV_VARS="NODE_ENV=production,PORT=3001"
-    if [[ -n "${APP_BASE_URL:-}" ]]; then
-      ENV_VARS="${ENV_VARS},APP_BASE_URL=${APP_BASE_URL}"
-    fi
-    if [[ -n "${API_URL:-}" ]]; then
-      ENV_VARS="${ENV_VARS},API_URL=${API_URL}"
-    fi
+    APP_BASE_URL="${APP_BASE_URL:-https://admin.varnarc.com}"
+    API_URL="${API_URL:-https://api.varnarc.com/api/v1}"
+    ENV_VARS="NODE_ENV=production,PORT=3001,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL}"
     if [[ -n "${AUTH0_CLIENT_ID:-}" ]]; then
       ENV_VARS="${ENV_VARS},AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
     fi
