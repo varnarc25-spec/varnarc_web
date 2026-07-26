@@ -5,7 +5,8 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'
 
 export async function GET(request: Request) {
   const token = await getApiAccessToken();
-  if (!token) return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  if (!token)
+    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
 
   const qs = new URL(request.url).searchParams.toString();
   const res = await fetch(`${apiUrl}/users/me/reading-history${qs ? `?${qs}` : ''}`, {
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const token = await getApiAccessToken();
-  if (!token) return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  if (!token) return new NextResponse(null, { status: 204 });
 
   const body = await request.text();
   const res = await fetch(`${apiUrl}/users/me/reading-history`, {
@@ -34,7 +35,8 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   const token = await getApiAccessToken();
-  if (!token) return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  if (!token)
+    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
 
   const res = await fetch(`${apiUrl}/users/me/reading-history`, {
     method: 'DELETE',

@@ -9,6 +9,7 @@ export { Label } from './label';
 export { Alert } from './alert';
 export { Separator } from './separator';
 export { Skeleton } from './skeleton';
+export { Spinner, PageLoading } from './spinner';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Dialog, DialogHeader, DialogTitle, DialogDescription } from './dialog';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './table';

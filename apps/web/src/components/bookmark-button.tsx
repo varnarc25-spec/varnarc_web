@@ -31,7 +31,7 @@ export function BookmarkButton({
       try {
         const qs = new URLSearchParams({ entityType, entityId, limit: '1' });
         const res = await fetch(`/api/user/bookmarks?${qs}`);
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 204) {
           if (!cancelled) setAuthRequired(true);
           return;
         }
@@ -129,7 +129,12 @@ export function BookmarkButton({
       <div className="flex flex-wrap items-center gap-2">
         {bookmarkId ? (
           <>
-            <Button type="button" variant="secondary" disabled={saving} onClick={() => void remove()}>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={saving}
+              onClick={() => void remove()}
+            >
               {saving ? '…' : 'Saved'}
             </Button>
             {showCollection ? (

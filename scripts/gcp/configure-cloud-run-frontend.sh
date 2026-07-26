@@ -20,21 +20,27 @@ set -euo pipefail
 
 SERVICE="${1:?Usage: $0 admin|web}"
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
-: "${APP_BASE_URL:?Set APP_BASE_URL to the Cloud Run service URL (https://...)}"
-: "${API_URL:?Set API_URL to the API base (https://.../api/v1)}"
-: "${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID for this Auth0 Regular Web Application}"
 
 GCP_REGION="${GCP_REGION:-us-central1}"
 CLIENT_SECRET_SECRET="${CLIENT_SECRET_SECRET:-AUTH0_CLIENT_SECRET}"
+API_URL="${API_URL:-https://api.varnarc.com/api/v1}"
 
 case "$SERVICE" in
-  admin) SERVICE_NAME="varnarc-admin" ;;
-  web) SERVICE_NAME="varnarc-web" ;;
+  admin)
+    SERVICE_NAME="varnarc-admin"
+    APP_BASE_URL="${APP_BASE_URL:-https://admin.varnarc.com}"
+    ;;
+  web)
+    SERVICE_NAME="varnarc-web"
+    APP_BASE_URL="${APP_BASE_URL:-https://varnarc.com}"
+    ;;
   *)
     echo "Unknown service: $SERVICE (use admin or web)"
     exit 1
     ;;
 esac
+
+: "${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID for this Auth0 Regular Web Application}"
 
 gcloud config set project "$GCP_PROJECT_ID"
 
@@ -81,9 +87,37 @@ done
 
 SECRET_BINDINGS="AUTH0_SECRET=AUTH0_SECRET:latest,AUTH0_CLIENT_SECRET=${CLIENT_SECRET_SECRET}:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_AUDIENCE=AUTH0_AUDIENCE:latest"
 
-ENV_VARS="NODE_ENV=production,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL},AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
+ENV_VARS="NODE_ENV=production,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
+
+# AUTH0_CLIENT_ID may already be a Secret Manager binding on Cloud Run — do not mix types.
+if gcloud secrets describe AUTH0_CLIENT_ID >/dev/null 2>&1; then
+  echo "Using AUTH0_CLIENT_ID from Secret Manager"
+  SECRET_BINDINGS="${SECRET_BINDINGS},AUTH0_CLIENT_ID=AUTH0_CLIENT_ID:latest"
+  gcloud secrets add-iam-policy-binding AUTH0_CLIENT_ID \
+    --member="serviceAccount:${RUNTIME_SA}" \
+    --role="roles/secretmanager.secretAccessor" \
+    --quiet
+  echo "  OK AUTH0_CLIENT_ID"
+else
+  ENV_VARS="${ENV_VARS},AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}"
+fi
 
 echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION)"
+
+# When switching AUTH0_CLIENT_ID from secret → env var, remove the secret binding first.
+if ! gcloud secrets describe AUTH0_CLIENT_ID >/dev/null 2>&1; then
+  CURRENT_CLIENT_ID_TYPE="$(gcloud run services describe "$SERVICE_NAME" \
+    --region="$GCP_REGION" \
+    --format='value(spec.template.spec.containers[0].env.filter(name=AUTH0_CLIENT_ID).valueFrom.secretKeyRef.name)' 2>/dev/null || true)"
+  if [[ -n "$CURRENT_CLIENT_ID_TYPE" ]]; then
+    echo "Removing secret binding for AUTH0_CLIENT_ID (will use env var instead)"
+    gcloud run services update "$SERVICE_NAME" \
+      --region="$GCP_REGION" \
+      --remove-secrets=AUTH0_CLIENT_ID \
+      --quiet
+  fi
+fi
+
 gcloud run services update "$SERVICE_NAME" \
   --region="$GCP_REGION" \
   --port=8080 \
