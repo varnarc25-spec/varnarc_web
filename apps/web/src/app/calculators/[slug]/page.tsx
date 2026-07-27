@@ -46,6 +46,7 @@ type CalculatorDetail = {
     mode?: string;
     layout?: string;
     steps?: Array<{ title: string; fields: string[] }>;
+    fieldVisibility?: Record<string, Record<string, string[]>>;
     faq?: Array<{ q: string; a: string }>;
     relatedArticles?: {
       topicField?: string;

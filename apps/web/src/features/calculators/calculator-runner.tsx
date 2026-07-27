@@ -58,6 +58,32 @@ function optionLabel(value: string) {
   );
 }
 
+function buildVisibilityInputs(
+  values: Record<string, string>,
+  fields: Field[],
+): Record<string, unknown> {
+  const snapshot = { ...values } as Record<string, unknown>;
+  if (!snapshot.loanType) {
+    const loanField = fields.find((f) => f.key === 'loanType');
+    snapshot.loanType = loanField?.defaultValue ?? 'home';
+  }
+  return snapshot;
+}
+
+function resolveFieldVisibility(
+  calculatorSlug: string,
+  settings?: { fieldVisibility?: FieldVisibilityMap } | null,
+): FieldVisibilityMap | null {
+  const fromSettings = settings?.fieldVisibility;
+  if (fromSettings && Object.keys(fromSettings).length > 0) {
+    return fromSettings;
+  }
+  if (calculatorSlug === LOAN_CALCULATOR_SLUG) {
+    return LOAN_CALCULATOR_FIELD_VISIBILITY;
+  }
+  return null;
+}
+
 function buildDefaultValues(fields: Field[]) {
   const defaults: Record<string, string> = {};
   for (const f of fields) {
@@ -372,10 +398,7 @@ export function CalculatorRunner({
     fieldVisibility?: FieldVisibilityMap;
   } | null;
 }) {
-  const fieldVisibility =
-    calculatorSlug === LOAN_CALCULATOR_SLUG
-      ? LOAN_CALCULATOR_FIELD_VISIBILITY
-      : settings?.fieldVisibility;
+  const fieldVisibility = resolveFieldVisibility(calculatorSlug, settings);
 
   const wizardSteps = settings?.mode === 'wizard' && settings.steps?.length ? settings.steps : null;
   const [stepIndex, setStepIndex] = useState(0);
@@ -391,7 +414,7 @@ export function CalculatorRunner({
   const [saveName, setSaveName] = useState(`${name} result`);
 
   const visibleFields = useMemo(() => {
-    const inputSnapshot = values as Record<string, unknown>;
+    const inputSnapshot = buildVisibilityInputs(values, fields);
     let list = fields.filter((f) =>
       isCalculatorFieldVisible(f.key, inputSnapshot, fieldVisibility),
     );
@@ -413,7 +436,7 @@ export function CalculatorRunner({
 
   function buildPayload() {
     const payload: Record<string, number | string | boolean> = {};
-    const inputSnapshot = values as Record<string, unknown>;
+    const inputSnapshot = buildVisibilityInputs(values, fields);
     for (const f of fields) {
       if (!isCalculatorFieldVisible(f.key, inputSnapshot, fieldVisibility)) continue;
       const raw = values[f.key] ?? '';
