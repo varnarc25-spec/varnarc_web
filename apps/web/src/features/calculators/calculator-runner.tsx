@@ -1,7 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import {
+  isCalculatorFieldVisible,
+  LOAN_CALCULATOR_FIELD_VISIBILITY,
+  LOAN_CALCULATOR_SLUG,
+  resolveLoanCalculatorInputs,
+  syncLoanAmountFromPrice,
+  type FieldVisibilityMap,
+} from '@varnarc/validation';
 import { trackAnalyticsEvent } from '@/lib/analytics-client';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
 
@@ -358,16 +366,19 @@ export function CalculatorRunner({
   calculatorSlug: string;
   fields: Field[];
   resultTemplate?: ResultTemplate | null;
-  settings?: { mode?: string; steps?: WizardStep[] } | null;
+  settings?: {
+    mode?: string;
+    steps?: WizardStep[];
+    fieldVisibility?: FieldVisibilityMap;
+  } | null;
 }) {
+  const fieldVisibility =
+    calculatorSlug === LOAN_CALCULATOR_SLUG
+      ? LOAN_CALCULATOR_FIELD_VISIBILITY
+      : settings?.fieldVisibility;
+
   const wizardSteps = settings?.mode === 'wizard' && settings.steps?.length ? settings.steps : null;
   const [stepIndex, setStepIndex] = useState(0);
-
-  const visibleFields = useMemo(() => {
-    if (!wizardSteps) return fields;
-    const keys = new Set(wizardSteps[stepIndex]?.fields ?? []);
-    return fields.filter((f) => keys.has(f.key));
-  }, [fields, wizardSteps, stepIndex]);
 
   const [values, setValues] = useState<Record<string, string>>(() => buildDefaultValues(fields));
   const [outputs, setOutputs] = useState<Record<string, number> | null>(null);
@@ -379,13 +390,32 @@ export function CalculatorRunner({
   const [loading, setLoading] = useState(false);
   const [saveName, setSaveName] = useState(`${name} result`);
 
+  const visibleFields = useMemo(() => {
+    const inputSnapshot = values as Record<string, unknown>;
+    let list = fields.filter((f) =>
+      isCalculatorFieldVisible(f.key, inputSnapshot, fieldVisibility),
+    );
+    if (wizardSteps) {
+      const keys = new Set(wizardSteps[stepIndex]?.fields ?? []);
+      list = list.filter((f) => keys.has(f.key));
+    }
+    return list;
+  }, [fields, fieldVisibility, values, wizardSteps, stepIndex]);
+
   useEffect(() => {
     setValues(buildDefaultValues(fields));
   }, [fields]);
 
+  useEffect(() => {
+    if (calculatorSlug !== LOAN_CALCULATOR_SLUG) return;
+    setValues((prev) => syncLoanAmountFromPrice(prev.loanType ?? 'home', prev));
+  }, [calculatorSlug, fields]);
+
   function buildPayload() {
     const payload: Record<string, number | string | boolean> = {};
+    const inputSnapshot = values as Record<string, unknown>;
     for (const f of fields) {
+      if (!isCalculatorFieldVisible(f.key, inputSnapshot, fieldVisibility)) continue;
       const raw = values[f.key] ?? '';
       if (f.fieldType === 'checkbox') {
         payload[f.key] = raw === '1' || raw === 'true';
@@ -395,7 +425,28 @@ export function CalculatorRunner({
         payload[f.key] = raw;
       }
     }
+    if (calculatorSlug === LOAN_CALCULATOR_SLUG) {
+      return resolveLoanCalculatorInputs(payload) as Record<string, number | string | boolean>;
+    }
     return payload;
+  }
+
+  function updateFieldValue(key: string, value: string) {
+    setValues((prev) => {
+      let next = { ...prev, [key]: value };
+      if (calculatorSlug === LOAN_CALCULATOR_SLUG && key === 'loanType') {
+        next = syncLoanAmountFromPrice(value, next);
+      } else if (
+        calculatorSlug === LOAN_CALCULATOR_SLUG &&
+        ['propertyValue', 'downPayment', 'onRoadPrice', 'courseFee', 'loanPercent'].includes(key)
+      ) {
+        next = syncLoanAmountFromPrice(next.loanType ?? 'personal', next);
+      }
+      return next;
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('calculator-field-change', { detail: { key, value } }));
+    }
   }
 
   async function runCalculate() {
@@ -524,14 +575,7 @@ export function CalculatorRunner({
             key={f.key}
             field={f}
             value={values[f.key] ?? ''}
-            onChange={(v) => {
-              setValues((prev) => ({ ...prev, [f.key]: v }));
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(
-                  new CustomEvent('calculator-field-change', { detail: { key: f.key, value: v } }),
-                );
-              }
-            }}
+            onChange={(v) => updateFieldValue(f.key, v)}
           />
         ))}
       </div>

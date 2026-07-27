@@ -19,6 +19,12 @@ import type {
   UpdateCalculatorCategoryInput,
   UpdateCalculatorInput,
 } from '@varnarc/validation';
+import {
+  isCalculatorFieldVisible,
+  LOAN_CALCULATOR_FIELD_VISIBILITY,
+  LOAN_CALCULATOR_SLUG,
+  resolveLoanCalculatorInputs,
+} from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
 import { executeFormula, validateFormula } from './formula-engine';
 import { SearchIndexerService } from '../search/search-indexer.service';
@@ -82,9 +88,20 @@ export class CalculatorService {
     return row;
   }
 
-  async getBySlug(slug: string, trackView = false, meta?: { sessionId?: string | null; device?: string | null; referrer?: string | null; userId?: string | null }) {
+  async getBySlug(
+    slug: string,
+    trackView = false,
+    meta?: {
+      sessionId?: string | null;
+      device?: string | null;
+      referrer?: string | null;
+      userId?: string | null;
+    },
+  ) {
     const key = this.cacheKey(slug);
-    let row = trackView ? null : await this.cache.get<Awaited<ReturnType<Repositories['calculators']['findBySlug']>>>(key);
+    let row = trackView
+      ? null
+      : await this.cache.get<Awaited<ReturnType<Repositories['calculators']['findBySlug']>>>(key);
     if (!row) {
       row = await this.repos.calculators.findBySlug(slug);
       if (row && row.status === 'PUBLISHED') {
@@ -167,16 +184,19 @@ export class CalculatorService {
     }
 
     if (input.fields) {
-      await this.repos.calculators.replaceFields(id, input.fields.map((f) => ({
-        key: f.key,
-        label: f.label,
-        fieldType: f.fieldType,
-        defaultValue: f.defaultValue ?? null,
-        sortOrder: f.sortOrder ?? 0,
-        required: f.required ?? true,
-        options: f.options,
-        validation: f.validation,
-      })));
+      await this.repos.calculators.replaceFields(
+        id,
+        input.fields.map((f) => ({
+          key: f.key,
+          label: f.label,
+          fieldType: f.fieldType,
+          defaultValue: f.defaultValue ?? null,
+          sortOrder: f.sortOrder ?? 0,
+          required: f.required ?? true,
+          options: f.options,
+          validation: f.validation,
+        })),
+      );
     }
 
     const row = await this.repos.calculators.update(id, {
@@ -186,7 +206,9 @@ export class CalculatorService {
       ...(input.icon !== undefined ? { icon: input.icon } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
       ...(input.formula !== undefined ? { formula: input.formula } : {}),
-      ...(input.resultTemplate !== undefined ? { resultTemplate: input.resultTemplate as never } : {}),
+      ...(input.resultTemplate !== undefined
+        ? { resultTemplate: input.resultTemplate as never }
+        : {}),
       ...(input.settings !== undefined ? { settings: input.settings as never } : {}),
       ...(input.seoTitle !== undefined ? { seoTitle: input.seoTitle } : {}),
       ...(input.seoDescription !== undefined ? { seoDescription: input.seoDescription } : {}),
@@ -276,16 +298,19 @@ export class CalculatorService {
     );
   }
 
-  async calculate(
-    id: string,
-    input: RunCalculatorInput,
-    userId?: string | null,
-  ) {
+  async calculate(id: string, input: RunCalculatorInput, userId?: string | null) {
     const calc = await this.repos.calculators.findById(id);
     if (!calc) throw this.notFound();
 
     for (const field of calc.fields) {
       if (!field.required) continue;
+      const visibility =
+        calc.slug === LOAN_CALCULATOR_SLUG
+          ? LOAN_CALCULATOR_FIELD_VISIBILITY
+          : ((
+              calc.settings as { fieldVisibility?: Record<string, Record<string, string[]>> } | null
+            )?.fieldVisibility ?? null);
+      if (!isCalculatorFieldVisible(field.key, input.inputs, visibility)) continue;
       const val = input.inputs[field.key];
       if (val === undefined || val === null || val === '') {
         throw new BadRequestException({
@@ -297,7 +322,11 @@ export class CalculatorService {
 
     const started = Date.now();
     try {
-      const outputs = await executeFormula(calc.formula, input.inputs);
+      const formulaInputs =
+        calc.slug === LOAN_CALCULATOR_SLUG
+          ? resolveLoanCalculatorInputs(input.inputs)
+          : input.inputs;
+      const outputs = await executeFormula(calc.formula, formulaInputs);
       const durationMs = Date.now() - started;
       await this.repos.calculators.recordHistory({
         inputs: input.inputs as never,

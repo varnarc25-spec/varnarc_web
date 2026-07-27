@@ -6,6 +6,8 @@ export * from './cms';
 export * from './media';
 export * from './ads';
 export * from './calculators';
+export * from './calculator-field-visibility';
+export * from './loan-calculator';
 export * from './finance';
 export * from './construction';
 export * from './automobile';
