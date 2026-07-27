@@ -99,10 +99,19 @@ async function main() {
     [PERMISSIONS.FINANCE_PUBLISH]: { name: 'Publish finance products', module: 'finance' },
     [PERMISSIONS.FINANCE_DELETE]: { name: 'Delete finance products', module: 'finance' },
     [PERMISSIONS.CONSTRUCTION_VIEW]: { name: 'View construction', module: 'construction' },
-    [PERMISSIONS.CONSTRUCTION_CREATE]: { name: 'Create construction content', module: 'construction' },
+    [PERMISSIONS.CONSTRUCTION_CREATE]: {
+      name: 'Create construction content',
+      module: 'construction',
+    },
     [PERMISSIONS.CONSTRUCTION_EDIT]: { name: 'Edit construction content', module: 'construction' },
-    [PERMISSIONS.CONSTRUCTION_PUBLISH]: { name: 'Publish construction content', module: 'construction' },
-    [PERMISSIONS.CONSTRUCTION_DELETE]: { name: 'Delete construction content', module: 'construction' },
+    [PERMISSIONS.CONSTRUCTION_PUBLISH]: {
+      name: 'Publish construction content',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_DELETE]: {
+      name: 'Delete construction content',
+      module: 'construction',
+    },
     [PERMISSIONS.AUTOMOBILE_VIEW]: { name: 'View automobile', module: 'automobile' },
     [PERMISSIONS.AUTOMOBILE_CREATE]: { name: 'Create automobile content', module: 'automobile' },
     [PERMISSIONS.AUTOMOBILE_EDIT]: { name: 'Edit automobile content', module: 'automobile' },
@@ -151,7 +160,10 @@ async function main() {
     [PERMISSIONS.API_VIEW]: { name: 'View API console', module: 'api' },
     [PERMISSIONS.API_MANAGE]: { name: 'Manage API keys and webhooks', module: 'api' },
     [PERMISSIONS.PREMIUM_VIEW]: { name: 'View premium billing', module: 'premium' },
-    [PERMISSIONS.PREMIUM_MANAGE]: { name: 'Manage premium plans and subscriptions', module: 'premium' },
+    [PERMISSIONS.PREMIUM_MANAGE]: {
+      name: 'Manage premium plans and subscriptions',
+      module: 'premium',
+    },
     [PERMISSIONS.MENU_MANAGE]: { name: 'Manage menus', module: 'menus' },
     [PERMISSIONS.REPORTS_EXPORT]: { name: 'Export reports', module: 'reports' },
   };
@@ -454,23 +466,47 @@ async function main() {
   }
 
   const calcCategories = [
-    { slug: 'finance', name: 'Finance', sortOrder: 1, description: 'Loans, investments, and tax tools' },
-    { slug: 'construction', name: 'Construction', sortOrder: 2, description: 'Building material estimators' },
-    { slug: 'automobile', name: 'Automobile', sortOrder: 3, description: 'Vehicle cost and loan tools' },
+    {
+      slug: 'finance',
+      name: 'Finance',
+      sortOrder: 1,
+      description: 'Loans, investments, and tax tools',
+    },
+    {
+      slug: 'construction',
+      name: 'Construction',
+      sortOrder: 2,
+      description: 'Building material estimators',
+    },
+    {
+      slug: 'automobile',
+      name: 'Automobile',
+      sortOrder: 3,
+      description: 'Vehicle cost and loan tools',
+    },
     { slug: 'general', name: 'General', sortOrder: 4, description: 'Everyday utility calculators' },
   ];
 
   for (const cat of calcCategories) {
     await prisma.calculatorCategory.upsert({
       where: { slug: cat.slug },
-      update: { name: cat.name, description: cat.description, sortOrder: cat.sortOrder, deletedAt: null },
+      update: {
+        name: cat.name,
+        description: cat.description,
+        sortOrder: cat.sortOrder,
+        deletedAt: null,
+      },
       create: cat,
     });
   }
 
   const finance = await prisma.calculatorCategory.findUniqueOrThrow({ where: { slug: 'finance' } });
-  const construction = await prisma.calculatorCategory.findUniqueOrThrow({ where: { slug: 'construction' } });
-  const automobile = await prisma.calculatorCategory.findUniqueOrThrow({ where: { slug: 'automobile' } });
+  const construction = await prisma.calculatorCategory.findUniqueOrThrow({
+    where: { slug: 'construction' },
+  });
+  const automobile = await prisma.calculatorCategory.findUniqueOrThrow({
+    where: { slug: 'automobile' },
+  });
   const general = await prisma.calculatorCategory.findUniqueOrThrow({ where: { slug: 'general' } });
 
   type FieldSeed = {
@@ -592,19 +628,32 @@ async function main() {
       recommendations: true,
     },
     settings: {
-      mode: 'wizard',
-      steps: [
-        { title: 'Loan amount', fields: ['principal'] },
-        { title: 'Rate & tenure', fields: ['annualRate', 'tenureMonths'] },
-      ],
       faq: [
-        { q: 'What is EMI?', a: 'Equated Monthly Installment is the fixed payment you make each month.' },
-        { q: 'Does this include fees?', a: 'This estimate excludes processing fees and insurance.' },
+        {
+          q: 'What is EMI?',
+          a: 'Equated Monthly Installment is the fixed payment you make each month.',
+        },
+        {
+          q: 'Does this include fees?',
+          a: 'This estimate excludes processing fees and insurance.',
+        },
       ],
     },
     fields: [
-      { key: 'principal', label: 'Loan amount', fieldType: 'currency', sortOrder: 0, defaultValue: '500000' },
-      { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '8.5' },
+      {
+        key: 'principal',
+        label: 'Loan amount',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '500000',
+      },
+      {
+        key: 'annualRate',
+        label: 'Interest rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '8.5',
+      },
       {
         key: 'tenureMonths',
         label: 'Tenure (months)',
@@ -622,7 +671,8 @@ async function main() {
     description: 'Calculate EMI, total interest, and repayment for any loan type.',
     categoryId: finance.id,
     seoTitle: 'Loan Calculator | Varnarc',
-    seoDescription: 'Estimate monthly EMI and total interest for home, personal, car, or education loans.',
+    seoDescription:
+      'Estimate monthly EMI and total interest for home, personal, car, or education loans.',
     formula: {
       outputs: {
         principal: 'principal',
@@ -664,8 +714,14 @@ async function main() {
         },
       },
       faq: [
-        { q: 'Which loans does this cover?', a: 'Use it for home, personal, car, or education loans — adjust rate and tenure to match your offer.' },
-        { q: 'Are fees included?', a: 'Processing fees, insurance, and GST are excluded from this estimate.' },
+        {
+          q: 'Which loans does this cover?',
+          a: 'Use it for home, personal, car, or education loans — adjust rate and tenure to match your offer.',
+        },
+        {
+          q: 'Are fees included?',
+          a: 'Processing fees, insurance, and GST are excluded from this estimate.',
+        },
       ],
     },
     fields: [
@@ -677,8 +733,20 @@ async function main() {
         defaultValue: 'home',
         validation: { options: ['home', 'personal', 'car', 'education'] },
       },
-      { key: 'principal', label: 'Loan amount', fieldType: 'currency', sortOrder: 1, defaultValue: '2500000' },
-      { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '8.75' },
+      {
+        key: 'principal',
+        label: 'Loan amount',
+        fieldType: 'currency',
+        sortOrder: 1,
+        defaultValue: '2500000',
+      },
+      {
+        key: 'annualRate',
+        label: 'Interest rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '8.75',
+      },
       {
         key: 'tenureMonths',
         label: 'Tenure (months)',
@@ -702,7 +770,8 @@ async function main() {
         monthlyRate: 'expectedReturn / 12 / 100',
         months: 'years * 12',
         invested: 'monthlyInvestment * months',
-        maturity: 'monthlyInvestment * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
+        maturity:
+          'monthlyInvestment * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
         gains: 'maturity - invested',
       },
     },
@@ -736,13 +805,31 @@ async function main() {
     },
     settings: {
       faq: [
-        { q: 'What is SIP?', a: 'A Systematic Investment Plan invests a fixed amount every month into a mutual fund.' },
-        { q: 'Is the return guaranteed?', a: 'No. Expected return is an assumption for estimation only.' },
+        {
+          q: 'What is SIP?',
+          a: 'A Systematic Investment Plan invests a fixed amount every month into a mutual fund.',
+        },
+        {
+          q: 'Is the return guaranteed?',
+          a: 'No. Expected return is an assumption for estimation only.',
+        },
       ],
     },
     fields: [
-      { key: 'monthlyInvestment', label: 'Monthly investment', fieldType: 'currency', sortOrder: 0, defaultValue: '5000' },
-      { key: 'expectedReturn', label: 'Expected return (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '12' },
+      {
+        key: 'monthlyInvestment',
+        label: 'Monthly investment',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '5000',
+      },
+      {
+        key: 'expectedReturn',
+        label: 'Expected return (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '12',
+      },
       {
         key: 'years',
         label: 'Investment period (years)',
@@ -789,7 +876,13 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'income', label: 'Annual taxable income', fieldType: 'currency', sortOrder: 0, defaultValue: '900000' },
+      {
+        key: 'income',
+        label: 'Annual taxable income',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '900000',
+      },
     ],
   });
 
@@ -814,7 +907,13 @@ async function main() {
     },
     fields: [
       { key: 'amount', label: 'Amount', fieldType: 'currency', sortOrder: 0, defaultValue: '1000' },
-      { key: 'gstRate', label: 'GST rate (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '18' },
+      {
+        key: 'gstRate',
+        label: 'GST rate (%)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '18',
+      },
     ],
   });
 
@@ -842,12 +941,48 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'currentAge', label: 'Current age', fieldType: 'number', sortOrder: 0, defaultValue: '30' },
-      { key: 'retirementAge', label: 'Retirement age', fieldType: 'number', sortOrder: 1, defaultValue: '60' },
-      { key: 'monthlyExpense', label: 'Monthly expense today', fieldType: 'currency', sortOrder: 2, defaultValue: '50000' },
-      { key: 'currentSavings', label: 'Current savings', fieldType: 'currency', sortOrder: 3, defaultValue: '500000' },
-      { key: 'monthlySip', label: 'Monthly SIP', fieldType: 'currency', sortOrder: 4, defaultValue: '10000' },
-      { key: 'expectedReturn', label: 'Expected return (% p.a.)', fieldType: 'percentage', sortOrder: 5, defaultValue: '10' },
+      {
+        key: 'currentAge',
+        label: 'Current age',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '30',
+      },
+      {
+        key: 'retirementAge',
+        label: 'Retirement age',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '60',
+      },
+      {
+        key: 'monthlyExpense',
+        label: 'Monthly expense today',
+        fieldType: 'currency',
+        sortOrder: 2,
+        defaultValue: '50000',
+      },
+      {
+        key: 'currentSavings',
+        label: 'Current savings',
+        fieldType: 'currency',
+        sortOrder: 3,
+        defaultValue: '500000',
+      },
+      {
+        key: 'monthlySip',
+        label: 'Monthly SIP',
+        fieldType: 'currency',
+        sortOrder: 4,
+        defaultValue: '10000',
+      },
+      {
+        key: 'expectedReturn',
+        label: 'Expected return (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 5,
+        defaultValue: '10',
+      },
     ],
   });
 
@@ -872,7 +1007,13 @@ async function main() {
       { key: 'length', label: 'Length', fieldType: 'number', sortOrder: 0, defaultValue: '12' },
       { key: 'width', label: 'Width', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
       { key: 'coats', label: 'Coats', fieldType: 'number', sortOrder: 2, defaultValue: '2' },
-      { key: 'coveragePerLitre', label: 'Coverage per litre', fieldType: 'number', sortOrder: 3, defaultValue: '10' },
+      {
+        key: 'coveragePerLitre',
+        label: 'Coverage per litre',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '10',
+      },
     ],
   });
 
@@ -896,9 +1037,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'area', label: 'Built-up area (sq ft)', fieldType: 'number', sortOrder: 0, defaultValue: '1200' },
-      { key: 'costPerSqft', label: 'Cost per sq ft', fieldType: 'currency', sortOrder: 1, defaultValue: '1800' },
-      { key: 'contingencyPercent', label: 'Contingency (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '10' },
+      {
+        key: 'area',
+        label: 'Built-up area (sq ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '1200',
+      },
+      {
+        key: 'costPerSqft',
+        label: 'Cost per sq ft',
+        fieldType: 'currency',
+        sortOrder: 1,
+        defaultValue: '1800',
+      },
+      {
+        key: 'contingencyPercent',
+        label: 'Contingency (%)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '10',
+      },
     ],
   });
 
@@ -920,10 +1079,28 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '10' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '10',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
-      { key: 'thickness', label: 'Thickness (in)', fieldType: 'number', sortOrder: 2, defaultValue: '4' },
-      { key: 'bagsPerCubicFt', label: 'Bags per cu ft', fieldType: 'number', sortOrder: 3, defaultValue: '1.25' },
+      {
+        key: 'thickness',
+        label: 'Thickness (in)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '4',
+      },
+      {
+        key: 'bagsPerCubicFt',
+        label: 'Bags per cu ft',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '1.25',
+      },
     ],
   });
 
@@ -945,7 +1122,13 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '20' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '20',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
       { key: 'depth', label: 'Depth (in)', fieldType: 'number', sortOrder: 2, defaultValue: '6' },
     ],
@@ -969,10 +1152,28 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '10' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '10',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
-      { key: 'thickness', label: 'Thickness (in)', fieldType: 'number', sortOrder: 2, defaultValue: '4' },
-      { key: 'sandRatio', label: 'Sand share of mix', fieldType: 'number', sortOrder: 3, defaultValue: '0.4' },
+      {
+        key: 'thickness',
+        label: 'Thickness (in)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '4',
+      },
+      {
+        key: 'sandRatio',
+        label: 'Sand share of mix',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '0.4',
+      },
     ],
   });
 
@@ -994,10 +1195,22 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '20' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '20',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
       { key: 'depth', label: 'Depth (in)', fieldType: 'number', sortOrder: 2, defaultValue: '6' },
-      { key: 'aggregateRatio', label: 'Aggregate share of mix', fieldType: 'number', sortOrder: 3, defaultValue: '0.55' },
+      {
+        key: 'aggregateRatio',
+        label: 'Aggregate share of mix',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '0.55',
+      },
     ],
   });
 
@@ -1019,9 +1232,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Wall length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '40' },
-      { key: 'height', label: 'Wall height (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
-      { key: 'thickness', label: 'Plaster thickness (in)', fieldType: 'number', sortOrder: 2, defaultValue: '0.5' },
+      {
+        key: 'length',
+        label: 'Wall length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '40',
+      },
+      {
+        key: 'height',
+        label: 'Wall height (ft)',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '10',
+      },
+      {
+        key: 'thickness',
+        label: 'Plaster thickness (in)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '0.5',
+      },
     ],
   });
 
@@ -1043,9 +1274,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Wall length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '30' },
-      { key: 'height', label: 'Wall height (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
-      { key: 'bricksPerSqft', label: 'Bricks per sq ft', fieldType: 'number', sortOrder: 2, defaultValue: '8' },
+      {
+        key: 'length',
+        label: 'Wall length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '30',
+      },
+      {
+        key: 'height',
+        label: 'Wall height (ft)',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '10',
+      },
+      {
+        key: 'bricksPerSqft',
+        label: 'Bricks per sq ft',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '8',
+      },
     ],
   });
 
@@ -1067,9 +1316,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'bars', label: 'Number of bars', fieldType: 'number', sortOrder: 0, defaultValue: '20' },
-      { key: 'barLength', label: 'Bar length (m)', fieldType: 'number', sortOrder: 1, defaultValue: '12' },
-      { key: 'weightPerMeter', label: 'Weight per meter (kg)', fieldType: 'number', sortOrder: 2, defaultValue: '0.89' },
+      {
+        key: 'bars',
+        label: 'Number of bars',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '20',
+      },
+      {
+        key: 'barLength',
+        label: 'Bar length (m)',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '12',
+      },
+      {
+        key: 'weightPerMeter',
+        label: 'Weight per meter (kg)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '0.89',
+      },
     ],
   });
 
@@ -1091,10 +1358,28 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '12' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '12',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '10' },
-      { key: 'tileArea', label: 'Tile area (sq ft)', fieldType: 'number', sortOrder: 2, defaultValue: '1.77' },
-      { key: 'wastagePercent', label: 'Wastage (%)', fieldType: 'percentage', sortOrder: 3, defaultValue: '8' },
+      {
+        key: 'tileArea',
+        label: 'Tile area (sq ft)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '1.77',
+      },
+      {
+        key: 'wastagePercent',
+        label: 'Wastage (%)',
+        fieldType: 'percentage',
+        sortOrder: 3,
+        defaultValue: '8',
+      },
     ],
   });
 
@@ -1118,10 +1403,28 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '14' },
+      {
+        key: 'length',
+        label: 'Length (ft)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '14',
+      },
       { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '12' },
-      { key: 'wastagePercent', label: 'Wastage (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '10' },
-      { key: 'costPerUnit', label: 'Cost per sq ft', fieldType: 'currency', sortOrder: 3, defaultValue: '85' },
+      {
+        key: 'wastagePercent',
+        label: 'Wastage (%)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '10',
+      },
+      {
+        key: 'costPerUnit',
+        label: 'Cost per sq ft',
+        fieldType: 'currency',
+        sortOrder: 3,
+        defaultValue: '85',
+      },
     ],
   });
 
@@ -1144,9 +1447,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'monthlyBill', label: 'Monthly electricity bill', fieldType: 'currency', sortOrder: 0, defaultValue: '3000' },
-      { key: 'savingsPercent', label: 'Bill offset (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '70' },
-      { key: 'systemCost', label: 'System cost', fieldType: 'currency', sortOrder: 2, defaultValue: '250000' },
+      {
+        key: 'monthlyBill',
+        label: 'Monthly electricity bill',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '3000',
+      },
+      {
+        key: 'savingsPercent',
+        label: 'Bill offset (%)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '70',
+      },
+      {
+        key: 'systemCost',
+        label: 'System cost',
+        fieldType: 'currency',
+        sortOrder: 2,
+        defaultValue: '250000',
+      },
     ],
   });
 
@@ -1172,10 +1493,34 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'onRoadPrice', label: 'On-road price', fieldType: 'currency', sortOrder: 0, defaultValue: '1000000' },
-      { key: 'downPayment', label: 'Down payment', fieldType: 'currency', sortOrder: 1, defaultValue: '200000' },
-      { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '9.5' },
-      { key: 'tenureMonths', label: 'Tenure (months)', fieldType: 'number', sortOrder: 3, defaultValue: '60' },
+      {
+        key: 'onRoadPrice',
+        label: 'On-road price',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '1000000',
+      },
+      {
+        key: 'downPayment',
+        label: 'Down payment',
+        fieldType: 'currency',
+        sortOrder: 1,
+        defaultValue: '200000',
+      },
+      {
+        key: 'annualRate',
+        label: 'Interest rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '9.5',
+      },
+      {
+        key: 'tenureMonths',
+        label: 'Tenure (months)',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '60',
+      },
     ],
   });
 
@@ -1197,9 +1542,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'distance', label: 'Distance (km)', fieldType: 'number', sortOrder: 0, defaultValue: '100' },
-      { key: 'mileage', label: 'Mileage (km/L)', fieldType: 'number', sortOrder: 1, defaultValue: '15' },
-      { key: 'fuelPrice', label: 'Fuel price / L', fieldType: 'currency', sortOrder: 2, defaultValue: '105' },
+      {
+        key: 'distance',
+        label: 'Distance (km)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '100',
+      },
+      {
+        key: 'mileage',
+        label: 'Mileage (km/L)',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '15',
+      },
+      {
+        key: 'fuelPrice',
+        label: 'Fuel price / L',
+        fieldType: 'currency',
+        sortOrder: 2,
+        defaultValue: '105',
+      },
     ],
   });
 
@@ -1221,9 +1584,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'distance', label: 'Distance (km)', fieldType: 'number', sortOrder: 0, defaultValue: '300' },
-      { key: 'fuelUsed', label: 'Fuel used (L)', fieldType: 'number', sortOrder: 1, defaultValue: '18' },
-      { key: 'fuelPrice', label: 'Fuel price / L', fieldType: 'currency', sortOrder: 2, defaultValue: '105' },
+      {
+        key: 'distance',
+        label: 'Distance (km)',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '300',
+      },
+      {
+        key: 'fuelUsed',
+        label: 'Fuel used (L)',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '18',
+      },
+      {
+        key: 'fuelPrice',
+        label: 'Fuel price / L',
+        fieldType: 'currency',
+        sortOrder: 2,
+        defaultValue: '105',
+      },
     ],
   });
 
@@ -1247,9 +1628,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'idv', label: 'Insured Declared Value', fieldType: 'currency', sortOrder: 0, defaultValue: '700000' },
-      { key: 'premiumRate', label: 'Premium rate (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '2.5' },
-      { key: 'ncbPercent', label: 'NCB (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '20' },
+      {
+        key: 'idv',
+        label: 'Insured Declared Value',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '700000',
+      },
+      {
+        key: 'premiumRate',
+        label: 'Premium rate (%)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '2.5',
+      },
+      {
+        key: 'ncbPercent',
+        label: 'NCB (%)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '20',
+      },
     ],
   });
 
@@ -1271,9 +1670,21 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'purchasePrice', label: 'Purchase price', fieldType: 'currency', sortOrder: 0, defaultValue: '1000000' },
+      {
+        key: 'purchasePrice',
+        label: 'Purchase price',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '1000000',
+      },
       { key: 'years', label: 'Years owned', fieldType: 'number', sortOrder: 1, defaultValue: '3' },
-      { key: 'depreciationRate', label: 'Depreciation (% / year)', fieldType: 'percentage', sortOrder: 2, defaultValue: '15' },
+      {
+        key: 'depreciationRate',
+        label: 'Depreciation (% / year)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '15',
+      },
     ],
   });
 
@@ -1297,9 +1708,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'servicesPerYear', label: 'Services per year', fieldType: 'number', sortOrder: 0, defaultValue: '2' },
-      { key: 'costPerService', label: 'Cost per service', fieldType: 'currency', sortOrder: 1, defaultValue: '4500' },
-      { key: 'tyresAndOil', label: 'Tyres / oil / misc / year', fieldType: 'currency', sortOrder: 2, defaultValue: '8000' },
+      {
+        key: 'servicesPerYear',
+        label: 'Services per year',
+        fieldType: 'number',
+        sortOrder: 0,
+        defaultValue: '2',
+      },
+      {
+        key: 'costPerService',
+        label: 'Cost per service',
+        fieldType: 'currency',
+        sortOrder: 1,
+        defaultValue: '4500',
+      },
+      {
+        key: 'tyresAndOil',
+        label: 'Tyres / oil / misc / year',
+        fieldType: 'currency',
+        sortOrder: 2,
+        defaultValue: '8000',
+      },
     ],
   });
 
@@ -1313,7 +1742,8 @@ async function main() {
     formula: {
       outputs: {
         maxEmi: 'monthlyIncome * 0.5 - existingEmi',
-        eligibleAmount: 'maxEmi * ((pow(1 + monthlyRate, tenureMonths) - 1) / (monthlyRate * pow(1 + monthlyRate, tenureMonths)))',
+        eligibleAmount:
+          'maxEmi * ((pow(1 + monthlyRate, tenureMonths) - 1) / (monthlyRate * pow(1 + monthlyRate, tenureMonths)))',
         monthlyRate: 'annualRate / 12 / 100',
       },
     },
@@ -1324,10 +1754,34 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'monthlyIncome', label: 'Monthly net income', fieldType: 'currency', sortOrder: 0, defaultValue: '80000' },
-      { key: 'existingEmi', label: 'Existing EMIs', fieldType: 'currency', sortOrder: 1, defaultValue: '0' },
-      { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '9' },
-      { key: 'tenureMonths', label: 'Tenure (months)', fieldType: 'number', sortOrder: 3, defaultValue: '240' },
+      {
+        key: 'monthlyIncome',
+        label: 'Monthly net income',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '80000',
+      },
+      {
+        key: 'existingEmi',
+        label: 'Existing EMIs',
+        fieldType: 'currency',
+        sortOrder: 1,
+        defaultValue: '0',
+      },
+      {
+        key: 'annualRate',
+        label: 'Interest rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '9',
+      },
+      {
+        key: 'tenureMonths',
+        label: 'Tenure (months)',
+        fieldType: 'number',
+        sortOrder: 3,
+        defaultValue: '240',
+      },
     ],
   });
 
@@ -1340,7 +1794,8 @@ async function main() {
       outputs: {
         months: 'years * 12',
         invested: 'monthlyContribution * months',
-        corpus: 'monthlyContribution * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
+        corpus:
+          'monthlyContribution * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
         monthlyRate: 'expectedReturn / 12 / 100',
       },
     },
@@ -1351,9 +1806,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'monthlyContribution', label: 'Monthly contribution', fieldType: 'currency', sortOrder: 0, defaultValue: '5000' },
-      { key: 'years', label: 'Years to retirement', fieldType: 'number', sortOrder: 1, defaultValue: '25' },
-      { key: 'expectedReturn', label: 'Expected return (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '10' },
+      {
+        key: 'monthlyContribution',
+        label: 'Monthly contribution',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '5000',
+      },
+      {
+        key: 'years',
+        label: 'Years to retirement',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '25',
+      },
+      {
+        key: 'expectedReturn',
+        label: 'Expected return (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 2,
+        defaultValue: '10',
+      },
     ],
   });
 
@@ -1377,7 +1850,13 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'monthlyIncome', label: 'Monthly income', fieldType: 'currency', sortOrder: 0, defaultValue: '75000' },
+      {
+        key: 'monthlyIncome',
+        label: 'Monthly income',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '75000',
+      },
     ],
   });
 
@@ -1399,8 +1878,20 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'principal', label: 'Principal', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
-      { key: 'annualRate', label: 'Rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '8' },
+      {
+        key: 'principal',
+        label: 'Principal',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '100000',
+      },
+      {
+        key: 'annualRate',
+        label: 'Rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '8',
+      },
       { key: 'years', label: 'Years', fieldType: 'number', sortOrder: 2, defaultValue: '10' },
     ],
   });
@@ -1424,9 +1915,27 @@ async function main() {
       ],
     },
     fields: [
-      { key: 'annualDeposit', label: 'Annual deposit', fieldType: 'currency', sortOrder: 0, defaultValue: '150000' },
-      { key: 'interestRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '7.1' },
-      { key: 'years', label: 'Tenure (years)', fieldType: 'number', sortOrder: 2, defaultValue: '15' },
+      {
+        key: 'annualDeposit',
+        label: 'Annual deposit',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '150000',
+      },
+      {
+        key: 'interestRate',
+        label: 'Interest rate (% p.a.)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '7.1',
+      },
+      {
+        key: 'years',
+        label: 'Tenure (years)',
+        fieldType: 'number',
+        sortOrder: 2,
+        defaultValue: '15',
+      },
     ],
   });
 
@@ -1444,8 +1953,20 @@ async function main() {
       cards: [{ key: 'gratuity', label: 'Estimated gratuity', format: 'currency' }],
     },
     fields: [
-      { key: 'lastDrawnSalary', label: 'Last drawn basic + DA (monthly)', fieldType: 'currency', sortOrder: 0, defaultValue: '50000' },
-      { key: 'yearsOfService', label: 'Years of service', fieldType: 'number', sortOrder: 1, defaultValue: '8' },
+      {
+        key: 'lastDrawnSalary',
+        label: 'Last drawn basic + DA (monthly)',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '50000',
+      },
+      {
+        key: 'yearsOfService',
+        label: 'Years of service',
+        fieldType: 'number',
+        sortOrder: 1,
+        defaultValue: '8',
+      },
     ],
   });
 
@@ -1463,8 +1984,20 @@ async function main() {
       cards: [{ key: 'annualTax', label: 'Estimated annual tax', format: 'currency' }],
     },
     fields: [
-      { key: 'assessedValue', label: 'Assessed property value', fieldType: 'currency', sortOrder: 0, defaultValue: '5000000' },
-      { key: 'taxRate', label: 'Tax rate (% of AV)', fieldType: 'percentage', sortOrder: 1, defaultValue: '0.2' },
+      {
+        key: 'assessedValue',
+        label: 'Assessed property value',
+        fieldType: 'currency',
+        sortOrder: 0,
+        defaultValue: '5000000',
+      },
+      {
+        key: 'taxRate',
+        label: 'Tax rate (% of AV)',
+        fieldType: 'percentage',
+        sortOrder: 1,
+        defaultValue: '0.2',
+      },
     ],
   });
 
@@ -1496,9 +2029,15 @@ async function main() {
   }
 
   const loansCat = await prisma.financeCategory.findUniqueOrThrow({ where: { slug: 'loans' } });
-  const cardsCat = await prisma.financeCategory.findUniqueOrThrow({ where: { slug: 'credit-cards' } });
-  const insuranceCat = await prisma.financeCategory.findUniqueOrThrow({ where: { slug: 'insurance' } });
-  const investmentsCat = await prisma.financeCategory.findUniqueOrThrow({ where: { slug: 'investments' } });
+  const cardsCat = await prisma.financeCategory.findUniqueOrThrow({
+    where: { slug: 'credit-cards' },
+  });
+  const insuranceCat = await prisma.financeCategory.findUniqueOrThrow({
+    where: { slug: 'insurance' },
+  });
+  const investmentsCat = await prisma.financeCategory.findUniqueOrThrow({
+    where: { slug: 'investments' },
+  });
 
   const hdfc = await prisma.bank.upsert({
     where: { slug: 'hdfc-bank' },
@@ -1780,24 +2319,37 @@ async function main() {
     }
   }
 
-  await prisma.financeFaq.deleteMany({ where: { question: { in: ['What is an EMI?', 'How is SIP different from lump sum investing?', 'Are credit card rewards taxable?'] } } });
+  await prisma.financeFaq.deleteMany({
+    where: {
+      question: {
+        in: [
+          'What is an EMI?',
+          'How is SIP different from lump sum investing?',
+          'Are credit card rewards taxable?',
+        ],
+      },
+    },
+  });
   await prisma.financeFaq.createMany({
     data: [
       {
         question: 'What is an EMI?',
-        answer: 'Equated Monthly Installment — a fixed payment toward a loan each month covering principal and interest.',
+        answer:
+          'Equated Monthly Installment — a fixed payment toward a loan each month covering principal and interest.',
         sortOrder: 1,
         status: 'PUBLISHED',
       },
       {
         question: 'How is SIP different from lump sum investing?',
-        answer: 'SIP invests a fixed amount periodically, averaging purchase cost over time; lump sum invests once.',
+        answer:
+          'SIP invests a fixed amount periodically, averaging purchase cost over time; lump sum invests once.',
         sortOrder: 2,
         status: 'PUBLISHED',
       },
       {
         question: 'Are credit card rewards taxable?',
-        answer: 'Typically reward points and cashback are not taxed as income in India, but confirm with a tax advisor for your case.',
+        answer:
+          'Typically reward points and cashback are not taxed as income in India, but confirm with a tax advisor for your case.',
         sortOrder: 3,
         status: 'PUBLISHED',
       },
@@ -1805,10 +2357,22 @@ async function main() {
   });
 
   for (const term of [
-    { term: 'APR', slug: 'apr', definition: 'Annual Percentage Rate — yearly cost of borrowing including fees.' },
-    { term: 'CIBIL', slug: 'cibil', definition: 'A common credit score bureau report used by Indian lenders.' },
+    {
+      term: 'APR',
+      slug: 'apr',
+      definition: 'Annual Percentage Rate — yearly cost of borrowing including fees.',
+    },
+    {
+      term: 'CIBIL',
+      slug: 'cibil',
+      definition: 'A common credit score bureau report used by Indian lenders.',
+    },
     { term: 'Tenure', slug: 'tenure', definition: 'The duration over which a loan is repaid.' },
-    { term: 'Processing fee', slug: 'processing-fee', definition: 'One-time fee charged by lenders when disbursing a loan.' },
+    {
+      term: 'Processing fee',
+      slug: 'processing-fee',
+      definition: 'One-time fee charged by lenders when disbursing a loan.',
+    },
   ]) {
     await prisma.financeGlossaryTerm.upsert({
       where: { slug: term.slug },
@@ -1861,7 +2425,12 @@ async function main() {
 
   await prisma.financeRateFeed.upsert({
     where: { id: '00000000-0000-4000-8000-000000000001' },
-    update: { name: 'Mock home loan rates', provider: 'mock', productType: 'home-loan', enabled: true },
+    update: {
+      name: 'Mock home loan rates',
+      provider: 'mock',
+      productType: 'home-loan',
+      enabled: true,
+    },
     create: {
       id: '00000000-0000-4000-8000-000000000001',
       name: 'Mock home loan rates',
@@ -1893,12 +2462,21 @@ async function main() {
       create: { slug: cat.slug, name: cat.name, sortOrder: cat.sortOrder },
     });
   }
-  const materialsCat = await prisma.constructionCategory.findUniqueOrThrow({ where: { slug: 'materials' } });
-  const interiorCat = await prisma.constructionCategory.findUniqueOrThrow({ where: { slug: 'interior' } });
+  const materialsCat = await prisma.constructionCategory.findUniqueOrThrow({
+    where: { slug: 'materials' },
+  });
+  const interiorCat = await prisma.constructionCategory.findUniqueOrThrow({
+    where: { slug: 'interior' },
+  });
 
   const ultratech = await prisma.constructionBrand.upsert({
     where: { slug: 'ultratech' },
-    update: { name: 'UltraTech', website: 'https://www.ultratechcement.com', status: 'PUBLISHED', featured: true },
+    update: {
+      name: 'UltraTech',
+      website: 'https://www.ultratechcement.com',
+      status: 'PUBLISHED',
+      featured: true,
+    },
     create: {
       name: 'UltraTech',
       slug: 'ultratech',
@@ -1910,7 +2488,12 @@ async function main() {
   });
   const asianPaints = await prisma.constructionBrand.upsert({
     where: { slug: 'asian-paints' },
-    update: { name: 'Asian Paints', website: 'https://www.asianpaints.com', status: 'PUBLISHED', featured: true },
+    update: {
+      name: 'Asian Paints',
+      website: 'https://www.asianpaints.com',
+      status: 'PUBLISHED',
+      featured: true,
+    },
     create: {
       name: 'Asian Paints',
       slug: 'asian-paints',
@@ -2040,13 +2623,15 @@ async function main() {
     data: [
       {
         question: 'How much cement per sqft?',
-        answer: 'Rough thumb rule is 0.4 bags per sqft for RCC framed structures — use calculators for accuracy.',
+        answer:
+          'Rough thumb rule is 0.4 bags per sqft for RCC framed structures — use calculators for accuracy.',
         sortOrder: 1,
         status: 'PUBLISHED',
       },
       {
         question: 'What is TMT steel?',
-        answer: 'Thermo-Mechanically Treated bars with higher strength and ductility for earthquake-resistant construction.',
+        answer:
+          'Thermo-Mechanically Treated bars with higher strength and ductility for earthquake-resistant construction.',
         sortOrder: 2,
         status: 'PUBLISHED',
       },
@@ -2216,7 +2801,10 @@ async function main() {
         description: biz.description,
         phone: biz.phone,
         status: BusinessStatus.APPROVED,
-        metadata: { sponsored: Boolean((biz as { sponsored?: boolean }).sponsored), vertical: 'construction' },
+        metadata: {
+          sponsored: Boolean((biz as { sponsored?: boolean }).sponsored),
+          vertical: 'construction',
+        },
       },
       create: {
         name: biz.name,
@@ -2224,7 +2812,10 @@ async function main() {
         description: biz.description,
         phone: biz.phone,
         status: BusinessStatus.APPROVED,
-        metadata: { sponsored: Boolean((biz as { sponsored?: boolean }).sponsored), vertical: 'construction' },
+        metadata: {
+          sponsored: Boolean((biz as { sponsored?: boolean }).sponsored),
+          vertical: 'construction',
+        },
       },
     });
     if (categoryId) {
@@ -2253,8 +2844,12 @@ async function main() {
     }
   }
 
-  const opcMaterial = await prisma.constructionMaterial.findUnique({ where: { slug: 'opc-53-cement' } });
-  const tmtMaterial = await prisma.constructionMaterial.findUnique({ where: { slug: 'tmt-fe500d' } });
+  const opcMaterial = await prisma.constructionMaterial.findUnique({
+    where: { slug: 'opc-53-cement' },
+  });
+  const tmtMaterial = await prisma.constructionMaterial.findUnique({
+    where: { slug: 'tmt-fe500d' },
+  });
   if (opcMaterial && tmtMaterial) {
     await prisma.constructionComparison.upsert({
       where: { slug: 'cement-vs-steel-starter' },
@@ -2427,9 +3022,11 @@ async function main() {
     where: { slug: 'maruti-swift-vxi-review' },
     update: {
       title: 'Swift VXI: city-friendly hatch',
-      summary: 'A nimble, efficient hatchback that excels in urban driving with strong resale value.',
-      body: '## Overview\n\nThe Maruti Swift VXI remains one of India\'s most trusted hatchbacks. It balances peppy performance with frugal running costs.\n\n## Driving experience\n\nLight steering and a compact footprint make it easy to slot into tight city gaps. Highway stability is acceptable for its class.',
-      verdict: 'A smart buy for first-time owners and city commuters who prioritize efficiency and resale.',
+      summary:
+        'A nimble, efficient hatchback that excels in urban driving with strong resale value.',
+      body: "## Overview\n\nThe Maruti Swift VXI remains one of India's most trusted hatchbacks. It balances peppy performance with frugal running costs.\n\n## Driving experience\n\nLight steering and a compact footprint make it easy to slot into tight city gaps. Highway stability is acceptable for its class.",
+      verdict:
+        'A smart buy for first-time owners and city commuters who prioritize efficiency and resale.',
       recommendation: 'best_budget',
       reviewType: 'editorial',
       entityType: 'vehicle',
@@ -2457,9 +3054,11 @@ async function main() {
       productId: swiftProduct.id,
       title: 'Swift VXI: city-friendly hatch',
       slug: 'maruti-swift-vxi-review',
-      summary: 'A nimble, efficient hatchback that excels in urban driving with strong resale value.',
-      body: '## Overview\n\nThe Maruti Swift VXI remains one of India\'s most trusted hatchbacks. It balances peppy performance with frugal running costs.\n\n## Driving experience\n\nLight steering and a compact footprint make it easy to slot into tight city gaps. Highway stability is acceptable for its class.',
-      verdict: 'A smart buy for first-time owners and city commuters who prioritize efficiency and resale.',
+      summary:
+        'A nimble, efficient hatchback that excels in urban driving with strong resale value.',
+      body: "## Overview\n\nThe Maruti Swift VXI remains one of India's most trusted hatchbacks. It balances peppy performance with frugal running costs.\n\n## Driving experience\n\nLight steering and a compact footprint make it easy to slot into tight city gaps. Highway stability is acceptable for its class.",
+      verdict:
+        'A smart buy for first-time owners and city commuters who prioritize efficiency and resale.',
       recommendation: 'best_budget',
       reviewType: 'editorial',
       entityType: 'vehicle',
@@ -2633,7 +3232,8 @@ async function main() {
       },
       {
         question: 'How is on-road price calculated?',
-        answer: 'On-road ≈ ex-showroom + registration + insurance + handling charges. Exact figures vary by city.',
+        answer:
+          'On-road ≈ ex-showroom + registration + insurance + handling charges. Exact figures vary by city.',
         sortOrder: 2,
         status: 'PUBLISHED',
       },
@@ -2748,7 +3348,9 @@ async function main() {
   });
 
   await prisma.comparisonItem.deleteMany({ where: { comparisonId: genericVehicleComparison.id } });
-  await prisma.comparisonAttribute.deleteMany({ where: { comparisonId: genericVehicleComparison.id } });
+  await prisma.comparisonAttribute.deleteMany({
+    where: { comparisonId: genericVehicleComparison.id },
+  });
 
   const swiftItem = await prisma.comparisonItem.create({
     data: {
@@ -2818,20 +3420,47 @@ async function main() {
 
   await prisma.comparisonValue.createMany({
     data: [
-      { comparisonItemId: swiftItem.id, comparisonAttributeId: priceAttr.id, value: '₹6.5L', highlight: 'best_budget' },
+      {
+        comparisonItemId: swiftItem.id,
+        comparisonAttributeId: priceAttr.id,
+        value: '₹6.5L',
+        highlight: 'best_budget',
+      },
       { comparisonItemId: cretaItem.id, comparisonAttributeId: priceAttr.id, value: '₹12.5L' },
-      { comparisonItemId: swiftItem.id, comparisonAttributeId: mileageAttr.id, value: '22.4 km/l', highlight: 'best_value' },
+      {
+        comparisonItemId: swiftItem.id,
+        comparisonAttributeId: mileageAttr.id,
+        value: '22.4 km/l',
+        highlight: 'best_value',
+      },
       { comparisonItemId: cretaItem.id, comparisonAttributeId: mileageAttr.id, value: '17.4 km/l' },
       { comparisonItemId: swiftItem.id, comparisonAttributeId: safetyAttr.id, value: 2 },
-      { comparisonItemId: cretaItem.id, comparisonAttributeId: safetyAttr.id, value: 5, highlight: 'best_overall' },
-      { comparisonItemId: swiftItem.id, comparisonAttributeId: engineAttr.id, value: '1197 cc Petrol' },
-      { comparisonItemId: cretaItem.id, comparisonAttributeId: engineAttr.id, value: '1497 cc Petrol' },
+      {
+        comparisonItemId: cretaItem.id,
+        comparisonAttributeId: safetyAttr.id,
+        value: 5,
+        highlight: 'best_overall',
+      },
+      {
+        comparisonItemId: swiftItem.id,
+        comparisonAttributeId: engineAttr.id,
+        value: '1197 cc Petrol',
+      },
+      {
+        comparisonItemId: cretaItem.id,
+        comparisonAttributeId: engineAttr.id,
+        value: '1497 cc Petrol',
+      },
     ],
   });
 
   await seedExpandedComparisons(prisma);
 
-  const directoryTree: Array<{ slug: string; name: string; children?: Array<{ slug: string; name: string }> }> = [
+  const directoryTree: Array<{
+    slug: string;
+    name: string;
+    children?: Array<{ slug: string; name: string }>;
+  }> = [
     {
       slug: 'business',
       name: 'Business',
@@ -2969,7 +3598,10 @@ async function main() {
   if (dealerCatIds['car-dealers']) {
     await prisma.businessCategoryLink.upsert({
       where: {
-        businessId_categoryId: { businessId: dealerBiz.id, categoryId: dealerCatIds['car-dealers']! },
+        businessId_categoryId: {
+          businessId: dealerBiz.id,
+          categoryId: dealerCatIds['car-dealers']!,
+        },
       },
       update: {},
       create: { businessId: dealerBiz.id, categoryId: dealerCatIds['car-dealers']! },
@@ -2997,7 +3629,11 @@ async function main() {
     create: { name: 'Automobile', slug: 'automobile' },
   });
 
-  const aiCategoryTree: Array<{ slug: string; name: string; children?: Array<{ slug: string; name: string }> }> = [
+  const aiCategoryTree: Array<{
+    slug: string;
+    name: string;
+    children?: Array<{ slug: string; name: string }>;
+  }> = [
     {
       slug: 'writing',
       name: 'Writing',
@@ -3142,7 +3778,8 @@ async function main() {
       slug: 'anthropic-claude',
       name: 'Claude',
       categorySlug: 'llm-platforms',
-      description: 'Helpful, honest, and harmless AI assistant from Anthropic with strong reasoning.',
+      description:
+        'Helpful, honest, and harmless AI assistant from Anthropic with strong reasoning.',
       shortDescription: 'Anthropic AI assistant',
       pricingModel: 'FREEMIUM' as const,
       freePlan: true,
@@ -3219,11 +3856,21 @@ async function main() {
 
     await prisma.aiToolFeature.deleteMany({ where: { toolId: row.id } });
     await prisma.aiToolFeature.createMany({
-      data: tool.features.map((name, i) => ({ id: randomUUID(), toolId: row.id, name, sortOrder: i })),
+      data: tool.features.map((name, i) => ({
+        id: randomUUID(),
+        toolId: row.id,
+        name,
+        sortOrder: i,
+      })),
     });
     await prisma.aiToolIntegration.deleteMany({ where: { toolId: row.id } });
     await prisma.aiToolIntegration.createMany({
-      data: tool.integrations.map((name, i) => ({ id: randomUUID(), toolId: row.id, name, sortOrder: i })),
+      data: tool.integrations.map((name, i) => ({
+        id: randomUUID(),
+        toolId: row.id,
+        name,
+        sortOrder: i,
+      })),
     });
   }
 

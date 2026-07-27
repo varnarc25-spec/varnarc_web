@@ -103,12 +103,12 @@ export default async function CalculatorDetailPage({ params }: Props) {
       data.settings?.relatedArticles?.topicField === 'loanType' ? defaultLoanTopic : undefined;
     const articlesQs = topic ? `?topic=${encodeURIComponent(topic)}` : '';
     const [relatedRes, articlesRes] = await Promise.all([
-      apiPublicFetch<Array<{ name: string; slug: string }>>(`/calculators/${data.id}/related`).catch(
-        () => ({ data: [] as Array<{ name: string; slug: string }> }),
-      ),
-      apiPublicFetch<RelatedArticle[]>(`/calculators/${data.id}/related-articles${articlesQs}`).catch(
-        () => ({ data: [] as RelatedArticle[] }),
-      ),
+      apiPublicFetch<Array<{ name: string; slug: string }>>(
+        `/calculators/${data.id}/related`,
+      ).catch(() => ({ data: [] as Array<{ name: string; slug: string }> })),
+      apiPublicFetch<RelatedArticle[]>(
+        `/calculators/${data.id}/related-articles${articlesQs}`,
+      ).catch(() => ({ data: [] as RelatedArticle[] })),
     ]);
     relatedCalcs = Array.isArray(relatedRes.data) ? relatedRes.data : [];
     relatedArticles = Array.isArray(articlesRes.data) ? articlesRes.data : [];
@@ -128,8 +128,9 @@ export default async function CalculatorDetailPage({ params }: Props) {
   ];
   const faq = normalizeFaq(calc?.settings?.faq, defaultFaq);
 
+  const singlePageSlugs = new Set(['loan', 'emi']);
   const calculatorSettings =
-    calc?.settings && slug === 'loan'
+    calc?.settings && singlePageSlugs.has(slug)
       ? { ...calc.settings, mode: undefined, steps: undefined }
       : calc?.settings;
 
@@ -158,7 +159,11 @@ export default async function CalculatorDetailPage({ params }: Props) {
         step: [
           { '@type': 'HowToStep', name: 'Enter inputs', text: 'Fill in the calculator fields.' },
           { '@type': 'HowToStep', name: 'Calculate', text: 'Click Calculate to see results.' },
-          { '@type': 'HowToStep', name: 'Save or share', text: 'Optionally save or share your result.' },
+          {
+            '@type': 'HowToStep',
+            name: 'Save or share',
+            text: 'Optionally save or share your result.',
+          },
         ],
       },
     ],
@@ -167,7 +172,9 @@ export default async function CalculatorDetailPage({ params }: Props) {
   return (
     <PageShell
       title={name}
-      description={description ?? 'Interactive calculator powered by the Varnarc Calculator Engine.'}
+      description={
+        description ?? 'Interactive calculator powered by the Varnarc Calculator Engine.'
+      }
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Calculators', href: '/calculators' },
@@ -181,7 +188,10 @@ export default async function CalculatorDetailPage({ params }: Props) {
           metadata={{ slug, title: name }}
         />
       ) : null}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="space-y-8">
         <div className="grid gap-8 lg:grid-cols-5 lg:items-start">
           <div className="space-y-4 lg:col-span-3">
