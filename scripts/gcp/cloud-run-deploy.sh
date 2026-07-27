@@ -16,7 +16,9 @@ case "$SERVICE" in
   api)
     PORT=4000
     WANT_SECRETS=(DATABASE_URL AUTH0_DOMAIN AUTH0_AUDIENCE REDIS_URL OPENSEARCH_URL OPENSEARCH_USERNAME OPENSEARCH_PASSWORD)
-    ENV_VARS="NODE_ENV=production,API_PORT=4000,APP_VERSION=${IMAGE_TAG},SEARCH_ENGINE=opensearch,OPENSEARCH_INDEX=varnarc-search,ADSENSE_SYNC_ENABLED=true,ADSENSE_CURRENCY=INR"
+    WEB_APP_URL="${WEB_APP_URL:-https://varnarc.com}"
+    ADMIN_APP_URL="${ADMIN_APP_URL:-https://admin.varnarc.com}"
+    ENV_VARS="NODE_ENV=production,API_PORT=4000,APP_VERSION=${IMAGE_TAG},SEARCH_ENGINE=opensearch,OPENSEARCH_INDEX=varnarc-search,ADSENSE_SYNC_ENABLED=true,ADSENSE_CURRENCY=INR,WEB_APP_URL=${WEB_APP_URL},ADMIN_APP_URL=${ADMIN_APP_URL},NEXT_PUBLIC_APP_URL=${WEB_APP_URL},NEXT_PUBLIC_ADMIN_URL=${ADMIN_APP_URL}"
     EXTRA=(--cpu=1 --memory=512Mi --min-instances=0 --max-instances=10 --concurrency=80)
     PROBES=(
       --startup-probe=type=http,path=/api/v1/ready,port=4000,initialDelaySeconds=10,periodSeconds=10,failureThreshold=3

@@ -69,15 +69,9 @@ for name in "${AVAILABLE_SECRETS[@]}"; do
 done
 
 ENV_EXTRA="${ENV_EXTRA:-}"
-WEB_APP_URL="${WEB_APP_URL:-}"
-ADMIN_APP_URL="${ADMIN_APP_URL:-}"
-ENV_VARS="NODE_ENV=production,SEARCH_ENGINE=postgres-fts"
-if [[ -n "$WEB_APP_URL" ]]; then
-  ENV_VARS+=",WEB_APP_URL=${WEB_APP_URL}"
-fi
-if [[ -n "$ADMIN_APP_URL" ]]; then
-  ENV_VARS+=",ADMIN_APP_URL=${ADMIN_APP_URL}"
-fi
+WEB_APP_URL="${WEB_APP_URL:-https://varnarc.com}"
+ADMIN_APP_URL="${ADMIN_APP_URL:-https://admin.varnarc.com}"
+ENV_VARS="NODE_ENV=production,SEARCH_ENGINE=postgres-fts,WEB_APP_URL=${WEB_APP_URL},ADMIN_APP_URL=${ADMIN_APP_URL},NEXT_PUBLIC_APP_URL=${WEB_APP_URL},NEXT_PUBLIC_ADMIN_URL=${ADMIN_APP_URL}"
 
 echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION)"
 gcloud run services update "$SERVICE_NAME" \

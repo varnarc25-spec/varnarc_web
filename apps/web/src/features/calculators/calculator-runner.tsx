@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { trackAnalyticsEvent } from '@/lib/analytics-client';
-import { getApiBaseUrl } from '@/lib/runtime-public-env';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
 
 type Field = {
@@ -405,7 +404,7 @@ export function CalculatorRunner({
     setMessage(null);
     setOutputs(null);
     try {
-      const res = await fetch(`${getApiBaseUrl()}/calculators/${calculatorId}/calculate`, {
+      const res = await fetch(`/api/calculators/${calculatorId}/calculate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

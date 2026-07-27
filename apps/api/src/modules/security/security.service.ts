@@ -1,4 +1,22 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+
+function expandCorsOriginVariants(origins: string[]): string[] {
+  const expanded = new Set(origins);
+  for (const origin of origins) {
+    try {
+      const url = new URL(origin);
+      if (url.hostname === 'localhost' || url.hostname.endsWith('.localhost')) continue;
+      if (url.hostname.startsWith('www.')) {
+        expanded.add(`${url.protocol}//${url.hostname.slice(4)}`);
+      } else {
+        expanded.add(`${url.protocol}//www.${url.hostname}`);
+      }
+    } catch {
+      // ignore invalid origins
+    }
+  }
+  return [...expanded];
+}
 import { Inject } from '@nestjs/common';
 import type { Repositories } from '@varnarc/database';
 import { SECURITY_RATE_LIMITS, secretHealthStatus } from '@varnarc/config';
@@ -39,7 +57,9 @@ export class SecurityConfigService implements OnModuleInit {
     ].filter((value): value is string => Boolean(value?.trim()));
 
     const configured = [...settings.corsOrigins, ...settings.allowedOrigins, ...envOrigins];
-    this.corsOrigins = [...new Set(configured.map((origin) => origin.trim()).filter(Boolean))];
+    this.corsOrigins = expandCorsOriginVariants([
+      ...new Set(configured.map((origin) => origin.trim()).filter(Boolean)),
+    ]);
   }
 
   getRateLimitPerMinute() {
