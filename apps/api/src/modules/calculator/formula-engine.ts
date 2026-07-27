@@ -50,7 +50,7 @@ function tokenize(input: string): Tok[] {
       i = j;
       continue;
     }
-    if (ch === '?' ) {
+    if (ch === '?') {
       tokens.push({ t: 'qmark' });
       i += 1;
       continue;
@@ -151,17 +151,15 @@ class Parser {
     let left = this.parseAdd();
     while (true) {
       const next = this.peek();
-      if (
-        !(
-          next?.t === 'op' &&
-          (next.v === '>' ||
-            next.v === '<' ||
-            next.v === '>=' ||
-            next.v === '<=' ||
-            next.v === '==' ||
-            next.v === '!=')
-        )
-      ) {
+      if (!(
+        next?.t === 'op' &&
+        (next.v === '>' ||
+          next.v === '<' ||
+          next.v === '>=' ||
+          next.v === '<=' ||
+          next.v === '==' ||
+          next.v === '!=')
+      )) {
         break;
       }
       const op = (this.take() as Extract<Tok, { t: 'op' }>).v;
@@ -343,6 +341,14 @@ function callFn(name: string, args: number[]): number {
       if (args.length !== 1) throw new Error('sqrt(x)');
       if (args[0]! < 0) throw new Error('sqrt of negative');
       return Math.sqrt(args[0]!);
+    case 'log':
+      if (args.length !== 1) throw new Error('log(x)');
+      if (args[0]! <= 0) throw new Error('log of non-positive');
+      return Math.log10(args[0]!);
+    case 'ln':
+      if (args.length !== 1) throw new Error('ln(x)');
+      if (args[0]! <= 0) throw new Error('ln of non-positive');
+      return Math.log(args[0]!);
     case 'if':
       if (args.length !== 3) throw new Error('if(cond, then, else)');
       return args[0]! ? args[1]! : args[2]!;
@@ -405,7 +411,9 @@ function validateExprMap(outputs: Record<string, string>) {
   }
 }
 
-export function validateFormula(raw: string | null | undefined): { ok: true } | { ok: false; message: string } {
+export function validateFormula(
+  raw: string | null | undefined,
+): { ok: true } | { ok: false; message: string } {
   try {
     const def = parseFormulaDefinition(raw);
     if (def.type === 'api') return { ok: true };

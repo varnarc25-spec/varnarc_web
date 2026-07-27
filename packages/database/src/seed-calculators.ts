@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { type PrismaClient } from '@prisma/client';
 
 type FieldSeed = {
   key: string;
@@ -13,7 +13,7 @@ type FieldSeed = {
 
 type ResultCard = { key: string; label: string; format?: string };
 
-type CalculatorInput = {
+export type CalculatorInput = {
   slug: string;
   name: string;
   description: string;
@@ -72,11 +72,7 @@ export function enrichResultTemplate(
   return rt;
 }
 
-function enrichSettings(
-  settings: object | undefined,
-  name: string,
-  fields: FieldSeed[],
-): object {
+function enrichSettings(settings: object | undefined, name: string, fields: FieldSeed[]): object {
   const s = { ...(settings ?? {}) } as Record<string, unknown>;
   if (!s.faq) {
     s.faq = [
@@ -105,7 +101,7 @@ function enrichSettings(
   return s;
 }
 
-async function upsertCalculator(prisma: PrismaClient, input: CalculatorInput) {
+export async function upsertCalculator(prisma: PrismaClient, input: CalculatorInput) {
   const chartKeys = (input.settings as { chartKeys?: string[] } | undefined)?.chartKeys;
   const resultTemplate = input.skipEnrich
     ? input.resultTemplate
@@ -200,12 +196,24 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       settings: {
         chartKeys: ['idealWeightMin', 'idealWeightMax'],
         faq: [
-          { q: 'What is a healthy BMI?', a: 'For adults, 18.5–24.9 is generally considered normal weight.' },
-          { q: 'Does BMI work for athletes?', a: 'BMI may overestimate body fat in muscular individuals.' },
+          {
+            q: 'What is a healthy BMI?',
+            a: 'For adults, 18.5–24.9 is generally considered normal weight.',
+          },
+          {
+            q: 'Does BMI work for athletes?',
+            a: 'BMI may overestimate body fat in muscular individuals.',
+          },
         ],
       },
       fields: [
-        { key: 'weight', label: 'Weight (kg)', fieldType: 'number', sortOrder: 0, defaultValue: '70' },
+        {
+          key: 'weight',
+          label: 'Weight (kg)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '70',
+        },
         {
           key: 'height',
           label: 'Height (cm)',
@@ -238,8 +246,20 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['increased', 'decreased'] },
       fields: [
-        { key: 'value', label: 'Base value', fieldType: 'number', sortOrder: 0, defaultValue: '1000' },
-        { key: 'percent', label: 'Percentage (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '15' },
+        {
+          key: 'value',
+          label: 'Base value',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '1000',
+        },
+        {
+          key: 'percent',
+          label: 'Percentage (%)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '15',
+        },
       ],
     },
     {
@@ -277,11 +297,41 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         chartKeys: ['takeHome', 'tds'],
       },
       fields: [
-        { key: 'annualCtc', label: 'Annual CTC', fieldType: 'currency', sortOrder: 0, defaultValue: '1200000' },
-        { key: 'basicPercent', label: 'Basic (% of CTC)', fieldType: 'percentage', sortOrder: 1, defaultValue: '40' },
-        { key: 'hraPercent', label: 'HRA (% of basic)', fieldType: 'percentage', sortOrder: 2, defaultValue: '50' },
-        { key: 'pfPercent', label: 'PF (% of basic)', fieldType: 'percentage', sortOrder: 3, defaultValue: '12' },
-        { key: 'tdsPercent', label: 'Effective TDS (%)', fieldType: 'percentage', sortOrder: 4, defaultValue: '5' },
+        {
+          key: 'annualCtc',
+          label: 'Annual CTC',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '1200000',
+        },
+        {
+          key: 'basicPercent',
+          label: 'Basic (% of CTC)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '40',
+        },
+        {
+          key: 'hraPercent',
+          label: 'HRA (% of basic)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '50',
+        },
+        {
+          key: 'pfPercent',
+          label: 'PF (% of basic)',
+          fieldType: 'percentage',
+          sortOrder: 3,
+          defaultValue: '12',
+        },
+        {
+          key: 'tdsPercent',
+          label: 'Effective TDS (%)',
+          fieldType: 'percentage',
+          sortOrder: 4,
+          defaultValue: '5',
+        },
       ],
     },
     {
@@ -305,10 +355,34 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'birthYear', label: 'Birth year', fieldType: 'number', sortOrder: 0, defaultValue: '1990' },
-        { key: 'birthMonth', label: 'Birth month (1-12)', fieldType: 'number', sortOrder: 1, defaultValue: '6' },
-        { key: 'currentYear', label: 'Current year', fieldType: 'number', sortOrder: 2, defaultValue: '2026' },
-        { key: 'currentMonth', label: 'Current month (1-12)', fieldType: 'number', sortOrder: 3, defaultValue: '7' },
+        {
+          key: 'birthYear',
+          label: 'Birth year',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '1990',
+        },
+        {
+          key: 'birthMonth',
+          label: 'Birth month (1-12)',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '6',
+        },
+        {
+          key: 'currentYear',
+          label: 'Current year',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '2026',
+        },
+        {
+          key: 'currentMonth',
+          label: 'Current month (1-12)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '7',
+        },
       ],
     },
     {
@@ -334,10 +408,21 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: {
         chartKeys: ['meters', 'feet'],
-        faq: [{ q: 'Which unit should I use?', a: 'Meters and feet are common for room dimensions; centimeters for precision.' }],
+        faq: [
+          {
+            q: 'Which unit should I use?',
+            a: 'Meters and feet are common for room dimensions; centimeters for precision.',
+          },
+        ],
       },
       fields: [
-        { key: 'value', label: 'Value to convert', fieldType: 'number', sortOrder: 0, defaultValue: '10' },
+        {
+          key: 'value',
+          label: 'Value to convert',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '10',
+        },
         {
           key: 'conversionFactor',
           label: 'From unit',
@@ -374,8 +459,20 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['maturity', 'interestEarned'] },
       fields: [
-        { key: 'principal', label: 'Deposit amount', fieldType: 'currency', sortOrder: 0, defaultValue: '500000' },
-        { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '7' },
+        {
+          key: 'principal',
+          label: 'Deposit amount',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '500000',
+        },
+        {
+          key: 'annualRate',
+          label: 'Interest rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '7',
+        },
         {
           key: 'years',
           label: 'Tenure (years)',
@@ -396,7 +493,8 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           months: 'years * 12',
           monthlyRate: 'annualRate / 12 / 100',
           invested: 'monthlyDeposit * months',
-          maturity: 'monthlyDeposit * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
+          maturity:
+            'monthlyDeposit * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
           interestEarned: 'maturity - invested',
         },
       },
@@ -409,9 +507,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['invested', 'interestEarned'] },
       fields: [
-        { key: 'monthlyDeposit', label: 'Monthly deposit', fieldType: 'currency', sortOrder: 0, defaultValue: '5000' },
-        { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '6.5' },
-        { key: 'years', label: 'Tenure (years)', fieldType: 'number', sortOrder: 2, defaultValue: '3' },
+        {
+          key: 'monthlyDeposit',
+          label: 'Monthly deposit',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '5000',
+        },
+        {
+          key: 'annualRate',
+          label: 'Interest rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '6.5',
+        },
+        {
+          key: 'years',
+          label: 'Tenure (years)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '3',
+        },
       ],
     },
     {
@@ -423,7 +539,8 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         outputs: {
           maxEmi: 'monthlyIncome * 0.4 - existingEmi',
           monthlyRate: 'annualRate / 12 / 100',
-          maxLoan: 'maxEmi * ((pow(1 + monthlyRate, tenureMonths) - 1) / (monthlyRate * pow(1 + monthlyRate, tenureMonths)))',
+          maxLoan:
+            'maxEmi * ((pow(1 + monthlyRate, tenureMonths) - 1) / (monthlyRate * pow(1 + monthlyRate, tenureMonths)))',
           maxHomePrice: 'maxLoan + downPayment',
           ltvPercent: 'maxLoan / max(maxHomePrice, 1) * 100',
         },
@@ -437,11 +554,41 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['maxLoan', 'maxHomePrice'] },
       fields: [
-        { key: 'monthlyIncome', label: 'Monthly net income', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
-        { key: 'existingEmi', label: 'Existing EMIs', fieldType: 'currency', sortOrder: 1, defaultValue: '15000' },
-        { key: 'downPayment', label: 'Available down payment', fieldType: 'currency', sortOrder: 2, defaultValue: '1000000' },
-        { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 3, defaultValue: '8.5' },
-        { key: 'tenureMonths', label: 'Loan tenure (months)', fieldType: 'number', sortOrder: 4, defaultValue: '240' },
+        {
+          key: 'monthlyIncome',
+          label: 'Monthly net income',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '100000',
+        },
+        {
+          key: 'existingEmi',
+          label: 'Existing EMIs',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '15000',
+        },
+        {
+          key: 'downPayment',
+          label: 'Available down payment',
+          fieldType: 'currency',
+          sortOrder: 2,
+          defaultValue: '1000000',
+        },
+        {
+          key: 'annualRate',
+          label: 'Interest rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 3,
+          defaultValue: '8.5',
+        },
+        {
+          key: 'tenureMonths',
+          label: 'Loan tenure (months)',
+          fieldType: 'number',
+          sortOrder: 4,
+          defaultValue: '240',
+        },
       ],
     },
     {
@@ -466,9 +613,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['balance', 'totalInterest'] },
       fields: [
-        { key: 'balance', label: 'Outstanding balance', fieldType: 'currency', sortOrder: 0, defaultValue: '50000' },
-        { key: 'annualRate', label: 'APR (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '42' },
-        { key: 'monthlyPayment', label: 'Monthly payment', fieldType: 'currency', sortOrder: 2, defaultValue: '5000' },
+        {
+          key: 'balance',
+          label: 'Outstanding balance',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '50000',
+        },
+        {
+          key: 'annualRate',
+          label: 'APR (%)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '42',
+        },
+        {
+          key: 'monthlyPayment',
+          label: 'Monthly payment',
+          fieldType: 'currency',
+          sortOrder: 2,
+          defaultValue: '5000',
+        },
       ],
     },
     {
@@ -485,15 +650,31 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       resultTemplate: {
         cards: [
-          { key: 'futureValue', label: 'Future cost of today\'s amount', format: 'currency' },
-          { key: 'purchasingPowerToday', label: 'Today\'s value of future amount', format: 'currency' },
+          { key: 'futureValue', label: "Future cost of today's amount", format: 'currency' },
+          {
+            key: 'purchasingPowerToday',
+            label: "Today's value of future amount",
+            format: 'currency',
+          },
           { key: 'valueLost', label: 'Purchasing power lost', format: 'currency' },
         ],
       },
       settings: { chartKeys: ['amount', 'valueLost'] },
       fields: [
-        { key: 'amount', label: 'Amount today', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
-        { key: 'inflationRate', label: 'Inflation rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '6' },
+        {
+          key: 'amount',
+          label: 'Amount today',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '100000',
+        },
+        {
+          key: 'inflationRate',
+          label: 'Inflation rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '6',
+        },
         { key: 'years', label: 'Years', fieldType: 'number', sortOrder: 2, defaultValue: '10' },
       ],
     },
@@ -518,10 +699,34 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['purchaseValue', 'gains'] },
       fields: [
-        { key: 'grams', label: 'Gold weight (grams)', fieldType: 'number', sortOrder: 0, defaultValue: '50' },
-        { key: 'buyPricePerGram', label: 'Buy price / gram', fieldType: 'currency', sortOrder: 1, defaultValue: '6500' },
-        { key: 'annualAppreciation', label: 'Expected appreciation (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '8' },
-        { key: 'years', label: 'Holding period (years)', fieldType: 'number', sortOrder: 3, defaultValue: '5' },
+        {
+          key: 'grams',
+          label: 'Gold weight (grams)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '50',
+        },
+        {
+          key: 'buyPricePerGram',
+          label: 'Buy price / gram',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '6500',
+        },
+        {
+          key: 'annualAppreciation',
+          label: 'Expected appreciation (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '8',
+        },
+        {
+          key: 'years',
+          label: 'Holding period (years)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '5',
+        },
       ],
     },
     {
@@ -534,7 +739,8 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           months: 'years * 12',
           monthlyRate: 'expectedReturn / 12 / 100',
           sipInvested: 'monthlySip * months',
-          sipMaturity: 'monthlySip * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
+          sipMaturity:
+            'monthlySip * ((pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate)',
           lumpsumMaturity: 'lumpsum * pow(1 + expectedReturn / 100, years)',
           difference: 'sipMaturity - lumpsumMaturity',
         },
@@ -555,10 +761,34 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'monthlySip', label: 'Monthly SIP', fieldType: 'currency', sortOrder: 0, defaultValue: '10000' },
-        { key: 'lumpsum', label: 'Lumpsum amount', fieldType: 'currency', sortOrder: 1, defaultValue: '500000' },
-        { key: 'expectedReturn', label: 'Expected return (% p.a.)', fieldType: 'percentage', sortOrder: 2, defaultValue: '12' },
-        { key: 'years', label: 'Investment period (years)', fieldType: 'number', sortOrder: 3, defaultValue: '10' },
+        {
+          key: 'monthlySip',
+          label: 'Monthly SIP',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '10000',
+        },
+        {
+          key: 'lumpsum',
+          label: 'Lumpsum amount',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '500000',
+        },
+        {
+          key: 'expectedReturn',
+          label: 'Expected return (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '12',
+        },
+        {
+          key: 'years',
+          label: 'Investment period (years)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '10',
+        },
       ],
     },
     {
@@ -586,9 +816,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['exemption', 'taxableHra'] },
       fields: [
-        { key: 'monthlyHra', label: 'Monthly HRA received', fieldType: 'currency', sortOrder: 0, defaultValue: '20000' },
-        { key: 'annualBasic', label: 'Annual basic salary', fieldType: 'currency', sortOrder: 1, defaultValue: '480000' },
-        { key: 'annualRent', label: 'Annual rent paid', fieldType: 'currency', sortOrder: 2, defaultValue: '240000' },
+        {
+          key: 'monthlyHra',
+          label: 'Monthly HRA received',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '20000',
+        },
+        {
+          key: 'annualBasic',
+          label: 'Annual basic salary',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '480000',
+        },
+        {
+          key: 'annualRent',
+          label: 'Annual rent paid',
+          fieldType: 'currency',
+          sortOrder: 2,
+          defaultValue: '240000',
+        },
       ],
     },
     {
@@ -611,8 +859,20 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'cost', label: 'Investment / cost', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
-        { key: 'revenue', label: 'Returns / revenue', fieldType: 'currency', sortOrder: 1, defaultValue: '150000' },
+        {
+          key: 'cost',
+          label: 'Investment / cost',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '100000',
+        },
+        {
+          key: 'revenue',
+          label: 'Returns / revenue',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '150000',
+        },
       ],
     },
     {
@@ -635,9 +895,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'fixedCosts', label: 'Fixed costs', fieldType: 'currency', sortOrder: 0, defaultValue: '500000' },
-        { key: 'sellingPrice', label: 'Selling price / unit', fieldType: 'currency', sortOrder: 1, defaultValue: '500' },
-        { key: 'variableCostPerUnit', label: 'Variable cost / unit', fieldType: 'currency', sortOrder: 2, defaultValue: '300' },
+        {
+          key: 'fixedCosts',
+          label: 'Fixed costs',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '500000',
+        },
+        {
+          key: 'sellingPrice',
+          label: 'Selling price / unit',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '500',
+        },
+        {
+          key: 'variableCostPerUnit',
+          label: 'Variable cost / unit',
+          fieldType: 'currency',
+          sortOrder: 2,
+          defaultValue: '300',
+        },
       ],
     },
     {
@@ -674,11 +952,41 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         chartKeys: ['energyCharge', 'fixedCharge'],
       },
       fields: [
-        { key: 'units', label: 'Units consumed', fieldType: 'number', sortOrder: 0, defaultValue: '250' },
-        { key: 'rate1', label: 'Rate 0–100 units (₹/unit)', fieldType: 'number', sortOrder: 1, defaultValue: '4' },
-        { key: 'rate2', label: 'Rate 101–200 units (₹/unit)', fieldType: 'number', sortOrder: 2, defaultValue: '6' },
-        { key: 'rate3', label: 'Rate 201+ units (₹/unit)', fieldType: 'number', sortOrder: 3, defaultValue: '8' },
-        { key: 'fixedMonthly', label: 'Fixed monthly charge', fieldType: 'currency', sortOrder: 4, defaultValue: '50' },
+        {
+          key: 'units',
+          label: 'Units consumed',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '250',
+        },
+        {
+          key: 'rate1',
+          label: 'Rate 0–100 units (₹/unit)',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '4',
+        },
+        {
+          key: 'rate2',
+          label: 'Rate 101–200 units (₹/unit)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '6',
+        },
+        {
+          key: 'rate3',
+          label: 'Rate 201+ units (₹/unit)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '8',
+        },
+        {
+          key: 'fixedMonthly',
+          label: 'Fixed monthly charge',
+          fieldType: 'currency',
+          sortOrder: 4,
+          defaultValue: '50',
+        },
       ],
     },
     {
@@ -701,10 +1009,28 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '4' },
+        {
+          key: 'length',
+          label: 'Length (ft)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '4',
+        },
         { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '4' },
-        { key: 'height', label: 'Height (ft)', fieldType: 'number', sortOrder: 2, defaultValue: '5' },
-        { key: 'costPerLitre', label: 'Water cost / litre', fieldType: 'number', sortOrder: 3, defaultValue: '0.05' },
+        {
+          key: 'height',
+          label: 'Height (ft)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '5',
+        },
+        {
+          key: 'costPerLitre',
+          label: 'Water cost / litre',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '0.05',
+        },
       ],
     },
     {
@@ -729,12 +1055,48 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['floorArea', 'wallArea'] },
       fields: [
-        { key: 'length', label: 'Length (ft)', fieldType: 'number', sortOrder: 0, defaultValue: '14' },
-        { key: 'width', label: 'Width (ft)', fieldType: 'number', sortOrder: 1, defaultValue: '12' },
-        { key: 'height', label: 'Ceiling height (ft)', fieldType: 'number', sortOrder: 2, defaultValue: '10' },
-        { key: 'coats', label: 'Paint coats', fieldType: 'number', sortOrder: 3, defaultValue: '2' },
-        { key: 'coveragePerLitre', label: 'Coverage per litre (sq ft)', fieldType: 'number', sortOrder: 4, defaultValue: '100' },
-        { key: 'paintPricePerLitre', label: 'Paint price / litre', fieldType: 'currency', sortOrder: 5, defaultValue: '250' },
+        {
+          key: 'length',
+          label: 'Length (ft)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '14',
+        },
+        {
+          key: 'width',
+          label: 'Width (ft)',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '12',
+        },
+        {
+          key: 'height',
+          label: 'Ceiling height (ft)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '10',
+        },
+        {
+          key: 'coats',
+          label: 'Paint coats',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '2',
+        },
+        {
+          key: 'coveragePerLitre',
+          label: 'Coverage per litre (sq ft)',
+          fieldType: 'number',
+          sortOrder: 4,
+          defaultValue: '100',
+        },
+        {
+          key: 'paintPricePerLitre',
+          label: 'Paint price / litre',
+          fieldType: 'currency',
+          sortOrder: 5,
+          defaultValue: '250',
+        },
       ],
     },
     {
@@ -758,9 +1120,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'floorHeight', label: 'Floor-to-floor height (in)', fieldType: 'number', sortOrder: 0, defaultValue: '108' },
-        { key: 'riserHeight', label: 'Riser height (in)', fieldType: 'number', sortOrder: 1, defaultValue: '7' },
-        { key: 'treadDepth', label: 'Tread depth (in)', fieldType: 'number', sortOrder: 2, defaultValue: '10' },
+        {
+          key: 'floorHeight',
+          label: 'Floor-to-floor height (in)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '108',
+        },
+        {
+          key: 'riserHeight',
+          label: 'Riser height (in)',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '7',
+        },
+        {
+          key: 'treadDepth',
+          label: 'Tread depth (in)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '10',
+        },
       ],
     },
     {
@@ -783,9 +1163,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'carpetArea', label: 'Carpet area (sq ft)', fieldType: 'number', sortOrder: 0, defaultValue: '1000' },
-        { key: 'loadingFactor', label: 'Loading factor (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '25' },
-        { key: 'superLoading', label: 'Super built-up loading (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '15' },
+        {
+          key: 'carpetArea',
+          label: 'Carpet area (sq ft)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '1000',
+        },
+        {
+          key: 'loadingFactor',
+          label: 'Loading factor (%)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '25',
+        },
+        {
+          key: 'superLoading',
+          label: 'Super built-up loading (%)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '15',
+        },
       ],
     },
     {
@@ -810,12 +1208,48 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['chargingCost', 'energyNeeded'] },
       fields: [
-        { key: 'batteryCapacity', label: 'Battery capacity (kWh)', fieldType: 'number', sortOrder: 0, defaultValue: '40' },
-        { key: 'currentCharge', label: 'Current charge (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '20' },
-        { key: 'targetCharge', label: 'Target charge (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '80' },
-        { key: 'electricityRate', label: 'Electricity rate (₹/kWh)', fieldType: 'number', sortOrder: 3, defaultValue: '8' },
-        { key: 'chargerPower', label: 'Charger power (kW)', fieldType: 'number', sortOrder: 4, defaultValue: '7.4' },
-        { key: 'rangeKm', label: 'Expected range (km)', fieldType: 'number', sortOrder: 5, defaultValue: '300' },
+        {
+          key: 'batteryCapacity',
+          label: 'Battery capacity (kWh)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '40',
+        },
+        {
+          key: 'currentCharge',
+          label: 'Current charge (%)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '20',
+        },
+        {
+          key: 'targetCharge',
+          label: 'Target charge (%)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '80',
+        },
+        {
+          key: 'electricityRate',
+          label: 'Electricity rate (₹/kWh)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '8',
+        },
+        {
+          key: 'chargerPower',
+          label: 'Charger power (kW)',
+          fieldType: 'number',
+          sortOrder: 4,
+          defaultValue: '7.4',
+        },
+        {
+          key: 'rangeKm',
+          label: 'Expected range (km)',
+          fieldType: 'number',
+          sortOrder: 5,
+          defaultValue: '300',
+        },
       ],
     },
     {
@@ -828,8 +1262,10 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           monthlyRate: 'annualRate / 12 / 100',
           emi: 'principal * monthlyRate * pow(1 + monthlyRate, tenureMonths) / (pow(1 + monthlyRate, tenureMonths) - 1)',
           newPrincipal: 'principal - prepayment',
-          newEmi: 'newPrincipal * monthlyRate * pow(1 + monthlyRate, tenureMonths) / (pow(1 + monthlyRate, tenureMonths) - 1)',
-          interestSaved: '(emi - newEmi) * tenureMonths + prepayment * monthlyRate * tenureMonths / 2',
+          newEmi:
+            'newPrincipal * monthlyRate * pow(1 + monthlyRate, tenureMonths) / (pow(1 + monthlyRate, tenureMonths) - 1)',
+          interestSaved:
+            '(emi - newEmi) * tenureMonths + prepayment * monthlyRate * tenureMonths / 2',
           tenureSavedMonths: 'prepayment / emi * 12',
         },
       },
@@ -840,19 +1276,49 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           { key: 'tenureSavedMonths', label: 'Tenure saved (months)', format: 'number' },
         ],
       },
+      skipEnrich: true,
       settings: {
-        mode: 'wizard',
-        steps: [
-          { title: 'Loan details', fields: ['principal', 'annualRate', 'tenureMonths'] },
-          { title: 'Prepayment', fields: ['prepayment'] },
+        chartKeys: ['interestSaved', 'tenureSavedMonths'],
+        faq: [
+          {
+            q: 'Should I reduce EMI or tenure after prepayment?',
+            a: 'Reducing tenure saves more interest; lowering EMI improves monthly cash flow.',
+          },
+          {
+            q: 'Are prepayment charges included?',
+            a: 'No. Check your lender for foreclosure or prepayment penalties.',
+          },
         ],
-        chartKeys: ['emi', 'newEmi'],
       },
       fields: [
-        { key: 'principal', label: 'Outstanding principal', fieldType: 'currency', sortOrder: 0, defaultValue: '2000000' },
-        { key: 'annualRate', label: 'Interest rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '8.5' },
-        { key: 'tenureMonths', label: 'Remaining tenure (months)', fieldType: 'number', sortOrder: 2, defaultValue: '180' },
-        { key: 'prepayment', label: 'Prepayment amount', fieldType: 'currency', sortOrder: 3, defaultValue: '200000' },
+        {
+          key: 'principal',
+          label: 'Outstanding principal',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '2000000',
+        },
+        {
+          key: 'annualRate',
+          label: 'Interest rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '8.5',
+        },
+        {
+          key: 'tenureMonths',
+          label: 'Remaining tenure (months)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '180',
+        },
+        {
+          key: 'prepayment',
+          label: 'Prepayment amount',
+          fieldType: 'currency',
+          sortOrder: 3,
+          defaultValue: '200000',
+        },
       ],
     },
     {
@@ -876,9 +1342,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['principal', 'interest'] },
       fields: [
-        { key: 'principal', label: 'Principal', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
-        { key: 'rate', label: 'Rate (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '10' },
-        { key: 'years', label: 'Time (years)', fieldType: 'number', sortOrder: 2, defaultValue: '3' },
+        {
+          key: 'principal',
+          label: 'Principal',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '100000',
+        },
+        {
+          key: 'rate',
+          label: 'Rate (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '10',
+        },
+        {
+          key: 'years',
+          label: 'Time (years)',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '3',
+        },
       ],
     },
     {
@@ -902,8 +1386,20 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['maturity', 'gains'] },
       fields: [
-        { key: 'principal', label: 'Investment amount', fieldType: 'currency', sortOrder: 0, defaultValue: '500000' },
-        { key: 'expectedReturn', label: 'Expected return (% p.a.)', fieldType: 'percentage', sortOrder: 1, defaultValue: '12' },
+        {
+          key: 'principal',
+          label: 'Investment amount',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '500000',
+        },
+        {
+          key: 'expectedReturn',
+          label: 'Expected return (% p.a.)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '12',
+        },
         {
           key: 'years',
           label: 'Investment period (years)',
@@ -936,9 +1432,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['encashment', 'taxEstimate'] },
       fields: [
-        { key: 'basicSalary', label: 'Monthly basic salary', fieldType: 'currency', sortOrder: 0, defaultValue: '50000' },
-        { key: 'unusedLeaveDays', label: 'Unused leave days', fieldType: 'number', sortOrder: 1, defaultValue: '15' },
-        { key: 'taxPercent', label: 'Tax rate (%)', fieldType: 'percentage', sortOrder: 2, defaultValue: '20' },
+        {
+          key: 'basicSalary',
+          label: 'Monthly basic salary',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '50000',
+        },
+        {
+          key: 'unusedLeaveDays',
+          label: 'Unused leave days',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '15',
+        },
+        {
+          key: 'taxPercent',
+          label: 'Tax rate (%)',
+          fieldType: 'percentage',
+          sortOrder: 2,
+          defaultValue: '20',
+        },
       ],
     },
     {
@@ -961,7 +1475,13 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'paymentAmount', label: 'Payment amount', fieldType: 'currency', sortOrder: 0, defaultValue: '100000' },
+        {
+          key: 'paymentAmount',
+          label: 'Payment amount',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '100000',
+        },
         {
           key: 'tdsRate',
           label: 'TDS rate (%)',
@@ -975,7 +1495,13 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
             { value: '20', label: '20% (No PAN)' },
           ],
         },
-        { key: 'paymentsPerYear', label: 'Payments per year', fieldType: 'number', sortOrder: 2, defaultValue: '12' },
+        {
+          key: 'paymentsPerYear',
+          label: 'Payments per year',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '12',
+        },
       ],
     },
     {
@@ -999,7 +1525,13 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       },
       settings: { chartKeys: ['salePrice', 'discountAmount'] },
       fields: [
-        { key: 'originalPrice', label: 'Original price', fieldType: 'currency', sortOrder: 0, defaultValue: '5000' },
+        {
+          key: 'originalPrice',
+          label: 'Original price',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '5000',
+        },
         {
           key: 'discountPercent',
           label: 'Discount (%)',
@@ -1030,9 +1562,27 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'billAmount', label: 'Bill amount', fieldType: 'currency', sortOrder: 0, defaultValue: '2000' },
-        { key: 'tipPercent', label: 'Tip (%)', fieldType: 'percentage', sortOrder: 1, defaultValue: '10' },
-        { key: 'diners', label: 'Number of diners', fieldType: 'number', sortOrder: 2, defaultValue: '4' },
+        {
+          key: 'billAmount',
+          label: 'Bill amount',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '2000',
+        },
+        {
+          key: 'tipPercent',
+          label: 'Tip (%)',
+          fieldType: 'percentage',
+          sortOrder: 1,
+          defaultValue: '10',
+        },
+        {
+          key: 'diners',
+          label: 'Number of diners',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '4',
+        },
       ],
     },
     {
@@ -1058,18 +1608,57 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
       settings: {
         mode: 'wizard',
         steps: [
-          { title: 'Buy option', fields: ['purchasePrice', 'annualMaintenance', 'maintenanceYears'] },
+          {
+            title: 'Buy option',
+            fields: ['purchasePrice', 'annualMaintenance', 'maintenanceYears'],
+          },
           { title: 'Lease option', fields: ['monthlyLease', 'leaseMonths', 'leaseDeposit'] },
         ],
         chartKeys: ['buyTotal', 'leaseTotal'],
       },
       fields: [
-        { key: 'purchasePrice', label: 'Purchase price', fieldType: 'currency', sortOrder: 0, defaultValue: '1200000' },
-        { key: 'annualMaintenance', label: 'Annual maintenance (buy)', fieldType: 'currency', sortOrder: 1, defaultValue: '25000' },
-        { key: 'maintenanceYears', label: 'Ownership years', fieldType: 'number', sortOrder: 2, defaultValue: '5' },
-        { key: 'monthlyLease', label: 'Monthly lease', fieldType: 'currency', sortOrder: 3, defaultValue: '25000' },
-        { key: 'leaseMonths', label: 'Lease tenure (months)', fieldType: 'number', sortOrder: 4, defaultValue: '36' },
-        { key: 'leaseDeposit', label: 'Lease deposit', fieldType: 'currency', sortOrder: 5, defaultValue: '100000' },
+        {
+          key: 'purchasePrice',
+          label: 'Purchase price',
+          fieldType: 'currency',
+          sortOrder: 0,
+          defaultValue: '1200000',
+        },
+        {
+          key: 'annualMaintenance',
+          label: 'Annual maintenance (buy)',
+          fieldType: 'currency',
+          sortOrder: 1,
+          defaultValue: '25000',
+        },
+        {
+          key: 'maintenanceYears',
+          label: 'Ownership years',
+          fieldType: 'number',
+          sortOrder: 2,
+          defaultValue: '5',
+        },
+        {
+          key: 'monthlyLease',
+          label: 'Monthly lease',
+          fieldType: 'currency',
+          sortOrder: 3,
+          defaultValue: '25000',
+        },
+        {
+          key: 'leaseMonths',
+          label: 'Lease tenure (months)',
+          fieldType: 'number',
+          sortOrder: 4,
+          defaultValue: '36',
+        },
+        {
+          key: 'leaseDeposit',
+          label: 'Lease deposit',
+          fieldType: 'currency',
+          sortOrder: 5,
+          defaultValue: '100000',
+        },
       ],
     },
     {
@@ -1092,10 +1681,34 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
         ],
       },
       fields: [
-        { key: 'distance', label: 'Distance (km)', fieldType: 'number', sortOrder: 0, defaultValue: '400' },
-        { key: 'tollPlazas', label: 'Toll plazas', fieldType: 'number', sortOrder: 1, defaultValue: '8' },
-        { key: 'tollPerPlaza', label: 'Avg. toll / plaza', fieldType: 'currency', sortOrder: 2, defaultValue: '120' },
-        { key: 'fuelCost', label: 'Fuel cost', fieldType: 'currency', sortOrder: 3, defaultValue: '2500' },
+        {
+          key: 'distance',
+          label: 'Distance (km)',
+          fieldType: 'number',
+          sortOrder: 0,
+          defaultValue: '400',
+        },
+        {
+          key: 'tollPlazas',
+          label: 'Toll plazas',
+          fieldType: 'number',
+          sortOrder: 1,
+          defaultValue: '8',
+        },
+        {
+          key: 'tollPerPlaza',
+          label: 'Avg. toll / plaza',
+          fieldType: 'currency',
+          sortOrder: 2,
+          defaultValue: '120',
+        },
+        {
+          key: 'fuelCost',
+          label: 'Fuel cost',
+          fieldType: 'currency',
+          sortOrder: 3,
+          defaultValue: '2500',
+        },
       ],
     },
   ];
@@ -1107,7 +1720,25 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
 
 /** Re-enrich existing calculators that only have basic cards */
 export async function enrichExistingCalculators(prisma: PrismaClient) {
-  const skipSlugs = new Set(['emi', 'sip']);
+  const skipSlugs = new Set([
+    'emi',
+    'sip',
+    'personal-loan-emi',
+    'home-loan-emi',
+    'car-loan',
+    'bike-loan-emi',
+    'education-loan-emi',
+    'business-loan-emi',
+    'gold-loan-emi',
+    'loan-against-property-emi',
+    'credit-card-emi',
+    'debt-planner',
+    'loan-prepayment',
+    'emi-tenure-calculator',
+    'emi-rate-compare',
+    'fixed-vs-floating-emi',
+    'loan-eligibility',
+  ]);
   const rows = await prisma.calculator.findMany({
     where: { deletedAt: null, slug: { notIn: [...skipSlugs] } },
     include: { fields: { orderBy: { sortOrder: 'asc' } } },

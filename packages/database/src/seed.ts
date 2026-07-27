@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { ROLE_DEFINITIONS, PERMISSIONS } from '@varnarc/auth';
 import { seedContent } from './seed-content';
 import { enrichExistingCalculators, seedExtendedCalculators } from './seed-calculators';
+import { seedEmiCalculators } from './seed-emi-calculators';
 import { seedAiOps } from './seed-ai';
 import { seedHomepage } from './seed-homepage';
 import { seedNewsletter } from './seed-newsletter';
@@ -2006,6 +2007,10 @@ async function main() {
     construction: construction.id,
     automobile: automobile.id,
     general: general.id,
+  });
+  await seedEmiCalculators(prisma, {
+    finance: finance.id,
+    automobile: automobile.id,
   });
   await enrichExistingCalculators(prisma);
   await seedAiOps(prisma);

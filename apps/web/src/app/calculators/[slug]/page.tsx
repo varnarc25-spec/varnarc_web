@@ -128,11 +128,12 @@ export default async function CalculatorDetailPage({ params }: Props) {
   ];
   const faq = normalizeFaq(calc?.settings?.faq, defaultFaq);
 
-  const singlePageSlugs = new Set(['loan', 'emi']);
   const calculatorSettings =
-    calc?.settings && singlePageSlugs.has(slug)
-      ? { ...calc.settings, mode: undefined, steps: undefined }
-      : calc?.settings;
+    calc?.settings?.mode === 'wizard' && calc.settings.steps?.length
+      ? calc.settings
+      : calc?.settings
+        ? { ...calc.settings, mode: undefined, steps: undefined }
+        : calc?.settings;
 
   const jsonLd = {
     '@context': 'https://schema.org',
