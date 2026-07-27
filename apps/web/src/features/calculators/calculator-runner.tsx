@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { trackAnalyticsEvent } from '@/lib/analytics-client';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
 
 type Field = {
@@ -23,7 +24,10 @@ type ResultChart = {
   keys: string[];
   labels?: Record<string, string>;
 };
-type ResultBreakdown = { title?: string; items: Array<{ label: string; key: string; format?: string }> };
+type ResultBreakdown = {
+  title?: string;
+  items: Array<{ label: string; key: string; format?: string }>;
+};
 type ResultTemplate = {
   cards?: ResultCard[];
   table?: ResultTable;
@@ -42,7 +46,9 @@ const LOAN_TYPE_LABELS: Record<string, string> = {
 };
 
 function optionLabel(value: string) {
-  return LOAN_TYPE_LABELS[value] ?? value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return (
+    LOAN_TYPE_LABELS[value] ?? value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  );
 }
 
 function buildDefaultValues(fields: Field[]) {
@@ -53,8 +59,6 @@ function buildDefaultValues(fields: Field[]) {
   }
   return defaults;
 }
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 function formatValue(value: number, format?: string) {
   if (format === 'currency') {
@@ -105,7 +109,9 @@ function DonutChart({ outputs, chart }: { outputs: Record<string, number>; chart
 
   return (
     <div className="rounded-xl border border-slate-200 p-4">
-      {chart.title ? <p className="mb-4 text-sm font-semibold text-[#0b1f3a]">{chart.title}</p> : null}
+      {chart.title ? (
+        <p className="mb-4 text-sm font-semibold text-[#0b1f3a]">{chart.title}</p>
+      ) : null}
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
         <div
           className="relative h-44 w-44 shrink-0 rounded-full shadow-inner"
@@ -115,7 +121,9 @@ function DonutChart({ outputs, chart }: { outputs: Record<string, number>; chart
         >
           <div className="absolute inset-7 flex flex-col items-center justify-center rounded-full bg-white px-2 text-center">
             <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Total</p>
-            <p className="text-sm font-bold leading-tight text-[#0b1f3a]">{formatValue(total, 'currency')}</p>
+            <p className="text-sm font-bold leading-tight text-[#0b1f3a]">
+              {formatValue(total, 'currency')}
+            </p>
           </div>
         </div>
         <ul className="w-full max-w-xs space-y-3">
@@ -144,7 +152,13 @@ function DonutChart({ outputs, chart }: { outputs: Record<string, number>; chart
   );
 }
 
-function ResultChartView({ outputs, chart }: { outputs: Record<string, number>; chart: ResultChart }) {
+function ResultChartView({
+  outputs,
+  chart,
+}: {
+  outputs: Record<string, number>;
+  chart: ResultChart;
+}) {
   if (resolveChartType(chart) === 'donut') {
     return <DonutChart outputs={outputs} chart={chart} />;
   }
@@ -161,7 +175,9 @@ function BarChart({ outputs, chart }: { outputs: Record<string, number>; chart: 
 
   return (
     <div className="rounded-xl border border-slate-200 p-4">
-      {chart.title ? <p className="mb-4 text-sm font-semibold text-[#0b1f3a]">{chart.title}</p> : null}
+      {chart.title ? (
+        <p className="mb-4 text-sm font-semibold text-[#0b1f3a]">{chart.title}</p>
+      ) : null}
       <div
         className="grid gap-4"
         style={{ gridTemplateColumns: `repeat(${keys.length}, minmax(0, 1fr))` }}
@@ -175,10 +191,7 @@ function BarChart({ outputs, chart }: { outputs: Record<string, number>; chart: 
               <p className="mb-2 min-h-[2rem] text-[11px] font-semibold leading-tight text-slate-700">
                 {formatValue(v)}
               </p>
-              <div
-                className="flex w-full items-end justify-center"
-                style={{ height: trackHeight }}
-              >
+              <div className="flex w-full items-end justify-center" style={{ height: trackHeight }}>
                 <div
                   className="rounded-t-lg bg-[#f97316] shadow-sm"
                   style={{
@@ -209,7 +222,8 @@ function FieldInput({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const validation = field.validation as { options?: unknown; min?: number; max?: number; step?: number } | null | undefined;
+  const validation = field.validation as
+    { options?: unknown; min?: number; max?: number; step?: number } | null | undefined;
   const opts = field.options ?? validation?.options;
   const min = field.validation?.min ?? validation?.min;
   const max = field.validation?.max ?? validation?.max;
@@ -232,7 +246,12 @@ function FieldInput({
     );
   }
 
-  if ((field.fieldType === 'dropdown' || field.fieldType === 'radio' || field.fieldType === 'select') && Array.isArray(opts)) {
+  if (
+    (field.fieldType === 'dropdown' ||
+      field.fieldType === 'radio' ||
+      field.fieldType === 'select') &&
+    Array.isArray(opts)
+  ) {
     if (field.fieldType === 'radio') {
       return (
         <fieldset className="space-y-2">
@@ -242,7 +261,12 @@ function FieldInput({
             const label = typeof opt === 'string' ? optionLabel(opt) : opt.label;
             return (
               <label key={v} className="flex items-center gap-2 text-sm">
-                <input type="radio" name={field.key} checked={value === v} onChange={() => onChange(v)} />
+                <input
+                  type="radio"
+                  name={field.key}
+                  checked={value === v}
+                  onChange={() => onChange(v)}
+                />
                 {label}
               </label>
             );
@@ -348,7 +372,9 @@ export function CalculatorRunner({
 
   const [values, setValues] = useState<Record<string, string>>(() => buildDefaultValues(fields));
   const [outputs, setOutputs] = useState<Record<string, number> | null>(null);
-  const [recommendations, setRecommendations] = useState<Array<{ id: string; name: string; slug: string }>>([]);
+  const [recommendations, setRecommendations] = useState<
+    Array<{ id: string; name: string; slug: string }>
+  >([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -379,7 +405,7 @@ export function CalculatorRunner({
     setMessage(null);
     setOutputs(null);
     try {
-      const res = await fetch(`${apiUrl}/calculators/${calculatorId}/calculate`, {
+      const res = await fetch(`${getApiBaseUrl()}/calculators/${calculatorId}/calculate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -465,15 +491,17 @@ export function CalculatorRunner({
     }
   }
 
-  const cards =
-    resultTemplate?.cards?.length
-      ? resultTemplate.cards
-      : outputs
-        ? Object.keys(outputs).map((key) => ({ key, label: key, format: 'number' as const }))
-        : [];
+  const cards = resultTemplate?.cards?.length
+    ? resultTemplate.cards
+    : outputs
+      ? Object.keys(outputs).map((key) => ({ key, label: key, format: 'number' as const }))
+      : [];
 
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <form
+      onSubmit={onSubmit}
+      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+    >
       <h2 className="text-sm font-extrabold text-[#0b1f3a]">{name}</h2>
 
       {wizardSteps ? (
@@ -561,7 +589,9 @@ export function CalculatorRunner({
                 {resultTemplate.breakdown.items.map((item) => (
                   <li key={item.key} className="flex justify-between gap-4">
                     <span className="text-slate-600">{item.label}</span>
-                    <span className="font-semibold">{formatValue(outputs[item.key] ?? 0, item.format)}</span>
+                    <span className="font-semibold">
+                      {formatValue(outputs[item.key] ?? 0, item.format)}
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ArticleThumbnail } from '@/components/articles/article-thumbnail';
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
 export type RelatedArticle = {
   id: string;
@@ -89,9 +88,12 @@ export function CalculatorRelatedArticles({
       setLoading(true);
       try {
         const qs = nextTopic ? `?topic=${encodeURIComponent(nextTopic)}` : '';
-        const res = await fetch(`${apiUrl}/calculators/${calculatorId}/related-articles${qs}`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(
+          `${getApiBaseUrl()}/calculators/${calculatorId}/related-articles${qs}`,
+          {
+            cache: 'no-store',
+          },
+        );
         const json = (await res.json()) as { data?: RelatedArticle[] };
         setArticles(Array.isArray(json.data) ? json.data : []);
       } catch {
@@ -118,7 +120,8 @@ export function CalculatorRelatedArticles({
 
   const topicLabel =
     activeTopicField && topic
-      ? LOAN_TYPE_LABELS[topic] ?? relatedArticlesSettings?.topicCategorySlugs?.[topic]?.replace(/-/g, ' ')
+      ? (LOAN_TYPE_LABELS[topic] ??
+        relatedArticlesSettings?.topicCategorySlugs?.[topic]?.replace(/-/g, ' '))
       : null;
 
   const grouped = articles.reduce<Record<string, RelatedArticle[]>>((acc, article) => {
@@ -149,7 +152,9 @@ export function CalculatorRelatedArticles({
         <div className="space-y-6">
           {groupKeys.map((group) => (
             <div key={group}>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{group}</h3>
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                {group}
+              </h3>
               <ul className="space-y-2">
                 {grouped[group]!.map((article) => (
                   <RelatedArticleRow key={article.slug} article={article} />
