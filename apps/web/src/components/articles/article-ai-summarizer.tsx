@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/services/api-client';
 
 export function ArticleAiSummarizer({ content, title }: { content: string; title: string }) {
   const [configured, setConfigured] = useState<boolean | null>(null);
@@ -14,7 +13,7 @@ export function ArticleAiSummarizer({ content, title }: { content: string; title
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch(`${getApiBaseUrl()}/ai/features/status`);
+        const res = await fetch('/api/ai/features/status');
         const json = (await res.json()) as { data?: { configured?: boolean } };
         if (!cancelled) setConfigured(Boolean(json.data?.configured));
       } catch {
@@ -32,8 +31,11 @@ export function ArticleAiSummarizer({ content, title }: { content: string; title
     setLoading(true);
     setError(null);
     try {
-      const plain = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      const res = await fetch(`${getApiBaseUrl()}/ai/features/summarize`, {
+      const plain = content
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const res = await fetch('/api/ai/features/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -41,7 +43,10 @@ export function ArticleAiSummarizer({ content, title }: { content: string; title
           style: 'brief',
         }),
       });
-      const json = (await res.json()) as { data?: { summary: string }; error?: { message?: string } };
+      const json = (await res.json()) as {
+        data?: { summary: string };
+        error?: { message?: string };
+      };
       if (!res.ok || !json.data?.summary) {
         throw new Error(json.error?.message || 'Summarize failed');
       }

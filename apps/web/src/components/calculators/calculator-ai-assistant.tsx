@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/services/api-client';
 
 type AssistResult = {
   summary: string;
@@ -35,7 +34,7 @@ export function CalculatorAiAssistant({
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch(`${getApiBaseUrl()}/ai/features/status`);
+        const res = await fetch('/api/ai/features/status');
         const json = (await res.json()) as { data?: { configured?: boolean } };
         if (!cancelled) setConfigured(Boolean(json.data?.configured));
       } catch {
@@ -56,7 +55,7 @@ export function CalculatorAiAssistant({
     setMessages(nextMessages);
     setQuestion('');
     try {
-      const res = await fetch(`${getApiBaseUrl()}/ai/features/calculator-assist`, {
+      const res = await fetch('/api/ai/features/calculator-assist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +71,11 @@ export function CalculatorAiAssistant({
       if (!res.ok || !json.data) {
         throw new Error(json.error?.message || 'Could not explain results');
       }
-      const reply = [json.data.summary, ...(json.data.insights ?? []), ...(json.data.nextSteps ?? [])].join('\n');
+      const reply = [
+        json.data.summary,
+        ...(json.data.insights ?? []),
+        ...(json.data.nextSteps ?? []),
+      ].join('\n');
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed');
@@ -92,7 +95,9 @@ export function CalculatorAiAssistant({
         <div className="mt-4 max-h-64 space-y-3 overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-sm">
           {messages.map((msg, index) => (
             <div key={`${msg.role}-${index}`} className={msg.role === 'user' ? 'text-right' : ''}>
-              <span className="text-xs font-medium text-slate-500">{msg.role === 'user' ? 'You' : 'Assistant'}</span>
+              <span className="text-xs font-medium text-slate-500">
+                {msg.role === 'user' ? 'You' : 'Assistant'}
+              </span>
               <p className="mt-1 whitespace-pre-wrap text-slate-700">{msg.content}</p>
             </div>
           ))}
