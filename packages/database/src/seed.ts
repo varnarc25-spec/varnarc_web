@@ -705,6 +705,7 @@ async function main() {
       },
     },
     settings: {
+      layout: 'single',
       relatedArticles: {
         topicField: 'loanType',
         topicCategorySlugs: {

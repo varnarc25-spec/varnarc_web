@@ -44,6 +44,7 @@ type CalculatorDetail = {
   slug: string;
   settings?: {
     mode?: string;
+    layout?: string;
     steps?: Array<{ title: string; fields: string[] }>;
     faq?: Array<{ q: string; a: string }>;
     relatedArticles?: {
@@ -128,12 +129,18 @@ export default async function CalculatorDetailPage({ params }: Props) {
   ];
   const faq = normalizeFaq(calc?.settings?.faq, defaultFaq);
 
-  const calculatorSettings =
-    calc?.settings?.mode === 'wizard' && calc.settings.steps?.length
+  const singlePageSlugs = new Set(['loan', 'emi']);
+  const useWizard =
+    !singlePageSlugs.has(slug) &&
+    calc?.settings?.mode === 'wizard' &&
+    calc.settings.steps?.length &&
+    calc.settings.layout !== 'single';
+
+  const calculatorSettings = calc?.settings
+    ? useWizard
       ? calc.settings
-      : calc?.settings
-        ? { ...calc.settings, mode: undefined, steps: undefined }
-        : calc?.settings;
+      : { ...calc.settings, mode: undefined, steps: undefined }
+    : calc?.settings;
 
   const jsonLd = {
     '@context': 'https://schema.org',

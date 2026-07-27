@@ -86,7 +86,7 @@ function enrichSettings(settings: object | undefined, name: string, fields: Fiel
       },
     ];
   }
-  if (!s.mode && fields.length >= 4) {
+  if (!s.mode && s.layout !== 'single' && fields.length >= 4) {
     s.mode = 'wizard';
     const steps: Array<{ title: string; fields: string[] }> = [];
     const keys = fields.map((f) => f.key);
@@ -1722,6 +1722,7 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
 export async function enrichExistingCalculators(prisma: PrismaClient) {
   const skipSlugs = new Set([
     'emi',
+    'loan',
     'sip',
     'personal-loan-emi',
     'home-loan-emi',
