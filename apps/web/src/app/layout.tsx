@@ -9,7 +9,9 @@ import { RegisterServiceWorker } from '@/components/pwa/register-sw';
 import { AnalyticsPageBeaconRoot } from '@/components/analytics/analytics-page-beacon-root';
 import { WebVitalsReporterRoot } from '@/components/performance/web-vitals-reporter-root';
 import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-integrations-root';
+import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
 import { GoogleAdsenseScript } from '@/components/business/google-adsense';
+import { isCmpConfigured } from '@/lib/cmp-config';
 import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
@@ -218,6 +220,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <link rel="stylesheet" href={fontsHref} />
           </>
         ) : null}
+        {isCmpConfigured() ? <CmpSdkScript /> : null}
       </head>
       <body className={sans.className}>
         <AppProviders

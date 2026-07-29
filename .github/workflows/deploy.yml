@@ -99,6 +99,9 @@ jobs:
             --build-arg NEXT_PUBLIC_ADMIN_URL=https://admin.varnarc.com \
             --build-arg NEXT_PUBLIC_AUTH0_CONFIGURED=true \
             --build-arg NEXT_PUBLIC_AUTH0_CLIENT_ID="${{ secrets.AUTH0_CLIENT_ID }}" \
+            --build-arg NEXT_PUBLIC_CMP_DOMAIN_KEY=dk_764ba6aa7876dc2206390dd04d8f314b \
+            --build-arg NEXT_PUBLIC_CMP_ENV=production \
+            --build-arg NEXT_PUBLIC_CMP_SDK_URL=https://consent-management-api-414895350436.us-central1.run.app/api/v1/public/cmp/sdk.js \
             -t varnarc-web:${{ github.sha }} .
 
       - name: Build Admin image
