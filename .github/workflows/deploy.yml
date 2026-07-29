@@ -118,7 +118,7 @@ jobs:
             -t varnarc-admin:${{ github.sha }} .
 
       - name: Scan API image (Trivy)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.30.0
         continue-on-error: true
         with:
           image-ref: varnarc-api:${{ github.sha }}
