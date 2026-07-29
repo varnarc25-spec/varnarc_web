@@ -120,15 +120,38 @@
     if (hasConsent('social_media')) loadSocialScripts();
   }
 
-  function start() {
-    syncTestScripts();
-    document.addEventListener('cmp:ready', syncTestScripts);
-    document.addEventListener('cmp:consent-update', syncTestScripts);
+  function waitForCmpReady(callback) {
+    if (window.__CMP__ && (window.__CMP__.ready || typeof window.__CMP__.hasConsent === 'function')) {
+      callback();
+      return;
+    }
+
+    var onReady = function () {
+      document.removeEventListener('cmp:ready', onReady);
+      callback();
+    };
+    document.addEventListener('cmp:ready', onReady);
+
+    var attempts = 0;
+    var timer = window.setInterval(function () {
+      attempts += 1;
+      if (window.__CMP__ && (window.__CMP__.ready || typeof window.__CMP__.hasConsent === 'function')) {
+        window.clearInterval(timer);
+        document.removeEventListener('cmp:ready', onReady);
+        callback();
+        return;
+      }
+      if (attempts >= 100) {
+        window.clearInterval(timer);
+        document.removeEventListener('cmp:ready', onReady);
+      }
+    }, 50);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
+  function start() {
+    document.addEventListener('cmp:consent-update', syncTestScripts);
+    waitForCmpReady(syncTestScripts);
   }
+
+  start();
 })();
