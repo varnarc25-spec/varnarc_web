@@ -12,5 +12,8 @@ export type CmpTestScriptCategory = 'analytics' | 'marketing' | 'functional' | '
 
 /** Load third-party test scripts for CMP verification (banner, consent gating, scanner). */
 export function isCmpTestScriptsEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_CMP_TEST_SCRIPTS === 'true';
+  const explicit = process.env.NEXT_PUBLIC_CMP_TEST_SCRIPTS?.trim();
+  if (explicit === 'false') return false;
+  if (explicit === 'true') return true;
+  return process.env.NODE_ENV === 'production';
 }
