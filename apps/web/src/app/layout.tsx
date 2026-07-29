@@ -11,6 +11,7 @@ import { WebVitalsReporterRoot } from '@/components/performance/web-vitals-repor
 import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-integrations-root';
 import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
 import { isCmpConfigured } from '@/lib/cmp-config';
+import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
 import { GoogleAdsenseScript } from '@/components/business/google-adsense';
 import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
@@ -221,6 +222,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           </>
         ) : null}
         {isCmpConfigured() ? <CmpSdkScript /> : null}
+        {isCmpConfigured() && isCmpTestScriptsEnabled() ? (
+          <script id="cmp-test-scripts" src="/cmp-test-scripts.js" defer />
+        ) : null}
       </head>
       <body className={sans.className}>
         <AppProviders
