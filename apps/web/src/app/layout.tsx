@@ -10,6 +10,7 @@ import { AnalyticsPageBeaconRoot } from '@/components/analytics/analytics-page-b
 import { WebVitalsReporterRoot } from '@/components/performance/web-vitals-reporter-root';
 import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-integrations-root';
 import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
+import { CmpTestScriptsRoot } from '@/components/consent/cmp-test-scripts-root';
 import { GoogleAdsenseScript } from '@/components/business/google-adsense';
 import { isCmpConfigured } from '@/lib/cmp-config';
 import { getAdsenseClient } from '@/lib/adsense-config';
@@ -258,6 +259,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             />
           </div>
           <RegisterServiceWorker />
+          <CmpTestScriptsRoot />
           <AnalyticsIntegrationsRoot />
           <AnalyticsPageBeaconRoot />
           <WebVitalsReporterRoot />
