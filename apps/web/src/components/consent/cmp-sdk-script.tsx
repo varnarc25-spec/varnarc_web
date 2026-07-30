@@ -37,6 +37,9 @@ export function CmpSdkScript() {
     script.async = true;
     script.setAttribute('data-domain-key', domainKey);
     script.setAttribute('data-env', getCmpEnv());
+    if (isCmpTestScriptsEnabled()) {
+      script.setAttribute('data-test-scripts', 'true');
+    }
     script.addEventListener('load', loadCmpTestScripts, { once: true });
     document.head.appendChild(script);
     loaded.current = true;
