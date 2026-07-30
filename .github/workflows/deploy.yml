@@ -105,7 +105,7 @@ jobs:
             --build-arg NEXT_PUBLIC_CMP_DOMAIN_KEY=dk_764ba6aa7876dc2206390dd04d8f314b \
             --build-arg NEXT_PUBLIC_CMP_ENV=production \
             --build-arg NEXT_PUBLIC_CMP_SDK_URL=https://consent-management-api-414895350436.us-central1.run.app/api/v1/public/cmp/sdk.js \
-            --build-arg NEXT_PUBLIC_CMP_TEST_SCRIPTS=true \
+            --build-arg NEXT_PUBLIC_CMP_TEST_SCRIPTS=false \
             -t varnarc-web:${{ github.sha }} .
 
       - name: Build Admin image

@@ -22,16 +22,35 @@ SERVICE="${1:?Usage: $0 admin|web}"
 : "${GCP_PROJECT_ID:?Set GCP_PROJECT_ID}"
 
 GCP_REGION="${GCP_REGION:-us-central1}"
-CLIENT_SECRET_SECRET="${CLIENT_SECRET_SECRET:-AUTH0_CLIENT_SECRET}"
 API_URL="${API_URL:-https://api.varnarc.com/api/v1}"
+
+gcloud config set project "$GCP_PROJECT_ID" >/dev/null
+
+resolve_secret_name() {
+  local primary="$1"
+  local fallback="$2"
+  if gcloud secrets describe "$primary" >/dev/null 2>&1; then
+    echo "$primary"
+  elif [[ -n "$fallback" ]] && gcloud secrets describe "$fallback" >/dev/null 2>&1; then
+    echo "$fallback"
+  else
+    echo "$primary"
+  fi
+}
+
+CLIENT_SECRET_SECRET="${CLIENT_SECRET_SECRET:-$(resolve_secret_name AUTH0_CLIENT_SECRET VARNARC_AUTH0_CLIENT_SECRET)}"
+AUDIENCE_SECRET="${AUDIENCE_SECRET:-$(resolve_secret_name AUTH0_AUDIENCE VARNARC_AUTH0_AUDIENCE)}"
+CLIENT_ID_SECRET="${CLIENT_ID_SECRET:-$(resolve_secret_name AUTH0_CLIENT_ID VARNARC_AUTH0_CLIENT_ID)}"
 
 case "$SERVICE" in
   admin)
     SERVICE_NAME="varnarc-admin"
+    CONTAINER_PORT=3001
     APP_BASE_URL="${APP_BASE_URL:-https://admin.varnarc.com}"
     ;;
   web)
     SERVICE_NAME="varnarc-web"
+    CONTAINER_PORT=3000
     APP_BASE_URL="${APP_BASE_URL:-https://varnarc.com}"
     ;;
   *)
@@ -41,8 +60,6 @@ case "$SERVICE" in
 esac
 
 : "${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID for this Auth0 Regular Web Application}"
-
-gcloud config set project "$GCP_PROJECT_ID"
 
 PROJECT_NUMBER="$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(projectNumber)')"
 DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
@@ -55,13 +72,9 @@ else
   RUNTIME_SA="$DEFAULT_SA"
 fi
 
-REQUIRED_SECRETS=(AUTH0_SECRET AUTH0_CLIENT_SECRET AUTH0_DOMAIN AUTH0_AUDIENCE)
+REQUIRED_SECRETS=(AUTH0_SECRET "$CLIENT_SECRET_SECRET" AUTH0_DOMAIN "$AUDIENCE_SECRET")
 MISSING=()
-for name in "${REQUIRED_SECRETS[@]}"; do
-  secret_name="$name"
-  if [[ "$name" == "AUTH0_CLIENT_SECRET" ]]; then
-    secret_name="$CLIENT_SECRET_SECRET"
-  fi
+for secret_name in "${REQUIRED_SECRETS[@]}"; do
   if ! gcloud secrets describe "$secret_name" >/dev/null 2>&1; then
     MISSING+=("$secret_name")
   fi
@@ -77,7 +90,7 @@ if ((${#MISSING[@]})); then
 fi
 
 echo "Granting secretAccessor to Cloud Run runtime SA: $RUNTIME_SA"
-for name in AUTH0_SECRET "$CLIENT_SECRET_SECRET" AUTH0_DOMAIN AUTH0_AUDIENCE; do
+for name in AUTH0_SECRET "$CLIENT_SECRET_SECRET" AUTH0_DOMAIN "$AUDIENCE_SECRET"; do
   gcloud secrets add-iam-policy-binding "$name" \
     --member="serviceAccount:${RUNTIME_SA}" \
     --role="roles/secretmanager.secretAccessor" \
@@ -85,15 +98,14 @@ for name in AUTH0_SECRET "$CLIENT_SECRET_SECRET" AUTH0_DOMAIN AUTH0_AUDIENCE; do
   echo "  OK $name"
 done
 
-SECRET_BINDINGS="AUTH0_SECRET=AUTH0_SECRET:latest,AUTH0_CLIENT_SECRET=${CLIENT_SECRET_SECRET}:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_AUDIENCE=AUTH0_AUDIENCE:latest"
+SECRET_BINDINGS="AUTH0_SECRET=AUTH0_SECRET:latest,AUTH0_CLIENT_SECRET=${CLIENT_SECRET_SECRET}:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_AUDIENCE=${AUDIENCE_SECRET}:latest"
 
-ENV_VARS="NODE_ENV=production,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
+ENV_VARS="NODE_ENV=production,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL},NEXT_PUBLIC_API_URL=${API_URL},NEXT_PUBLIC_AUTH0_CONFIGURED=true"
 
-# AUTH0_CLIENT_ID may already be a Secret Manager binding on Cloud Run — do not mix types.
-if gcloud secrets describe AUTH0_CLIENT_ID >/dev/null 2>&1; then
-  echo "Using AUTH0_CLIENT_ID from Secret Manager"
-  SECRET_BINDINGS="${SECRET_BINDINGS},AUTH0_CLIENT_ID=AUTH0_CLIENT_ID:latest"
-  gcloud secrets add-iam-policy-binding AUTH0_CLIENT_ID \
+if gcloud secrets describe "$CLIENT_ID_SECRET" >/dev/null 2>&1; then
+  echo "Using AUTH0_CLIENT_ID from Secret Manager ($CLIENT_ID_SECRET)"
+  SECRET_BINDINGS="${SECRET_BINDINGS},AUTH0_CLIENT_ID=${CLIENT_ID_SECRET}:latest"
+  gcloud secrets add-iam-policy-binding "$CLIENT_ID_SECRET" \
     --member="serviceAccount:${RUNTIME_SA}" \
     --role="roles/secretmanager.secretAccessor" \
     --quiet
@@ -105,7 +117,7 @@ fi
 echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION)"
 
 # When switching AUTH0_CLIENT_ID from secret → env var, remove the secret binding first.
-if ! gcloud secrets describe AUTH0_CLIENT_ID >/dev/null 2>&1; then
+if ! gcloud secrets describe "$CLIENT_ID_SECRET" >/dev/null 2>&1; then
   CURRENT_CLIENT_ID_TYPE="$(gcloud run services describe "$SERVICE_NAME" \
     --region="$GCP_REGION" \
     --format='value(spec.template.spec.containers[0].env.filter(name=AUTH0_CLIENT_ID).valueFrom.secretKeyRef.name)' 2>/dev/null || true)"
@@ -120,7 +132,7 @@ fi
 
 gcloud run services update "$SERVICE_NAME" \
   --region="$GCP_REGION" \
-  --port=8080 \
+  --port="$CONTAINER_PORT" \
   --set-secrets="$SECRET_BINDINGS" \
   --set-env-vars="$ENV_VARS" \
   --memory=512Mi \
