@@ -85,9 +85,11 @@ function resolveFieldVisibility(
 }
 
 function buildDefaultValues(fields: Field[]) {
+  const today = new Date().toISOString().slice(0, 10);
   const defaults: Record<string, string> = {};
   for (const f of fields) {
     if (f.defaultValue != null) defaults[f.key] = String(f.defaultValue);
+    else if (f.fieldType === 'date' && f.key === 'endDate') defaults[f.key] = today;
     else if (f.fieldType === 'checkbox') defaults[f.key] = '0';
   }
   return defaults;

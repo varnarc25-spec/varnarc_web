@@ -3,8 +3,10 @@
  * Never uses eval/Function. Supports arithmetic, comparisons, if(), and rule maps.
  */
 
+import { computeAgeFromDates } from '@varnarc/validation';
+
 export type FormulaMap = {
-  type?: 'static' | 'rules' | 'api';
+  type?: 'static' | 'rules' | 'api' | 'age';
   outputs?: Record<string, string>;
   rules?: Array<{ when: string; outputs: Record<string, string> }>;
   api?: {
@@ -421,6 +423,9 @@ export function parseFormulaDefinition(raw: string | null | undefined): FormulaM
       if (!parsed.rules?.length) throw new Error('Rules formula requires rules[]');
       return parsed;
     }
+    if (parsed.type === 'age') {
+      return parsed;
+    }
     if (!parsed?.outputs || typeof parsed.outputs !== 'object') {
       throw new Error('Formula JSON must include an "outputs" object');
     }
@@ -444,6 +449,7 @@ export function validateFormula(
   try {
     const def = parseFormulaDefinition(raw);
     if (def.type === 'api') return { ok: true };
+    if (def.type === 'age') return { ok: true };
     if (def.type === 'rules') {
       for (const rule of def.rules ?? []) {
         new Parser(tokenize(rule.when)).parse();
@@ -510,6 +516,10 @@ export async function executeFormula(
       outputs[key] = n;
     }
     return outputs;
+  }
+
+  if (def.type === 'age') {
+    return computeAgeFromDates(inputs.dateOfBirth, inputs.endDate);
   }
 
   if (def.type === 'rules' && def.rules?.length) {

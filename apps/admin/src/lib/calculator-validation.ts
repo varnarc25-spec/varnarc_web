@@ -1,4 +1,5 @@
 import {
+  AGE_CALCULATOR_SLUG,
   isCalculatorFieldVisible,
   LOAN_CALCULATOR_FIELD_VISIBILITY,
   LOAN_CALCULATOR_SLUG,
@@ -76,6 +77,19 @@ export function buildCalculatorTestInputs(
 
     if (field.fieldType === 'checkbox') {
       inputs[field.key] = 0;
+      continue;
+    }
+
+    if (field.fieldType === 'date') {
+      if (field.defaultValue) {
+        inputs[field.key] = field.defaultValue;
+      } else if (field.key === 'endDate') {
+        inputs[field.key] = new Date().toISOString().slice(0, 10);
+      } else if (calc.slug === AGE_CALCULATOR_SLUG) {
+        inputs[field.key] = '1990-06-15';
+      } else {
+        inputs[field.key] = '2000-01-01';
+      }
       continue;
     }
 

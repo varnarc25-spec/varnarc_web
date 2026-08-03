@@ -130,7 +130,7 @@ export default async function CalculatorDetailPage({ params }: Props) {
   ];
   const faq = normalizeFaq(calc?.settings?.faq, defaultFaq);
 
-  const singlePageSlugs = new Set(['loan', 'emi']);
+  const singlePageSlugs = new Set(['loan', 'emi', 'age']);
   const useWizard =
     !singlePageSlugs.has(slug) &&
     calc?.settings?.mode === 'wizard' &&

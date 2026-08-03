@@ -51,4 +51,17 @@ describe('formula-engine', () => {
     expect(outputs.maturity).toBeGreaterThan(outputs.invested);
     expect(outputs.rate).toBeCloseTo(0.071);
   });
+
+  it('computes age from date of birth and end date', async () => {
+    const formula = JSON.stringify({ type: 'age', outputs: {} });
+    const outputs = await executeFormula(formula, {
+      dateOfBirth: '1990-06-15',
+      endDate: '2026-07-27',
+    });
+    expect(outputs.ageYears).toBe(36);
+    expect(outputs.ageMonths).toBe(36 * 12 + 1);
+    expect(outputs.ageDays).toBe(12);
+    expect(outputs.totalDays).toBeGreaterThan(13_000);
+    expect(outputs.nextBirthdayDays).toBeGreaterThan(0);
+  });
 });
