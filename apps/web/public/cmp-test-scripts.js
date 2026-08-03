@@ -53,6 +53,12 @@
     });
   }
 
+  function loadPreferencesScripts() {
+    appendScript('cmp-test-preferences', function (script) {
+      script.src = 'https://cdn.jsdelivr.net/npm/js-cookie@3/dist/js.cookie.min.js';
+    });
+  }
+
   function loadAnalyticsScripts() {
     appendScript('cmp-test-gtag', function (script) {
       script.src = 'https://www.googletagmanager.com/gtag/js?id=' + IDS.googleAnalytics;
@@ -74,6 +80,13 @@
         '(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};h._hjSettings={hjid:' +
         IDS.hotjar +
         ',hjsv:6};a=o.getElementsByTagName("head")[0];r=o.createElement("script");r.async=1;r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);})(window,document,"https://static.hotjar.com/c/hotjar-",".js?sv=");';
+    });
+  }
+
+  function loadPerformanceScripts() {
+    appendScript('cmp-test-web-vitals', function (script) {
+      script.src =
+        'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.attribution.iife.js';
     });
   }
 
@@ -111,13 +124,22 @@
     });
   }
 
+  function loadUnclassifiedScripts() {
+    appendScript('cmp-test-unclassified', function (script) {
+      script.textContent = 'window.__cmpTestUnclassifiedLoaded=true;';
+    });
+  }
+
   function syncTestScripts() {
     ensureGoogleConsentModeStub();
     updateGoogleConsentMode();
-    if (hasConsent('analytics')) loadAnalyticsScripts();
-    if (hasConsent('marketing')) loadMarketingScripts();
+    if (hasConsent('preferences')) loadPreferencesScripts();
     if (hasConsent('functional')) loadFunctionalScripts();
+    if (hasConsent('analytics')) loadAnalyticsScripts();
+    if (hasConsent('performance')) loadPerformanceScripts();
+    if (hasConsent('marketing')) loadMarketingScripts();
     if (hasConsent('social_media')) loadSocialScripts();
+    if (hasConsent('unclassified')) loadUnclassifiedScripts();
   }
 
   function waitForCmpReady(callback) {
