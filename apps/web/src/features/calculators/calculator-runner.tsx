@@ -12,6 +12,8 @@ import {
 } from '@varnarc/validation';
 import { trackAnalyticsEvent } from '@/lib/analytics-client';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
+import { Spinner } from '@/components/shared/spinner';
+import { DateInput, openDatePicker } from '@/components/shared/date-input';
 
 type Field = {
   key: string;
@@ -353,16 +355,37 @@ function FieldInput({
     );
   }
 
+  if (field.fieldType === 'date' || field.fieldType === 'month') {
+    return (
+      <label
+        className="block cursor-pointer text-sm"
+        onClick={(e) => {
+          const input = e.currentTarget.querySelector('input');
+          if (input instanceof HTMLInputElement && e.target !== input) {
+            openDatePicker(input);
+          }
+        }}
+      >
+        <span className="mb-1 block font-medium text-slate-700">{field.label}</span>
+        <div className="relative">
+          <DateInput
+            type={field.fieldType === 'month' ? 'month' : 'date'}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="h-11 w-full rounded-xl border border-slate-200 px-3 outline-none focus:ring-2 focus:ring-[#f97316]"
+            required={field.required !== false}
+          />
+        </div>
+      </label>
+    );
+  }
+
   const inputType =
-    field.fieldType === 'date'
-      ? 'date'
-      : field.fieldType === 'month'
-        ? 'month'
-        : field.fieldType === 'year'
-          ? 'number'
-          : ['number', 'currency', 'percentage'].includes(field.fieldType)
-            ? 'number'
-            : 'text';
+    field.fieldType === 'year'
+      ? 'number'
+      : ['number', 'currency', 'percentage'].includes(field.fieldType)
+        ? 'number'
+        : 'text';
 
   return (
     <label className="block text-sm">
@@ -620,11 +643,16 @@ export function CalculatorRunner({
           disabled={loading}
           className="h-11 rounded-xl bg-[#f97316] px-5 text-sm font-semibold text-white hover:bg-[#ea580c] disabled:opacity-60"
         >
-          {loading
-            ? 'Calculating…'
-            : wizardSteps && stepIndex < wizardSteps.length - 1
-              ? 'Next'
-              : 'Calculate'}
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner size="sm" label="Calculating" />
+              Calculating…
+            </span>
+          ) : wizardSteps && stepIndex < wizardSteps.length - 1 ? (
+            'Next'
+          ) : (
+            'Calculate'
+          )}
         </button>
       </div>
 

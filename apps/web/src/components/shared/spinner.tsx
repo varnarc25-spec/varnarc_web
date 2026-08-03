@@ -1,8 +1,13 @@
 import { Spinner as UiSpinner } from '@varnarc/ui';
-import { cn } from '@varnarc/ui';
 
-export function Spinner({ className, label = 'Loading' }: { className?: string; label?: string }) {
-  return (
-    <UiSpinner className={cn('text-[var(--varnarc-brand)]', className)} label={label} size="md" />
-  );
+export function Spinner({
+  className,
+  label = 'Loading',
+  size = 'md',
+}: {
+  className?: string;
+  label?: string;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  return <UiSpinner className={className} label={label} size={size} />;
 }

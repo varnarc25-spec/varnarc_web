@@ -4,7 +4,11 @@ type SpinnerProps = {
   className?: string;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
+  /** Public URL path to the loading image (served from /public in each app). */
+  src?: string;
 };
+
+const DEFAULT_LOADING_ICON = '/loading-icon.png';
 
 const sizeClass = {
   sm: 'h-4 w-4',
@@ -12,23 +16,20 @@ const sizeClass = {
   lg: 'h-12 w-12',
 } as const;
 
-export function Spinner({ className, label = 'Loading', size = 'md' }: SpinnerProps) {
+export function Spinner({
+  className,
+  label = 'Loading',
+  size = 'md',
+  src = DEFAULT_LOADING_ICON,
+}: SpinnerProps) {
   return (
-    <svg
-      className={cn('animate-spin text-current', sizeClass[size], className)}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+    <img
+      src={src}
+      alt=""
       role="status"
       aria-label={label}
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
+      className={cn('animate-spin object-contain', sizeClass[size], className)}
+    />
   );
 }
 
@@ -40,7 +41,7 @@ export function PageLoading({ label = 'Loading' }: { label?: string }) {
       aria-live="polite"
       aria-label={label}
     >
-      <Spinner size="lg" className="text-[var(--varnarc-brand,#f97316)]" label={label} />
+      <Spinner size="lg" label={label} />
       <p className="text-sm text-[var(--varnarc-subtle,#64748b)]">{label}</p>
     </div>
   );
