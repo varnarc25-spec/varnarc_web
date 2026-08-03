@@ -12,6 +12,7 @@ export {
   AUTH0_CALLBACK_PATH,
   AUTH0_LOGIN_PATH,
   AUTH0_LOGOUT_PATH,
+  getAuth0LogoutReturnTo,
 } from './auth0-env';
 
 /** Granular permissions — stored in DB, checked by NestJS guards. */

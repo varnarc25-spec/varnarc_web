@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isAuth0Configured, resolveAppBaseUrl } from '@varnarc/auth';
+import { isAuth0Configured, resolveAppBaseUrl, getAuth0LogoutReturnTo } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 
 const PUBLIC = ['/auth'];
@@ -12,7 +12,7 @@ function isPublicPath(pathname: string) {
 function logoutRedirect(request: NextRequest) {
   const base = resolveAppBaseUrl(request);
   const logout = new URL(`${base}/auth/logout`);
-  logout.searchParams.set('returnTo', `${base}/auth/login`);
+  logout.searchParams.set('returnTo', getAuth0LogoutReturnTo(base));
   return NextResponse.redirect(logout);
 }
 
@@ -61,6 +61,12 @@ export async function middleware(request: NextRequest) {
     const authResponse = await auth0.middleware(request);
 
     if (isPublicPath(pathname)) {
+      if (pathname === '/auth/logout' && authResponse.status >= 400) {
+        const login = new URL('/auth/login', request.url);
+        const fallback = NextResponse.redirect(login);
+        fallback.cookies.delete('__session');
+        return fallback;
+      }
       authResponse.headers.set('x-middleware-pathname', pathname);
       return authResponse;
     }

@@ -1,8 +1,8 @@
 import {
-  AUTH0_LOGIN_PATH,
   AUTH0_LOGOUT_PATH,
   resolveAppBaseUrlFromHeaders,
   isAuth0Configured,
+  getAuth0LogoutReturnTo,
 } from '@varnarc/auth';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
@@ -88,8 +88,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const { currentUser, sessionPicture } = await syncAndLoadUser();
   if (!currentUser) {
     const base = resolveAppBaseUrlFromHeaders(await headers());
-    const loginUrl = `${base}${AUTH0_LOGIN_PATH}`;
-    redirect(`${base}${AUTH0_LOGOUT_PATH}?returnTo=${encodeURIComponent(loginUrl)}`);
+    const returnTo = encodeURIComponent(getAuth0LogoutReturnTo(base));
+    redirect(`${base}${AUTH0_LOGOUT_PATH}?returnTo=${returnTo}`);
   }
 
   return (

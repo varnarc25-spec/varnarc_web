@@ -131,3 +131,8 @@ export function appBaseUrlMatchesHost(
 export const AUTH0_CALLBACK_PATH = '/auth/callback';
 export const AUTH0_LOGIN_PATH = '/auth/login';
 export const AUTH0_LOGOUT_PATH = '/auth/logout';
+
+/** Auth0 Allowed Logout URLs must include this exact value (no /auth/login path). */
+export function getAuth0LogoutReturnTo(baseUrl: string): string {
+  return baseUrl.replace(/\/$/, '');
+}
