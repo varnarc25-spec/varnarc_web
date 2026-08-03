@@ -1,6 +1,8 @@
 import { auth0 } from '@/lib/auth0';
 import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
+export { getApiBaseUrl };
+
 export async function getApiAccessToken(): Promise<string | null> {
   try {
     const audience = process.env.AUTH0_AUDIENCE;

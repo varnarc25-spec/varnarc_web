@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { Badge, Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
+import { PageHeader } from '@varnarc/ui';
 import { apiServerFetch } from '@/lib/api';
+import { CalculatorsValidationPanel } from '@/components/calculators-validation-panel';
+import type { CalculatorTableRow } from '@/components/calculators-data-table';
 
 type CalcRow = {
   id: string;
@@ -11,17 +13,27 @@ type CalcRow = {
   _count?: { fields: number; history: number };
 };
 
-export default async function CalculatorsAdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ search?: string }>;
-}) {
-  const params = await searchParams;
-  const qs = new URLSearchParams({ limit: '50' });
-  if (params.search) qs.set('search', params.search);
+const PUBLIC_APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com').replace(
+  /\/$/,
+  '',
+);
 
-  const result = await apiServerFetch<CalcRow[]>(`/calculators/admin/all?${qs.toString()}`);
-  const rows = Array.isArray(result.data) ? result.data : [];
+function toTableRow(row: CalcRow): CalculatorTableRow {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    status: row.status,
+    categoryName: row.category?.name ?? '—',
+    fieldCount: row._count?.fields ?? 0,
+    runCount: row._count?.history ?? 0,
+    publicUrl: `${PUBLIC_APP_URL}/calculators/${row.slug}`,
+  };
+}
+
+export default async function CalculatorsAdminPage() {
+  const result = await apiServerFetch<CalcRow[]>('/calculators/admin/all?limit=100');
+  const tableRows = (result.data ?? []).map(toTableRow);
 
   return (
     <div>
@@ -29,74 +41,32 @@ export default async function CalculatorsAdminPage({
         title="Calculators"
         description="Configure formulas, fields, and publish calculator tools."
         actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge>{rows.length} loaded</Badge>
-            <Link href="/calculators/new" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <Link href="/calculators/new" className="text-[var(--varnarc-brand)] hover:underline">
               New calculator
             </Link>
-            <Link href="/calculators/categories" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+            <Link
+              href="/calculators/categories"
+              className="text-[var(--varnarc-brand)] hover:underline"
+            >
               Categories
             </Link>
-            <Link href="/calculators/analytics" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+            <Link
+              href="/calculators/analytics"
+              className="text-[var(--varnarc-brand)] hover:underline"
+            >
               Analytics
             </Link>
           </div>
         }
       />
 
-      <form className="mb-6">
-        <input
-          name="search"
-          defaultValue={params.search || ''}
-          placeholder="Search calculators…"
-          className="h-10 w-full max-w-md rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 text-sm"
-        />
-      </form>
-
       {result.error ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Unable to load calculators</CardTitle>
-            <CardDescription>{result.error}</CardDescription>
-          </CardHeader>
-        </Card>
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+          Unable to load calculators: {result.error}
+        </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)]">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] text-[var(--varnarc-subtle)]">
-              <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Fields</th>
-                <th className="px-4 py-3 font-medium">Runs</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b border-[var(--varnarc-border)]">
-                  <td className="px-4 py-3">
-                    <Link href={`/calculators/${row.id}`} className="font-medium text-[var(--varnarc-brand)] hover:underline">
-                      {row.name}
-                    </Link>
-                    <div className="font-mono text-xs text-[var(--varnarc-subtle)]">{row.slug}</div>
-                  </td>
-                  <td className="px-4 py-3">{row.category?.name || '—'}</td>
-                  <td className="px-4 py-3">{row.status}</td>
-                  <td className="px-4 py-3">{row._count?.fields ?? 0}</td>
-                  <td className="px-4 py-3">{row._count?.history ?? 0}</td>
-                </tr>
-              ))}
-              {!rows.length ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-[var(--varnarc-subtle)]">
-                    No calculators yet.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        <CalculatorsValidationPanel initialRows={tableRows} />
       )}
     </div>
   );

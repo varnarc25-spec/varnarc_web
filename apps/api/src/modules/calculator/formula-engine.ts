@@ -369,13 +369,40 @@ function evalOutputs(outputs: Record<string, string>, inputs: Record<string, unk
   }
 
   const result: Record<string, number> = {};
-  for (const [key, expr] of Object.entries(outputs)) {
-    const fn = new Parser(tokenize(expr)).parse();
-    const value = fn(scope, 0);
-    if (!Number.isFinite(value)) throw new Error(`Output "${key}" is not a finite number`);
-    result[key] = value;
-    scope[key] = value;
+  const pending = new Map(Object.entries(outputs));
+
+  while (pending.size > 0) {
+    let progressed = false;
+    for (const [key, expr] of [...pending.entries()]) {
+      try {
+        const fn = new Parser(tokenize(expr)).parse();
+        const value = fn(scope, 0);
+        if (!Number.isFinite(value)) throw new Error(`Output "${key}" is not a finite number`);
+        result[key] = value;
+        scope[key] = value;
+        pending.delete(key);
+        progressed = true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.includes('Unknown or non-numeric variable')) {
+          throw error;
+        }
+      }
+    }
+
+    if (!progressed) {
+      const first = pending.entries().next().value;
+      if (!first) break;
+      const [key, expr] = first;
+      const fn = new Parser(tokenize(expr)).parse();
+      const value = fn(scope, 0);
+      if (!Number.isFinite(value)) throw new Error(`Output "${key}" is not a finite number`);
+      result[key] = value;
+      scope[key] = value;
+      pending.delete(key);
+    }
   }
+
   return result;
 }
 

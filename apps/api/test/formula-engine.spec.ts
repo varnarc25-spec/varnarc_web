@@ -34,4 +34,21 @@ describe('formula-engine', () => {
     expect(outputs.tenureMonths).toBeGreaterThan(40);
     expect(outputs.tenureMonths).toBeLessThan(55);
   });
+
+  it('resolves derived outputs regardless of declaration order', async () => {
+    const formula = JSON.stringify({
+      outputs: {
+        maturity: 'annualDeposit * ((pow(1 + rate, years) - 1) / rate) * (1 + rate)',
+        rate: 'interestRate / 100',
+        invested: 'annualDeposit * years',
+      },
+    });
+    const outputs = await executeFormula(formula, {
+      annualDeposit: 150_000,
+      interestRate: 7.1,
+      years: 15,
+    });
+    expect(outputs.maturity).toBeGreaterThan(outputs.invested);
+    expect(outputs.rate).toBeCloseTo(0.071);
+  });
 });
