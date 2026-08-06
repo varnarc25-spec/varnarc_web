@@ -9,13 +9,28 @@ export const popularSearches = [
 export const quickTools = [
   { name: 'EMI Calculator', href: '/calculators/emi', color: '#0b1f3a', icon: 'calculator' },
   { name: 'SIP Calculator', href: '/calculators/sip', color: '#f97316', icon: 'trending' },
-  { name: 'Income Tax Calculator', href: '/calculators/income-tax', color: '#ea580c', icon: 'percent' },
+  {
+    name: 'Income Tax Calculator',
+    href: '/calculators/income-tax',
+    color: '#ea580c',
+    icon: 'percent',
+  },
   { name: 'GST Calculator', href: '/calculators/gst', color: '#f5a623', icon: 'receipt' },
-  { name: 'Construction Cost Calculator', href: '/calculators/construction-cost', color: '#122b4a', icon: 'building' },
+  {
+    name: 'Construction Cost Calculator',
+    href: '/calculators/construction-cost',
+    color: '#122b4a',
+    icon: 'building',
+  },
   { name: 'Paint Calculator', href: '/calculators/paint', color: '#fb923c', icon: 'paint' },
   { name: 'Solar Savings Calculator', href: '/calculators/solar', color: '#f59e0b', icon: 'sun' },
   { name: 'Car Loan Calculator', href: '/calculators/car-loan', color: '#0b1f3a', icon: 'car' },
-  { name: 'Retirement Calculator', href: '/calculators/retirement', color: '#c2410c', icon: 'piggy' },
+  {
+    name: 'Retirement Calculator',
+    href: '/calculators/retirement',
+    color: '#c2410c',
+    icon: 'piggy',
+  },
   { name: 'Fuel Cost Calculator', href: '/calculators/fuel', color: '#f97316', icon: 'fuel' },
 ] as const;
 
@@ -202,7 +217,7 @@ export const reviews = [
     score: 4.4,
     href: '/reviews/inverters',
     image:
-      'https://images.unsplash.com/photo-1621905251189-08b45d6a8099?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=400&q=80',
   },
   {
     title: 'Best Interior Paints Worth Buying',
