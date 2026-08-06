@@ -22,10 +22,23 @@ export function CmpSdkScript() {
   const loaded = useRef(false);
   const domainKey = getCmpDomainKey();
   const sdkUrl = getCmpSdkUrl();
+  const testScripts = isCmpTestScriptsEnabled();
+
+  useEffect(() => {
+    if (!testScripts) return;
+
+    loadCmpTestScripts();
+    document.addEventListener('cmp:ready', loadCmpTestScripts);
+    return () => document.removeEventListener('cmp:ready', loadCmpTestScripts);
+  }, [testScripts]);
 
   useEffect(() => {
     if (loaded.current || !domainKey || !sdkUrl) return;
-    if (document.querySelector(`script[data-domain-key="${domainKey}"][src*="sdk.js"]`)) {
+
+    const existing = document.querySelector(
+      `script[data-domain-key="${domainKey}"][src*="sdk.js"]`,
+    );
+    if (existing) {
       loaded.current = true;
       loadCmpTestScripts();
       return;
@@ -37,7 +50,7 @@ export function CmpSdkScript() {
     script.async = true;
     script.setAttribute('data-domain-key', domainKey);
     script.setAttribute('data-env', getCmpEnv());
-    if (isCmpTestScriptsEnabled()) {
+    if (testScripts) {
       script.setAttribute('data-test-scripts', 'true');
     }
     script.addEventListener('load', loadCmpTestScripts, { once: true });
@@ -46,9 +59,8 @@ export function CmpSdkScript() {
 
     return () => {
       script.removeEventListener('load', loadCmpTestScripts);
-      script.remove();
     };
-  }, [domainKey, sdkUrl]);
+  }, [domainKey, sdkUrl, testScripts]);
 
   return null;
 }
