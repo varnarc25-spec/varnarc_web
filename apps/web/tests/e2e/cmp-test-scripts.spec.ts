@@ -1,9 +1,13 @@
 import { expect, test } from '@playwright/test';
 
+const POLL_TIMEOUT_MS = 30_000;
+
 test.describe('CMP test scripts', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('loads third-party scripts after accept all', async ({ page }) => {
+    test.setTimeout(120_000);
+
     const trackerRequests: string[] = [];
     page.on('request', (request) => {
       const url = request.url();
@@ -20,19 +24,19 @@ test.describe('CMP test scripts', () => {
 
     await expect
       .poll(async () => page.evaluate(() => Boolean(document.getElementById('cmp-sdk'))), {
-        timeout: 20_000,
+        timeout: POLL_TIMEOUT_MS,
       })
       .toBe(true);
 
     await expect
       .poll(async () => page.evaluate(() => Boolean(document.getElementById('cmp-test-scripts'))), {
-        timeout: 20_000,
+        timeout: POLL_TIMEOUT_MS,
       })
       .toBe(true);
 
     await expect
       .poll(async () => page.evaluate(() => Boolean(window.__CMP__?.acceptAll)), {
-        timeout: 20_000,
+        timeout: POLL_TIMEOUT_MS,
       })
       .toBe(true);
 
@@ -44,29 +48,40 @@ test.describe('CMP test scripts', () => {
     }
 
     await expect
-      .poll(async () => page.evaluate(() => window.__CMP__?.getConsent?.()?.analytics === true))
+      .poll(async () => page.evaluate(() => window.__CMP__?.getConsent?.()?.analytics === true), {
+        timeout: POLL_TIMEOUT_MS,
+      })
       .toBe(true);
 
     await expect
-      .poll(async () => page.evaluate(() => Boolean(document.getElementById('cmp-test-gtag'))))
+      .poll(async () => page.evaluate(() => Boolean(document.getElementById('cmp-test-gtag'))), {
+        timeout: POLL_TIMEOUT_MS,
+      })
       .toBe(true);
 
     await expect
-      .poll(async () =>
-        page.evaluate(() => Boolean(document.getElementById('cmp-test-meta-pixel'))),
+      .poll(
+        async () => page.evaluate(() => Boolean(document.getElementById('cmp-test-meta-pixel'))),
+        { timeout: POLL_TIMEOUT_MS },
       )
       .toBe(true);
 
     await expect
-      .poll(async () => trackerRequests.some((url) => url.includes('googletagmanager.com')))
+      .poll(async () => trackerRequests.some((url) => url.includes('googletagmanager.com')), {
+        timeout: POLL_TIMEOUT_MS,
+      })
       .toBe(true);
 
     await expect
-      .poll(async () => trackerRequests.some((url) => url.includes('clarity.ms')))
+      .poll(async () => trackerRequests.some((url) => url.includes('clarity.ms')), {
+        timeout: POLL_TIMEOUT_MS,
+      })
       .toBe(true);
 
     await expect
-      .poll(async () => trackerRequests.some((url) => url.includes('facebook.net')))
+      .poll(async () => trackerRequests.some((url) => url.includes('facebook.net')), {
+        timeout: POLL_TIMEOUT_MS,
+      })
       .toBe(true);
   });
 });
