@@ -2,10 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { getCmpDomainKey, getCmpEnv, getCmpSdkUrl } from '@/lib/cmp-config';
-import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
 
-function loadCmpTestScripts() {
-  if (!isCmpTestScriptsEnabled() || document.getElementById('cmp-test-scripts')) return;
+function ensureCmpTestScriptsLoader() {
+  if (document.getElementById('cmp-test-scripts')) return;
 
   const script = document.createElement('script');
   script.id = 'cmp-test-scripts';
@@ -22,15 +21,12 @@ export function CmpSdkScript() {
   const loaded = useRef(false);
   const domainKey = getCmpDomainKey();
   const sdkUrl = getCmpSdkUrl();
-  const testScripts = isCmpTestScriptsEnabled();
 
   useEffect(() => {
-    if (!testScripts) return;
-
-    loadCmpTestScripts();
-    document.addEventListener('cmp:ready', loadCmpTestScripts);
-    return () => document.removeEventListener('cmp:ready', loadCmpTestScripts);
-  }, [testScripts]);
+    ensureCmpTestScriptsLoader();
+    document.addEventListener('cmp:ready', ensureCmpTestScriptsLoader);
+    return () => document.removeEventListener('cmp:ready', ensureCmpTestScriptsLoader);
+  }, []);
 
   useEffect(() => {
     if (loaded.current || !domainKey || !sdkUrl) return;
@@ -40,7 +36,7 @@ export function CmpSdkScript() {
     );
     if (existing) {
       loaded.current = true;
-      loadCmpTestScripts();
+      ensureCmpTestScriptsLoader();
       return;
     }
 
@@ -50,17 +46,15 @@ export function CmpSdkScript() {
     script.async = true;
     script.setAttribute('data-domain-key', domainKey);
     script.setAttribute('data-env', getCmpEnv());
-    if (testScripts) {
-      script.setAttribute('data-test-scripts', 'true');
-    }
-    script.addEventListener('load', loadCmpTestScripts, { once: true });
+    script.setAttribute('data-test-scripts', 'true');
+    script.addEventListener('load', ensureCmpTestScriptsLoader, { once: true });
     document.head.appendChild(script);
     loaded.current = true;
 
     return () => {
-      script.removeEventListener('load', loadCmpTestScripts);
+      script.removeEventListener('load', ensureCmpTestScriptsLoader);
     };
-  }, [domainKey, sdkUrl, testScripts]);
+  }, [domainKey, sdkUrl]);
 
   return null;
 }
