@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
+import { useCmpConsentAllowed } from '@/lib/cmp-consent-client';
 
 declare global {
   interface Window {
@@ -10,6 +11,10 @@ declare global {
 }
 
 export function GoogleAdsenseScript({ client }: { client: string }) {
+  const marketingAllowed = useCmpConsentAllowed('marketing');
+
+  if (!marketingAllowed) return null;
+
   return (
     <Script
       id="google-adsense"
@@ -37,17 +42,29 @@ export function GoogleAdsenseUnit({
   format = 'auto',
   className = '',
 }: GoogleAdsenseUnitProps) {
+  const marketingAllowed = useCmpConsentAllowed('marketing');
   const pushed = useRef(false);
 
   useEffect(() => {
-    if (pushed.current) return;
+    if (!marketingAllowed || pushed.current) return;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
       pushed.current = true;
     } catch {
       // AdSense may not be ready yet on first paint
     }
-  }, [client, slot]);
+  }, [client, slot, marketingAllowed]);
+
+  if (!marketingAllowed) {
+    return (
+      <aside
+        className={`min-h-[90px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 ${className}`}
+        aria-label="Advertisement"
+        data-adsense-slot={slot}
+        data-adsense-blocked="cmp-marketing"
+      />
+    );
+  }
 
   return (
     <aside

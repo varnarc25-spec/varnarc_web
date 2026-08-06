@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { useCmpConsentAllowed } from '@/lib/cmp-consent-client';
 
 type PublicIntegrations = {
   googleAnalyticsId?: string | null;
@@ -9,9 +10,12 @@ type PublicIntegrations = {
 };
 
 export function AnalyticsIntegrationsScripts({ config }: { config: PublicIntegrations }) {
+  const analyticsAllowed = useCmpConsentAllowed('analytics');
   const gaId = config.googleAnalyticsId?.trim();
   const clarityId = config.microsoftClarityId?.trim();
   const plausibleDomain = config.plausibleDomain?.trim();
+
+  if (!analyticsAllowed) return null;
 
   return (
     <>

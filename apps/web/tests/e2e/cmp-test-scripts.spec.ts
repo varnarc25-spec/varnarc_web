@@ -70,12 +70,3 @@ test.describe('CMP test scripts', () => {
       .toBe(true);
   });
 });
-
-declare global {
-  interface Window {
-    __CMP__?: {
-      acceptAll?: () => void;
-      getConsent?: () => Record<string, boolean>;
-    };
-  }
-}
