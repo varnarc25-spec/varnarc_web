@@ -10,6 +10,7 @@ export * from './calculator-field-visibility';
 export * from './loan-calculator';
 export * from './age-calculator';
 export * from './finance';
+export * from './finance-pages';
 export * from './construction';
 export * from './automobile';
 export * from './comparison';

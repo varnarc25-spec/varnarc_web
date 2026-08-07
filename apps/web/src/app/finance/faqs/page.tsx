@@ -2,28 +2,46 @@ import type { Metadata } from 'next';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { fetchFinanceFaqs } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Finance FAQs',
-  description: 'Frequently asked questions about loans, cards, insurance, and investments.',
-  alternates: { canonical: '/finance/faqs' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('faqs');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceFaqsPage() {
-  const { data } = await fetchFinanceFaqs();
+  const [page, { data }] = await Promise.all([getFinancePageContent('faqs'), fetchFinanceFaqs()]);
+
+  const jsonLd = data.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: data.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      }
+    : null;
 
   return (
     <ContentLayout
-      title="Finance FAQs"
-      description="Answers to common questions about financial products and planning."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
         { label: 'FAQs' },
       ]}
     >
+      {jsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ) : null}
+
       {data.length ? (
         <div className="space-y-3">
           {data.map((faq) => (

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Badge, Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
 import { FinanceCsvToolbar, FinanceListSearch } from '@/components/finance-admin-toolbar';
 import { FinanceInsuranceForm, FinancePublishButton } from '@/components/finance-forms';
@@ -66,7 +67,15 @@ export default async function FinanceInsuranceAdminPage({
                   <td className="px-4 py-3">{row.premium != null ? row.premium : '—'}</td>
                   <td className="px-4 py-3">{row.status}</td>
                   <td className="px-4 py-3">
-                    <FinancePublishButton entity="insurance" id={row.id} status={row.status} />
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/finance/insurance/${row.id}`}
+                        className="text-[var(--varnarc-brand)] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <FinancePublishButton entity="insurance" id={row.id} status={row.status} />
+                    </div>
                   </td>
                 </tr>
               ))}

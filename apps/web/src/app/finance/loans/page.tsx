@@ -3,22 +3,24 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FinanceProductCard, RelatedCalculators } from '@/components/finance/finance-product-card';
 import { fetchFinanceLoans } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Loans',
-  description: 'Compare home, personal, and business loan products.',
-  alternates: { canonical: '/finance/loans' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('loans');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceLoansPage() {
-  const { data } = await fetchFinanceLoans({ limit: 48 });
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('loans'),
+    fetchFinanceLoans({ limit: 48 }),
+  ]);
 
   return (
     <ContentLayout
-      title="Loans"
-      description="Compare interest rates, tenures, and eligibility across lenders."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },

@@ -13,6 +13,9 @@ type DashboardData = {
 };
 
 const sections = [
+  { href: '/finance/seo', label: 'Page SEO' },
+  { href: '/finance/categories', label: 'Categories' },
+  { href: '/finance/guides', label: 'Guides' },
   { href: '/finance/banks', label: 'Banks' },
   { href: '/finance/loans', label: 'Loans' },
   { href: '/finance/credit-cards', label: 'Credit cards' },
@@ -74,7 +77,9 @@ export default async function FinanceAdminDashboardPage() {
                 className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:bg-[var(--varnarc-muted)]"
               >
                 <div className="font-medium text-[var(--varnarc-brand)]">{section.label}</div>
-                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">Manage {section.label.toLowerCase()}</div>
+                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+                  Manage {section.label.toLowerCase()}
+                </div>
               </Link>
             ))}
           </div>

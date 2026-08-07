@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Badge, Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
 import { FinanceCsvToolbar, FinanceListSearch } from '@/components/finance-admin-toolbar';
 import { FinanceCreditCardForm, FinancePublishButton } from '@/components/finance-forms';
@@ -41,7 +42,9 @@ export default async function FinanceCreditCardsAdminPage({
       <FinanceListSearch defaultValue={params.search} />
       <FinanceCsvToolbar entity="credit-cards" />
 
-      {banks.length ? <FinanceCreditCardForm banks={banks} /> : (
+      {banks.length ? (
+        <FinanceCreditCardForm banks={banks} />
+      ) : (
         <Card className="mb-6">
           <CardHeader>
             <CardDescription>Create at least one bank before adding credit cards.</CardDescription>
@@ -79,7 +82,15 @@ export default async function FinanceCreditCardsAdminPage({
                   <td className="px-4 py-3">{row.annualFee != null ? row.annualFee : '—'}</td>
                   <td className="px-4 py-3">{row.status}</td>
                   <td className="px-4 py-3">
-                    <FinancePublishButton entity="credit-cards" id={row.id} status={row.status} />
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/finance/credit-cards/${row.id}`}
+                        className="text-[var(--varnarc-brand)] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <FinancePublishButton entity="credit-cards" id={row.id} status={row.status} />
+                    </div>
                   </td>
                 </tr>
               ))}

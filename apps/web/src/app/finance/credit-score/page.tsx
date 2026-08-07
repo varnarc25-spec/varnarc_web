@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { CreditScoreCheckForm } from '@/components/finance/finance-forms-client';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Credit Score Check',
-  description: 'Check your credit score (mock integration).',
-  alternates: { canonical: '/finance/credit-score' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('credit-score');
+}
 
-export default function FinanceCreditScorePage() {
+export default async function FinanceCreditScorePage() {
+  const page = await getFinancePageContent('credit-score');
+
   return (
     <ContentLayout
-      title="Credit score"
-      description="Estimate your credit profile. Full bureau integration coming soon."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },

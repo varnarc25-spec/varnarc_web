@@ -11,23 +11,42 @@ import {
   fetchFinanceInvestments,
   fetchFinanceLoans,
 } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Finance',
-  description: 'Compare loans, credit cards, insurance, investments, and interest rates.',
-  alternates: { canonical: '/finance' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('hub');
+}
 
 export const revalidate = 60;
 
 const productLinks = [
   { label: 'Loans', href: '/finance/loans', description: 'Home, personal, and business loans.' },
-  { label: 'Credit cards', href: '/finance/credit-cards', description: 'Rewards, cashback, and premium cards.' },
-  { label: 'Insurance', href: '/finance/insurance', description: 'Health, life, and motor coverage.' },
-  { label: 'Investments', href: '/finance/investments', description: 'Mutual funds, FDs, and more.' },
+  {
+    label: 'Credit cards',
+    href: '/finance/credit-cards',
+    description: 'Rewards, cashback, and premium cards.',
+  },
+  {
+    label: 'Insurance',
+    href: '/finance/insurance',
+    description: 'Health, life, and motor coverage.',
+  },
+  {
+    label: 'Investments',
+    href: '/finance/investments',
+    description: 'Mutual funds, FDs, and more.',
+  },
   { label: 'Banks', href: '/finance/banks', description: 'Partner banks and their products.' },
-  { label: 'Interest rates', href: '/finance/rates', description: 'Latest benchmark and product rates.' },
-  { label: 'Compare products', href: '/finance/compare', description: 'Side-by-side finance comparisons.' },
+  {
+    label: 'Interest rates',
+    href: '/finance/rates',
+    description: 'Latest benchmark and product rates.',
+  },
+  {
+    label: 'Compare products',
+    href: '/finance/compare',
+    description: 'Side-by-side finance comparisons.',
+  },
 ];
 
 const resourceLinks = [
@@ -37,8 +56,16 @@ const resourceLinks = [
 ];
 
 const toolLinks = [
-  { label: 'Eligibility check', href: '/finance/eligibility', description: 'Quick loan eligibility estimate.' },
-  { label: 'Credit score', href: '/finance/credit-score', description: 'Check your credit profile.' },
+  {
+    label: 'Eligibility check',
+    href: '/finance/eligibility',
+    description: 'Quick loan eligibility estimate.',
+  },
+  {
+    label: 'Credit score',
+    href: '/finance/credit-score',
+    description: 'Check your credit profile.',
+  },
   { label: 'Portfolio', href: '/finance/portfolio', description: 'View your holdings.' },
   { label: 'Goals', href: '/finance/goals', description: 'Plan and track financial goals.' },
 ];
@@ -51,14 +78,16 @@ const calculatorLinks = [
 ];
 
 export default async function FinancePage() {
-  const [dashboardRes, categoriesRes, loansRes, cardsRes, insuranceRes, investmentsRes] = await Promise.all([
-    fetchFinanceDashboard(),
-    fetchFinanceCategories(),
-    fetchFinanceLoans({ featured: true, limit: 4 }),
-    fetchFinanceCreditCards({ featured: true, limit: 4 }),
-    fetchFinanceInsurance({ featured: true, limit: 4 }),
-    fetchFinanceInvestments({ featured: true, limit: 4 }),
-  ]);
+  const [page, dashboardRes, categoriesRes, loansRes, cardsRes, insuranceRes, investmentsRes] =
+    await Promise.all([
+      getFinancePageContent('hub'),
+      fetchFinanceDashboard(),
+      fetchFinanceCategories(),
+      fetchFinanceLoans({ featured: true, limit: 4 }),
+      fetchFinanceCreditCards({ featured: true, limit: 4 }),
+      fetchFinanceInsurance({ featured: true, limit: 4 }),
+      fetchFinanceInvestments({ featured: true, limit: 4 }),
+    ]);
 
   const categories = categoriesRes.data ?? [];
   const featured = [
@@ -94,24 +123,38 @@ export default async function FinancePage() {
 
   return (
     <ContentLayout
-      title="Finance"
-      description="Loans, EMI, interest, tax, and investment tools to plan smarter."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Finance' }]}
     >
       {dashboardRes.data ? (
         <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { label: 'Loans', value: dashboardRes.data.loansPublished, href: '/finance/loans' },
-            { label: 'Credit cards', value: dashboardRes.data.creditCardsPublished, href: '/finance/credit-cards' },
-            { label: 'Insurance', value: dashboardRes.data.insurancePublished, href: '/finance/insurance' },
-            { label: 'Investments', value: dashboardRes.data.investmentsPublished, href: '/finance/investments' },
+            {
+              label: 'Credit cards',
+              value: dashboardRes.data.creditCardsPublished,
+              href: '/finance/credit-cards',
+            },
+            {
+              label: 'Insurance',
+              value: dashboardRes.data.insurancePublished,
+              href: '/finance/insurance',
+            },
+            {
+              label: 'Investments',
+              value: dashboardRes.data.investmentsPublished,
+              href: '/finance/investments',
+            },
           ].map((stat) => (
             <Link
               key={stat.label}
               href={stat.href}
               className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
             >
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{stat.label}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                {stat.label}
+              </div>
               <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">{stat.value}</div>
             </Link>
           ))}
@@ -171,12 +214,13 @@ export default async function FinancePage() {
           <h2 className="text-lg font-extrabold text-[#0b1f3a]">Categories</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {categories.map((cat) => (
-              <span
+              <Link
                 key={cat.id}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-[#0b1f3a]"
+                href={`/finance/categories/${cat.slug}`}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-[#0b1f3a] transition hover:border-[#f97316] hover:text-[#f97316]"
               >
                 {cat.name}
-              </span>
+              </Link>
             ))}
           </div>
         </section>

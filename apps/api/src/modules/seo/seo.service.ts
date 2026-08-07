@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import type { Repositories } from '@varnarc/database';
@@ -102,7 +97,7 @@ export class SeoService {
     const items = hasMore ? rows.slice(0, limit) : rows;
     return {
       items,
-      nextCursor: hasMore ? items[items.length - 1]?.id ?? null : null,
+      nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null,
       hasMore,
     };
   }
@@ -130,7 +125,10 @@ export class SeoService {
     });
 
     await this.cache.del(`seo:meta:${entityType}:${entityId}`).catch(() => undefined);
-    await this.audit('seo.metadata.upsert', entityType, entityId, actorId, { entityType, entityId });
+    await this.audit('seo.metadata.upsert', entityType, entityId, actorId, {
+      entityType,
+      entityId,
+    });
     return row;
   }
 
@@ -141,7 +139,7 @@ export class SeoService {
     const rows = await this.repos.seoRedirects.list(query);
     const hasMore = rows.length > limit;
     const items = hasMore ? rows.slice(0, limit) : rows;
-    return { items, nextCursor: hasMore ? items[items.length - 1]?.id ?? null : null, hasMore };
+    return { items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null, hasMore };
   }
 
   async createRedirect(input: CreateSeoRedirectInput, actorId?: string | null) {
@@ -245,9 +243,10 @@ export class SeoService {
   }
 
   async listActiveRedirects() {
-    const cached = await this.cache.get<Array<{ sourcePath: string; targetPath: string; redirectType: number }>>(
-      'seo:redirects:active',
-    );
+    const cached =
+      await this.cache.get<Array<{ sourcePath: string; targetPath: string; redirectType: number }>>(
+        'seo:redirects:active',
+      );
     if (cached) return cached;
     const rows = await this.repos.seoRedirects.listActive();
     const mapped = rows.map((r) => ({
@@ -274,7 +273,9 @@ export class SeoService {
       visited.add(current);
       const next = redirects.find((r) => r.id !== excludeId && r.sourcePath === current);
       if (!next) break;
-      current = next.targetPath.startsWith('http') ? next.targetPath : normalizePath(next.targetPath);
+      current = next.targetPath.startsWith('http')
+        ? next.targetPath
+        : normalizePath(next.targetPath);
     }
   }
 
@@ -343,7 +344,10 @@ export class SeoService {
   async getRobotsSettings() {
     const row = await this.repos.settings.findByKey(ROBOTS_KEY).catch(() => null);
     if (!row?.value || typeof row.value !== 'object') return { ...DEFAULT_ROBOTS };
-    return { ...DEFAULT_ROBOTS, ...(row.value as Record<string, unknown>) } as SeoRobotsSettingsInput;
+    return {
+      ...DEFAULT_ROBOTS,
+      ...(row.value as Record<string, unknown>),
+    } as SeoRobotsSettingsInput;
   }
 
   async setRobotsSettings(input: SeoRobotsSettingsInput, actorId?: string | null) {
@@ -379,7 +383,7 @@ export class SeoService {
     const rows = await this.repos.seoAudits.list(query);
     const hasMore = rows.length > limit;
     const items = hasMore ? rows.slice(0, limit) : rows;
-    return { items, nextCursor: hasMore ? items[items.length - 1]?.id ?? null : null, hasMore };
+    return { items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null, hasMore };
   }
 
   async resolveAuditIssue(id: string, actorId?: string | null) {
@@ -445,7 +449,11 @@ export class SeoService {
       }
     }
 
-    const pageItems = pagesResult.items as unknown as Array<{ id: string; title: string; slug: string }>;
+    const pageItems = pagesResult.items as unknown as Array<{
+      id: string;
+      title: string;
+      slug: string;
+    }>;
     for (const p of pageItems) {
       if (!p.title?.trim()) {
         issues.push({
@@ -505,6 +513,24 @@ export class SeoService {
     }
     for (const c of modules.comparisons) {
       auditModule('comparison', c.slug, c.id, c.seoTitle || c.title, c.seoDescription);
+    }
+    for (const b of modules.banks) {
+      auditModule('bank', b.slug, b.id, b.seoTitle || b.name, b.seoDescription);
+    }
+    for (const l of modules.loans) {
+      auditModule('loan', l.slug, l.id, l.seoTitle || l.name, l.seoDescription);
+    }
+    for (const c of modules.cards) {
+      auditModule('credit_card', c.slug, c.id, c.seoTitle || c.name, c.seoDescription);
+    }
+    for (const i of modules.insurance) {
+      auditModule('insurance', i.slug, i.id, i.seoTitle || i.name, i.seoDescription);
+    }
+    for (const i of modules.investments) {
+      auditModule('investment', i.slug, i.id, i.seoTitle || i.name, i.seoDescription);
+    }
+    for (const g of modules.guides) {
+      auditModule('finance_guide', g.slug, g.id, g.seoTitle || g.title, g.seoDescription);
     }
 
     for (const meta of metadataRows) {

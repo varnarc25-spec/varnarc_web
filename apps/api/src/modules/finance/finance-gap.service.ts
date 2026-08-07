@@ -6,8 +6,29 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { PrismaClient } from '@varnarc/database';
+import {
+  FINANCE_PAGE_DEFAULTS,
+  FINANCE_PAGE_ENTITY_TYPE,
+  FINANCE_PAGE_IDS,
+  FINANCE_PAGE_KEYS,
+  type FinancePageKey,
+  type UpdateFinancePageSeoInput,
+  type UpdateFinanceGuideInput,
+  financePageKeySchema,
+} from '@varnarc/validation';
 import { PRISMA } from '../../database/database.module';
 import { fetchRemoteRates, ingestRemoteRate } from './finance-rate-sync';
+
+type PageStructuredData = { h1?: string | null; intro?: string | null };
+
+function parsePageStructuredData(value: unknown): PageStructuredData {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const row = value as Record<string, unknown>;
+  return {
+    h1: typeof row.h1 === 'string' ? row.h1 : null,
+    intro: typeof row.intro === 'string' ? row.intro : null,
+  };
+}
 
 function csvEscape(value: unknown): string {
   const s = value == null ? '' : String(value);
@@ -45,8 +66,16 @@ export class FinanceGapService {
     const bank = await this.db.bank.findFirst({
       where: { slug, deletedAt: null, status: 'PUBLISHED' },
       include: {
-        loans: { where: { deletedAt: null, status: 'PUBLISHED' }, take: 20, orderBy: { name: 'asc' } },
-        creditCards: { where: { deletedAt: null, status: 'PUBLISHED' }, take: 20, orderBy: { name: 'asc' } },
+        loans: {
+          where: { deletedAt: null, status: 'PUBLISHED' },
+          take: 20,
+          orderBy: { name: 'asc' },
+        },
+        creditCards: {
+          where: { deletedAt: null, status: 'PUBLISHED' },
+          take: 20,
+          orderBy: { name: 'asc' },
+        },
         _count: { select: { loans: true, creditCards: true } },
       },
     });
@@ -63,7 +92,10 @@ export class FinanceGapService {
     });
   }
 
-  createFaq(input: { question: string; answer: string; categoryId?: string | null; sortOrder?: number }, actorId: string) {
+  createFaq(
+    input: { question: string; answer: string; categoryId?: string | null; sortOrder?: number },
+    actorId: string,
+  ) {
     return this.db.financeFaq.create({
       data: {
         question: input.question,
@@ -85,10 +117,7 @@ export class FinanceGapService {
     });
   }
 
-  createGlossary(
-    input: { term: string; slug: string; definition: string },
-    actorId: string,
-  ) {
+  createGlossary(input: { term: string; slug: string; definition: string }, actorId: string) {
     return this.db.financeGlossaryTerm.create({
       data: {
         term: input.term,
@@ -130,10 +159,13 @@ export class FinanceGapService {
       summary?: string | null;
       body?: string | null;
       categoryId?: string | null;
-      status?: 'DRAFT' | 'PUBLISHED';
+      status?: 'DRAFT' | 'PUBLISHED' | 'REVIEW' | 'SCHEDULED' | 'ARCHIVED';
+      seoTitle?: string | null;
+      seoDescription?: string | null;
     },
     actorId: string,
   ) {
+    const status = input.status ?? 'PUBLISHED';
     return this.db.financeGuide.create({
       data: {
         title: input.title,
@@ -141,24 +173,171 @@ export class FinanceGapService {
         summary: input.summary,
         body: input.body,
         categoryId: input.categoryId,
-        status: input.status ?? 'PUBLISHED',
-        publishedAt: (input.status ?? 'PUBLISHED') === 'PUBLISHED' ? new Date() : null,
+        seoTitle: input.seoTitle,
+        seoDescription: input.seoDescription,
+        status,
+        publishedAt: status === 'PUBLISHED' ? new Date() : null,
         createdBy: actorId,
         updatedBy: actorId,
       },
     });
   }
 
+  async getGuideById(id: string) {
+    const row = await this.db.financeGuide.findFirst({
+      where: { id, deletedAt: null },
+      include: { category: true },
+    });
+    if (!row) throw this.notFound('Guide not found.');
+    return row;
+  }
+
+  async updateGuide(id: string, input: UpdateFinanceGuideInput, actorId: string) {
+    const existing = await this.getGuideById(id);
+    if (input.slug && input.slug !== existing.slug) {
+      const clash = await this.db.financeGuide.findFirst({
+        where: { slug: input.slug, deletedAt: null, NOT: { id } },
+      });
+      if (clash) {
+        throw new BadRequestException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug already exists.' },
+        });
+      }
+    }
+    const nextStatus = input.status ?? existing.status;
+    return this.db.financeGuide.update({
+      where: { id },
+      data: {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.slug !== undefined ? { slug: input.slug } : {}),
+        ...(input.summary !== undefined ? { summary: input.summary } : {}),
+        ...(input.body !== undefined ? { body: input.body } : {}),
+        ...(input.categoryId !== undefined ? { categoryId: input.categoryId } : {}),
+        ...(input.seoTitle !== undefined ? { seoTitle: input.seoTitle } : {}),
+        ...(input.seoDescription !== undefined ? { seoDescription: input.seoDescription } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.status !== undefined
+          ? { publishedAt: nextStatus === 'PUBLISHED' ? new Date() : null }
+          : {}),
+        updatedBy: actorId,
+      },
+      include: { category: true },
+    });
+  }
+
+  // --- Finance hub page SEO (stored in seo_metadata) ---
+  listFinancePages() {
+    return FINANCE_PAGE_KEYS.map((pageKey) => {
+      const defaults = FINANCE_PAGE_DEFAULTS[pageKey];
+      return {
+        pageKey,
+        entityId: FINANCE_PAGE_IDS[pageKey],
+        path: defaults.path,
+        label: defaults.label,
+      };
+    });
+  }
+
+  private resolvePageKey(pageKey: string): FinancePageKey {
+    const parsed = financePageKeySchema.safeParse(pageKey);
+    if (!parsed.success) {
+      throw new BadRequestException({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Unknown finance page key.' },
+      });
+    }
+    return parsed.data;
+  }
+
+  async getPageSeo(pageKeyInput: string) {
+    const pageKey = this.resolvePageKey(pageKeyInput);
+    const defaults = FINANCE_PAGE_DEFAULTS[pageKey];
+    const entityId = FINANCE_PAGE_IDS[pageKey];
+    const meta = await this.db.seoMetadata.findUnique({
+      where: {
+        entityType_entityId: { entityType: FINANCE_PAGE_ENTITY_TYPE, entityId },
+      },
+    });
+    const structured = parsePageStructuredData(meta?.structuredData);
+
+    return {
+      pageKey,
+      entityId,
+      path: defaults.path,
+      label: defaults.label,
+      title: meta?.title ?? defaults.title,
+      description: meta?.description ?? defaults.description,
+      h1: structured.h1 ?? defaults.h1,
+      intro: structured.intro ?? defaults.intro,
+      metaKeywords: meta?.metaKeywords ?? null,
+      canonicalUrl: meta?.canonicalUrl ?? null,
+    };
+  }
+
+  async upsertPageSeo(pageKeyInput: string, input: UpdateFinancePageSeoInput, actorId: string) {
+    const pageKey = this.resolvePageKey(pageKeyInput);
+    const defaults = FINANCE_PAGE_DEFAULTS[pageKey];
+    const entityId = FINANCE_PAGE_IDS[pageKey];
+    const existing = await this.db.seoMetadata.findUnique({
+      where: {
+        entityType_entityId: { entityType: FINANCE_PAGE_ENTITY_TYPE, entityId },
+      },
+    });
+    const existingStructured = parsePageStructuredData(existing?.structuredData);
+    const structuredData: PageStructuredData = {
+      h1: input.h1 !== undefined ? input.h1 : (existingStructured.h1 ?? defaults.h1),
+      intro: input.intro !== undefined ? input.intro : (existingStructured.intro ?? defaults.intro),
+    };
+
+    await this.db.seoMetadata.upsert({
+      where: {
+        entityType_entityId: { entityType: FINANCE_PAGE_ENTITY_TYPE, entityId },
+      },
+      create: {
+        entityType: FINANCE_PAGE_ENTITY_TYPE,
+        entityId,
+        title: input.title ?? defaults.title,
+        description: input.description ?? defaults.description,
+        metaKeywords: input.metaKeywords ?? null,
+        canonicalUrl: input.canonicalUrl || defaults.path,
+        structuredData,
+      },
+      update: {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.description !== undefined ? { description: input.description } : {}),
+        ...(input.metaKeywords !== undefined ? { metaKeywords: input.metaKeywords } : {}),
+        ...(input.canonicalUrl !== undefined ? { canonicalUrl: input.canonicalUrl || null } : {}),
+        structuredData,
+      },
+    });
+
+    return this.getPageSeo(pageKey);
+  }
+
   // --- Reviews for finance entities ---
   async entityReviews(entity: string, id: string) {
     const map: Record<string, () => Promise<{ reviewProductId: string | null } | null>> = {
-      loans: () => this.db.loan.findFirst({ where: { id, deletedAt: null }, select: { reviewProductId: true } }),
+      loans: () =>
+        this.db.loan.findFirst({
+          where: { id, deletedAt: null },
+          select: { reviewProductId: true },
+        }),
       'credit-cards': () =>
-        this.db.creditCard.findFirst({ where: { id, deletedAt: null }, select: { reviewProductId: true } }),
+        this.db.creditCard.findFirst({
+          where: { id, deletedAt: null },
+          select: { reviewProductId: true },
+        }),
       insurance: () =>
-        this.db.insuranceProduct.findFirst({ where: { id, deletedAt: null }, select: { reviewProductId: true } }),
+        this.db.insuranceProduct.findFirst({
+          where: { id, deletedAt: null },
+          select: { reviewProductId: true },
+        }),
       investments: () =>
-        this.db.investmentProduct.findFirst({ where: { id, deletedAt: null }, select: { reviewProductId: true } }),
+        this.db.investmentProduct.findFirst({
+          where: { id, deletedAt: null },
+          select: { reviewProductId: true },
+        }),
     };
     const loader = map[entity];
     if (!loader) return [];
@@ -261,7 +440,13 @@ export class FinanceGapService {
   }
 
   createComparison(
-    input: { title: string; slug: string; entityType: string; entityIds: string[]; status?: 'DRAFT' | 'PUBLISHED' },
+    input: {
+      title: string;
+      slug: string;
+      entityType: string;
+      entityIds: string[];
+      status?: 'DRAFT' | 'PUBLISHED';
+    },
     actorId: string,
   ) {
     return this.db.financeComparison.create({
@@ -287,7 +472,12 @@ export class FinanceGapService {
   }
 
   createRateFeed(
-    input: { name: string; provider: string; endpointUrl?: string | null; productType?: string | null },
+    input: {
+      name: string;
+      provider: string;
+      endpointUrl?: string | null;
+      productType?: string | null;
+    },
     actorId: string,
   ) {
     return this.db.financeRateFeed.create({
@@ -410,9 +600,15 @@ export class FinanceGapService {
   // --- Credit score (mock) ---
   async checkCreditScore(input: { pan?: string; userId?: string | null }) {
     const score = 650 + Math.floor(Math.random() * 150);
-    const band = score >= 750 ? 'excellent' : score >= 700 ? 'good' : score >= 650 ? 'fair' : 'poor';
+    const band =
+      score >= 750 ? 'excellent' : score >= 700 ? 'good' : score >= 650 ? 'fair' : 'poor';
     const panMasked = input.pan ? `${input.pan.slice(0, 3)}****${input.pan.slice(-1)}` : null;
-    const result = { score, band, provider: 'mock', factors: ['Payment history', 'Credit utilization'] };
+    const result = {
+      score,
+      band,
+      provider: 'mock',
+      factors: ['Payment history', 'Credit utilization'],
+    };
     await this.db.creditScoreCheck.create({
       data: {
         userId: input.userId,
@@ -428,7 +624,11 @@ export class FinanceGapService {
 
   // --- Portfolio ---
   async getPortfolio(userId?: string | null) {
-    if (!userId) throw new UnauthorizedException({ success: false, error: { code: 'UNAUTHORIZED', message: 'Login required.' } });
+    if (!userId)
+      throw new UnauthorizedException({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Login required.' },
+      });
     let portfolio = await this.db.financePortfolio.findFirst({
       where: { userId, deletedAt: null },
       include: { holdings: true },
@@ -451,7 +651,11 @@ export class FinanceGapService {
 
   // --- Goals ---
   async listGoals(userId?: string | null) {
-    if (!userId) throw new UnauthorizedException({ success: false, error: { code: 'UNAUTHORIZED', message: 'Login required.' } });
+    if (!userId)
+      throw new UnauthorizedException({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Login required.' },
+      });
     return this.db.financeGoal.findMany({
       where: { userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
@@ -459,10 +663,19 @@ export class FinanceGapService {
   }
 
   async createGoal(
-    input: { title: string; targetAmount: number; currentAmount?: number; targetDate?: string | null },
+    input: {
+      title: string;
+      targetAmount: number;
+      currentAmount?: number;
+      targetDate?: string | null;
+    },
     userId?: string | null,
   ) {
-    if (!userId) throw new UnauthorizedException({ success: false, error: { code: 'UNAUTHORIZED', message: 'Login required.' } });
+    if (!userId)
+      throw new UnauthorizedException({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Login required.' },
+      });
     return this.db.financeGoal.create({
       data: {
         userId,
@@ -480,7 +693,12 @@ export class FinanceGapService {
     if (entity === 'banks') {
       const rows = await this.db.bank.findMany({ where: { deletedAt: null } });
       const header = 'id,name,slug,website,status,featured';
-      return [header, ...rows.map((r) => [r.id, r.name, r.slug, r.website, r.status, r.featured].map(csvEscape).join(','))].join('\n');
+      return [
+        header,
+        ...rows.map((r) =>
+          [r.id, r.name, r.slug, r.website, r.status, r.featured].map(csvEscape).join(','),
+        ),
+      ].join('\n');
     }
     if (entity === 'loans') {
       const rows = await this.db.loan.findMany({ where: { deletedAt: null } });
@@ -488,7 +706,9 @@ export class FinanceGapService {
       return [
         header,
         ...rows.map((r) =>
-          [r.id, r.bankId, r.name, r.slug, r.loanType, r.interestRate, r.status, r.affiliateUrl].map(csvEscape).join(','),
+          [r.id, r.bankId, r.name, r.slug, r.loanType, r.interestRate, r.status, r.affiliateUrl]
+            .map(csvEscape)
+            .join(','),
         ),
       ].join('\n');
     }
@@ -498,7 +718,9 @@ export class FinanceGapService {
       return [
         header,
         ...rows.map((r) =>
-          [r.id, r.bankId, r.name, r.slug, r.annualFee, r.joiningFee, r.status, r.affiliateUrl].map(csvEscape).join(','),
+          [r.id, r.bankId, r.name, r.slug, r.annualFee, r.joiningFee, r.status, r.affiliateUrl]
+            .map(csvEscape)
+            .join(','),
         ),
       ].join('\n');
     }
@@ -508,7 +730,9 @@ export class FinanceGapService {
       return [
         header,
         ...rows.map((r) =>
-          [r.id, r.providerName, r.name, r.slug, r.premium, r.status, r.affiliateUrl].map(csvEscape).join(','),
+          [r.id, r.providerName, r.name, r.slug, r.premium, r.status, r.affiliateUrl]
+            .map(csvEscape)
+            .join(','),
         ),
       ].join('\n');
     }
@@ -518,7 +742,16 @@ export class FinanceGapService {
       return [
         header,
         ...rows.map((r) =>
-          [r.id, r.providerName, r.name, r.slug, r.riskLevel, r.expectedReturn, r.status, r.affiliateUrl]
+          [
+            r.id,
+            r.providerName,
+            r.name,
+            r.slug,
+            r.riskLevel,
+            r.expectedReturn,
+            r.status,
+            r.affiliateUrl,
+          ]
             .map(csvEscape)
             .join(','),
         ),
@@ -536,13 +769,19 @@ export class FinanceGapService {
         ),
       ].join('\n');
     }
-    throw new BadRequestException({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Unknown entity.' } });
+    throw new BadRequestException({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'Unknown entity.' },
+    });
   }
 
   async importCsv(entity: string, csvText: string, actorId: string) {
     const rows = parseCsv(csvText);
     if (!rows.length) {
-      throw new BadRequestException({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Empty CSV.' } });
+      throw new BadRequestException({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Empty CSV.' },
+      });
     }
     let imported = 0;
     if (entity === 'banks') {

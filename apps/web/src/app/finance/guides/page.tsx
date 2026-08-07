@@ -4,22 +4,24 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { RelatedArticles } from '@/components/finance/related-articles';
 import { fetchFinanceGuides } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Finance Guides',
-  description: 'Educational guides on loans, investments, insurance, and personal finance.',
-  alternates: { canonical: '/finance/guides' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('guides');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceGuidesPage() {
-  const { data } = await fetchFinanceGuides();
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('guides'),
+    fetchFinanceGuides(),
+  ]);
 
   return (
     <ContentLayout
-      title="Finance guides"
-      description="Step-by-step guides to help you make smarter financial decisions."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -47,7 +49,10 @@ export default async function FinanceGuidesPage() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No guides yet" message="Finance guides will appear here once published." />
+        <EmptyState
+          title="No guides yet"
+          message="Finance guides will appear here once published."
+        />
       )}
 
       <RelatedArticles />

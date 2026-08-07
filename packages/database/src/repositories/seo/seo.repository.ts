@@ -243,49 +243,163 @@ export class SeoSitemapRepository extends BaseRepository {
       }
       case 'finance': {
         const published = { deletedAt: null, status: 'PUBLISHED' as const };
-        const [banks, loans, cards, insurance, investments, guides] = await Promise.all([
-          this.db.bank.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-          this.db.loan.findMany({ where: published, select: { id: true, updatedAt: true }, take: 2000 }),
-          this.db.creditCard.findMany({ where: published, select: { id: true, updatedAt: true }, take: 2000 }),
-          this.db.insuranceProduct.findMany({ where: published, select: { id: true, updatedAt: true }, take: 2000 }),
-          this.db.investmentProduct.findMany({ where: published, select: { id: true, updatedAt: true }, take: 2000 }),
-          this.db.financeGuide.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-        ]);
+        const [banks, loans, cards, insurance, investments, guides, categories] = await Promise.all(
+          [
+            this.db.bank.findMany({
+              where: published,
+              select: { slug: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.loan.findMany({
+              where: published,
+              select: { id: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.creditCard.findMany({
+              where: published,
+              select: { id: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.insuranceProduct.findMany({
+              where: published,
+              select: { id: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.investmentProduct.findMany({
+              where: published,
+              select: { id: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.financeGuide.findMany({
+              where: published,
+              select: { slug: true, updatedAt: true },
+              take: 2000,
+            }),
+            this.db.financeCategory.findMany({
+              where: { deletedAt: null },
+              select: { slug: true, updatedAt: true },
+              take: 500,
+            }),
+          ],
+        );
+        const hubPaths = [
+          '/finance',
+          '/finance/loans',
+          '/finance/credit-cards',
+          '/finance/insurance',
+          '/finance/investments',
+          '/finance/banks',
+          '/finance/rates',
+          '/finance/faqs',
+          '/finance/glossary',
+          '/finance/guides',
+          '/finance/compare',
+        ];
+        const now = new Date();
         return [
-          ...banks.map((r) => ({ loc: `${siteUrl}/finance/banks/${r.slug}`, lastmod: r.updatedAt })),
+          ...hubPaths.map((path) => ({ loc: `${siteUrl}${path}`, lastmod: now })),
+          ...categories.map((r) => ({
+            loc: `${siteUrl}/finance/categories/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+          ...banks.map((r) => ({
+            loc: `${siteUrl}/finance/banks/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
           ...loans.map((r) => ({ loc: `${siteUrl}/finance/loans/${r.id}`, lastmod: r.updatedAt })),
-          ...cards.map((r) => ({ loc: `${siteUrl}/finance/credit-cards/${r.id}`, lastmod: r.updatedAt })),
-          ...insurance.map((r) => ({ loc: `${siteUrl}/finance/insurance/${r.id}`, lastmod: r.updatedAt })),
-          ...investments.map((r) => ({ loc: `${siteUrl}/finance/investments/${r.id}`, lastmod: r.updatedAt })),
-          ...guides.map((r) => ({ loc: `${siteUrl}/finance/guides/${r.slug}`, lastmod: r.updatedAt })),
+          ...cards.map((r) => ({
+            loc: `${siteUrl}/finance/credit-cards/${r.id}`,
+            lastmod: r.updatedAt,
+          })),
+          ...insurance.map((r) => ({
+            loc: `${siteUrl}/finance/insurance/${r.id}`,
+            lastmod: r.updatedAt,
+          })),
+          ...investments.map((r) => ({
+            loc: `${siteUrl}/finance/investments/${r.id}`,
+            lastmod: r.updatedAt,
+          })),
+          ...guides.map((r) => ({
+            loc: `${siteUrl}/finance/guides/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
         ];
       }
       case 'construction': {
         const published = { deletedAt: null, status: 'PUBLISHED' as const };
         const [materials, brands, guides, checklists] = await Promise.all([
-          this.db.constructionMaterial.findMany({ where: published, select: { id: true, updatedAt: true }, take: 2000 }),
-          this.db.constructionBrand.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-          this.db.constructionGuide.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-          this.db.constructionChecklist.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
+          this.db.constructionMaterial.findMany({
+            where: published,
+            select: { id: true, updatedAt: true },
+            take: 2000,
+          }),
+          this.db.constructionBrand.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
+          this.db.constructionGuide.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
+          this.db.constructionChecklist.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
         ]);
         return [
-          ...materials.map((r) => ({ loc: `${siteUrl}/construction/materials/${r.id}`, lastmod: r.updatedAt })),
-          ...brands.map((r) => ({ loc: `${siteUrl}/construction/brands/${r.slug}`, lastmod: r.updatedAt })),
-          ...guides.map((r) => ({ loc: `${siteUrl}/construction/guides/${r.slug}`, lastmod: r.updatedAt })),
-          ...checklists.map((r) => ({ loc: `${siteUrl}/construction/checklists/${r.slug}`, lastmod: r.updatedAt })),
+          ...materials.map((r) => ({
+            loc: `${siteUrl}/construction/materials/${r.id}`,
+            lastmod: r.updatedAt,
+          })),
+          ...brands.map((r) => ({
+            loc: `${siteUrl}/construction/brands/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+          ...guides.map((r) => ({
+            loc: `${siteUrl}/construction/guides/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+          ...checklists.map((r) => ({
+            loc: `${siteUrl}/construction/checklists/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
         ];
       }
       case 'automobile': {
         const published = { deletedAt: null, status: 'PUBLISHED' as const };
         const [vehicles, manufacturers, guides] = await Promise.all([
-          this.db.automobileVehicle.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-          this.db.automobileManufacturer.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
-          this.db.automobileGuide.findMany({ where: published, select: { slug: true, updatedAt: true }, take: 2000 }),
+          this.db.automobileVehicle.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
+          this.db.automobileManufacturer.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
+          this.db.automobileGuide.findMany({
+            where: published,
+            select: { slug: true, updatedAt: true },
+            take: 2000,
+          }),
         ]);
         return [
-          ...vehicles.map((r) => ({ loc: `${siteUrl}/automobile/vehicles/${r.slug}`, lastmod: r.updatedAt })),
-          ...manufacturers.map((r) => ({ loc: `${siteUrl}/automobile/manufacturers/${r.slug}`, lastmod: r.updatedAt })),
-          ...guides.map((r) => ({ loc: `${siteUrl}/automobile/guides/${r.slug}`, lastmod: r.updatedAt })),
+          ...vehicles.map((r) => ({
+            loc: `${siteUrl}/automobile/vehicles/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+          ...manufacturers.map((r) => ({
+            loc: `${siteUrl}/automobile/manufacturers/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+          ...guides.map((r) => ({
+            loc: `${siteUrl}/automobile/guides/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
         ];
       }
       default:
@@ -295,7 +409,18 @@ export class SeoSitemapRepository extends BaseRepository {
 
   async listAuditCandidates() {
     const published = { deletedAt: null, status: 'PUBLISHED' as const };
-    const [calculators, aiTools, businesses, comparisons] = await Promise.all([
+    const [
+      calculators,
+      aiTools,
+      businesses,
+      comparisons,
+      banks,
+      loans,
+      cards,
+      insurance,
+      investments,
+      guides,
+    ] = await Promise.all([
       this.db.calculator.findMany({
         where: published,
         select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
@@ -316,7 +441,48 @@ export class SeoSitemapRepository extends BaseRepository {
         select: { id: true, slug: true, title: true, seoTitle: true, seoDescription: true },
         take: 500,
       }),
+      this.db.bank.findMany({
+        where: published,
+        select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
+      this.db.loan.findMany({
+        where: published,
+        select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
+      this.db.creditCard.findMany({
+        where: published,
+        select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
+      this.db.insuranceProduct.findMany({
+        where: published,
+        select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
+      this.db.investmentProduct.findMany({
+        where: published,
+        select: { id: true, slug: true, name: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
+      this.db.financeGuide.findMany({
+        where: published,
+        select: { id: true, slug: true, title: true, seoTitle: true, seoDescription: true },
+        take: 500,
+      }),
     ]);
-    return { calculators, aiTools, businesses, comparisons };
+    return {
+      calculators,
+      aiTools,
+      businesses,
+      comparisons,
+      banks,
+      loans,
+      cards,
+      insurance,
+      investments,
+      guides,
+    };
   }
 }

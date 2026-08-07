@@ -4,12 +4,11 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { fetchFinanceCompare } from '@/services/finance';
 import { ApiError } from '@/services/api-client';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Compare Finance Products',
-  description: 'Side-by-side comparison of loans, credit cards, insurance, and investments.',
-  alternates: { canonical: '/finance/compare' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('compare');
+}
 
 type Props = {
   searchParams: Promise<{ type?: string; ids?: string }>;
@@ -19,8 +18,13 @@ const validTypes = ['loans', 'credit-cards', 'insurance', 'investments'] as cons
 
 export default async function FinanceComparePage({ searchParams }: Props) {
   const params = await searchParams;
+  const page = await getFinancePageContent('compare');
   const type = params.type;
-  const ids = params.ids?.split(',').map((s) => s.trim()).filter(Boolean) ?? [];
+  const ids =
+    params.ids
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
 
   let items: Array<Record<string, unknown>> = [];
   let error: string | null = null;
@@ -47,8 +51,8 @@ export default async function FinanceComparePage({ searchParams }: Props) {
 
   return (
     <ContentLayout
-      title="Compare products"
-      description="Add ?type=loans&ids=uuid1,uuid2 to compare up to six published products."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -71,7 +75,10 @@ export default async function FinanceComparePage({ searchParams }: Props) {
                 {items.map((item) => (
                   <th key={String(item.id)} className="px-4 py-3 font-semibold">
                     {detailPath ? (
-                      <Link href={`${detailPath}/${String(item.id)}`} className="text-[#0b1f3a] hover:text-[#f97316]">
+                      <Link
+                        href={`${detailPath}/${String(item.id)}`}
+                        className="text-[#0b1f3a] hover:text-[#f97316]"
+                      >
                         {String(item.name ?? item.id)}
                       </Link>
                     ) : (
@@ -86,7 +93,9 @@ export default async function FinanceComparePage({ searchParams }: Props) {
                 <tr key={row.label} className="border-b border-slate-100">
                   <td className="px-4 py-3 font-medium text-slate-600">{row.label}</td>
                   {row.values.map((value, idx) => (
-                    <td key={idx} className="px-4 py-3">{value}</td>
+                    <td key={idx} className="px-4 py-3">
+                      {value}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -94,7 +103,10 @@ export default async function FinanceComparePage({ searchParams }: Props) {
           </table>
         </div>
       ) : (
-        <EmptyState title="No matching products" message="Check that the IDs are valid published products." />
+        <EmptyState
+          title="No matching products"
+          message="Check that the IDs are valid published products."
+        />
       )}
     </ContentLayout>
   );

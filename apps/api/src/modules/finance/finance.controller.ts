@@ -21,6 +21,7 @@ import {
   createBankSchema,
   createCreditCardSchema,
   createFinanceCategorySchema,
+  createFinanceGuideSchema,
   createInsuranceSchema,
   createInterestRateSchema,
   createInvestmentSchema,
@@ -30,6 +31,8 @@ import {
   updateBankSchema,
   updateCreditCardSchema,
   updateFinanceCategorySchema,
+  updateFinanceGuideSchema,
+  updateFinancePageSeoSchema,
   updateInsuranceSchema,
   updateInterestRateSchema,
   updateInvestmentSchema,
@@ -37,6 +40,7 @@ import {
   type CreateBankInput,
   type CreateCreditCardInput,
   type CreateFinanceCategoryInput,
+  type CreateFinanceGuideInput,
   type CreateInsuranceInput,
   type CreateInterestRateInput,
   type CreateInvestmentInput,
@@ -46,6 +50,8 @@ import {
   type UpdateBankInput,
   type UpdateCreditCardInput,
   type UpdateFinanceCategoryInput,
+  type UpdateFinanceGuideInput,
+  type UpdateFinancePageSeoInput,
   type UpdateInsuranceInput,
   type UpdateInterestRateInput,
   type UpdateInvestmentInput,
@@ -86,6 +92,18 @@ export class FinanceController {
     return ok(await this.service.listCategories());
   }
 
+  @Public()
+  @Get('categories/:slug')
+  async categoryBySlug(@Param('slug') slug: string) {
+    return ok(await this.service.getCategoryBySlug(slug));
+  }
+
+  @Get('admin/categories/:id')
+  @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
+  async categoryById(@Param('id', ParseUUIDPipe) id: string) {
+    return ok(await this.service.getCategory(id));
+  }
+
   @Post('categories')
   @RequirePermissions(PERMISSIONS.FINANCE_EDIT)
   async createCategory(
@@ -117,7 +135,9 @@ export class FinanceController {
   @Public()
   @Get('banks')
   async banks(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listBanks({ ...query, status: query.status ?? 'PUBLISHED' }));
+    return okCursor(
+      await this.service.listBanks({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/banks')
@@ -178,7 +198,9 @@ export class FinanceController {
   @Public()
   @Get('loans')
   async loans(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listLoans({ ...query, status: query.status ?? 'PUBLISHED' }));
+    return okCursor(
+      await this.service.listLoans({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/loans')
@@ -234,12 +256,16 @@ export class FinanceController {
   @Public()
   @Get('credit-cards')
   async creditCards(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listCreditCards({ ...query, status: query.status ?? 'PUBLISHED' }));
+    return okCursor(
+      await this.service.listCreditCards({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/credit-cards')
   @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
-  async adminCreditCards(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
+  async adminCreditCards(
+    @Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery,
+  ) {
     return okCursor(await this.service.listCreditCards(query));
   }
 
@@ -289,12 +315,16 @@ export class FinanceController {
   @Public()
   @Get('insurance')
   async insurance(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listInsurance({ ...query, status: query.status ?? 'PUBLISHED' }));
+    return okCursor(
+      await this.service.listInsurance({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/insurance')
   @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
-  async adminInsurance(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
+  async adminInsurance(
+    @Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery,
+  ) {
     return okCursor(await this.service.listInsurance(query));
   }
 
@@ -344,12 +374,16 @@ export class FinanceController {
   @Public()
   @Get('investments')
   async investments(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listInvestments({ ...query, status: query.status ?? 'PUBLISHED' }));
+    return okCursor(
+      await this.service.listInvestments({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/investments')
   @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
-  async adminInvestments(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
+  async adminInvestments(
+    @Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery,
+  ) {
     return okCursor(await this.service.listInvestments(query));
   }
 
@@ -438,7 +472,9 @@ export class FinanceController {
 
   @Public()
   @Get('compare')
-  async compare(@Query(new ZodValidationPipe(financeCompareQuerySchema)) query: FinanceCompareQuery) {
+  async compare(
+    @Query(new ZodValidationPipe(financeCompareQuerySchema)) query: FinanceCompareQuery,
+  ) {
     return ok(await this.service.compare(query));
   }
 
@@ -460,7 +496,8 @@ export class FinanceController {
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
   async createFaq(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body() body: { question: string; answer: string; categoryId?: string | null; sortOrder?: number },
+    @Body()
+    body: { question: string; answer: string; categoryId?: string | null; sortOrder?: number },
   ) {
     return ok(await this.gap.createFaq(body, user.id));
   }
@@ -502,17 +539,65 @@ export class FinanceController {
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
   async createGuide(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body()
-    body: {
-      title: string;
-      slug: string;
-      summary?: string | null;
-      body?: string | null;
-      categoryId?: string | null;
-      status?: 'DRAFT' | 'PUBLISHED';
-    },
+    @Body(new ZodValidationPipe(createFinanceGuideSchema)) body: CreateFinanceGuideInput,
   ) {
     return ok(await this.gap.createGuide(body, user.id));
+  }
+
+  @Get('admin/guides')
+  @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
+  async adminGuides() {
+    return ok(await this.gap.listGuides(true));
+  }
+
+  @Get('admin/guides/:id')
+  @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
+  async adminGuide(@Param('id', ParseUUIDPipe) id: string) {
+    return ok(await this.gap.getGuideById(id));
+  }
+
+  @Put('admin/guides/:id')
+  @RequirePermissions(PERMISSIONS.FINANCE_EDIT)
+  async updateGuide(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(updateFinanceGuideSchema)) body: UpdateFinanceGuideInput,
+  ) {
+    return ok(await this.gap.updateGuide(id, body, user.id));
+  }
+
+  @Public()
+  @Get('pages')
+  async financePages() {
+    return ok(this.gap.listFinancePages());
+  }
+
+  @Public()
+  @Get('pages/:pageKey')
+  async financePageSeo(@Param('pageKey') pageKey: string) {
+    return ok(await this.gap.getPageSeo(pageKey));
+  }
+
+  @Get('admin/pages')
+  @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
+  async adminFinancePages() {
+    return ok(this.gap.listFinancePages());
+  }
+
+  @Get('admin/pages/:pageKey')
+  @RequirePermissions(PERMISSIONS.FINANCE_VIEW)
+  async adminFinancePageSeo(@Param('pageKey') pageKey: string) {
+    return ok(await this.gap.getPageSeo(pageKey));
+  }
+
+  @Put('admin/pages/:pageKey')
+  @RequirePermissions(PERMISSIONS.FINANCE_EDIT)
+  async updateFinancePageSeo(
+    @Param('pageKey') pageKey: string,
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(updateFinancePageSeoSchema)) body: UpdateFinancePageSeoInput,
+  ) {
+    return ok(await this.gap.upsertPageSeo(pageKey, body, user.id));
   }
 
   @Public()
@@ -570,7 +655,14 @@ export class FinanceController {
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
   async createComparison(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body() body: { title: string; slug: string; entityType: string; entityIds: string[]; status?: 'DRAFT' | 'PUBLISHED' },
+    @Body()
+    body: {
+      title: string;
+      slug: string;
+      entityType: string;
+      entityIds: string[];
+      status?: 'DRAFT' | 'PUBLISHED';
+    },
   ) {
     return ok(await this.gap.createComparison(body, user.id));
   }
@@ -585,7 +677,13 @@ export class FinanceController {
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
   async createRateFeed(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body() body: { name: string; provider: string; endpointUrl?: string | null; productType?: string | null },
+    @Body()
+    body: {
+      name: string;
+      provider: string;
+      endpointUrl?: string | null;
+      productType?: string | null;
+    },
   ) {
     return ok(await this.gap.createRateFeed(body, user.id));
   }
@@ -629,7 +727,13 @@ export class FinanceController {
   @Post('goals')
   async createGoal(
     @CurrentUserDecorator() user: CurrentUser | undefined,
-    @Body() body: { title: string; targetAmount: number; currentAmount?: number; targetDate?: string | null },
+    @Body()
+    body: {
+      title: string;
+      targetAmount: number;
+      currentAmount?: number;
+      targetDate?: string | null;
+    },
   ) {
     return ok(await this.gap.createGoal(body, user?.id));
   }
@@ -644,7 +748,9 @@ export class FinanceController {
 
   @Post('admin/import/:entity')
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
-  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
   async importCsv(
     @Param('entity') entity: string,
     @CurrentUserDecorator() user: CurrentUser,

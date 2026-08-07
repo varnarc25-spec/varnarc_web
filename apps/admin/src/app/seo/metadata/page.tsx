@@ -1,4 +1,5 @@
 import { Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
+import { SeoMetadataEditForm } from '@/components/seo-metadata-editor';
 import { apiServerFetch } from '@/lib/api';
 
 type MetadataRow = {
@@ -18,7 +19,7 @@ export default async function SeoMetadataPage() {
     <div className="space-y-8">
       <PageHeader
         title="SEO Metadata"
-        description="Centralized metadata overrides by entity. Edit entity SEO in module editors or upsert via API."
+        description="Centralized metadata overrides by entity. Click a row to expand and edit."
       />
       {result.error ? (
         <Card>
@@ -40,13 +41,30 @@ export default async function SeoMetadataPage() {
             </thead>
             <tbody>
               {(result.data ?? []).map((row) => (
-                <tr key={row.id} className="border-b border-[var(--varnarc-border)]">
+                <tr key={row.id} className="border-b border-[var(--varnarc-border)] align-top">
                   <td className="px-3 py-2 font-mono text-xs">
                     {row.entityType}:{row.entityId.slice(0, 8)}…
                   </td>
                   <td className="px-3 py-2">{row.title ?? '—'}</td>
                   <td className="px-3 py-2 font-mono text-xs">{row.canonicalUrl ?? '—'}</td>
-                  <td className="px-3 py-2">{new Date(row.updatedAt).toLocaleString()}</td>
+                  <td className="px-3 py-2">
+                    <div>{new Date(row.updatedAt).toLocaleString()}</div>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs text-[var(--varnarc-brand)]">
+                        Edit
+                      </summary>
+                      <div className="mt-2 min-w-[20rem]">
+                        <SeoMetadataEditForm
+                          entityType={row.entityType}
+                          entityId={row.entityId}
+                          initial={{
+                            title: row.title,
+                            description: row.description,
+                          }}
+                        />
+                      </div>
+                    </details>
+                  </td>
                 </tr>
               ))}
             </tbody>

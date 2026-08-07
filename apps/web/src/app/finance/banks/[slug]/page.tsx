@@ -21,8 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       entityType: 'bank',
       entityId: data.id,
       path: `/finance/banks/${slug}`,
-      title: data.name,
-      description: data.description || `${data.name} loans and credit cards.`,
+      title: data.seoTitle || data.name,
+      description:
+        data.seoDescription || data.description || `${data.name} loans and credit cards.`,
       image: data.logoUrl,
     });
   } catch {
@@ -84,7 +85,10 @@ export default async function FinanceBankDetailPage({ params }: Props) {
         <section className="mb-10">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-extrabold text-[#0b1f3a]">Loans</h2>
-            <Link href={`/finance/loans?bankId=${bank.id}`} className="text-sm text-[#f97316] hover:underline">
+            <Link
+              href={`/finance/loans?bankId=${bank.id}`}
+              className="text-sm text-[#f97316] hover:underline"
+            >
               View all
             </Link>
           </div>
@@ -107,7 +111,10 @@ export default async function FinanceBankDetailPage({ params }: Props) {
         <section className="mb-10">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-extrabold text-[#0b1f3a]">Credit cards</h2>
-            <Link href={`/finance/credit-cards?bankId=${bank.id}`} className="text-sm text-[#f97316] hover:underline">
+            <Link
+              href={`/finance/credit-cards?bankId=${bank.id}`}
+              className="text-sm text-[#f97316] hover:underline"
+            >
               View all
             </Link>
           </div>
@@ -126,7 +133,9 @@ export default async function FinanceBankDetailPage({ params }: Props) {
       ) : null}
 
       {!loans.length && !cards.length ? (
-        <p className="text-sm text-slate-600">No published loan or card products for this bank yet.</p>
+        <p className="text-sm text-slate-600">
+          No published loan or card products for this bank yet.
+        </p>
       ) : null}
 
       <RelatedArticles />

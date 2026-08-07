@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EligibilityCheckForm } from '@/components/finance/finance-forms-client';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Loan Eligibility',
-  description: 'Check your loan eligibility based on income and requested amount.',
-  alternates: { canonical: '/finance/eligibility' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('eligibility');
+}
 
-export default function FinanceEligibilityPage() {
+export default async function FinanceEligibilityPage() {
+  const page = await getFinancePageContent('eligibility');
+
   return (
     <ContentLayout
-      title="Loan eligibility"
-      description="Quick eligibility check for personal, home, car, and business loans."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },

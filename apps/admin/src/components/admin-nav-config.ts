@@ -49,13 +49,18 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     id: 'calculators',
     label: 'Calculators',
-    items: [{ href: '/calculators', label: 'All calculators', permission: PERMISSIONS.CALCULATOR_VIEW }],
+    items: [
+      { href: '/calculators', label: 'All calculators', permission: PERMISSIONS.CALCULATOR_VIEW },
+    ],
   },
   {
     id: 'finance',
     label: 'Finance',
     items: [
       { href: '/finance', label: 'Overview', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/seo', label: 'Page SEO', permission: PERMISSIONS.FINANCE_EDIT },
+      { href: '/finance/categories', label: 'Categories', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/guides', label: 'Guides', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/affiliates', label: 'Affiliates', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/comparisons', label: 'Comparisons', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/faqs', label: 'FAQs', permission: PERMISSIONS.FINANCE_VIEW },
@@ -68,9 +73,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Construction',
     items: [
       { href: '/construction', label: 'Overview', permission: PERMISSIONS.CONSTRUCTION_VIEW },
-      { href: '/construction/categories', label: 'Categories', permission: PERMISSIONS.CONSTRUCTION_VIEW },
-      { href: '/construction/checklists', label: 'Checklists', permission: PERMISSIONS.CONSTRUCTION_VIEW },
-      { href: '/construction/suppliers', label: 'Suppliers', permission: PERMISSIONS.CONSTRUCTION_VIEW },
+      {
+        href: '/construction/categories',
+        label: 'Categories',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/checklists',
+        label: 'Checklists',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/suppliers',
+        label: 'Suppliers',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
       { href: '/construction/faqs', label: 'FAQs', permission: PERMISSIONS.CONSTRUCTION_VIEW },
       { href: '/construction/guides', label: 'Guides', permission: PERMISSIONS.CONSTRUCTION_VIEW },
     ],
@@ -80,9 +97,17 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Automobile',
     items: [
       { href: '/automobile', label: 'Overview', permission: PERMISSIONS.AUTOMOBILE_VIEW },
-      { href: '/automobile/manufacturers', label: 'Manufacturers', permission: PERMISSIONS.AUTOMOBILE_VIEW },
+      {
+        href: '/automobile/manufacturers',
+        label: 'Manufacturers',
+        permission: PERMISSIONS.AUTOMOBILE_VIEW,
+      },
       { href: '/automobile/vehicles', label: 'Vehicles', permission: PERMISSIONS.AUTOMOBILE_VIEW },
-      { href: '/automobile/maintenance', label: 'Maintenance', permission: PERMISSIONS.AUTOMOBILE_VIEW },
+      {
+        href: '/automobile/maintenance',
+        label: 'Maintenance',
+        permission: PERMISSIONS.AUTOMOBILE_VIEW,
+      },
       { href: '/automobile/dealers', label: 'Dealers', permission: PERMISSIONS.AUTOMOBILE_VIEW },
       { href: '/automobile/faqs', label: 'FAQs', permission: PERMISSIONS.AUTOMOBILE_VIEW },
       { href: '/automobile/guides', label: 'Guides', permission: PERMISSIONS.AUTOMOBILE_VIEW },
@@ -104,8 +129,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: '/comparisons', label: 'Overview', permission: PERMISSIONS.COMPARISON_VIEW },
       { href: '/comparisons/list', label: 'Editor', permission: PERMISSIONS.COMPARISON_VIEW },
-      { href: '/comparisons/templates', label: 'Templates', permission: PERMISSIONS.COMPARISON_VIEW },
-      { href: '/comparisons/analytics', label: 'Analytics', permission: PERMISSIONS.COMPARISON_VIEW },
+      {
+        href: '/comparisons/templates',
+        label: 'Templates',
+        permission: PERMISSIONS.COMPARISON_VIEW,
+      },
+      {
+        href: '/comparisons/analytics',
+        label: 'Analytics',
+        permission: PERMISSIONS.COMPARISON_VIEW,
+      },
     ],
   },
   {
@@ -114,8 +147,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: '/directory', label: 'Overview', permission: PERMISSIONS.DIRECTORY_VIEW },
       { href: '/directory/listings', label: 'Listings', permission: PERMISSIONS.DIRECTORY_VIEW },
-      { href: '/directory/verification', label: 'Verification', permission: PERMISSIONS.DIRECTORY_VERIFY },
-      { href: '/directory/categories', label: 'Categories', permission: PERMISSIONS.DIRECTORY_VIEW },
+      {
+        href: '/directory/verification',
+        label: 'Verification',
+        permission: PERMISSIONS.DIRECTORY_VERIFY,
+      },
+      {
+        href: '/directory/categories',
+        label: 'Categories',
+        permission: PERMISSIONS.DIRECTORY_VIEW,
+      },
       { href: '/directory/leads', label: 'Leads', permission: PERMISSIONS.DIRECTORY_VIEW },
       { href: '/directory/analytics', label: 'Analytics', permission: PERMISSIONS.DIRECTORY_VIEW },
     ],
@@ -165,7 +206,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { href: '/analytics/users', label: 'Users', permission: PERMISSIONS.ANALYTICS_VIEW },
       { href: '/analytics/system', label: 'System', permission: PERMISSIONS.ANALYTICS_VIEW },
       { href: '/analytics/reports', label: 'Reports', permission: PERMISSIONS.ANALYTICS_VIEW },
-      { href: '/analytics/integrations', label: 'Integrations', permission: PERMISSIONS.ANALYTICS_ADMIN },
+      {
+        href: '/analytics/integrations',
+        label: 'Integrations',
+        permission: PERMISSIONS.ANALYTICS_ADMIN,
+      },
     ],
   },
   {
@@ -188,9 +233,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Notifications',
     items: [
       { href: '/notifications', label: 'Overview', permission: PERMISSIONS.NOTIFICATIONS_VIEW },
-      { href: '/notifications/subscribers', label: 'Subscribers', permission: PERMISSIONS.NOTIFICATIONS_VIEW },
-      { href: '/notifications/templates', label: 'Templates', permission: PERMISSIONS.NOTIFICATIONS_VIEW },
-      { href: '/notifications/broadcast', label: 'Broadcast', permission: PERMISSIONS.NOTIFICATIONS_MANAGE },
+      {
+        href: '/notifications/subscribers',
+        label: 'Subscribers',
+        permission: PERMISSIONS.NOTIFICATIONS_VIEW,
+      },
+      {
+        href: '/notifications/templates',
+        label: 'Templates',
+        permission: PERMISSIONS.NOTIFICATIONS_VIEW,
+      },
+      {
+        href: '/notifications/broadcast',
+        label: 'Broadcast',
+        permission: PERMISSIONS.NOTIFICATIONS_MANAGE,
+      },
     ],
   },
   {
@@ -198,9 +255,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Advertisements',
     items: [
       { href: '/advertisements', label: 'Overview', permission: PERMISSIONS.ADVERTISEMENT_VIEW },
-      { href: '/advertisements/campaigns', label: 'Campaigns', permission: PERMISSIONS.ADVERTISEMENT_VIEW },
-      { href: '/advertisements/placements', label: 'Placements', permission: PERMISSIONS.ADVERTISEMENT_VIEW },
-      { href: '/advertisements/analytics', label: 'Analytics', permission: PERMISSIONS.ADVERTISEMENT_VIEW },
+      {
+        href: '/advertisements/campaigns',
+        label: 'Campaigns',
+        permission: PERMISSIONS.ADVERTISEMENT_VIEW,
+      },
+      {
+        href: '/advertisements/placements',
+        label: 'Placements',
+        permission: PERMISSIONS.ADVERTISEMENT_VIEW,
+      },
+      {
+        href: '/advertisements/analytics',
+        label: 'Analytics',
+        permission: PERMISSIONS.ADVERTISEMENT_VIEW,
+      },
     ],
   },
   {

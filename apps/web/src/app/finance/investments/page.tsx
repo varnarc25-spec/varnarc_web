@@ -3,22 +3,24 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FinanceProductCard, RelatedCalculators } from '@/components/finance/finance-product-card';
 import { fetchFinanceInvestments } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Investments',
-  description: 'Compare mutual funds, FDs, and other investment products.',
-  alternates: { canonical: '/finance/investments' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('investments');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceInvestmentsPage() {
-  const { data } = await fetchFinanceInvestments({ limit: 48 });
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('investments'),
+    fetchFinanceInvestments({ limit: 48 }),
+  ]);
 
   return (
     <ContentLayout
-      title="Investments"
-      description="Explore expected returns, risk levels, and lock-in periods."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -47,7 +49,10 @@ export default async function FinanceInvestmentsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No investments yet" message="Published investment products will appear here." />
+        <EmptyState
+          title="No investments yet"
+          message="Published investment products will appear here."
+        />
       )}
 
       <RelatedCalculators links={[{ href: '/calculators/sip', label: 'SIP Calculator' }]} />

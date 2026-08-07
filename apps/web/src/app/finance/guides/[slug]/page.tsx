@@ -14,10 +14,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { data } = await fetchFinanceGuide(slug);
     return buildSeoMetadata({
       entityType: 'finance_guide',
-      entityId: slug,
+      entityId: data.id,
       path: `/finance/guides/${slug}`,
-      title: data.title,
-      description: data.summary,
+      title: data.seoTitle || data.title,
+      description: data.seoDescription || data.summary,
     });
   } catch {
     return { title: 'Guide', alternates: { canonical: `/finance/guides/${slug}` } };
@@ -52,7 +52,9 @@ export default async function FinanceGuideDetailPage({ params }: Props) {
         metadata={{ slug: guide.slug, title: guide.title }}
       />
       {guide.category ? (
-        <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#f97316]">{guide.category}</p>
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#f97316]">
+          {guide.category}
+        </p>
       ) : null}
 
       {guide.content ? (

@@ -4,22 +4,24 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FinanceProductCard } from '@/components/finance/finance-product-card';
 import { fetchFinanceBanks } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Banks',
-  description: 'Browse partner banks and financial institutions.',
-  alternates: { canonical: '/finance/banks' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('banks');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceBanksPage() {
-  const { data } = await fetchFinanceBanks({ limit: 48 });
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('banks'),
+    fetchFinanceBanks({ limit: 48 }),
+  ]);
 
   return (
     <ContentLayout
-      title="Banks"
-      description="Partner banks offering loans, credit cards, and more."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },

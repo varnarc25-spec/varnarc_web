@@ -4,12 +4,11 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { RelatedCalculators } from '@/components/finance/finance-product-card';
 import { RatesChart } from '@/components/finance/rates-chart';
 import { fetchFinanceRates } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Interest Rates',
-  description: 'Latest benchmark and product interest rates from banks and lenders.',
-  alternates: { canonical: '/finance/rates' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('rates');
+}
 
 export const revalidate = 60;
 
@@ -31,13 +30,16 @@ function buildChartData(
 }
 
 export default async function FinanceRatesPage() {
-  const { data } = await fetchFinanceRates({ limit: 48 });
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('rates'),
+    fetchFinanceRates({ limit: 48 }),
+  ]);
   const chartData = buildChartData(data);
 
   return (
     <ContentLayout
-      title="Interest rates"
-      description="Track current rates across loan products and providers."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -76,7 +78,10 @@ export default async function FinanceRatesPage() {
           </table>
         </div>
       ) : (
-        <EmptyState title="No rates yet" message="Interest rate data will appear here once published." />
+        <EmptyState
+          title="No rates yet"
+          message="Interest rate data will appear here once published."
+        />
       )}
 
       <RelatedCalculators

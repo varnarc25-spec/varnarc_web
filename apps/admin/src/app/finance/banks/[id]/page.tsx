@@ -9,14 +9,12 @@ type BankDetail = {
   slug: string;
   website?: string | null;
   description?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   status: string;
 };
 
-export default async function FinanceBankEditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function FinanceBankEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const result = await apiServerFetch<BankDetail>(`/finance/banks/${id}`);
   const bank = result.data;
@@ -27,7 +25,10 @@ export default async function FinanceBankEditPage({
         title="Edit bank"
         description={bank?.name ?? 'Bank details'}
         actions={
-          <Link href="/finance/banks" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+          <Link
+            href="/finance/banks"
+            className="text-sm text-[var(--varnarc-brand)] hover:underline"
+          >
             ← Back to banks
           </Link>
         }
@@ -50,6 +51,8 @@ export default async function FinanceBankEditPage({
               slug: bank.slug,
               website: bank.website,
               description: bank.description,
+              seoTitle: bank.seoTitle,
+              seoDescription: bank.seoDescription,
             }}
           />
         </>

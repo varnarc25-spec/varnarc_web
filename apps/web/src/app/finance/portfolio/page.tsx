@@ -3,20 +3,22 @@ import Link from 'next/link';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { fetchFinancePortfolio } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Portfolio',
-  description: 'View your finance portfolio holdings.',
-  alternates: { canonical: '/finance/portfolio' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('portfolio');
+}
 
 export default async function FinancePortfolioPage() {
-  const { data, unauthorized } = await fetchFinancePortfolio();
+  const [page, { data, unauthorized }] = await Promise.all([
+    getFinancePageContent('portfolio'),
+    fetchFinancePortfolio(),
+  ]);
 
   return (
     <ContentLayout
-      title="Portfolio"
-      description="Track loans, investments, and insurance in one place."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -59,7 +61,10 @@ export default async function FinancePortfolioPage() {
           </table>
         </div>
       ) : (
-        <EmptyState title="No portfolio items" message="Your holdings will appear here once linked." />
+        <EmptyState
+          title="No portfolio items"
+          message="Your holdings will appear here once linked."
+        />
       )}
     </ContentLayout>
   );

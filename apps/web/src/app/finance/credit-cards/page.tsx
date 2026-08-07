@@ -3,22 +3,24 @@ import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FinanceProductCard, RelatedCalculators } from '@/components/finance/finance-product-card';
 import { fetchFinanceCreditCards } from '@/services/finance';
+import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export const metadata: Metadata = {
-  title: 'Credit Cards',
-  description: 'Compare rewards, fees, and benefits across credit cards.',
-  alternates: { canonical: '/finance/credit-cards' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildFinancePageMetadata('credit-cards');
+}
 
 export const revalidate = 60;
 
 export default async function FinanceCreditCardsPage() {
-  const { data } = await fetchFinanceCreditCards({ limit: 48 });
+  const [page, { data }] = await Promise.all([
+    getFinancePageContent('credit-cards'),
+    fetchFinanceCreditCards({ limit: 48 }),
+  ]);
 
   return (
     <ContentLayout
-      title="Credit cards"
-      description="Find cards with the best rewards, cashback, and lounge access."
+      title={page.h1}
+      description={page.intro}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Finance', href: '/finance' },
@@ -46,10 +48,15 @@ export default async function FinanceCreditCardsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No credit cards yet" message="Published credit card products will appear here." />
+        <EmptyState
+          title="No credit cards yet"
+          message="Published credit card products will appear here."
+        />
       )}
 
-      <RelatedCalculators links={[{ href: '/calculators/income-tax', label: 'Income Tax Calculator' }]} />
+      <RelatedCalculators
+        links={[{ href: '/calculators/income-tax', label: 'Income Tax Calculator' }]}
+      />
     </ContentLayout>
   );
 }

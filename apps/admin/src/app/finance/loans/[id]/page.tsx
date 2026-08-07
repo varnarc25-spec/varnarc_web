@@ -10,6 +10,8 @@ type LoanDetail = {
   loanType: string;
   interestRate?: number | string | null;
   affiliateUrl?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   status: string;
   bank?: { id: string; name: string } | null;
   bankId?: string;
@@ -17,11 +19,7 @@ type LoanDetail = {
 
 type BankRow = { id: string; name: string };
 
-export default async function FinanceLoanEditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function FinanceLoanEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [loanResult, banksResult] = await Promise.all([
     apiServerFetch<LoanDetail>(`/finance/loans/${id}`),
@@ -36,7 +34,10 @@ export default async function FinanceLoanEditPage({
         title="Edit loan"
         description={loan?.name ?? 'Loan product'}
         actions={
-          <Link href="/finance/loans" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+          <Link
+            href="/finance/loans"
+            className="text-sm text-[var(--varnarc-brand)] hover:underline"
+          >
             ← Back to loans
           </Link>
         }
@@ -63,6 +64,8 @@ export default async function FinanceLoanEditPage({
                 loanType: loan.loanType,
                 interestRate: loan.interestRate,
                 affiliateUrl: loan.affiliateUrl,
+                seoTitle: loan.seoTitle,
+                seoDescription: loan.seoDescription,
               }}
             />
           ) : (

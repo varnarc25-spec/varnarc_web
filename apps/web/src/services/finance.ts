@@ -137,7 +137,9 @@ export async function fetchFinanceCategories() {
 
 export async function fetchFinanceLoans(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceLoan[]>(`/finance/loans?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceLoan[]>(`/finance/loans?${buildQs(options)}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as FinanceLoan[], meta: undefined };
   }
@@ -149,7 +151,9 @@ export async function fetchFinanceLoan(id: string) {
 
 export async function fetchFinanceCreditCards(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceCreditCard[]>(`/finance/credit-cards?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceCreditCard[]>(`/finance/credit-cards?${buildQs(options)}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as FinanceCreditCard[], meta: undefined };
   }
@@ -161,7 +165,9 @@ export async function fetchFinanceCreditCard(id: string) {
 
 export async function fetchFinanceInsurance(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceInsurance[]>(`/finance/insurance?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceInsurance[]>(`/finance/insurance?${buildQs(options)}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as FinanceInsurance[], meta: undefined };
   }
@@ -173,7 +179,9 @@ export async function fetchFinanceInsuranceProduct(id: string) {
 
 export async function fetchFinanceInvestments(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceInvestment[]>(`/finance/investments?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceInvestment[]>(`/finance/investments?${buildQs(options)}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as FinanceInvestment[], meta: undefined };
   }
@@ -185,7 +193,10 @@ export async function fetchFinanceInvestment(id: string) {
 
 export async function fetchFinanceRates(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceInterestRate[]>(`/finance/interest-rates?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceInterestRate[]>(
+      `/finance/interest-rates?${buildQs(options)}`,
+      { cache: 'no-store' },
+    );
   } catch {
     return { data: [] as FinanceInterestRate[], meta: undefined };
   }
@@ -204,6 +215,8 @@ export type FinanceBank = {
   website?: string | null;
   logoUrl?: string | null;
   featured?: boolean;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   loans?: FinanceLoan[];
   creditCards?: FinanceCreditCard[];
   _count?: { loans?: number; creditCards?: number };
@@ -216,6 +229,8 @@ export type FinanceGuide = {
   summary?: string | null;
   category?: string | null;
   content?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 };
 
 export type FinanceFaq = {
@@ -270,9 +285,34 @@ export type FinanceGoal = {
   category?: string | null;
 };
 
+export type FinancePageSeo = {
+  pageKey: string;
+  entityId: string;
+  path: string;
+  label: string;
+  title: string;
+  description: string;
+  h1: string;
+  intro: string;
+  metaKeywords?: string | null;
+  canonicalUrl?: string | null;
+};
+
+export async function fetchFinancePageSeo(pageKey: string) {
+  return apiPublicFetch<FinancePageSeo>(`/finance/pages/${pageKey}`, {
+    next: { revalidate: 120 },
+  });
+}
+
+export async function fetchFinanceCategoryBySlug(slug: string) {
+  return apiPublicFetch<FinanceCategory>(`/finance/categories/${slug}`, { cache: 'no-store' });
+}
+
 export async function fetchFinanceBanks(options?: ListOptions) {
   try {
-    return await apiPublicFetch<FinanceBank[]>(`/finance/banks?${buildQs(options)}`, { cache: 'no-store' });
+    return await apiPublicFetch<FinanceBank[]>(`/finance/banks?${buildQs(options)}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as FinanceBank[], meta: undefined };
   }
@@ -356,7 +396,9 @@ export async function fetchFinancePortfolio(): Promise<{
   unauthorized?: boolean;
 }> {
   try {
-    const result = await apiPublicFetch<FinancePortfolioItem[]>('/finance/portfolio', { cache: 'no-store' });
+    const result = await apiPublicFetch<FinancePortfolioItem[]>('/finance/portfolio', {
+      cache: 'no-store',
+    });
     return { data: result.data };
   } catch (e) {
     if (e instanceof ApiError && e.status === 401) {

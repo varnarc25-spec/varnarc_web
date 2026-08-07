@@ -88,7 +88,11 @@ export class FinanceService {
 
   async createCategory(input: CreateFinanceCategoryInput, actorId: string) {
     const existing = await this.repos.financeCategories.findBySlug(input.slug);
-    if (existing) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+    if (existing)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug already exists.' },
+      });
     const row = await this.repos.financeCategories.create({
       name: input.name,
       slug: input.slug,
@@ -107,7 +111,11 @@ export class FinanceService {
     if (!existing) throw this.notFound('Category not found.');
     if (input.slug && input.slug !== existing.slug) {
       const clash = await this.repos.financeCategories.findBySlug(input.slug);
-      if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+      if (clash)
+        throw new ConflictException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug already exists.' },
+        });
     }
     const row = await this.repos.financeCategories.update(id, { ...input, updatedBy: actorId });
     await this.audit(actorId, 'finance.category.update', 'finance_category', id, row);
@@ -123,6 +131,18 @@ export class FinanceService {
     return { id, deleted: true };
   }
 
+  async getCategoryBySlug(slug: string) {
+    const category = await this.repos.financeCategories.findBySlug(slug);
+    if (!category) throw this.notFound('Category not found.');
+    return category;
+  }
+
+  async getCategory(id: string) {
+    const category = await this.repos.financeCategories.findById(id);
+    if (!category) throw this.notFound('Category not found.');
+    return category;
+  }
+
   // --- Banks ---
   listBanks(query: FinanceListQuery) {
     return this.repos.banks.list(query);
@@ -136,7 +156,11 @@ export class FinanceService {
 
   async createBank(input: CreateBankInput, actorId: string) {
     const existing = await this.repos.banks.findBySlug(input.slug);
-    if (existing) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+    if (existing)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug already exists.' },
+      });
     const row = await this.repos.banks.create({
       name: input.name,
       slug: input.slug,
@@ -161,7 +185,11 @@ export class FinanceService {
     if (!existing) throw this.notFound('Bank not found.');
     if (input.slug && input.slug !== existing.slug) {
       const clash = await this.repos.banks.findBySlug(input.slug);
-      if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+      if (clash)
+        throw new ConflictException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug already exists.' },
+        });
     }
     const row = await this.repos.banks.update(id, {
       ...(input.name != null ? { name: input.name } : {}),
@@ -257,14 +285,19 @@ export class FinanceService {
       ...(input.tenureMax !== undefined ? { tenureMax: input.tenureMax } : {}),
       ...(input.maxAmount !== undefined ? { maxAmount: input.maxAmount } : {}),
       ...(input.eligibility !== undefined ? { eligibility: input.eligibility } : {}),
-      ...(input.affiliateUrl !== undefined ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) } : {}),
+      ...(input.affiliateUrl !== undefined
+        ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) }
+        : {}),
       ...(input.pros !== undefined ? { pros: input.pros } : {}),
       ...(input.cons !== undefined ? { cons: input.cons } : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
       ...(input.status != null
         ? {
             status: input.status,
-            publishedAt: input.status === 'PUBLISHED' ? existing.publishedAt ?? new Date() : existing.publishedAt,
+            publishedAt:
+              input.status === 'PUBLISHED'
+                ? (existing.publishedAt ?? new Date())
+                : existing.publishedAt,
           }
         : {}),
       ...(input.metadata !== undefined ? { metadata: input.metadata as never } : {}),
@@ -349,14 +382,19 @@ export class FinanceService {
       ...(input.rewards !== undefined ? { rewards: input.rewards } : {}),
       ...(input.cashback !== undefined ? { cashback: input.cashback } : {}),
       ...(input.loungeAccess != null ? { loungeAccess: input.loungeAccess } : {}),
-      ...(input.affiliateUrl !== undefined ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) } : {}),
+      ...(input.affiliateUrl !== undefined
+        ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) }
+        : {}),
       ...(input.pros !== undefined ? { pros: input.pros } : {}),
       ...(input.cons !== undefined ? { cons: input.cons } : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
       ...(input.status != null
         ? {
             status: input.status,
-            publishedAt: input.status === 'PUBLISHED' ? existing.publishedAt ?? new Date() : existing.publishedAt,
+            publishedAt:
+              input.status === 'PUBLISHED'
+                ? (existing.publishedAt ?? new Date())
+                : existing.publishedAt,
           }
         : {}),
       ...(input.metadata !== undefined ? { metadata: input.metadata as never } : {}),
@@ -394,7 +432,11 @@ export class FinanceService {
 
   async createInsurance(input: CreateInsuranceInput, actorId: string) {
     const clash = await this.repos.insuranceProducts.findBySlug(input.slug);
-    if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+    if (clash)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug already exists.' },
+      });
     const row = await this.repos.insuranceProducts.create({
       ...(input.categoryId ? { category: { connect: { id: input.categoryId } } } : {}),
       providerName: input.providerName,
@@ -423,7 +465,11 @@ export class FinanceService {
     if (!existing) throw this.notFound('Insurance product not found.');
     if (input.slug && input.slug !== existing.slug) {
       const clash = await this.repos.insuranceProducts.findBySlug(input.slug);
-      if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+      if (clash)
+        throw new ConflictException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug already exists.' },
+        });
     }
     const row = await this.repos.insuranceProducts.update(id, {
       ...(input.categoryId !== undefined
@@ -437,12 +483,17 @@ export class FinanceService {
       ...(input.coverage !== undefined ? { coverage: input.coverage } : {}),
       ...(input.premium !== undefined ? { premium: input.premium } : {}),
       ...(input.benefits !== undefined ? { benefits: input.benefits } : {}),
-      ...(input.affiliateUrl !== undefined ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) } : {}),
+      ...(input.affiliateUrl !== undefined
+        ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) }
+        : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
       ...(input.status != null
         ? {
             status: input.status,
-            publishedAt: input.status === 'PUBLISHED' ? existing.publishedAt ?? new Date() : existing.publishedAt,
+            publishedAt:
+              input.status === 'PUBLISHED'
+                ? (existing.publishedAt ?? new Date())
+                : existing.publishedAt,
           }
         : {}),
       ...(input.metadata !== undefined ? { metadata: input.metadata as never } : {}),
@@ -480,7 +531,11 @@ export class FinanceService {
 
   async createInvestment(input: CreateInvestmentInput, actorId: string) {
     const clash = await this.repos.investmentProducts.findBySlug(input.slug);
-    if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+    if (clash)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug already exists.' },
+      });
     const row = await this.repos.investmentProducts.create({
       ...(input.categoryId ? { category: { connect: { id: input.categoryId } } } : {}),
       providerName: input.providerName,
@@ -509,7 +564,11 @@ export class FinanceService {
     if (!existing) throw this.notFound('Investment product not found.');
     if (input.slug && input.slug !== existing.slug) {
       const clash = await this.repos.investmentProducts.findBySlug(input.slug);
-      if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug already exists.' } });
+      if (clash)
+        throw new ConflictException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug already exists.' },
+        });
     }
     const row = await this.repos.investmentProducts.update(id, {
       ...(input.categoryId !== undefined
@@ -523,12 +582,17 @@ export class FinanceService {
       ...(input.riskLevel !== undefined ? { riskLevel: input.riskLevel } : {}),
       ...(input.expectedReturn !== undefined ? { expectedReturn: input.expectedReturn } : {}),
       ...(input.lockInPeriod !== undefined ? { lockInPeriod: input.lockInPeriod } : {}),
-      ...(input.affiliateUrl !== undefined ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) } : {}),
+      ...(input.affiliateUrl !== undefined
+        ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) }
+        : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
       ...(input.status != null
         ? {
             status: input.status,
-            publishedAt: input.status === 'PUBLISHED' ? existing.publishedAt ?? new Date() : existing.publishedAt,
+            publishedAt:
+              input.status === 'PUBLISHED'
+                ? (existing.publishedAt ?? new Date())
+                : existing.publishedAt,
           }
         : {}),
       ...(input.metadata !== undefined ? { metadata: input.metadata as never } : {}),

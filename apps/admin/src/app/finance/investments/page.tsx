@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Badge, Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
 import { FinanceCsvToolbar, FinanceListSearch } from '@/components/finance-admin-toolbar';
 import { FinanceInvestmentForm, FinancePublishButton } from '@/components/finance-forms';
@@ -22,7 +23,9 @@ export default async function FinanceInvestmentsAdminPage({
   const qs = new URLSearchParams({ limit: '50' });
   if (params.search) qs.set('search', params.search);
 
-  const result = await apiServerFetch<InvestmentRow[]>(`/finance/admin/investments?${qs.toString()}`);
+  const result = await apiServerFetch<InvestmentRow[]>(
+    `/finance/admin/investments?${qs.toString()}`,
+  );
   const rows = Array.isArray(result.data) ? result.data : [];
 
   return (
@@ -65,11 +68,21 @@ export default async function FinanceInvestmentsAdminPage({
                     <div className="font-mono text-xs text-[var(--varnarc-subtle)]">{row.slug}</div>
                   </td>
                   <td className="px-4 py-3">{row.providerName}</td>
-                  <td className="px-4 py-3">{row.expectedReturn != null ? `${row.expectedReturn}%` : '—'}</td>
+                  <td className="px-4 py-3">
+                    {row.expectedReturn != null ? `${row.expectedReturn}%` : '—'}
+                  </td>
                   <td className="px-4 py-3">{row.riskLevel || '—'}</td>
                   <td className="px-4 py-3">{row.status}</td>
                   <td className="px-4 py-3">
-                    <FinancePublishButton entity="investments" id={row.id} status={row.status} />
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/finance/investments/${row.id}`}
+                        className="text-[var(--varnarc-brand)] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <FinancePublishButton entity="investments" id={row.id} status={row.status} />
+                    </div>
                   </td>
                 </tr>
               ))}
