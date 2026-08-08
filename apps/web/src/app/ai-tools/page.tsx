@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ContentLayout } from '@/components/layout/content-layout';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubIconGrid } from '@/components/hub/hub-icon-grid';
+import { HubFeaturedStack } from '@/components/hub/hub-featured-stack';
 import { EmptyState } from '@/components/shared/empty-state';
 import { AiToolCard } from '@/components/ai-tools/ai-tool-card';
-import { AiToolsSearchForm } from '@/components/ai-tools/ai-tools-search-form';
 import { unwrapList, type AiCategory, type AiToolListItem } from '@/components/ai-tools/types';
 import { apiPublicFetch } from '@/services/api-client';
 
@@ -15,11 +17,23 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
+const quickLinks = [
+  { label: 'Trending', href: '/ai-tools/trending' },
+  { label: 'New tools', href: '/ai-tools/new' },
+  { label: 'Compare', href: '/ai-tools/compare' },
+];
+
+const popularLinks = [
+  { label: 'Writing AI', href: '/ai-tools/search?q=writing' },
+  { label: 'Image AI', href: '/ai-tools/search?q=image' },
+  { label: 'Coding AI', href: '/ai-tools/search?q=code' },
+];
+
 export default async function AiToolsHomePage() {
   const [categoriesResult, sponsoredResult, popularResult] = await Promise.all([
-    apiPublicFetch<AiCategory[]>('/ai-tools/categories?limit=24', { next: { revalidate: 60 } }).catch(
-      () => ({ data: [] as AiCategory[] }),
-    ),
+    apiPublicFetch<AiCategory[]>('/ai-tools/categories?limit=24', {
+      next: { revalidate: 60 },
+    }).catch(() => ({ data: [] as AiCategory[] })),
     apiPublicFetch<AiToolListItem[]>('/ai-tools?sponsored=true&limit=6', {
       next: { revalidate: 60 },
     }).catch(() => ({ data: [] as AiToolListItem[] })),
@@ -31,112 +45,95 @@ export default async function AiToolsHomePage() {
   const categories = unwrapList(categoriesResult.data);
   const sponsored = unwrapList(sponsoredResult.data);
   const popular = unwrapList(popularResult.data);
-  const featured = popular.filter((t) => t.featured);
+
+  const categoryItems = categories.map((c) => ({
+    label: c.name,
+    description: c._count?.tools != null ? `${c._count.tools} tools` : (c.description ?? 'Browse'),
+    href: `/ai-tools/${c.slug}`,
+    icon: 'sparkles',
+  }));
+
+  const featuredStack = (sponsored.length ? sponsored : popular).slice(0, 3).map((t) => ({
+    id: t.id,
+    name: t.name,
+    description: t.shortDescription || t.description,
+    href: `/ai-tools/${t.slug}`,
+  }));
+
+  const navItems = [
+    {
+      label: 'Advanced search',
+      href: '/ai-tools/search',
+      description: 'Filters & tags',
+      icon: 'search',
+    },
+    { label: 'Trending', href: '/ai-tools/trending', description: 'Popular now', icon: 'trending' },
+    { label: 'New tools', href: '/ai-tools/new', description: 'Recently added', icon: 'sparkles' },
+    { label: 'Compare', href: '/ai-tools/compare', description: 'Side-by-side', icon: 'scale' },
+    { label: 'Utilities', href: '/ai-tools/utilities', description: 'Free utilities', icon: 'zap' },
+    {
+      label: 'Bookmarks',
+      href: '/ai-tools/bookmarks',
+      description: 'Your saved tools',
+      icon: 'star',
+    },
+  ];
 
   return (
-    <ContentLayout
-      title="AI Tools"
+    <ModuleHubShell
+      moduleKey="ai-tools"
+      title="Discover & compare AI tools"
       description="Discover and compare AI products for writing, image, video, coding, and productivity."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'AI Tools' }]}
+      popularLinks={popularLinks}
+      searchPath="/ai-tools/search"
+      overviewTitle="AI tools overview"
     >
-      <AiToolsSearchForm />
-
-      <div className="mb-8 flex flex-wrap gap-3 text-sm">
-        <Link href="/ai-tools/search" className="text-[var(--varnarc-brand)] hover:underline">
-          Advanced search
-        </Link>
-        <Link href="/ai-tools/trending" className="text-[var(--varnarc-brand)] hover:underline">
-          Trending
-        </Link>
-        <Link href="/ai-tools/new" className="text-[var(--varnarc-brand)] hover:underline">
-          New tools
-        </Link>
-        <Link href="/ai-tools/compare" className="text-[var(--varnarc-brand)] hover:underline">
-          Compare
-        </Link>
-        <Link href="/ai-tools/utilities" className="text-[var(--varnarc-brand)] hover:underline">
-          AI utilities
-        </Link>
-        <Link href="/ai-tools/bookmarks" className="text-[var(--varnarc-brand)] hover:underline">
-          My bookmarks
-        </Link>
+      <div className="flex flex-wrap gap-3 text-sm">
+        {quickLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="font-semibold text-blue-600 hover:underline"
+          >
+            {link.label}
+          </Link>
+        ))}
       </div>
 
-      {categories.length ? (
-        <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Categories</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                href={`/ai-tools/${c.slug}`}
-                className="rounded-md border border-[var(--varnarc-border)] px-4 py-3 hover:bg-[var(--varnarc-muted)]"
-              >
-                <span className="font-medium">{c.name}</span>
-                {c._count?.tools != null ? (
-                  <span className="ml-2 text-sm text-[var(--varnarc-subtle)]">({c._count.tools})</span>
-                ) : null}
-                {c.description ? (
-                  <p className="mt-1 line-clamp-2 text-sm text-[var(--varnarc-subtle)]">{c.description}</p>
-                ) : null}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {sponsored.length ? (
-        <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Sponsored</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {sponsored.map((t) => (
-              <AiToolCard
-                key={t.id}
-                name={t.name}
-                slug={t.slug}
-                description={t.shortDescription || t.description}
-                pricingModel={t.pricingModel}
-                freePlan={t.freePlan}
-                featured={t.featured}
-                sponsored
-                logoUrl={t.logoUrl}
-                categoryName={t.category?.name}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {featured.length ? (
-        <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Featured</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {featured.map((t) => (
-              <AiToolCard
-                key={t.id}
-                name={t.name}
-                slug={t.slug}
-                description={t.shortDescription || t.description}
-                pricingModel={t.pricingModel}
-                freePlan={t.freePlan}
-                featured
-                sponsored={t.sponsored}
-                logoUrl={t.logoUrl}
-                categoryName={t.category?.name}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {popular.length ? (
+      {categoryItems.length ? (
         <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Trending tools</h2>
-            <Link href="/ai-tools/trending" className="text-sm text-[var(--varnarc-brand)] hover:underline">
-              View all
-            </Link>
-          </div>
+          <HubSectionHeader title="Browse by category" viewAllHref="/ai-tools/search" />
+          <HubIconGrid items={categoryItems} columns={4} />
+        </section>
+      ) : null}
+
+      <section>
+        <HubSectionHeader title="Explore AI tools" />
+        <HubIconGrid items={navItems} columns={4} />
+      </section>
+
+      {featuredStack.length ? (
+        <section>
+          <HubFeaturedStack
+            title="Featured AI tools"
+            items={featuredStack}
+            viewAllHref="/ai-tools/trending"
+          />
+        </section>
+      ) : null}
+
+      <section>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-xl font-extrabold text-[#0b1f3a] sm:text-2xl">Trending tools</h2>
+          <Link
+            href="/ai-tools/trending"
+            className="text-sm font-semibold text-blue-600 hover:underline"
+          >
+            View all →
+          </Link>
+        </div>
+        {popular.length ? (
           <div className="grid gap-6 md:grid-cols-3">
             {popular.map((t) => (
               <AiToolCard
@@ -153,10 +150,10 @@ export default async function AiToolsHomePage() {
               />
             ))}
           </div>
-        </section>
-      ) : (
-        <EmptyState title="No AI tools yet" message="Published tools will appear here." />
-      )}
-    </ContentLayout>
+        ) : (
+          <EmptyState title="No AI tools yet" message="Published tools will appear here." />
+        )}
+      </section>
+    </ModuleHubShell>
   );
 }

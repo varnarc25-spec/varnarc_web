@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { ContentLayout } from '@/components/layout/content-layout';
-import { EmptyState } from '@/components/shared/empty-state';
-import { CalculatorCard } from '@/components/business/calculator-card';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubIconGrid } from '@/components/hub/hub-icon-grid';
 import { fetchCalculators } from '@/services/content';
 import { quickTools } from '@/features/home/static-data';
 
@@ -13,32 +13,72 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
+const popularLinks = [
+  { label: 'EMI Calculator', href: '/calculators/emi' },
+  { label: 'SIP Calculator', href: '/calculators/sip' },
+  { label: 'Income Tax', href: '/calculators/income-tax' },
+];
+
 export default async function CalculatorsPage() {
-  const { data } = await fetchCalculators(24);
+  const { data } = await fetchCalculators(48);
   const items = data.length
-    ? data.map((c) => ({ id: c.id, name: c.name, slug: c.slug, description: c.description }))
+    ? data.map((c) => ({
+        label: c.name,
+        description: c.description ?? 'Free calculator',
+        href: `/calculators/${c.slug}`,
+        icon: 'calculator',
+      }))
     : quickTools.map((t) => ({
-        id: t.href,
-        name: t.name,
-        slug: t.href.replace('/calculators/', ''),
+        label: t.name,
         description: 'Popular calculator',
+        href: t.href,
+        icon: 'calculator',
       }));
 
+  const financeItems = items.filter((i) =>
+    ['emi', 'sip', 'income-tax', 'gst', 'loan', 'retirement', 'fd', 'nps'].some((s) =>
+      i.href.includes(s),
+    ),
+  );
+  const homeItems = items.filter((i) =>
+    ['construction', 'paint', 'concrete', 'brick', 'steel', 'tile'].some((s) => i.href.includes(s)),
+  );
+  const autoItems = items.filter((i) => ['car', 'fuel', 'mileage'].some((s) => i.href.includes(s)));
+
   return (
-    <ContentLayout
-      title="Calculators"
-      description="Finance, home, auto, and planning calculators."
+    <ModuleHubShell
+      moduleKey="calculators"
+      title="Free calculators for finance, home & auto"
+      description="Finance, home, auto, and planning calculators — accurate tools for everyday decisions."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Calculators' }]}
+      popularLinks={popularLinks}
+      overviewTitle="Calculator overview"
     >
-      {items.length ? (
-        <div className="grid gap-6 md:grid-cols-3">
-          {items.map((c) => (
-            <CalculatorCard key={c.id} name={c.name} slug={c.slug} description={c.description} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState title="No calculators yet" message="Published calculators will appear here." />
-      )}
-    </ContentLayout>
+      {financeItems.length ? (
+        <section>
+          <HubSectionHeader title="Finance calculators" />
+          <HubIconGrid items={financeItems} columns={4} />
+        </section>
+      ) : null}
+
+      {homeItems.length ? (
+        <section>
+          <HubSectionHeader title="Home & construction calculators" />
+          <HubIconGrid items={homeItems} columns={4} />
+        </section>
+      ) : null}
+
+      {autoItems.length ? (
+        <section>
+          <HubSectionHeader title="Automobile calculators" />
+          <HubIconGrid items={autoItems} columns={4} />
+        </section>
+      ) : null}
+
+      <section>
+        <HubSectionHeader title="All calculators" />
+        <HubIconGrid items={items} columns={4} />
+      </section>
+    </ModuleHubShell>
   );
 }

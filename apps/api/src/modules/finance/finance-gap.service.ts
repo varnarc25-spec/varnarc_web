@@ -271,7 +271,7 @@ export class FinanceGapService {
       h1: structured.h1 ?? defaults.h1,
       intro: structured.intro ?? defaults.intro,
       metaKeywords: meta?.metaKeywords ?? null,
-      canonicalUrl: meta?.canonicalUrl ?? null,
+      canonicalUrl: meta?.canonicalUrl ?? defaults.canonicalUrl ?? null,
     };
   }
 

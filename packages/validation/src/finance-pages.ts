@@ -48,16 +48,20 @@ export type FinancePageDefaults = {
   description: string;
   h1: string;
   intro: string;
+  canonicalUrl?: string;
 };
 
 export const FINANCE_PAGE_DEFAULTS: Record<FinancePageKey, FinancePageDefaults> = {
   hub: {
     path: '/finance',
     label: 'Finance hub',
-    title: 'Finance',
-    description: 'Compare loans, credit cards, insurance, investments, and interest rates.',
-    h1: 'Finance',
-    intro: 'Loans, EMI, interest, tax, and investment tools to plan smarter.',
+    title: 'Finance Tools, Loan Calculators & Financial Comparisons',
+    description:
+      'Calculate EMIs, compare loans, explore credit cards, insurance and investments, and use smart finance tools to make better financial decisions.',
+    h1: 'Finance tools, loan calculators & comparisons',
+    intro:
+      'Calculate EMIs, compare loans, explore credit cards, insurance and investments, and use smart finance tools to make better financial decisions.',
+    canonicalUrl: 'https://varnarc.com/finance',
   },
   loans: {
     path: '/finance/loans',

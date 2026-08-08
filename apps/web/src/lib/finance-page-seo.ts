@@ -16,5 +16,6 @@ export async function buildFinancePageMetadata(pageKey: FinancePageKey): Promise
     path: page.path,
     title: page.title,
     description: page.description,
+    canonicalUrl: page.canonicalUrl,
   });
 }

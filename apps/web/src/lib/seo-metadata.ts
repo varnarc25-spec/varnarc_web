@@ -20,6 +20,7 @@ export type SeoMetadataInput = {
   title: string;
   description?: string | null;
   image?: string | null;
+  canonicalUrl?: string | null;
 };
 
 const siteUrl = () => process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -53,15 +54,13 @@ export async function buildSeoMetadata(input: SeoMetadataInput): Promise<Metadat
   const baseUrl = siteUrl();
   const path = input.path.startsWith('/') ? input.path : `/${input.path}`;
   const override =
-    input.entityId != null
-      ? await fetchSeoOverride(input.entityType, input.entityId)
-      : null;
+    input.entityId != null ? await fetchSeoOverride(input.entityType, input.entityId) : null;
 
   const title = override?.title?.trim() || input.title;
-  const description =
-    override?.description?.trim() || input.description?.trim() || undefined;
+  const description = override?.description?.trim() || input.description?.trim() || undefined;
   const canonical =
     override?.canonicalUrl?.trim() ||
+    input.canonicalUrl?.trim() ||
     (path.startsWith('http') ? path : `${baseUrl}${path}`);
   const ogImage = override?.ogImage?.trim() || input.image?.trim() || undefined;
   const twitterCard =

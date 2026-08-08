@@ -1,264 +1,305 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ContentLayout } from '@/components/layout/content-layout';
-import { FinanceProductCard } from '@/components/finance/finance-product-card';
-import { RelatedArticles } from '@/components/finance/related-articles';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubIconGrid } from '@/components/hub/hub-icon-grid';
+import { HubCompareTable } from '@/components/hub/hub-compare-table';
+import { HubRatesList } from '@/components/hub/hub-rates-list';
+import { HubFeaturedStack } from '@/components/hub/hub-featured-stack';
+import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
+import { HubFaqSection } from '@/components/hub/hub-faq-section';
 import {
   fetchFinanceCategories,
   fetchFinanceCreditCards,
   fetchFinanceDashboard,
+  fetchFinanceFaqs,
+  fetchFinanceGuides,
   fetchFinanceInsurance,
   fetchFinanceInvestments,
   fetchFinanceLoans,
+  fetchFinanceRates,
 } from '@/services/finance';
 import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildFinancePageMetadata('hub');
+  const metadata = await buildFinancePageMetadata('hub');
+  return {
+    ...metadata,
+    robots: { index: true, follow: true },
+  };
 }
 
 export const revalidate = 60;
 
 const productLinks = [
-  { label: 'Loans', href: '/finance/loans', description: 'Home, personal, and business loans.' },
+  {
+    label: 'Loans',
+    href: '/finance/loans',
+    description: 'Home, personal & business',
+    icon: 'bank',
+  },
   {
     label: 'Credit cards',
     href: '/finance/credit-cards',
-    description: 'Rewards, cashback, and premium cards.',
+    description: 'Rewards & cashback',
+    icon: 'card',
   },
   {
     label: 'Insurance',
     href: '/finance/insurance',
-    description: 'Health, life, and motor coverage.',
+    description: 'Health, life & motor',
+    icon: 'shield',
   },
   {
     label: 'Investments',
     href: '/finance/investments',
-    description: 'Mutual funds, FDs, and more.',
+    description: 'Funds, FDs & more',
+    icon: 'trending',
   },
-  { label: 'Banks', href: '/finance/banks', description: 'Partner banks and their products.' },
+  { label: 'Banks', href: '/finance/banks', description: 'Partner banks', icon: 'building' },
   {
     label: 'Interest rates',
     href: '/finance/rates',
-    description: 'Latest benchmark and product rates.',
+    description: 'Latest benchmarks',
+    icon: 'percent',
   },
-  {
-    label: 'Compare products',
-    href: '/finance/compare',
-    description: 'Side-by-side finance comparisons.',
-  },
-];
-
-const resourceLinks = [
-  { label: 'Guides', href: '/finance/guides', description: 'Educational finance guides.' },
-  { label: 'FAQs', href: '/finance/faqs', description: 'Common questions answered.' },
-  { label: 'Glossary', href: '/finance/glossary', description: 'Financial terms explained.' },
+  { label: 'Compare', href: '/finance/compare', description: 'Side-by-side views', icon: 'scale' },
 ];
 
 const toolLinks = [
   {
     label: 'Eligibility check',
     href: '/finance/eligibility',
-    description: 'Quick loan eligibility estimate.',
+    description: 'Loan estimate',
+    icon: 'check',
   },
   {
     label: 'Credit score',
     href: '/finance/credit-score',
-    description: 'Check your credit profile.',
+    description: 'Profile check',
+    icon: 'star',
   },
-  { label: 'Portfolio', href: '/finance/portfolio', description: 'View your holdings.' },
-  { label: 'Goals', href: '/finance/goals', description: 'Plan and track financial goals.' },
+  { label: 'Portfolio', href: '/finance/portfolio', description: 'Holdings', icon: 'wallet' },
+  { label: 'Goals', href: '/finance/goals', description: 'Track targets', icon: 'piggy' },
 ];
 
-const calculatorLinks = [
-  { label: 'EMI Calculator', href: '/calculators/emi' },
+const popularLinks = [
+  { label: 'Home Loan EMI', href: '/calculators/emi' },
   { label: 'SIP Calculator', href: '/calculators/sip' },
   { label: 'Income Tax', href: '/calculators/income-tax' },
-  { label: 'GST Calculator', href: '/calculators/gst' },
+  { label: 'Credit Cards', href: '/finance/credit-cards' },
 ];
 
 export default async function FinancePage() {
-  const [page, dashboardRes, categoriesRes, loansRes, cardsRes, insuranceRes, investmentsRes] =
-    await Promise.all([
-      getFinancePageContent('hub'),
-      fetchFinanceDashboard(),
-      fetchFinanceCategories(),
-      fetchFinanceLoans({ featured: true, limit: 4 }),
-      fetchFinanceCreditCards({ featured: true, limit: 4 }),
-      fetchFinanceInsurance({ featured: true, limit: 4 }),
-      fetchFinanceInvestments({ featured: true, limit: 4 }),
-    ]);
+  const [
+    page,
+    dashboardRes,
+    categoriesRes,
+    loansRes,
+    cardsRes,
+    insuranceRes,
+    investmentsRes,
+    ratesRes,
+    guidesRes,
+    faqsRes,
+  ] = await Promise.all([
+    getFinancePageContent('hub'),
+    fetchFinanceDashboard(),
+    fetchFinanceCategories(),
+    fetchFinanceLoans({ limit: 6 }),
+    fetchFinanceCreditCards({ limit: 3 }),
+    fetchFinanceInsurance({ limit: 2 }),
+    fetchFinanceInvestments({ limit: 2 }),
+    fetchFinanceRates({ limit: 6 }),
+    fetchFinanceGuides(),
+    fetchFinanceFaqs(),
+  ]);
 
-  const categories = categoriesRes.data ?? [];
-  const featured = [
-    ...loansRes.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      href: `/finance/loans/${item.id}`,
-      description: item.bank?.name ? `${item.bank.name} · ${item.loanType}` : item.loanType,
-      featured: item.featured,
-    })),
-    ...cardsRes.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      href: `/finance/credit-cards/${item.id}`,
-      description: item.bank?.name ?? 'Credit card',
-      featured: item.featured,
-    })),
-    ...insuranceRes.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      href: `/finance/insurance/${item.id}`,
-      description: item.providerName,
-      featured: item.featured,
-    })),
-    ...investmentsRes.data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      href: `/finance/investments/${item.id}`,
-      description: item.providerName,
-      featured: item.featured,
-    })),
+  const calculatorItems = dashboardRes.data?.relatedCalculators?.map((calc) => ({
+    label: calc.name,
+    description: 'Free calculator',
+    href: `/calculators/${calc.slug}`,
+    icon: 'calculator',
+  })) ?? [
+    {
+      label: 'EMI Calculator',
+      href: '/calculators/emi',
+      description: 'Loan EMI',
+      icon: 'calculator',
+    },
+    {
+      label: 'SIP Calculator',
+      href: '/calculators/sip',
+      description: 'Investments',
+      icon: 'trending',
+    },
+    {
+      label: 'Income Tax',
+      href: '/calculators/income-tax',
+      description: 'Tax estimate',
+      icon: 'receipt',
+    },
+    {
+      label: 'GST Calculator',
+      href: '/calculators/gst',
+      description: 'GST breakdown',
+      icon: 'percent',
+    },
+    {
+      label: 'Loan Calculator',
+      href: '/calculators/loan',
+      description: 'Loan planning',
+      icon: 'bank',
+    },
+    {
+      label: 'Retirement',
+      href: '/calculators/retirement',
+      description: 'Retirement corpus',
+      icon: 'piggy',
+    },
+    {
+      label: 'FD Calculator',
+      href: '/calculators/fd',
+      description: 'Fixed deposit',
+      icon: 'wallet',
+    },
+    {
+      label: 'NPS Calculator',
+      href: '/calculators/nps',
+      description: 'NPS returns',
+      icon: 'layers',
+    },
   ];
 
+  const categoryItems = categoriesRes.data?.length
+    ? categoriesRes.data.map((cat) => ({
+        label: cat.name,
+        description: 'Browse category',
+        href: `/finance/categories/${cat.slug}`,
+        icon: 'grid',
+      }))
+    : productLinks;
+
+  const featuredItems = [
+    ...loansRes.data.slice(0, 2).map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.bank?.name ? `${item.bank.name} · ${item.loanType}` : item.loanType,
+      href: `/finance/loans/${item.id}`,
+    })),
+    ...cardsRes.data.slice(0, 1).map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.bank?.name ?? 'Credit card',
+      href: `/finance/credit-cards/${item.id}`,
+    })),
+    ...insuranceRes.data.slice(0, 1).map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.providerName,
+      href: `/finance/insurance/${item.id}`,
+    })),
+    ...investmentsRes.data.slice(0, 1).map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.providerName,
+      href: `/finance/investments/${item.id}`,
+    })),
+  ].slice(0, 3);
+
+  const compareRows = loansRes.data.slice(0, 4).map((loan) => ({
+    provider: loan.bank?.name ?? loan.name,
+    rate: loan.interestRate != null ? `${loan.interestRate}%` : '—',
+    fee: '—',
+    tenure: loan.tenureMax != null ? `${loan.tenureMax} mo` : '—',
+    href: `/finance/loans/${loan.id}`,
+  }));
+
+  const rateItems = ratesRes.data.slice(0, 5).map((row) => ({
+    label: row.productType || row.loan?.name || row.bank?.name || 'Rate',
+    value: `${row.rate}%`,
+    href: '/finance/rates',
+  }));
+
+  const guides = guidesRes.data?.slice(0, 6).map((g) => ({
+    slug: g.slug,
+    title: g.title,
+    category: g.category ?? 'Guide',
+    summary: g.summary,
+    href: `/finance/guides/${g.slug}`,
+    readMinutes: 5,
+  }));
+
+  const faqs = faqsRes.data?.slice(0, 8).map((f) => ({
+    id: f.id,
+    question: f.question,
+    answer: f.answer,
+  }));
+
   return (
-    <ContentLayout
+    <ModuleHubShell
+      moduleKey="finance"
       title={page.h1}
       description={page.intro}
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Finance' }]}
+      popularLinks={popularLinks}
+      overviewTitle="Finance overview"
     >
-      {dashboardRes.data ? (
-        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: 'Loans', value: dashboardRes.data.loansPublished, href: '/finance/loans' },
-            {
-              label: 'Credit cards',
-              value: dashboardRes.data.creditCardsPublished,
-              href: '/finance/credit-cards',
-            },
-            {
-              label: 'Insurance',
-              value: dashboardRes.data.insurancePublished,
-              href: '/finance/insurance',
-            },
-            {
-              label: 'Investments',
-              value: dashboardRes.data.investmentsPublished,
-              href: '/finance/investments',
-            },
-          ].map((stat) => (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-            >
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                {stat.label}
-              </div>
-              <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">{stat.value}</div>
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
-      <section className="mb-10">
-        <h2 className="text-lg font-extrabold text-[#0b1f3a]">Browse products</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {productLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-            >
-              <h3 className="text-sm font-extrabold text-[#0b1f3a]">{link.label}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">{link.description}</p>
-            </Link>
-          ))}
-        </div>
+      <section>
+        <HubSectionHeader title="Popular finance calculators" viewAllHref="/calculators" />
+        <HubIconGrid items={calculatorItems} columns={4} />
       </section>
-
-      <section className="mb-10">
-        <h2 className="text-lg font-extrabold text-[#0b1f3a]">Guides &amp; resources</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {resourceLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-            >
-              <h3 className="text-sm font-extrabold text-[#0b1f3a]">{link.label}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">{link.description}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-10">
-        <h2 className="text-lg font-extrabold text-[#0b1f3a]">Tools</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {toolLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-            >
-              <h3 className="text-sm font-extrabold text-[#0b1f3a]">{link.label}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">{link.description}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {categories.length ? (
-        <section className="mb-10">
-          <h2 className="text-lg font-extrabold text-[#0b1f3a]">Categories</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/finance/categories/${cat.slug}`}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-[#0b1f3a] transition hover:border-[#f97316] hover:text-[#f97316]"
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {featured.length ? (
-        <section className="mb-10">
-          <h2 className="text-lg font-extrabold text-[#0b1f3a]">Featured products</h2>
-          <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featured.map((item) => (
-              <FinanceProductCard
-                key={item.id}
-                name={item.name}
-                href={item.href}
-                description={item.description}
-                featured={item.featured}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <section>
-        <h2 className="text-lg font-extrabold text-[#0b1f3a]">Calculators</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {calculatorLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-[#0b1f3a] hover:border-[#f97316] hover:text-[#f97316]"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <HubSectionHeader
+          title="Explore financial products"
+          viewAllHref="/finance/loans"
+          viewAllLabel="View all products →"
+        />
+        <HubIconGrid items={categoryItems.length > 4 ? categoryItems : productLinks} columns={4} />
+      </section>
+
+      <section>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {compareRows.length ? (
+            <HubCompareTable
+              title="Compare financial products"
+              tabs={[
+                { label: 'Home loans', href: '/finance/loans' },
+                { label: 'Personal loans', href: '/finance/loans' },
+                { label: 'Credit cards', href: '/finance/credit-cards' },
+                { label: 'Insurance', href: '/finance/insurance' },
+              ]}
+              activeTab="Home loans"
+              rows={compareRows}
+              viewAllHref="/finance/compare"
+            />
+          ) : null}
+          {rateItems.length ? (
+            <HubRatesList
+              title="Latest interest rates"
+              items={rateItems}
+              footer="Rates updated from published product data."
+              viewAllHref="/finance/rates"
+            />
+          ) : null}
+          {featuredItems.length ? (
+            <HubFeaturedStack
+              title="Featured financial products"
+              items={featuredItems}
+              viewAllHref="/finance/loans"
+            />
+          ) : null}
         </div>
       </section>
 
-      <RelatedArticles />
-    </ContentLayout>
+      <section>
+        <HubSectionHeader title="Tools & planning" />
+        <HubIconGrid items={toolLinks} columns={4} />
+      </section>
+
+      {guides?.length ? <HubGuideGrid items={guides} viewAllHref="/finance/guides" /> : null}
+
+      <HubFaqSection faqs={faqs ?? []} viewAllHref="/finance/faqs" />
+    </ModuleHubShell>
   );
 }

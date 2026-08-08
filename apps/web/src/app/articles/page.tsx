@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { ContentLayout } from '@/components/layout/content-layout';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ArticleCard } from '@/components/business/article-card';
-import { articleCardPropsFromListItem } from '@/services/content';
 import { ArticlesQueryGrid } from '@/features/articles/articles-query-grid';
-import { fetchArticles } from '@/services/content';
+import { fetchArticles, articleCardPropsFromListItem } from '@/services/content';
+import { resolveArticleImageUrl } from '@/lib/article-category-icons';
 import { formatDate } from '@/lib/format';
 
 export const metadata: Metadata = {
@@ -15,32 +17,61 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
+const popularLinks = [
+  { label: 'Finance', href: '/tags/finance' },
+  { label: 'Construction', href: '/tags/construction' },
+  { label: 'Solar', href: '/articles/solar-subsidy-india' },
+];
+
 export default async function ArticlesPage() {
   const { data } = await fetchArticles(24);
 
+  const guideItems = data.slice(0, 6).map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    category: a.category?.name ?? 'Article',
+    summary: a.excerpt,
+    href: `/articles/${a.slug}`,
+    imageUrl: resolveArticleImageUrl(a),
+    readMinutes: 5,
+  }));
+
   return (
-    <ContentLayout
-      title="Articles"
-      description="Guides, news, and insights."
+    <ModuleHubShell
+      moduleKey="articles"
+      title="Guides, news & expert insights"
+      description="Guides, news, and insights across finance, home, auto, and everyday planning."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Articles' }]}
+      popularLinks={popularLinks}
+      overviewTitle="Blog overview"
     >
-      {data.length ? (
-        <div className="grid gap-6 md:grid-cols-3">
-          {data.map((a) => (
-            <div key={a.id}>
-              <ArticleCard key={a.id} {...articleCardPropsFromListItem(a)} />
-              {a.publishedAt ? (
-                <p className="mt-2 px-1 text-[11px] text-slate-500">{formatDate(a.publishedAt)}</p>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-8">
-          <EmptyState title="No published articles yet" message="Showing live API feed when available." />
-          <ArticlesQueryGrid limit={6} />
-        </div>
-      )}
-    </ContentLayout>
+      {guideItems.length ? <HubGuideGrid items={guideItems} viewAllHref="/articles" /> : null}
+
+      <section>
+        <HubSectionHeader title="All articles" />
+        {data.length ? (
+          <div className="grid gap-6 md:grid-cols-3">
+            {data.map((a) => (
+              <div key={a.id}>
+                <ArticleCard {...articleCardPropsFromListItem(a)} />
+                {a.publishedAt ? (
+                  <p className="mt-2 px-1 text-[11px] text-slate-500">
+                    {formatDate(a.publishedAt)}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            <EmptyState
+              title="No published articles yet"
+              message="Showing live API feed when available."
+            />
+            <ArticlesQueryGrid limit={6} />
+          </div>
+        )}
+      </section>
+    </ModuleHubShell>
   );
 }

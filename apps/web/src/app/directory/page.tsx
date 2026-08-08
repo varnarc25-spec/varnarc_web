@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ContentLayout } from '@/components/layout/content-layout';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubIconGrid } from '@/components/hub/hub-icon-grid';
+import { HubFeaturedStack } from '@/components/hub/hub-featured-stack';
 import { EmptyState } from '@/components/shared/empty-state';
 import { DirectoryListingCard } from '@/components/directory/directory-listing-card';
 import { DirectorySearchForm } from '@/components/directory/directory-widgets';
@@ -36,6 +39,12 @@ type Props = {
   searchParams: Promise<{ q?: string; city?: string; category?: string; featured?: string }>;
 };
 
+const popularLinks = [
+  { label: 'Architects', href: '/directory' },
+  { label: 'Solar installers', href: '/directory' },
+  { label: 'Map view', href: '/directory/map' },
+];
+
 export default async function DirectoryPage({ searchParams }: Props) {
   const params = await searchParams;
   const qs = new URLSearchParams({ limit: '24' });
@@ -45,10 +54,14 @@ export default async function DirectoryPage({ searchParams }: Props) {
   if (params.featured === 'true') qs.set('featured', 'true');
 
   const [listingsResult, categoriesResult] = await Promise.all([
-    apiPublicFetch<Listing[]>(`/directory/search?${qs.toString()}`, { next: { revalidate: 60 } }).catch(() => ({
+    apiPublicFetch<Listing[]>(`/directory/search?${qs.toString()}`, {
+      next: { revalidate: 60 },
+    }).catch(() => ({
       data: [] as Listing[],
     })),
-    apiPublicFetch<Category[]>('/directory/categories?limit=24', { next: { revalidate: 60 } }).catch(() => ({
+    apiPublicFetch<Category[]>('/directory/categories?limit=24', {
+      next: { revalidate: 60 },
+    }).catch(() => ({
       data: [] as Category[],
     })),
   ]);
@@ -58,11 +71,34 @@ export default async function DirectoryPage({ searchParams }: Props) {
   const sponsored = listings.filter((l) => l.sponsored);
   const regular = listings.filter((l) => !l.sponsored);
 
+  const categoryItems = categories.map((c) => ({
+    label: c.name,
+    description: c._count?.businesses != null ? `${c._count.businesses} listings` : 'Browse',
+    href: `/directory/${c.slug}`,
+    icon: 'building',
+  }));
+
+  const featuredStack = (sponsored.length ? sponsored : listings).slice(0, 3).map((b) => ({
+    id: b.id,
+    name: b.name,
+    description: b.locations?.[0]?.city ?? b.description,
+    href: `/directory/${b.slug}`,
+  }));
+
+  const navItems = [
+    { label: 'Advanced search', href: '/directory/search', description: 'Filters', icon: 'search' },
+    { label: 'Map view', href: '/directory/map', description: 'Browse on map', icon: 'map' },
+  ];
+
   return (
-    <ContentLayout
-      title="Business Directory"
-      description="Find trusted professionals and local businesses."
+    <ModuleHubShell
+      moduleKey="directory"
+      title="Find trusted businesses & professionals"
+      description="Search dealers, contractors, and service providers near you."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Directory' }]}
+      popularLinks={popularLinks}
+      searchPath="/directory/search"
+      overviewTitle="Directory overview"
     >
       <DirectorySearchForm
         initialSearch={params.q}
@@ -71,72 +107,58 @@ export default async function DirectoryPage({ searchParams }: Props) {
         action="/directory/search"
       />
 
-      <div className="mb-8 flex flex-wrap gap-3 text-sm">
-        <Link href="/directory/search" className="text-[var(--varnarc-brand)] hover:underline">
+      <div className="flex flex-wrap gap-3 text-sm">
+        <Link href="/directory/search" className="font-semibold text-blue-600 hover:underline">
           Advanced search
         </Link>
-        <Link href="/directory/map" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link href="/directory/map" className="font-semibold text-blue-600 hover:underline">
           Map view
         </Link>
       </div>
 
-      {categories.length ? (
-        <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Categories</h2>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                href={`/directory/${c.slug}`}
-                className="rounded-md border border-[var(--varnarc-border)] px-3 py-1.5 text-sm hover:bg-[var(--varnarc-muted)]"
-              >
-                {c.name}
-                {c._count?.businesses != null ? (
-                  <span className="ml-1 text-[var(--varnarc-subtle)]">({c._count.businesses})</span>
-                ) : null}
-              </Link>
-            ))}
-          </div>
+      {categoryItems.length ? (
+        <section>
+          <HubSectionHeader title="Browse categories" />
+          <HubIconGrid items={categoryItems} columns={4} />
         </section>
       ) : null}
 
-      {sponsored.length ? (
-        <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Sponsored</h2>
+      <section>
+        <HubSectionHeader title="Directory tools" />
+        <HubIconGrid items={navItems} columns={4} />
+      </section>
+
+      {featuredStack.length ? (
+        <HubFeaturedStack
+          title="Featured listings"
+          items={featuredStack}
+          viewAllHref="/directory/search"
+        />
+      ) : null}
+
+      <section>
+        <HubSectionHeader title="Business listings" />
+        {regular.length ? (
           <div className="grid gap-6 md:grid-cols-3">
-            {sponsored.map((b) => (
+            {regular.map((b) => (
               <DirectoryListingCard
                 key={b.id}
                 name={b.name}
                 slug={b.slug}
                 description={b.description}
                 city={b.locations?.[0]?.city}
-                sponsored
                 verified={b.verificationStatus === 'VERIFIED'}
                 featured={b.featured}
               />
             ))}
           </div>
-        </section>
-      ) : null}
-
-      {regular.length ? (
-        <div className="grid gap-6 md:grid-cols-3">
-          {regular.map((b) => (
-            <DirectoryListingCard
-              key={b.id}
-              name={b.name}
-              slug={b.slug}
-              description={b.description}
-              city={b.locations?.[0]?.city}
-              verified={b.verificationStatus === 'VERIFIED'}
-              featured={b.featured}
-            />
-          ))}
-        </div>
-      ) : (
-        <EmptyState title="No businesses found" message="Try another city, category, or search term." />
-      )}
-    </ContentLayout>
+        ) : (
+          <EmptyState
+            title="No businesses found"
+            message="Try another city, category, or search term."
+          />
+        )}
+      </section>
+    </ModuleHubShell>
   );
 }

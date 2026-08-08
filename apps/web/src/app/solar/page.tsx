@@ -1,43 +1,128 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ContentLayout } from '@/components/layout/content-layout';
+import { ModuleHubShell } from '@/components/hub/module-hub-shell';
+import { HubSectionHeader } from '@/components/hub/hub-section-header';
+import { HubIconGrid } from '@/components/hub/hub-icon-grid';
+import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
+import { HubFaqSection } from '@/components/hub/hub-faq-section';
 
 export const metadata: Metadata = {
   title: 'Solar & Energy',
-  description: 'Solar calculators, panel comparisons, inverters, subsidies, and energy-saving guides.',
+  description:
+    'Solar calculators, panel comparisons, inverters, subsidies, and energy-saving guides.',
   alternates: { canonical: '/solar' },
 };
 
 const links = [
-  { label: 'Solar Savings Calculator', href: '/calculators/solar', description: 'Estimate payback and monthly savings.' },
-  { label: 'Mono vs Poly Panels', href: '/compare/mono-vs-poly-solar', description: 'Efficiency and cost trade-offs.' },
-  { label: 'Best Solar Panels', href: '/reviews/solar-panels-home', description: 'Editorial roundup for rooftop installs.' },
-  { label: 'Solar Inverters', href: '/reviews/solar-inverters', description: 'On-grid inverter picks compared.' },
-  { label: 'Home Inverters', href: '/reviews/inverters', description: 'Backup power for home and office.' },
-  { label: 'Solar subsidy guide', href: '/articles/solar-subsidy-india', description: 'Central and state incentives explained.' },
-  { label: 'On-grid vs off-grid', href: '/articles/on-grid-vs-off-grid-solar', description: 'Net metering and battery backup.' },
-  { label: 'Solar installers', href: '/directory', description: 'Find professionals near you.' },
+  {
+    label: 'Solar Savings Calculator',
+    href: '/calculators/solar',
+    description: 'Payback & savings',
+    icon: 'sun',
+  },
+  {
+    label: 'Mono vs Poly Panels',
+    href: '/compare/mono-vs-poly-solar',
+    description: 'Efficiency trade-offs',
+    icon: 'scale',
+  },
+  {
+    label: 'Best Solar Panels',
+    href: '/reviews/solar-panels-home',
+    description: 'Rooftop picks',
+    icon: 'star',
+  },
+  {
+    label: 'Solar Inverters',
+    href: '/reviews/solar-inverters',
+    description: 'On-grid inverters',
+    icon: 'zap',
+  },
+  {
+    label: 'Home Inverters',
+    href: '/reviews/inverters',
+    description: 'Backup power',
+    icon: 'fuel',
+  },
+  {
+    label: 'Solar subsidy guide',
+    href: '/articles/solar-subsidy-india',
+    description: 'Incentives',
+    icon: 'book',
+  },
+  {
+    label: 'On-grid vs off-grid',
+    href: '/articles/on-grid-vs-off-grid-solar',
+    description: 'Net metering',
+    icon: 'file',
+  },
+  { label: 'Solar installers', href: '/directory', description: 'Find professionals', icon: 'map' },
+];
+
+const popularLinks = [
+  { label: 'Solar Calculator', href: '/calculators/solar' },
+  { label: 'Panel Comparison', href: '/compare/mono-vs-poly-solar' },
+  { label: 'Installers', href: '/directory' },
+];
+
+const solarFaqs = [
+  {
+    id: '1',
+    question: 'How much can I save with rooftop solar?',
+    answer:
+      'Savings depend on system size, tariff, and sunlight. Use our solar calculator for an estimate.',
+  },
+  {
+    id: '2',
+    question: 'What is net metering?',
+    answer: 'Net metering lets you export excess power to the grid and earn credits on your bill.',
+  },
+  {
+    id: '3',
+    question: 'Are subsidies available in India?',
+    answer: 'Central and state schemes exist. See our solar subsidy guide for current programs.',
+  },
+  {
+    id: '4',
+    question: 'Mono vs polycrystalline panels?',
+    answer:
+      'Mono panels are more efficient; poly panels are often cheaper. Compare both for your roof.',
+  },
+];
+
+const solarGuides = [
+  {
+    slug: 'solar-subsidy-india',
+    title: 'Solar subsidy in India',
+    category: 'Solar',
+    href: '/articles/solar-subsidy-india',
+    readMinutes: 8,
+  },
+  {
+    slug: 'on-grid-vs-off-grid-solar',
+    title: 'On-grid vs off-grid solar',
+    category: 'Solar',
+    href: '/articles/on-grid-vs-off-grid-solar',
+    readMinutes: 6,
+  },
 ];
 
 export default function SolarHubPage() {
   return (
-    <ContentLayout
-      title="Solar & Energy"
-      description="Plan rooftop solar, compare panels and inverters, and estimate savings."
+    <ModuleHubShell
+      moduleKey="solar"
+      title="Solar calculators, comparisons & energy guides"
+      description="Plan rooftop solar, compare panels and inverters, and estimate savings with trusted tools and guides."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Solar' }]}
+      popularLinks={popularLinks}
+      overviewTitle="Solar overview"
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-          >
-            <h2 className="text-sm font-extrabold text-[#0b1f3a]">{link.label}</h2>
-            <p className="mt-2 text-xs text-slate-500">{link.description}</p>
-          </Link>
-        ))}
-      </div>
-    </ContentLayout>
+      <section>
+        <HubSectionHeader title="Solar tools & resources" viewAllHref="/calculators" />
+        <HubIconGrid items={links} columns={4} />
+      </section>
+
+      <HubGuideGrid items={solarGuides} viewAllHref="/articles" />
+      <HubFaqSection faqs={solarFaqs} title="Solar FAQs" />
+    </ModuleHubShell>
   );
 }
