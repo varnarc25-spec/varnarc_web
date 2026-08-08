@@ -19,6 +19,7 @@ import {
   fetchFinanceRates,
 } from '@/services/finance';
 import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
+import { hubCategoryLabel } from '@/lib/hub-category-label';
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await buildFinancePageMetadata('hub');
@@ -179,26 +180,32 @@ export default async function FinancePage() {
       }))
     : productLinks;
 
+  const loans = loansRes.data ?? [];
+  const cards = cardsRes.data ?? [];
+  const insurance = insuranceRes.data ?? [];
+  const investments = investmentsRes.data ?? [];
+  const rates = ratesRes.data ?? [];
+
   const featuredItems = [
-    ...loansRes.data.slice(0, 2).map((item) => ({
+    ...loans.slice(0, 2).map((item) => ({
       id: item.id,
       name: item.name,
       description: item.bank?.name ? `${item.bank.name} · ${item.loanType}` : item.loanType,
       href: `/finance/loans/${item.id}`,
     })),
-    ...cardsRes.data.slice(0, 1).map((item) => ({
+    ...cards.slice(0, 1).map((item) => ({
       id: item.id,
       name: item.name,
       description: item.bank?.name ?? 'Credit card',
       href: `/finance/credit-cards/${item.id}`,
     })),
-    ...insuranceRes.data.slice(0, 1).map((item) => ({
+    ...insurance.slice(0, 1).map((item) => ({
       id: item.id,
       name: item.name,
       description: item.providerName,
       href: `/finance/insurance/${item.id}`,
     })),
-    ...investmentsRes.data.slice(0, 1).map((item) => ({
+    ...investments.slice(0, 1).map((item) => ({
       id: item.id,
       name: item.name,
       description: item.providerName,
@@ -206,7 +213,7 @@ export default async function FinancePage() {
     })),
   ].slice(0, 3);
 
-  const compareRows = loansRes.data.slice(0, 4).map((loan) => ({
+  const compareRows = loans.slice(0, 4).map((loan) => ({
     provider: loan.bank?.name ?? loan.name,
     rate: loan.interestRate != null ? `${loan.interestRate}%` : '—',
     fee: '—',
@@ -214,22 +221,22 @@ export default async function FinancePage() {
     href: `/finance/loans/${loan.id}`,
   }));
 
-  const rateItems = ratesRes.data.slice(0, 5).map((row) => ({
+  const rateItems = rates.slice(0, 5).map((row) => ({
     label: row.productType || row.loan?.name || row.bank?.name || 'Rate',
     value: `${row.rate}%`,
     href: '/finance/rates',
   }));
 
-  const guides = guidesRes.data?.slice(0, 6).map((g) => ({
+  const guides = (guidesRes.data ?? []).slice(0, 6).map((g) => ({
     slug: g.slug,
     title: g.title,
-    category: g.category ?? 'Guide',
+    category: hubCategoryLabel(g.category),
     summary: g.summary,
     href: `/finance/guides/${g.slug}`,
     readMinutes: 5,
   }));
 
-  const faqs = faqsRes.data?.slice(0, 8).map((f) => ({
+  const faqs = (faqsRes.data ?? []).slice(0, 8).map((f) => ({
     id: f.id,
     question: f.question,
     answer: f.answer,

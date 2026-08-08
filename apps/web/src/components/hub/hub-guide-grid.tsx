@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { hubCategoryLabel } from '@/lib/hub-category-label';
 
 export type HubGuideItem = {
   slug: string;
@@ -63,7 +64,7 @@ export function HubGuideGrid({
             <div className="p-4">
               {item.category ? (
                 <span className="text-[11px] font-bold uppercase tracking-wide text-blue-600">
-                  {item.category}
+                  {hubCategoryLabel(item.category)}
                 </span>
               ) : null}
               <h3 className="mt-1 text-sm font-extrabold text-[#0b1f3a] group-hover:text-blue-700 line-clamp-2">
