@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none" role="img" aria-label="">
+  <rect width="480" height="360" rx="28" fill="#f7f9fc"/>
+  <circle cx="392" cy="68" r="52" fill="#e8eef5" opacity="0.75"/>
+  <circle cx="72" cy="292" r="40" fill="#ffedd5" opacity="0.5"/>
+
+  <!-- House -->
+  <path d="M88 188l84-64 84 64v108H88V188z" fill="#fff" stroke="#e2e8f0" stroke-width="2"/>
+  <path d="M78 190l94-72 94 72" stroke="#0b1f3a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="132" y="220" width="48" height="76" rx="8" fill="#0b1f3a"/>
+  <rect x="198" y="228" width="36" height="36" rx="6" fill="#e8eef5"/>
+  <rect x="110" y="228" width="28" height="28" rx="5" fill="#ffedd5"/>
+
+  <!-- Loan document -->
+  <rect x="286" y="78" width="128" height="156" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="308" y="104" width="84" height="9" rx="4.5" fill="#0b1f3a" opacity="0.8"/>
+  <rect x="308" y="126" width="64" height="7" rx="3.5" fill="#94a3b8" opacity="0.4"/>
+  <rect x="308" y="146" width="74" height="7" rx="3.5" fill="#94a3b8" opacity="0.35"/>
+  <rect x="308" y="178" width="56" height="22" rx="7" fill="#fff4eb"/>
+  <rect x="318" y="185" width="36" height="8" rx="4" fill="#f97316" opacity="0.85"/>
+
+  <!-- EMI timeline -->
+  <rect x="250" y="262" width="178" height="56" rx="14" fill="#0b1f3a"/>
+  <circle cx="278" cy="290" r="5" fill="#f97316"/>
+  <circle cx="318" cy="290" r="4.5" fill="#fff" opacity="0.4"/>
+  <circle cx="358" cy="290" r="4.5" fill="#fff" opacity="0.4"/>
+  <circle cx="398" cy="290" r="4.5" fill="#fff" opacity="0.4"/>
+  <path d="M278 290h120" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.22"/>
+</svg>

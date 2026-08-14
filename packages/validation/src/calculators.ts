@@ -52,6 +52,17 @@ export const createCalculatorSchema = z.object({
   slug: slugSchema,
   description: z.string().max(2000).optional().nullable(),
   icon: z.string().max(120).optional().nullable(),
+  illustrationUrl: z
+    .string()
+    .max(500)
+    .refine((value) => !value || value.startsWith('/') || /^https?:\/\//i.test(value), {
+      message: 'Must be an absolute URL or a site-relative path',
+    })
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  illustrationMediaId: uuidSchema.optional().nullable(),
+  illustrationAlt: z.string().max(300).optional().nullable(),
   categoryId: uuidSchema.optional().nullable(),
   status: publishStatusSchema.default('DRAFT'),
   formula: z.string().max(20000).optional().nullable(),

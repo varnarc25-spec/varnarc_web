@@ -12,6 +12,9 @@ type BankDetail = {
   seoTitle?: string | null;
   seoDescription?: string | null;
   status: string;
+  logoUrl?: string | null;
+  logoMediaId?: string | null;
+  logoAlt?: string | null;
 };
 
 export default async function FinanceBankEditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -53,6 +56,9 @@ export default async function FinanceBankEditPage({ params }: { params: Promise<
               description: bank.description,
               seoTitle: bank.seoTitle,
               seoDescription: bank.seoDescription,
+              logoUrl: bank.logoUrl,
+              logoMediaId: bank.logoMediaId,
+              logoAlt: bank.logoAlt,
             }}
           />
         </>

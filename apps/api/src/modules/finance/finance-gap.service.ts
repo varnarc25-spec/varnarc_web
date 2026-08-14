@@ -19,7 +19,36 @@ import {
 import { PRISMA } from '../../database/database.module';
 import { fetchRemoteRates, ingestRemoteRate } from './finance-rate-sync';
 
-type PageStructuredData = { h1?: string | null; intro?: string | null };
+type PageStructuredData = {
+  h1?: string | null;
+  intro?: string | null;
+  heroImageUrl?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
+  educationModules?: Record<
+    string,
+    { title?: string; summary?: string; guideHref?: string | null }
+  > | null;
+};
+
+function parseEducationModules(value: unknown): PageStructuredData['educationModules'] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const out: NonNullable<PageStructuredData['educationModules']> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
+    const row = raw as Record<string, unknown>;
+    out[key] = {
+      ...(typeof row.title === 'string' ? { title: row.title } : {}),
+      ...(typeof row.summary === 'string' ? { summary: row.summary } : {}),
+      ...(row.guideHref === null
+        ? { guideHref: null }
+        : typeof row.guideHref === 'string'
+          ? { guideHref: row.guideHref }
+          : {}),
+    };
+  }
+  return Object.keys(out).length ? out : null;
+}
 
 function parsePageStructuredData(value: unknown): PageStructuredData {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -27,6 +56,10 @@ function parsePageStructuredData(value: unknown): PageStructuredData {
   return {
     h1: typeof row.h1 === 'string' ? row.h1 : null,
     intro: typeof row.intro === 'string' ? row.intro : null,
+    heroImageUrl: typeof row.heroImageUrl === 'string' ? row.heroImageUrl : null,
+    heroImageMediaId: typeof row.heroImageMediaId === 'string' ? row.heroImageMediaId : null,
+    heroImageAlt: typeof row.heroImageAlt === 'string' ? row.heroImageAlt : null,
+    educationModules: parseEducationModules(row.educationModules),
   };
 }
 
@@ -93,7 +126,15 @@ export class FinanceGapService {
   }
 
   createFaq(
-    input: { question: string; answer: string; categoryId?: string | null; sortOrder?: number },
+    input: {
+      question: string;
+      answer: string;
+      categoryId?: string | null;
+      entityType?: string | null;
+      entityId?: string | null;
+      sortOrder?: number;
+      status?: 'DRAFT' | 'PUBLISHED' | 'REVIEW' | 'SCHEDULED' | 'ARCHIVED';
+    },
     actorId: string,
   ) {
     return this.db.financeFaq.create({
@@ -101,8 +142,10 @@ export class FinanceGapService {
         question: input.question,
         answer: input.answer,
         categoryId: input.categoryId,
+        entityType: input.entityType ?? null,
+        entityId: input.entityId ?? null,
         sortOrder: input.sortOrder ?? 0,
-        status: 'PUBLISHED',
+        status: input.status ?? 'PUBLISHED',
         createdBy: actorId,
         updatedBy: actorId,
       },
@@ -260,6 +303,14 @@ export class FinanceGapService {
       },
     });
     const structured = parsePageStructuredData(meta?.structuredData);
+    let heroImageUrl = structured.heroImageUrl ?? null;
+    if (!heroImageUrl && structured.heroImageMediaId) {
+      const asset = await this.db.mediaAsset.findFirst({
+        where: { id: structured.heroImageMediaId, deletedAt: null },
+        select: { secureUrl: true, url: true },
+      });
+      heroImageUrl = asset?.secureUrl || asset?.url || null;
+    }
 
     return {
       pageKey,
@@ -270,8 +321,12 @@ export class FinanceGapService {
       description: meta?.description ?? defaults.description,
       h1: structured.h1 ?? defaults.h1,
       intro: structured.intro ?? defaults.intro,
+      heroImageUrl,
+      heroImageMediaId: structured.heroImageMediaId ?? null,
+      heroImageAlt: structured.heroImageAlt ?? null,
       metaKeywords: meta?.metaKeywords ?? null,
       canonicalUrl: meta?.canonicalUrl ?? defaults.canonicalUrl ?? null,
+      educationModules: structured.educationModules ?? null,
     };
   }
 
@@ -285,9 +340,28 @@ export class FinanceGapService {
       },
     });
     const existingStructured = parsePageStructuredData(existing?.structuredData);
+    const nextHero =
+      input.heroImageUrl !== undefined
+        ? input.heroImageUrl?.trim() || null
+        : (existingStructured.heroImageUrl ?? null);
+    const nextHeroMediaId =
+      input.heroImageMediaId !== undefined
+        ? input.heroImageMediaId || null
+        : (existingStructured.heroImageMediaId ?? null);
+    const nextHeroAlt =
+      input.heroImageAlt !== undefined
+        ? input.heroImageAlt?.trim() || null
+        : (existingStructured.heroImageAlt ?? null);
     const structuredData: PageStructuredData = {
       h1: input.h1 !== undefined ? input.h1 : (existingStructured.h1 ?? defaults.h1),
       intro: input.intro !== undefined ? input.intro : (existingStructured.intro ?? defaults.intro),
+      heroImageUrl: nextHero,
+      heroImageMediaId: nextHeroMediaId,
+      heroImageAlt: nextHeroAlt,
+      educationModules:
+        input.educationModules !== undefined
+          ? input.educationModules
+          : (existingStructured.educationModules ?? null),
     };
 
     await this.db.seoMetadata.upsert({

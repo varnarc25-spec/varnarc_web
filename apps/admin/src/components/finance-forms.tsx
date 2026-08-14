@@ -4,9 +4,14 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 
 const inputClass =
   'h-10 w-full rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 text-sm';
+
+function emptyMedia(): EntityMediaValue {
+  return { mediaId: null, url: null, alt: '', title: '', caption: '' };
+}
 
 function slugify(value: string) {
   return value
@@ -570,6 +575,9 @@ export function FinanceBankEditForm({
     description?: string | null;
     seoTitle?: string | null;
     seoDescription?: string | null;
+    logoUrl?: string | null;
+    logoMediaId?: string | null;
+    logoAlt?: string | null;
   };
 }) {
   const router = useRouter();
@@ -579,6 +587,11 @@ export function FinanceBankEditForm({
   const [description, setDescription] = useState(initial.description ?? '');
   const [seoTitle, setSeoTitle] = useState(initial.seoTitle ?? '');
   const [seoDescription, setSeoDescription] = useState(initial.seoDescription ?? '');
+  const [logo, setLogo] = useState<EntityMediaValue>({
+    mediaId: initial.logoMediaId ?? null,
+    url: initial.logoUrl ?? null,
+    alt: initial.logoAlt ?? '',
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -596,6 +609,9 @@ export function FinanceBankEditForm({
           description: description || undefined,
           seoTitle: seoTitle || null,
           seoDescription: seoDescription || null,
+          logoUrl: logo.url || null,
+          logoMediaId: logo.mediaId || null,
+          logoAlt: logo.alt || null,
         }),
       });
       const json = (await res.json()) as { error?: { message?: string } };
@@ -637,6 +653,12 @@ export function FinanceBankEditForm({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+      <EntityMediaField
+        label="Official lender logo"
+        help="Use the lender’s official logo from the media library. AI-generated logos are not allowed."
+        value={logo}
+        onChange={setLogo}
+      />
       <FinanceSeoFields
         seoTitle={seoTitle}
         seoDescription={seoDescription}
@@ -1104,11 +1126,16 @@ export function FinanceInvestmentEditForm({
   );
 }
 
-export function FinanceFaqForm() {
+export function FinanceFaqForm({
+  categories = [],
+}: {
+  categories?: Array<{ id: string; name: string; slug: string }>;
+}) {
   const router = useRouter();
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
-  const [category, setCategory] = useState('');
+  const [entityType, setEntityType] = useState('loan_hub');
+  const [categoryId, setCategoryId] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -1119,13 +1146,21 @@ export function FinanceFaqForm() {
       const res = await fetch('/api/admin/finance/faqs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, answer, category: category || undefined }),
+        body: JSON.stringify({
+          question,
+          answer,
+          entityType: entityType || null,
+          categoryId: entityType === 'loan_category' && categoryId ? categoryId : undefined,
+          entityId: entityType === 'loan_category' && categoryId ? categoryId : undefined,
+          status: 'PUBLISHED',
+        }),
       });
       const json = (await res.json()) as { error?: { message?: string } };
       if (!res.ok) throw new Error(json.error?.message || 'Failed');
       setQuestion('');
       setAnswer('');
-      setCategory('');
+      setEntityType('loan_hub');
+      setCategoryId('');
       setMessage('Created');
       router.refresh();
     } catch (err) {
@@ -1150,14 +1185,43 @@ export function FinanceFaqForm() {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
         />
-        <input
-          className={inputClass}
-          placeholder="Category (optional)"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
+        <label className="text-sm">
+          <span className="mb-1 block text-[var(--varnarc-subtle)]">Show on</span>
+          <select
+            className={inputClass}
+            value={entityType}
+            onChange={(e) => setEntityType(e.target.value)}
+          >
+            <option value="loan_hub">Loan hub (/finance/loans)</option>
+            <option value="">General finance FAQs</option>
+            <option value="loan_category">Loan category page</option>
+            <option value="calculator">Calculator</option>
+            <option value="article">Article</option>
+          </select>
+        </label>
+        {entityType === 'loan_category' ? (
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">Loan category</span>
+            <select
+              className={inputClass}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.slug})
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
-      <FormActions loading={loading} disabled={!question || !answer} onSave={() => void save()} />
+      <FormActions
+        loading={loading}
+        disabled={!question || !answer || (entityType === 'loan_category' && !categoryId)}
+        onSave={() => void save()}
+      />
     </FinanceFormShell>
   );
 }
@@ -1455,25 +1519,116 @@ export function FinanceCategoryEditForm({
     name: string;
     slug: string;
     description?: string | null;
+    shortDescription?: string | null;
+    introduction?: string | null;
     sortOrder?: number | null;
     seoTitle?: string | null;
     seoDescription?: string | null;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    contentSections?: Record<string, unknown> | null;
+    relatedCalculatorSlugs?: string | null;
+    relatedGuideSlugs?: string | null;
+    icon?: string | null;
+    iconMediaId?: string | null;
+    iconAlt?: string | null;
+    featuredImage?: string | null;
+    featuredImageMediaId?: string | null;
+    featuredImageAlt?: string | null;
+    heroImage?: string | null;
+    heroImageMediaId?: string | null;
+    heroImageAlt?: string | null;
+    loanHubEnabled?: boolean | null;
   };
 }) {
   const router = useRouter();
   const [name, setName] = useState(initial.name);
   const [slug, setSlug] = useState(initial.slug);
   const [description, setDescription] = useState(initial.description ?? '');
+  const [shortDescription, setShortDescription] = useState(initial.shortDescription ?? '');
+  const [introduction, setIntroduction] = useState(initial.introduction ?? '');
   const [sortOrder, setSortOrder] = useState(String(initial.sortOrder ?? 0));
-  const [seoTitle, setSeoTitle] = useState(initial.seoTitle ?? '');
-  const [seoDescription, setSeoDescription] = useState(initial.seoDescription ?? '');
+  const [loanHubEnabled, setLoanHubEnabled] = useState(Boolean(initial.loanHubEnabled));
+  const [seoTitle, setSeoTitle] = useState(initial.seoTitle ?? initial.metaTitle ?? '');
+  const [seoDescription, setSeoDescription] = useState(
+    initial.seoDescription ?? initial.metaDescription ?? '',
+  );
+  const [metaTitle, setMetaTitle] = useState(initial.metaTitle ?? '');
+  const [metaDescription, setMetaDescription] = useState(initial.metaDescription ?? '');
+  const existingSections =
+    initial.contentSections && typeof initial.contentSections === 'object'
+      ? (initial.contentSections as Record<string, unknown>)
+      : {};
+  const [sectionDrafts, setSectionDrafts] = useState<Record<string, string>>(() => {
+    const next: Record<string, string> = {};
+    for (const [key, value] of Object.entries(existingSections)) {
+      if (key === 'relatedCalculatorSlugs' || key === 'relatedGuideSlugs') continue;
+      if (typeof value === 'string') next[key] = value;
+    }
+    return next;
+  });
+  const [relatedCalculatorSlugs, setRelatedCalculatorSlugs] = useState(
+    initial.relatedCalculatorSlugs ??
+      (Array.isArray(existingSections.relatedCalculatorSlugs)
+        ? (existingSections.relatedCalculatorSlugs as string[]).join(', ')
+        : ''),
+  );
+  const [relatedGuideSlugs, setRelatedGuideSlugs] = useState(
+    initial.relatedGuideSlugs ??
+      (Array.isArray(existingSections.relatedGuideSlugs)
+        ? (existingSections.relatedGuideSlugs as string[]).join(', ')
+        : ''),
+  );
+  const [icon, setIcon] = useState<EntityMediaValue>({
+    mediaId: initial.iconMediaId ?? null,
+    url: initial.icon ?? null,
+    alt: initial.iconAlt ?? '',
+  });
+  const [cardImage, setCardImage] = useState<EntityMediaValue>({
+    mediaId: initial.featuredImageMediaId ?? null,
+    url: initial.featuredImage ?? null,
+    alt: initial.featuredImageAlt ?? '',
+  });
+  const [heroImage, setHeroImage] = useState<EntityMediaValue>({
+    mediaId: initial.heroImageMediaId ?? null,
+    url: initial.heroImage ?? null,
+    alt: initial.heroImageAlt ?? '',
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const sectionKeys = [
+    'whatIs',
+    'howItWorks',
+    'interestRates',
+    'eligibility',
+    'creditScore',
+    'documents',
+    'fees',
+    'emiCalculation',
+    'prepayment',
+    'securedVsUnsecured',
+    'alternatives',
+  ] as const;
 
   async function save() {
     setLoading(true);
     setMessage(null);
     try {
+      const contentSections: Record<string, unknown> = { ...existingSections };
+      for (const key of sectionKeys) {
+        const value = sectionDrafts[key]?.trim();
+        contentSections[key] = value || null;
+      }
+      contentSections.relatedCalculatorSlugs = relatedCalculatorSlugs
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      contentSections.relatedGuideSlugs = relatedGuideSlugs
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       const [catRes, seoRes] = await Promise.all([
         fetch(`/api/admin/finance/categories/${id}`, {
           method: 'PUT',
@@ -1482,15 +1637,30 @@ export function FinanceCategoryEditForm({
             name,
             slug,
             description: description || undefined,
+            shortDescription: shortDescription || null,
+            introduction: introduction || null,
             sortOrder: Number(sortOrder) || 0,
+            loanHubEnabled,
+            metaTitle: metaTitle || null,
+            metaDescription: metaDescription || null,
+            contentSections,
+            icon: icon.url || null,
+            iconMediaId: icon.mediaId || null,
+            iconAlt: icon.alt || null,
+            featuredImage: cardImage.url || null,
+            featuredImageMediaId: cardImage.mediaId || null,
+            featuredImageAlt: cardImage.alt || null,
+            heroImage: heroImage.url || null,
+            heroImageMediaId: heroImage.mediaId || null,
+            heroImageAlt: heroImage.alt || null,
           }),
         }),
         fetch(`/api/admin/seo/metadata/finance_category/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: seoTitle || null,
-            description: seoDescription || null,
+            title: seoTitle || metaTitle || null,
+            description: seoDescription || metaDescription || null,
           }),
         }),
       ]);
@@ -1530,12 +1700,72 @@ export function FinanceCategoryEditForm({
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
         />
-        <input
-          className={inputClass}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={loanHubEnabled}
+            onChange={(e) => setLoanHubEnabled(e.target.checked)}
+          />
+          Show on loan hub / category routes
+        </label>
+        <textarea
+          className={`${inputClass} min-h-20 py-2 md:col-span-2`}
+          placeholder="Short description (cards)"
+          value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)}
+        />
+        <textarea
+          className={`${inputClass} min-h-24 py-2 md:col-span-2`}
+          placeholder="Category intro (H1 supporting copy on /finance/loans/{slug})"
+          value={introduction}
+          onChange={(e) => setIntroduction(e.target.value)}
+        />
+        <textarea
+          className={`${inputClass} min-h-24 py-2 md:col-span-2`}
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+      </div>
+      <div className="grid gap-3 lg:grid-cols-3">
+        <EntityMediaField
+          label="Category icon"
+          help="Small icon for tabs and compact UI."
+          value={icon}
+          onChange={setIcon}
+        />
+        <EntityMediaField
+          label="Card illustration"
+          help="Used on Popular Loan Categories cards."
+          value={cardImage}
+          onChange={setCardImage}
+          showTitle
+        />
+        <EntityMediaField
+          label="Category hero image"
+          help="Hero for /finance/loans/{slug}."
+          value={heroImage}
+          onChange={setHeroImage}
+          showCaption
+          showTitle
+        />
+      </div>
+      <div className="space-y-2">
+        <p className="text-sm font-semibold text-[var(--varnarc-ink)]">Category page SEO</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            className={inputClass}
+            placeholder="Meta title (category page)"
+            value={metaTitle}
+            onChange={(e) => setMetaTitle(e.target.value)}
+          />
+          <input
+            className={inputClass}
+            placeholder="Meta description (category page)"
+            value={metaDescription}
+            onChange={(e) => setMetaDescription(e.target.value)}
+          />
+        </div>
       </div>
       <FinanceSeoFields
         seoTitle={seoTitle}
@@ -1543,6 +1773,46 @@ export function FinanceCategoryEditForm({
         onSeoTitleChange={setSeoTitle}
         onSeoDescriptionChange={setSeoDescription}
       />
+      <div className="space-y-3">
+        <p className="text-sm font-semibold text-[var(--varnarc-ink)]">
+          Educational sections (override defaults when filled)
+        </p>
+        {sectionKeys.map((key) => (
+          <label key={key} className="block text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">{key}</span>
+            <textarea
+              className={`${inputClass} min-h-20 py-2`}
+              value={sectionDrafts[key] ?? ''}
+              onChange={(e) => setSectionDrafts((prev) => ({ ...prev, [key]: e.target.value }))}
+              placeholder={`CMS override for ${key}`}
+            />
+          </label>
+        ))}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block text-sm">
+          <span className="mb-1 block text-[var(--varnarc-subtle)]">
+            Related calculator slugs (comma-separated)
+          </span>
+          <input
+            className={inputClass}
+            value={relatedCalculatorSlugs}
+            onChange={(e) => setRelatedCalculatorSlugs(e.target.value)}
+            placeholder="personal-loan-emi, loan-eligibility"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-[var(--varnarc-subtle)]">
+            Related guide slugs (comma-separated)
+          </span>
+          <input
+            className={inputClass}
+            value={relatedGuideSlugs}
+            onChange={(e) => setRelatedGuideSlugs(e.target.value)}
+            placeholder="how-to-choose-a-personal-loan"
+          />
+        </label>
+      </div>
       <FormActions
         loading={loading}
         disabled={!name}
@@ -1790,8 +2060,15 @@ export function FinancePageSeoEditor({
     description: string;
     h1: string;
     intro: string;
+    heroImageUrl?: string | null;
+    heroImageMediaId?: string | null;
+    heroImageAlt?: string | null;
     metaKeywords?: string | null;
     canonicalUrl?: string | null;
+    educationModules?: Record<
+      string,
+      { title?: string; summary?: string; guideHref?: string | null }
+    > | null;
   };
 }) {
   const router = useRouter();
@@ -1799,8 +2076,16 @@ export function FinancePageSeoEditor({
   const [description, setDescription] = useState(initial.description);
   const [h1, setH1] = useState(initial.h1);
   const [intro, setIntro] = useState(initial.intro);
+  const [hero, setHero] = useState<EntityMediaValue>({
+    mediaId: initial.heroImageMediaId ?? null,
+    url: initial.heroImageUrl ?? null,
+    alt: initial.heroImageAlt ?? '',
+  });
   const [metaKeywords, setMetaKeywords] = useState(initial.metaKeywords ?? '');
   const [canonicalUrl, setCanonicalUrl] = useState(initial.canonicalUrl ?? initial.path);
+  const [educationModulesJson, setEducationModulesJson] = useState(
+    initial.educationModules ? JSON.stringify(initial.educationModules, null, 2) : '',
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -1808,6 +2093,22 @@ export function FinancePageSeoEditor({
     setLoading(true);
     setMessage(null);
     try {
+      let educationModules:
+        | Record<string, { title?: string; summary?: string; guideHref?: string | null }>
+        | null
+        | undefined;
+      if (pageKey === 'loans') {
+        const trimmed = educationModulesJson.trim();
+        if (!trimmed) {
+          educationModules = null;
+        } else {
+          educationModules = JSON.parse(trimmed) as Record<
+            string,
+            { title?: string; summary?: string; guideHref?: string | null }
+          >;
+        }
+      }
+
       const res = await fetch(`/api/admin/finance/pages/${pageKey}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1816,8 +2117,12 @@ export function FinancePageSeoEditor({
           description: description || null,
           h1: h1 || null,
           intro: intro || null,
+          heroImageUrl: hero.url || null,
+          heroImageMediaId: hero.mediaId || null,
+          heroImageAlt: hero.alt || null,
           metaKeywords: metaKeywords || null,
           canonicalUrl: canonicalUrl || null,
+          ...(pageKey === 'loans' ? { educationModules } : {}),
         }),
       });
       const json = (await res.json()) as { error?: { message?: string } };
@@ -1876,6 +2181,28 @@ export function FinancePageSeoEditor({
           value={intro}
           onChange={(e) => setIntro(e.target.value)}
         />
+        <div className="md:col-span-2">
+          <EntityMediaField
+            label="Hub hero image"
+            help="Displayed on the public hub hero. Prefer media library assets over hardcoded paths."
+            value={hero}
+            onChange={setHero}
+            showTitle
+          />
+        </div>
+        {pageKey === 'loans' ? (
+          <label className="md:col-span-2 block space-y-1.5">
+            <span className="text-xs font-semibold text-[var(--varnarc-subtle)]">
+              Education modules JSON (optional overrides: title, summary, guideHref per module id)
+            </span>
+            <textarea
+              className={`${inputClass} min-h-36 font-mono text-xs`}
+              placeholder={`{\n  "typesOfLoans": { "title": "…", "summary": "…", "guideHref": "/finance/guides" }\n}`}
+              value={educationModulesJson}
+              onChange={(e) => setEducationModulesJson(e.target.value)}
+            />
+          </label>
+        ) : null}
       </div>
       <div className="mt-3 flex items-center gap-3">
         <Button type="button" disabled={loading} onClick={() => void save()}>

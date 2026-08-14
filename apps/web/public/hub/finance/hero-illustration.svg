@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" fill="none" role="img" aria-label="Finance planning illustration">
+  <rect width="400" height="280" fill="#eef6ff"/>
+  <rect x="24" y="32" width="160" height="100" rx="12" fill="#fff" stroke="#dbeafe"/>
+  <rect x="40" y="52" width="48" height="8" rx="4" fill="#2563eb" opacity="0.2"/>
+  <rect x="40" y="68" width="120" height="10" rx="5" fill="#0b1f3a" opacity="0.85"/>
+  <rect x="40" y="88" width="90" height="8" rx="4" fill="#64748b" opacity="0.4"/>
+  <rect x="40" y="108" width="110" height="28" rx="8" fill="#2563eb"/>
+  <text x="52" y="126" fill="#fff" font-family="system-ui,sans-serif" font-size="11" font-weight="600">Calculate EMI</text>
+  <rect x="200" y="48" width="176" height="88" rx="12" fill="#fff" stroke="#dbeafe"/>
+  <rect x="216" y="64" width="60" height="56" rx="8" fill="#dbeafe"/>
+  <rect x="228" y="88" width="12" height="28" rx="3" fill="#2563eb"/>
+  <rect x="244" y="76" width="12" height="40" rx="3" fill="#2563eb" opacity="0.7"/>
+  <rect x="260" y="68" width="12" height="48" rx="3" fill="#2563eb" opacity="0.5"/>
+  <circle cx="316" cy="92" r="28" stroke="#10b981" stroke-width="8" stroke-dasharray="44 200" transform="rotate(-90 316 92)"/>
+  <circle cx="316" cy="92" r="28" stroke="#2563eb" stroke-width="8" stroke-dasharray="36 200" stroke-dashoffset="-44" transform="rotate(-90 316 92)"/>
+  <rect x="24" y="168" width="352" height="88" rx="12" fill="#fff" stroke="#dbeafe"/>
+  <circle cx="56" cy="212" r="16" fill="#dbeafe"/>
+  <path d="M50 212h12M56 206v12" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <rect x="84" y="200" width="80" height="10" rx="5" fill="#0b1f3a" opacity="0.8"/>
+  <rect x="84" y="216" width="120" height="8" rx="4" fill="#94a3b8" opacity="0.5"/>
+  <circle cx="220" cy="212" r="16" fill="#d1fae5"/>
+  <path d="M214 212h12M220 206v12" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <rect x="248" y="200" width="72" height="10" rx="5" fill="#0b1f3a" opacity="0.8"/>
+  <rect x="248" y="216" width="100" height="8" rx="4" fill="#94a3b8" opacity="0.5"/>
+</svg>

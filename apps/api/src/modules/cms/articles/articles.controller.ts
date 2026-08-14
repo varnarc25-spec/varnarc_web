@@ -21,9 +21,11 @@ import {
   generateArticleDraftSchema,
   improveArticleSchema,
   suggestRelatedArticlesSchema,
+  generateArticleImageSchema,
   type CreateArticleInput,
   type CursorPaginationQuery,
   type GenerateArticleDraftInput,
+  type GenerateArticleImageInput,
   type ImproveArticleInput,
   type ScheduleContentInput,
   type ReviewActionInput,
@@ -144,6 +146,15 @@ export class ArticlesController {
     return ok(await this.articleAi.suggestRelated(body, user.id));
   }
 
+  @Post('ai/generate-image')
+  @RequirePermissions(PERMISSIONS.ARTICLE_CREATE)
+  async generateImage(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(generateArticleImageSchema)) body: GenerateArticleImageInput,
+  ) {
+    return ok(await this.articleAi.generateImage(body, user.id));
+  }
+
   @Public()
   @Get('slug/:slug')
   async bySlug(@Param('slug') slug: string) {
@@ -208,10 +219,7 @@ export class ArticlesController {
 
   @Post(':id/publish')
   @RequirePermissions(PERMISSIONS.ARTICLE_PUBLISH)
-  async publish(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUserDecorator() user: CurrentUser,
-  ) {
+  async publish(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
     return ok(await this.service.publish(id, user));
   }
 
@@ -264,10 +272,7 @@ export class ArticlesController {
 
   @Delete(':id')
   @RequirePermissions(PERMISSIONS.ARTICLE_DELETE)
-  async remove(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUserDecorator() user: CurrentUser,
-  ) {
+  async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
     return ok(await this.service.remove(id, user));
   }
 }

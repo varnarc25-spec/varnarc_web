@@ -66,8 +66,8 @@ export function SiteFooter({
 
   return (
     <footer className="full-bleed mt-auto bg-[var(--vn-footer,#071428)] text-slate-300">
-      <div className="site-container px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="site-container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
           <div className="lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2">
               <img
@@ -75,35 +75,40 @@ export function SiteFooter({
                 alt=""
                 width={40}
                 height={40}
-                className="h-10 w-10 rounded-md object-contain"
+                className="h-9 w-9 rounded-md object-contain"
               />
               <span className="text-lg font-bold text-white">{brand}</span>
             </Link>
-            <p className="mt-4 text-sm leading-relaxed text-slate-400">{brandTagline}</p>
-            <div className="mt-5 flex gap-3">
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">{brandTagline}</p>
+            <div className="mt-4 flex gap-2">
               {social.map((item) => (
                 <a
                   key={item.href + item.label}
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold hover:bg-white/20"
+                  className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
                 >
                   {item.label.slice(0, 1).toUpperCase()}
                 </a>
               ))}
             </div>
             {newsletterEnabled ? (
-              <NewsletterForm variant="compact" source="footer" />
+              <div className="mt-4">
+                <NewsletterForm variant="compact" source="footer" />
+              </div>
             ) : null}
           </div>
 
           <div>
             <h3 className="text-sm font-semibold text-white">Quick Links</h3>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-3 space-y-1.5 text-sm">
               {quickLinks.map((l) => (
                 <li key={l.href + l.label}>
-                  <Link href={l.href} className="hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -113,10 +118,13 @@ export function SiteFooter({
 
           <div>
             <h3 className="text-sm font-semibold text-white">Popular Calculators</h3>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-3 space-y-1.5 text-sm">
               {popular.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.name}
                   </Link>
                 </li>
@@ -126,10 +134,13 @@ export function SiteFooter({
 
           <div>
             <h3 className="text-sm font-semibold text-white">Helpful Links</h3>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-3 space-y-1.5 text-sm">
               {helpfulLinks.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -139,24 +150,27 @@ export function SiteFooter({
 
           <div>
             <h3 className="text-sm font-semibold text-white">Resources</h3>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-3 space-y-1.5 text-sm">
               {resources.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
             {showAds ? (
-              <div className="mt-4 rounded-md border border-white/10 bg-white/5 p-3 text-xs text-slate-400">
+              <div className="mt-3 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-slate-400">
                 Ad placement area
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
+        <div className="mt-8 border-t border-white/10 pt-5 text-center text-xs text-slate-500">
           {brandCopyright}
         </div>
       </div>

@@ -215,3 +215,57 @@ select:focus-visible {
     padding-right: 1.25rem;
   }
 }
+
+/* Finance hub — typography & secondary text contrast */
+.hub-text-muted {
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.hub-text-meta {
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* CMP cookie banner — less dominant on finance pages */
+.cmp-banner-root {
+  --cmp-font-size: 14px;
+  --cmp-spacing: 0.75rem;
+  --cmp-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+}
+
+.cmp-banner-root .cmp-layout-bottom_bar .cmp-inner,
+.cmp-banner-root .cmp-layout-compact .cmp-inner {
+  padding: 0.75rem 1rem;
+}
+
+.cmp-banner-root .cmp-title {
+  font-size: 0.9375rem;
+}
+
+.cmp-banner-root .cmp-description {
+  font-size: 0.8125rem;
+  margin-bottom: 0.75rem;
+}
+
+.cmp-banner-root .cmp-layout-compact {
+  bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+  max-width: min(420px, calc(100vw - 1.5rem));
+}
+
+.cmp-banner-root .cmp-btn {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .cmp-banner-root .cmp-layout-bottom_bar {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}

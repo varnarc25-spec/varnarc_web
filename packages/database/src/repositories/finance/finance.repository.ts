@@ -1,9 +1,5 @@
 import type { Prisma, PrismaClient, PublishStatus } from '@prisma/client';
-import {
-  BaseRepository,
-  listActiveWithCursor,
-  softDeleteById,
-} from '../base.repository';
+import { BaseRepository, listActiveWithCursor, softDeleteById } from '../base.repository';
 import type { CursorPageParams } from '../../pagination';
 
 type ListParams = CursorPageParams & {
@@ -11,9 +7,28 @@ type ListParams = CursorPageParams & {
   search?: string;
   bankId?: string;
   categoryId?: string;
+  categorySlug?: string;
   loanType?: string;
   productType?: string;
   featured?: boolean;
+  sponsored?: boolean;
+  needsRateReview?: boolean;
+  rateMin?: number;
+  rateMax?: number;
+  amountMin?: number;
+  amountMax?: number;
+  tenureMin?: number;
+  tenureMax?: number;
+  processingFeeMax?: number;
+  creditScoreMaxRequired?: number;
+  employmentType?: string;
+  sort?:
+    | 'recommended'
+    | 'lowest_interest'
+    | 'highest_amount'
+    | 'lowest_processing_fee'
+    | 'longest_tenure';
+  loanHubEnabled?: boolean;
 };
 
 export class FinanceCategoryRepository extends BaseRepository {
@@ -32,6 +47,17 @@ export class FinanceCategoryRepository extends BaseRepository {
   list() {
     return this.db.financeCategory.findMany({
       where: { deletedAt: null },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  listLoanHub(params: { status?: PublishStatus } = {}) {
+    return this.db.financeCategory.findMany({
+      where: {
+        deletedAt: null,
+        loanHubEnabled: true,
+        ...(params.status ? { status: params.status } : { status: 'PUBLISHED' }),
+      },
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
   }
@@ -157,25 +183,128 @@ export class LoanRepository extends BaseRepository {
     });
   }
 
+  findByCategoryAndProductSlug(categorySlug: string, productSlug: string) {
+    return this.db.loan.findFirst({
+      where: {
+        slug: productSlug,
+        deletedAt: null,
+        status: 'PUBLISHED',
+        category: { slug: categorySlug, deletedAt: null },
+      },
+      include: this.include,
+    });
+  }
+
+  findByCategoryAndLenderSlug(categorySlug: string, lenderSlug: string) {
+    return this.db.loan.findFirst({
+      where: {
+        deletedAt: null,
+        status: 'PUBLISHED',
+        category: { slug: categorySlug, deletedAt: null },
+        bank: { slug: lenderSlug, deletedAt: null },
+      },
+      orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
+      include: this.include,
+    });
+  }
+
   list(params: ListParams = {}) {
+    const sort = params.sort ?? 'recommended';
+    const orderBy: Prisma.LoanOrderByWithRelationInput[] =
+      sort === 'lowest_interest'
+        ? [{ interestRateMin: 'asc' }, { interestRate: 'asc' }, { featured: 'desc' }]
+        : sort === 'highest_amount'
+          ? [{ loanAmountMax: 'desc' }, { maxAmount: 'desc' }, { featured: 'desc' }]
+          : sort === 'lowest_processing_fee'
+            ? [{ processingFeeMin: 'asc' }, { processingFee: 'asc' }, { featured: 'desc' }]
+            : sort === 'longest_tenure'
+              ? [{ tenureMax: 'desc' }, { featured: 'desc' }]
+              : [{ featured: 'desc' }, { sponsored: 'desc' }, { updatedAt: 'desc' }];
+
+    const and: Prisma.LoanWhereInput[] = [];
+
+    if (params.status) and.push({ status: params.status });
+    if (params.bankId) and.push({ bankId: params.bankId });
+    if (params.categoryId) and.push({ categoryId: params.categoryId });
+    if (params.categorySlug) {
+      and.push({ category: { slug: params.categorySlug, deletedAt: null } });
+    }
+    if (params.loanType) and.push({ loanType: params.loanType });
+    if (params.featured != null) and.push({ featured: params.featured });
+    if (params.sponsored != null) and.push({ sponsored: params.sponsored });
+    if (params.needsRateReview != null) and.push({ needsRateReview: params.needsRateReview });
+
+    if (params.rateMax != null) {
+      and.push({
+        OR: [
+          { interestRateMin: { lte: params.rateMax } },
+          { interestRate: { lte: params.rateMax } },
+        ],
+      });
+    }
+    if (params.rateMin != null) {
+      and.push({
+        OR: [
+          { interestRateMax: { gte: params.rateMin } },
+          { interestRate: { gte: params.rateMin } },
+        ],
+      });
+    }
+    if (params.amountMin != null) {
+      and.push({
+        OR: [
+          { loanAmountMax: { gte: params.amountMin } },
+          { maxAmount: { gte: params.amountMin } },
+        ],
+      });
+    }
+    if (params.amountMax != null) {
+      and.push({
+        OR: [{ loanAmountMin: { lte: params.amountMax } }, { loanAmountMin: null }],
+      });
+    }
+    if (params.tenureMin != null) and.push({ tenureMax: { gte: params.tenureMin } });
+    if (params.tenureMax != null) {
+      and.push({
+        OR: [{ tenureMin: { lte: params.tenureMax } }, { tenureMin: null }],
+      });
+    }
+    if (params.processingFeeMax != null) {
+      and.push({
+        OR: [
+          { processingFeeMin: { lte: params.processingFeeMax } },
+          { processingFee: { lte: params.processingFeeMax } },
+          { processingFeeMin: null, processingFee: null },
+        ],
+      });
+    }
+    if (params.creditScoreMaxRequired != null) {
+      and.push({
+        OR: [
+          { minimumCreditScore: { lte: params.creditScoreMaxRequired } },
+          { minimumCreditScore: null },
+        ],
+      });
+    }
+    if (params.employmentType) {
+      and.push({
+        employmentTypes: { array_contains: [params.employmentType] },
+      });
+    }
+    if (params.search) {
+      and.push({
+        OR: [
+          { name: { contains: params.search, mode: 'insensitive' } },
+          { slug: { contains: params.search, mode: 'insensitive' } },
+          { loanType: { contains: params.search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
     return listActiveWithCursor(this.db.loan, {
       ...params,
-      where: {
-        ...(params.status ? { status: params.status } : {}),
-        ...(params.bankId ? { bankId: params.bankId } : {}),
-        ...(params.categoryId ? { categoryId: params.categoryId } : {}),
-        ...(params.loanType ? { loanType: params.loanType } : {}),
-        ...(params.featured != null ? { featured: params.featured } : {}),
-        ...(params.search
-          ? {
-              OR: [
-                { name: { contains: params.search, mode: 'insensitive' } },
-                { slug: { contains: params.search, mode: 'insensitive' } },
-                { loanType: { contains: params.search, mode: 'insensitive' } },
-              ],
-            }
-          : {}),
-      },
+      orderBy,
+      where: and.length ? { AND: and } : {},
       include: { bank: true, category: true },
     });
   }
@@ -447,5 +576,72 @@ export class FinanceGuideRepository extends BaseRepository {
       where: { slug, deletedAt: null, status: 'PUBLISHED' },
       include: { category: true },
     });
+  }
+}
+
+export class LoanRateHistoryRepository extends BaseRepository {
+  constructor(db: PrismaClient) {
+    super(db);
+  }
+
+  listByLoan(loanId: string) {
+    return this.db.loanRateHistory.findMany({
+      where: { loanId, deletedAt: null },
+      orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  create(data: Prisma.LoanRateHistoryCreateInput) {
+    return this.db.loanRateHistory.create({ data });
+  }
+
+  softDelete(id: string, actorId?: string | null) {
+    return softDeleteById(this.db.loanRateHistory, id, actorId);
+  }
+}
+
+export class ContentSourceRepository extends BaseRepository {
+  constructor(db: PrismaClient) {
+    super(db);
+  }
+
+  findById(id: string) {
+    return this.db.contentSource.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  list(params: ListParams = {}) {
+    return listActiveWithCursor(this.db.contentSource, {
+      ...params,
+      where: {
+        ...(params.status ? { status: params.status } : {}),
+        ...(params.search
+          ? {
+              OR: [
+                { name: { contains: params.search, mode: 'insensitive' } },
+                { sourceUrl: { contains: params.search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+    });
+  }
+
+  listForEntity(entityType: string, entityId: string) {
+    return this.db.contentSource.findMany({
+      where: { entityType, entityId, deletedAt: null, status: 'PUBLISHED' },
+      orderBy: [{ verifiedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  create(data: Prisma.ContentSourceCreateInput) {
+    return this.db.contentSource.create({ data });
+  }
+
+  update(id: string, data: Prisma.ContentSourceUpdateInput) {
+    return this.db.contentSource.update({ where: { id }, data });
+  }
+
+  softDelete(id: string, actorId?: string | null) {
+    return softDeleteById(this.db.contentSource, id, actorId);
   }
 }

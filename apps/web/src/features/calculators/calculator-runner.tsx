@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   isCalculatorFieldVisible,
   LOAN_CALCULATOR_FIELD_VISIBILITY,
@@ -14,6 +15,11 @@ import { trackAnalyticsEvent } from '@/lib/analytics-client';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
 import { Spinner } from '@/components/shared/spinner';
 import { DateInput, openDatePicker } from '@/components/shared/date-input';
+import {
+  applyCalculatorParamsToFieldValues,
+  buildShareableCalculatorUrl,
+  parseCalculatorParams,
+} from '@/lib/calculator-query';
 
 type Field = {
   key: string;
@@ -423,12 +429,16 @@ export function CalculatorRunner({
     fieldVisibility?: FieldVisibilityMap;
   } | null;
 }) {
+  const searchParams = useSearchParams();
+  const parsedQuery = useMemo(() => parseCalculatorParams(searchParams), [searchParams]);
   const fieldVisibility = resolveFieldVisibility(calculatorSlug, settings);
 
   const wizardSteps = settings?.mode === 'wizard' && settings.steps?.length ? settings.steps : null;
   const [stepIndex, setStepIndex] = useState(0);
 
-  const [values, setValues] = useState<Record<string, string>>(() => buildDefaultValues(fields));
+  const [values, setValues] = useState<Record<string, string>>(() =>
+    applyCalculatorParamsToFieldValues(fields, parsedQuery, buildDefaultValues(fields)),
+  );
   const [outputs, setOutputs] = useState<Record<string, number> | null>(null);
   const [recommendations, setRecommendations] = useState<
     Array<{ id: string; name: string; slug: string }>
@@ -451,8 +461,11 @@ export function CalculatorRunner({
   }, [fields, fieldVisibility, values, wizardSteps, stepIndex]);
 
   useEffect(() => {
-    setValues(buildDefaultValues(fields));
-  }, [fields]);
+    const defaults = buildDefaultValues(fields);
+    setValues(
+      applyCalculatorParamsToFieldValues(fields, parseCalculatorParams(searchParams), defaults),
+    );
+  }, [fields, searchParams]);
 
   useEffect(() => {
     if (calculatorSlug !== LOAN_CALCULATOR_SLUG) return;
@@ -570,19 +583,23 @@ export function CalculatorRunner({
   }
 
   async function shareResult() {
-    const text = outputs
-      ? `${name}\n${Object.entries(outputs)
-          .map(([k, v]) => `${k}: ${formatValue(v)}`)
-          .join('\n')}\n${typeof window !== 'undefined' ? window.location.href : ''}`
-      : typeof window !== 'undefined'
-        ? window.location.href
-        : '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const shareUrl = buildShareableCalculatorUrl(calculatorSlug, values, origin, {
+      product: parsedQuery.product ?? undefined,
+      lender: parsedQuery.lender ?? undefined,
+      category: parsedQuery.category ?? undefined,
+    });
     try {
       if (navigator.share) {
-        await navigator.share({ title: name, text, url: window.location.href });
+        await navigator.share({
+          title: name,
+          text: `Share calculation — ${name}`,
+          url: shareUrl,
+        });
+        setMessage('Shared');
       } else {
-        await navigator.clipboard.writeText(text);
-        setMessage('Result copied to clipboard');
+        await navigator.clipboard.writeText(shareUrl);
+        setMessage('Share calculation link copied');
       }
     } catch {
       setMessage('Unable to share');
@@ -746,7 +763,7 @@ export function CalculatorRunner({
                 onClick={() => void shareResult()}
                 className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold"
               >
-                Share
+                Share calculation
               </button>
             </div>
             <Link

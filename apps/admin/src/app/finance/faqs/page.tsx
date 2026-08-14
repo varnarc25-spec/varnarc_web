@@ -6,12 +6,23 @@ type FaqRow = {
   id: string;
   question: string;
   answer: string;
-  category?: string | null;
+  category?: string | { name?: string | null; slug?: string | null } | null;
+  entityType?: string | null;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+  slug: string;
 };
 
 export default async function FinanceFaqsAdminPage() {
-  const result = await apiServerFetch<FaqRow[]>('/finance/admin/faqs?limit=100');
-  const rows = Array.isArray(result.data) ? result.data : [];
+  const [faqResult, categoriesResult] = await Promise.all([
+    apiServerFetch<FaqRow[]>('/finance/admin/faqs?limit=100'),
+    apiServerFetch<CategoryRow[]>('/finance/categories'),
+  ]);
+  const rows = Array.isArray(faqResult.data) ? faqResult.data : [];
+  const categories = Array.isArray(categoriesResult.data) ? categoriesResult.data : [];
 
   return (
     <div>
@@ -21,29 +32,37 @@ export default async function FinanceFaqsAdminPage() {
         actions={<Badge>{rows.length} entries</Badge>}
       />
 
-      <FinanceFaqForm />
+      <FinanceFaqForm categories={categories} />
 
-      {result.error ? (
+      {faqResult.error ? (
         <Card>
           <CardHeader>
             <CardTitle>Unable to load FAQs</CardTitle>
-            <CardDescription>{result.error}</CardDescription>
+            <CardDescription>{faqResult.error}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <div className="space-y-3">
-          {rows.map((row) => (
-            <div
-              key={row.id}
-              className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4"
-            >
-              {row.category ? (
-                <div className="text-xs font-medium uppercase text-[var(--varnarc-subtle)]">{row.category}</div>
-              ) : null}
-              <div className="font-medium">{row.question}</div>
-              <p className="mt-2 text-sm text-[var(--varnarc-subtle)]">{row.answer}</p>
-            </div>
-          ))}
+          {rows.map((row) => {
+            const categoryLabel =
+              typeof row.category === 'string'
+                ? row.category
+                : row.category?.name || row.category?.slug || row.entityType || null;
+            return (
+              <div
+                key={row.id}
+                className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4"
+              >
+                {categoryLabel ? (
+                  <div className="text-xs font-medium uppercase text-[var(--varnarc-subtle)]">
+                    {categoryLabel}
+                  </div>
+                ) : null}
+                <div className="font-medium">{row.question}</div>
+                <p className="mt-2 text-sm text-[var(--varnarc-subtle)]">{row.answer}</p>
+              </div>
+            );
+          })}
           {!rows.length ? (
             <p className="py-8 text-center text-[var(--varnarc-subtle)]">No FAQs yet.</p>
           ) : null}

@@ -17,6 +17,9 @@ type CalculatorDetail = {
   seoDescription?: string | null;
   resultTemplate?: unknown;
   settings?: unknown;
+  illustrationUrl?: string | null;
+  illustrationMediaId?: string | null;
+  illustrationAlt?: string | null;
   fields?: Array<{
     key: string;
     label: string;
@@ -32,9 +35,9 @@ export default async function EditCalculatorPage({ params }: { params: Promise<{
   const [calc, cats, versions] = await Promise.all([
     apiServerFetch<CalculatorDetail>(`/calculators/${id}`),
     apiServerFetch<Category[]>('/calculators/categories'),
-    apiServerFetch<Array<{ id: string; version: number; createdAt: string; formula?: string | null }>>(
-      `/calculators/${id}/versions`,
-    ),
+    apiServerFetch<
+      Array<{ id: string; version: number; createdAt: string; formula?: string | null }>
+    >(`/calculators/${id}/versions`),
   ]);
 
   if (calc.error || !calc.data) {

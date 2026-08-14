@@ -8,6 +8,7 @@ import {
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import type { Repositories } from '@varnarc/database';
+import { Prisma } from '@varnarc/database';
 import type {
   CreateBankInput,
   CreateCreditCardInput,
@@ -48,6 +49,16 @@ export class FinanceService {
     return v === '' ? null : v;
   }
 
+  private async mediaUrl(mediaId?: string | null) {
+    if (!mediaId) return null;
+    const asset = await this.repos.mediaAssets.findById(mediaId);
+    return asset?.secureUrl || asset?.url || null;
+  }
+
+  private async resolveImageUrl(url?: string | null, mediaId?: string | null) {
+    return this.emptyUrl(url) ?? (await this.mediaUrl(mediaId));
+  }
+
   private async audit(
     actorId: string,
     action: string,
@@ -73,6 +84,7 @@ export class FinanceService {
       this.cache.del('finance:investments:published'),
       this.cache.del('finance:rates:published'),
       this.cache.del('finance:categories'),
+      this.cache.del('finance:loan-categories'),
       this.cache.del('finance:dashboard'),
     ]);
   }
@@ -83,6 +95,15 @@ export class FinanceService {
     if (cached) return cached;
     const rows = await this.repos.financeCategories.list();
     await this.cache.set('finance:categories', rows, LIST_CACHE_TTL_MS);
+    return rows;
+  }
+
+  async listLoanCategories() {
+    const cacheKey = 'finance:loan-categories';
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached;
+    const rows = await this.repos.financeCategories.listLoanHub({ status: 'PUBLISHED' });
+    await this.cache.set(cacheKey, rows, LIST_CACHE_TTL_MS);
     return rows;
   }
 
@@ -97,6 +118,33 @@ export class FinanceService {
       name: input.name,
       slug: input.slug,
       description: input.description,
+      shortDescription: input.shortDescription,
+      introduction: input.introduction,
+      icon: await this.resolveImageUrl(input.icon, input.iconMediaId),
+      iconMediaId: input.iconMediaId,
+      iconAlt: input.iconAlt,
+      featuredImage: await this.resolveImageUrl(input.featuredImage, input.featuredImageMediaId),
+      featuredImageMediaId: input.featuredImageMediaId,
+      featuredImageAlt: input.featuredImageAlt,
+      heroImage: await this.resolveImageUrl(input.heroImage, input.heroImageMediaId),
+      heroImageMediaId: input.heroImageMediaId,
+      heroImageAlt: input.heroImageAlt,
+      minInterestRate: input.minInterestRate ?? undefined,
+      maxInterestRate: input.maxInterestRate ?? undefined,
+      typicalMinAmount: input.typicalMinAmount ?? undefined,
+      typicalMaxAmount: input.typicalMaxAmount ?? undefined,
+      typicalMinTenure: input.typicalMinTenure ?? undefined,
+      typicalMaxTenure: input.typicalMaxTenure ?? undefined,
+      metaTitle: input.metaTitle,
+      metaDescription: input.metaDescription,
+      seoContent: input.seoContent,
+      contentSections:
+        input.contentSections === undefined || input.contentSections === null
+          ? undefined
+          : (input.contentSections as Prisma.InputJsonValue),
+      loanHubEnabled: input.loanHubEnabled ?? false,
+      status: input.status ?? 'DRAFT',
+      publishedAt: input.publishedAt ?? undefined,
       sortOrder: input.sortOrder ?? 0,
       createdBy: actorId,
       updatedBy: actorId,
@@ -117,7 +165,71 @@ export class FinanceService {
           error: { code: 'CONFLICT', message: 'Slug already exists.' },
         });
     }
-    const row = await this.repos.financeCategories.update(id, { ...input, updatedBy: actorId });
+    const row = await this.repos.financeCategories.update(id, {
+      ...(input.name != null ? { name: input.name } : {}),
+      ...(input.slug != null ? { slug: input.slug } : {}),
+      ...(input.description !== undefined ? { description: input.description } : {}),
+      ...(input.shortDescription !== undefined ? { shortDescription: input.shortDescription } : {}),
+      ...(input.introduction !== undefined ? { introduction: input.introduction } : {}),
+      ...(input.icon !== undefined || input.iconMediaId !== undefined
+        ? {
+            icon: await this.resolveImageUrl(
+              input.icon !== undefined ? input.icon : existing.icon,
+              input.iconMediaId !== undefined ? input.iconMediaId : existing.iconMediaId,
+            ),
+          }
+        : {}),
+      ...(input.iconMediaId !== undefined ? { iconMediaId: input.iconMediaId } : {}),
+      ...(input.iconAlt !== undefined ? { iconAlt: input.iconAlt } : {}),
+      ...(input.featuredImage !== undefined || input.featuredImageMediaId !== undefined
+        ? {
+            featuredImage: await this.resolveImageUrl(
+              input.featuredImage !== undefined ? input.featuredImage : existing.featuredImage,
+              input.featuredImageMediaId !== undefined
+                ? input.featuredImageMediaId
+                : existing.featuredImageMediaId,
+            ),
+          }
+        : {}),
+      ...(input.featuredImageMediaId !== undefined
+        ? { featuredImageMediaId: input.featuredImageMediaId }
+        : {}),
+      ...(input.featuredImageAlt !== undefined ? { featuredImageAlt: input.featuredImageAlt } : {}),
+      ...(input.heroImage !== undefined || input.heroImageMediaId !== undefined
+        ? {
+            heroImage: await this.resolveImageUrl(
+              input.heroImage !== undefined ? input.heroImage : existing.heroImage,
+              input.heroImageMediaId !== undefined
+                ? input.heroImageMediaId
+                : existing.heroImageMediaId,
+            ),
+          }
+        : {}),
+      ...(input.heroImageMediaId !== undefined ? { heroImageMediaId: input.heroImageMediaId } : {}),
+      ...(input.heroImageAlt !== undefined ? { heroImageAlt: input.heroImageAlt } : {}),
+      ...(input.minInterestRate !== undefined ? { minInterestRate: input.minInterestRate } : {}),
+      ...(input.maxInterestRate !== undefined ? { maxInterestRate: input.maxInterestRate } : {}),
+      ...(input.typicalMinAmount !== undefined ? { typicalMinAmount: input.typicalMinAmount } : {}),
+      ...(input.typicalMaxAmount !== undefined ? { typicalMaxAmount: input.typicalMaxAmount } : {}),
+      ...(input.typicalMinTenure !== undefined ? { typicalMinTenure: input.typicalMinTenure } : {}),
+      ...(input.typicalMaxTenure !== undefined ? { typicalMaxTenure: input.typicalMaxTenure } : {}),
+      ...(input.metaTitle !== undefined ? { metaTitle: input.metaTitle } : {}),
+      ...(input.metaDescription !== undefined ? { metaDescription: input.metaDescription } : {}),
+      ...(input.seoContent !== undefined ? { seoContent: input.seoContent } : {}),
+      ...(input.contentSections !== undefined
+        ? {
+            contentSections:
+              input.contentSections === null
+                ? Prisma.JsonNull
+                : (input.contentSections as Prisma.InputJsonValue),
+          }
+        : {}),
+      ...(input.loanHubEnabled != null ? { loanHubEnabled: input.loanHubEnabled } : {}),
+      ...(input.status != null ? { status: input.status } : {}),
+      ...(input.publishedAt !== undefined ? { publishedAt: input.publishedAt } : {}),
+      ...(input.sortOrder != null ? { sortOrder: input.sortOrder } : {}),
+      updatedBy: actorId,
+    });
     await this.audit(actorId, 'finance.category.update', 'finance_category', id, row);
     await this.bustLists();
     return row;
@@ -164,8 +276,9 @@ export class FinanceService {
     const row = await this.repos.banks.create({
       name: input.name,
       slug: input.slug,
-      logoUrl: this.emptyUrl(input.logoUrl),
+      logoUrl: await this.resolveImageUrl(input.logoUrl, input.logoMediaId),
       logoMediaId: input.logoMediaId,
+      logoAlt: input.logoAlt,
       website: this.emptyUrl(input.website),
       description: input.description,
       status: input.status ?? 'DRAFT',
@@ -194,8 +307,16 @@ export class FinanceService {
     const row = await this.repos.banks.update(id, {
       ...(input.name != null ? { name: input.name } : {}),
       ...(input.slug != null ? { slug: input.slug } : {}),
-      ...(input.logoUrl !== undefined ? { logoUrl: this.emptyUrl(input.logoUrl) } : {}),
+      ...(input.logoUrl !== undefined || input.logoMediaId !== undefined
+        ? {
+            logoUrl: await this.resolveImageUrl(
+              input.logoUrl !== undefined ? input.logoUrl : existing.logoUrl,
+              input.logoMediaId !== undefined ? input.logoMediaId : existing.logoMediaId,
+            ),
+          }
+        : {}),
       ...(input.logoMediaId !== undefined ? { logoMediaId: input.logoMediaId } : {}),
+      ...(input.logoAlt !== undefined ? { logoAlt: input.logoAlt } : {}),
       ...(input.website !== undefined ? { website: this.emptyUrl(input.website) } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.status != null ? { status: input.status } : {}),

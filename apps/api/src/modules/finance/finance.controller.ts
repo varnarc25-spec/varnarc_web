@@ -22,6 +22,7 @@ import {
   createCreditCardSchema,
   createFinanceCategorySchema,
   createFinanceGuideSchema,
+  createFinanceFaqSchema,
   createInsuranceSchema,
   createInterestRateSchema,
   createInvestmentSchema,
@@ -41,6 +42,7 @@ import {
   type CreateCreditCardInput,
   type CreateFinanceCategoryInput,
   type CreateFinanceGuideInput,
+  type CreateFinanceFaqInput,
   type CreateInsuranceInput,
   type CreateInterestRateInput,
   type CreateInvestmentInput,
@@ -90,6 +92,12 @@ export class FinanceController {
   @Get('categories')
   async categories() {
     return ok(await this.service.listCategories());
+  }
+
+  @Public()
+  @Get('loan-categories')
+  async loanCategories() {
+    return ok(await this.service.listLoanCategories());
   }
 
   @Public()
@@ -496,8 +504,7 @@ export class FinanceController {
   @RequirePermissions(PERMISSIONS.FINANCE_CREATE)
   async createFaq(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body()
-    body: { question: string; answer: string; categoryId?: string | null; sortOrder?: number },
+    @Body(new ZodValidationPipe(createFinanceFaqSchema)) body: CreateFinanceFaqInput,
   ) {
     return ok(await this.gap.createFaq(body, user.id));
   }

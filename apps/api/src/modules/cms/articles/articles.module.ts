@@ -6,9 +6,10 @@ import { ArticleCommentsController } from './article-comments.controller';
 import { ArticleCommentsService } from './article-comments.service';
 import { SearchModule } from '../../search/search.module';
 import { AiModule } from '../../ai/ai.module';
+import { MediaModule } from '../../media/media.module';
 
 @Module({
-  imports: [SearchModule, AiModule],
+  imports: [SearchModule, AiModule, MediaModule],
   controllers: [ArticlesController, ArticleCommentsController],
   providers: [ArticlesService, ArticleAiService, ArticleCommentsService],
   exports: [ArticlesService, ArticleCommentsService],

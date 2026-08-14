@@ -107,7 +107,10 @@ export class MediaService {
     if (existing) {
       throw new ConflictException({
         success: false,
-        error: { code: 'DUPLICATE_PUBLIC_ID', message: 'An asset with this public ID already exists.' },
+        error: {
+          code: 'DUPLICATE_PUBLIC_ID',
+          message: 'An asset with this public ID already exists.',
+        },
       });
     }
     if (input.folderId) {
@@ -221,6 +224,7 @@ export class MediaService {
       ...(rest.height !== undefined ? { height: rest.height } : {}),
       ...(rest.duration !== undefined ? { duration: rest.duration } : {}),
       ...(rest.thumbnailUrl !== undefined ? { thumbnailUrl: rest.thumbnailUrl } : {}),
+      ...(rest.title !== undefined ? { title: rest.title } : {}),
       ...(rest.alt !== undefined ? { alt: rest.alt } : {}),
       ...(rest.caption !== undefined ? { caption: rest.caption } : {}),
       ...(rest.description !== undefined ? { description: rest.description } : {}),
@@ -450,7 +454,10 @@ export class MediaService {
     if (existing) {
       throw new ConflictException({
         success: false,
-        error: { code: 'COLLECTION_EXISTS', message: 'A collection with this slug already exists.' },
+        error: {
+          code: 'COLLECTION_EXISTS',
+          message: 'A collection with this slug already exists.',
+        },
       });
     }
 
@@ -488,7 +495,10 @@ export class MediaService {
       if (conflict) {
         throw new ConflictException({
           success: false,
-          error: { code: 'COLLECTION_EXISTS', message: 'A collection with this slug already exists.' },
+          error: {
+            code: 'COLLECTION_EXISTS',
+            message: 'A collection with this slug already exists.',
+          },
         });
       }
     }

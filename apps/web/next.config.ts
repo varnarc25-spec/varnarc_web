@@ -11,19 +11,28 @@ if (existsSync(rootEnv)) {
 
 const nextConfig: NextConfig = withSecurityHeaders(
   withPerformanceDefaults({
-  transpilePackages: [
-    '@varnarc/ui',
-    '@varnarc/hooks',
-    '@varnarc/config',
-    '@varnarc/types',
-    '@varnarc/auth',
-    '@varnarc/validation',
-  ],
-  output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '../..'),
-  async headers() {
-    return getCdnHeaderRules();
-  },
+    transpilePackages: [
+      '@varnarc/ui',
+      '@varnarc/hooks',
+      '@varnarc/config',
+      '@varnarc/types',
+      '@varnarc/auth',
+      '@varnarc/validation',
+    ],
+    output: 'standalone',
+    outputFileTracingRoot: path.join(__dirname, '../..'),
+    async headers() {
+      return getCdnHeaderRules();
+    },
+    async redirects() {
+      return [
+        {
+          source: '/finance/methodology',
+          destination: '/finance/loans/methodology',
+          permanent: true,
+        },
+      ];
+    },
   }),
 );
 

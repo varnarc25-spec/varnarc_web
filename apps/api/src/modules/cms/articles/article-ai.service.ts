@@ -1,11 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type {
   GenerateArticleDraftInput,
+  GenerateArticleImageInput,
   ImproveArticleInput,
   SuggestRelatedArticlesInput,
 } from '@varnarc/validation';
-import { isLlmConfigured, llmChatCompletion, parseJsonResponse } from '../../ai/llm.client';
+import {
+  getLlmConfig,
+  isLlmConfigured,
+  llmChatCompletion,
+  llmImageGeneration,
+  parseJsonResponse,
+} from '../../ai/llm.client';
 import { AiService } from '../../ai/ai.service';
+import { MediaService } from '../../media/media.service';
 
 const VERTICAL_GUIDANCE: Record<string, string> = {
   finance: 'personal finance, loans, tax, insurance, and investments in India',
@@ -30,10 +38,19 @@ type DraftResponse = {
 
 @Injectable()
 export class ArticleAiService {
-  constructor(private readonly aiOps: AiService) {}
+  constructor(
+    private readonly aiOps: AiService,
+    private readonly media: MediaService,
+  ) {}
 
   configured() {
-    return { configured: isLlmConfigured(), provider: 'openai-compatible' };
+    const cfg = getLlmConfig();
+    return {
+      configured: cfg.configured,
+      provider: cfg.provider,
+      imageModel: cfg.imageModel,
+      imageGeneration: cfg.configured,
+    };
   }
 
   private async withJobLog<T>(
@@ -48,22 +65,131 @@ export class ArticleAiService {
       return result;
     } catch (err) {
       void this.aiOps
-        .logFeatureJob(userId, feature, input, null, err instanceof Error ? err.message : 'AI failed')
+        .logFeatureJob(
+          userId,
+          feature,
+          input,
+          null,
+          err instanceof Error ? err.message : 'AI failed',
+        )
         .catch(() => undefined);
       throw err;
     }
   }
 
   generateDraft(input: GenerateArticleDraftInput, userId?: string | null) {
-    return this.withJobLog(userId ?? null, 'article.generate-draft', input, () => this.runGenerateDraft(input));
+    return this.withJobLog(userId ?? null, 'article.generate-draft', input, () =>
+      this.runGenerateDraft(input),
+    );
   }
 
   improve(input: ImproveArticleInput, userId?: string | null) {
-    return this.withJobLog(userId ?? null, `article.improve.${input.mode}`, input, () => this.runImprove(input));
+    return this.withJobLog(userId ?? null, `article.improve.${input.mode}`, input, () =>
+      this.runImprove(input),
+    );
   }
 
   suggestRelated(input: SuggestRelatedArticlesInput, userId?: string | null) {
-    return this.withJobLog(userId ?? null, 'article.suggest-related', input, () => this.runSuggestRelated(input));
+    return this.withJobLog(userId ?? null, 'article.suggest-related', input, () =>
+      this.runSuggestRelated(input),
+    );
+  }
+
+  generateImage(input: GenerateArticleImageInput, userId: string) {
+    return this.withJobLog(
+      userId,
+      'article.generate-image',
+      { title: input.title, vertical: input.vertical },
+      () => this.runGenerateImage(input, userId),
+    );
+  }
+
+  private buildEditorialImagePrompt(input: GenerateArticleImageInput): string {
+    const vertical = VERTICAL_GUIDANCE[input.vertical] ?? VERTICAL_GUIDANCE.general;
+    const topic = input.title.trim();
+    const excerpt = input.excerpt?.trim();
+    const styleHint = input.styleHint?.trim();
+
+    return [
+      'Create a premium financial editorial illustration for Varnarc, a financial education website.',
+      `Article topic: ${topic}.`,
+      excerpt ? `Context: ${excerpt}` : '',
+      `Vertical context: ${vertical}.`,
+      styleHint ? `Additional style hint: ${styleHint}` : '',
+      '',
+      'Visual style:',
+      '- modern finance editorial illustration',
+      '- professional, minimal, credible',
+      '- clean geometric forms with subtle depth',
+      '- navy-led palette (#0b1f3a) with restrained orange accents (#f97316)',
+      '- soft neutral background',
+      '- suitable for a financial education website',
+      '',
+      'Represent the topic conceptually rather than literally showing money.',
+      'Composition must remain clear at article-card thumbnail size.',
+      'Aspect ratio feel: wide 16:9 landscape framing.',
+      '',
+      'Avoid: bank logos, company trademarks, readable UI text, currency-note replicas,',
+      'generic smiling stock-photo people, piles of cash, exaggerated coins, watermarks.',
+      'No text inside the image.',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  private async runGenerateImage(input: GenerateArticleImageInput, userId: string) {
+    if (!isLlmConfigured()) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: 'AI_NOT_CONFIGURED',
+          message: 'AI is not configured. Set OPENAI_API_KEY to generate article images.',
+        },
+      });
+    }
+
+    const prompt = this.buildEditorialImagePrompt(input);
+    const generated = await llmImageGeneration(prompt, { size: '1536x1024' });
+
+    const ext =
+      generated.mimeType === 'image/jpeg'
+        ? 'jpg'
+        : generated.mimeType === 'image/webp'
+          ? 'webp'
+          : 'png';
+    const safeSlug =
+      input.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 48) || 'article';
+
+    const file = {
+      fieldname: 'file',
+      originalname: `ai-${safeSlug}-${Date.now()}.${ext}`,
+      encoding: '7bit',
+      mimetype: generated.mimeType,
+      size: generated.buffer.length,
+      buffer: generated.buffer,
+      destination: '',
+      filename: '',
+      path: '',
+      stream: undefined as never,
+    } as Express.Multer.File;
+
+    const asset = await this.media.uploadFile(file, userId, {
+      alt: `AI editorial illustration for: ${input.title.trim().slice(0, 120)}`,
+    });
+
+    return {
+      id: asset.id,
+      url: asset.secureUrl || asset.url,
+      secureUrl: asset.secureUrl || asset.url,
+      alt: asset.alt,
+      publicId: asset.publicId,
+      prompt,
+      revisedPrompt: generated.revisedPrompt ?? null,
+    };
   }
 
   private async runGenerateDraft(input: GenerateArticleDraftInput) {
@@ -107,7 +233,8 @@ export class ArticleAiService {
 
   private async runImprove(input: ImproveArticleInput) {
     const modeInstructions: Record<ImproveArticleInput['mode'], string> = {
-      expand: 'Expand the article with more practical detail, examples, and subsections. Return full improved content.',
+      expand:
+        'Expand the article with more practical detail, examples, and subsections. Return full improved content.',
       simplify: 'Simplify language for beginners. Shorten sentences. Return full improved content.',
       seo: 'Return only SEO metadata — do not rewrite the full article body.',
       excerpt: 'Return only a compelling excerpt/summary — do not rewrite the full article body.',

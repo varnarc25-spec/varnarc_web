@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none" role="img" aria-label="">
+  <rect width="480" height="360" rx="28" fill="#f7f9fc"/>
+  <circle cx="400" cy="72" r="56" fill="#ffedd5" opacity="0.55"/>
+  <circle cx="68" cy="300" r="44" fill="#e8eef5" opacity="0.7"/>
+
+  <!-- Document -->
+  <rect x="56" y="78" width="150" height="196" rx="16" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="80" y="110" width="102" height="10" rx="5" fill="#0b1f3a" opacity="0.8"/>
+  <rect x="80" y="136" width="78" height="8" rx="4" fill="#94a3b8" opacity="0.45"/>
+  <rect x="80" y="158" width="90" height="8" rx="4" fill="#94a3b8" opacity="0.35"/>
+  <rect x="80" y="180" width="66" height="8" rx="4" fill="#94a3b8" opacity="0.35"/>
+  <rect x="80" y="220" width="70" height="24" rx="8" fill="#fff4eb"/>
+  <rect x="92" y="228" width="46" height="8" rx="4" fill="#f97316" opacity="0.85"/>
+
+  <!-- Wallet -->
+  <rect x="230" y="96" width="156" height="100" rx="18" fill="#0b1f3a"/>
+  <rect x="230" y="128" width="156" height="24" fill="#122b4a"/>
+  <circle cx="348" cy="140" r="10" fill="#f97316"/>
+  <rect x="252" y="168" width="72" height="10" rx="5" fill="#fff" opacity="0.35"/>
+
+  <!-- Calendar -->
+  <rect x="248" y="220" width="148" height="108" rx="16" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="248" y="220" width="148" height="32" rx="16" fill="#0b1f3a"/>
+  <rect x="248" y="236" width="148" height="16" fill="#0b1f3a"/>
+  <circle cx="276" cy="236" r="4" fill="#f97316"/>
+  <circle cx="368" cy="236" r="4" fill="#fff" opacity="0.45"/>
+  <circle cx="276" cy="276" r="5" fill="#cbd5e1"/>
+  <circle cx="308" cy="276" r="5" fill="#0b1f3a" opacity="0.75"/>
+  <circle cx="340" cy="276" r="5" fill="#cbd5e1"/>
+  <circle cx="372" cy="276" r="5" fill="#cbd5e1"/>
+  <circle cx="276" cy="304" r="5" fill="#cbd5e1"/>
+  <circle cx="308" cy="304" r="5" fill="#f97316"/>
+  <circle cx="340" cy="304" r="5" fill="#cbd5e1"/>
+</svg>

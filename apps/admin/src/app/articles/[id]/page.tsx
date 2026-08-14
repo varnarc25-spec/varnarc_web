@@ -14,9 +14,13 @@ type ArticleDetail = {
   isFeatured?: boolean;
   categoryId?: string | null;
   featuredImageId?: string | null;
+  heroImageId?: string | null;
+  ogImageId?: string | null;
   publishedAt?: string | null;
   metadata?: unknown;
   featuredImage?: { id: string; url: string; secureUrl: string | null } | null;
+  heroImage?: { id: string; url: string; secureUrl: string | null } | null;
+  ogImage?: { id: string; url: string; secureUrl: string | null } | null;
   seo?: { title?: string | null; description?: string | null; metaKeywords?: string | null } | null;
   relatedFrom?: Array<{
     relatedId: string;
@@ -31,11 +35,7 @@ type VersionRow = {
   createdAt: string;
 };
 
-export default async function ArticleDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [articleResult, versionsResult] = await Promise.all([
     apiServerFetch<ArticleDetail>(`/articles/${id}`),
@@ -80,9 +80,11 @@ export default async function ArticleDetailPage({
         isFeatured={article.isFeatured ?? false}
         categoryId={article.categoryId ?? null}
         featuredImageId={article.featuredImageId ?? article.featuredImage?.id ?? null}
-        featuredImageUrl={
-          article.featuredImage?.secureUrl || article.featuredImage?.url || null
-        }
+        featuredImageUrl={article.featuredImage?.secureUrl || article.featuredImage?.url || null}
+        heroImageId={article.heroImageId ?? article.heroImage?.id ?? null}
+        heroImageUrl={article.heroImage?.secureUrl || article.heroImage?.url || null}
+        ogImageId={article.ogImageId ?? article.ogImage?.id ?? null}
+        ogImageUrl={article.ogImage?.secureUrl || article.ogImage?.url || null}
         relatedIds={relatedIds}
         relatedLabels={relatedLabels}
         publishedAt={article.publishedAt ?? null}

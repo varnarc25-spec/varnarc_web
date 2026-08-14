@@ -6,6 +6,8 @@ import { Button } from '@varnarc/ui';
 import { ArticleAiPanel } from '@/components/article-ai-panel';
 import { ArticleContentEditor } from '@/components/article-content-editor';
 import { ArticleSeoGenerator } from '@/components/article-seo-generator';
+import { ArticleFeaturedImageField } from '@/components/article-featured-image-field';
+import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 import { normalizeArticleContent } from '@/lib/article-content';
 
 export function ArticleCreateForm({
@@ -23,6 +25,18 @@ export function ArticleCreateForm({
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
   const [seoKeywords, setSeoKeywords] = useState('');
+  const [featuredImageId, setFeaturedImageId] = useState<string | null>(null);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
+  const [heroImage, setHeroImage] = useState<EntityMediaValue>({
+    mediaId: null,
+    url: null,
+    alt: '',
+  });
+  const [ogImage, setOgImage] = useState<EntityMediaValue>({
+    mediaId: null,
+    url: null,
+    alt: '',
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -39,6 +53,9 @@ export function ArticleCreateForm({
           excerpt: excerpt || null,
           content,
           status: 'DRAFT',
+          featuredImageId: featuredImageId || null,
+          heroImageId: heroImage.mediaId || null,
+          ogImageId: ogImage.mediaId || null,
           tagIds: [],
           seo: {
             title: seoTitle || null,
@@ -118,6 +135,35 @@ export function ArticleCreateForm({
         <ArticleContentEditor value={content} onChange={setContent} />
       </label>
 
+      <ArticleFeaturedImageField
+        value={featuredImageId}
+        previewUrl={featuredImageUrl}
+        title={title}
+        excerpt={excerpt}
+        vertical={seedVertical || 'finance'}
+        onChange={(id, url) => {
+          setFeaturedImageId(id);
+          setFeaturedImageUrl(url || null);
+        }}
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <EntityMediaField
+          label="Hero image"
+          help="Optional full-bleed hero for the article page."
+          value={heroImage}
+          onChange={setHeroImage}
+          showTitle
+          showCaption
+        />
+        <EntityMediaField
+          label="OG / social share image"
+          help="Used for Open Graph and social previews when set."
+          value={ogImage}
+          onChange={setOgImage}
+        />
+      </div>
+
       <div className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
         <h3 className="mb-3 text-sm font-semibold">SEO metadata</h3>
         <ArticleSeoGenerator
@@ -160,7 +206,11 @@ export function ArticleCreateForm({
       </div>
 
       <div className="flex items-center gap-3">
-        <Button type="button" onClick={save} disabled={loading || !title || !slug || !hasEditorContent(content)}>
+        <Button
+          type="button"
+          onClick={save}
+          disabled={loading || !title || !slug || !hasEditorContent(content)}
+        >
           {loading ? 'Creating…' : 'Create draft'}
         </Button>
         {message ? <span className="text-sm text-[var(--varnarc-subtle)]">{message}</span> : null}

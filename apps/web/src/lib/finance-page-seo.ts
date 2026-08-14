@@ -15,7 +15,11 @@ function financePageSeoFallback(pageKey: FinancePageKey): FinancePageSeo {
     description: defaults.description,
     h1: defaults.h1,
     intro: defaults.intro,
+    heroImageUrl: null,
+    heroImageMediaId: null,
+    heroImageAlt: null,
     metaKeywords: null,
+    educationModules: null,
     canonicalUrl:
       'canonicalUrl' in defaults && typeof defaults.canonicalUrl === 'string'
         ? defaults.canonicalUrl

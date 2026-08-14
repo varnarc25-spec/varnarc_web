@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EligibilityCheckForm } from '@/components/finance/finance-forms-client';
 import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
@@ -20,7 +21,15 @@ export default async function FinanceEligibilityPage() {
         { label: 'Eligibility' },
       ]}
     >
-      <EligibilityCheckForm />
+      <Suspense
+        fallback={
+          <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
+            Loading eligibility check…
+          </div>
+        }
+      >
+        <EligibilityCheckForm />
+      </Suspense>
     </ContentLayout>
   );
 }

@@ -142,6 +142,9 @@ export class CalculatorService {
       slug: input.slug,
       description: input.description ?? null,
       icon: input.icon ?? null,
+      illustrationUrl: input.illustrationUrl === '' ? null : (input.illustrationUrl ?? null),
+      illustrationMediaId: input.illustrationMediaId ?? null,
+      illustrationAlt: input.illustrationAlt ?? null,
       status: input.status,
       formula: input.formula ?? null,
       resultTemplate: input.resultTemplate as never,
@@ -204,6 +207,13 @@ export class CalculatorService {
       ...(input.slug !== undefined ? { slug: input.slug } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.icon !== undefined ? { icon: input.icon } : {}),
+      ...(input.illustrationUrl !== undefined
+        ? { illustrationUrl: input.illustrationUrl === '' ? null : input.illustrationUrl }
+        : {}),
+      ...(input.illustrationMediaId !== undefined
+        ? { illustrationMediaId: input.illustrationMediaId }
+        : {}),
+      ...(input.illustrationAlt !== undefined ? { illustrationAlt: input.illustrationAlt } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
       ...(input.formula !== undefined ? { formula: input.formula } : {}),
       ...(input.resultTemplate !== undefined

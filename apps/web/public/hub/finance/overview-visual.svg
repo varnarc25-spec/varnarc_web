@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none" role="img" aria-label="Finance overview charts">
+  <rect width="320" height="180" rx="12" fill="#f8fafc"/>
+  <text x="16" y="24" fill="#0b1f3a" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Portfolio trend</text>
+  <path d="M16 140 L56 108 L96 118 L136 88 L176 98 L216 62 L256 72 L296 48" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="56" cy="108" r="4" fill="#2563eb"/>
+  <circle cx="136" cy="88" r="4" fill="#2563eb"/>
+  <circle cx="216" cy="62" r="4" fill="#2563eb"/>
+  <circle cx="296" cy="48" r="4" fill="#2563eb"/>
+  <rect x="200" y="24" width="104" height="104" rx="10" fill="#fff" stroke="#e2e8f0"/>
+  <circle cx="252" cy="76" r="32" stroke="#2563eb" stroke-width="10" stroke-dasharray="50 200" transform="rotate(-90 252 76)"/>
+  <circle cx="252" cy="76" r="32" stroke="#10b981" stroke-width="10" stroke-dasharray="40 200" stroke-dashoffset="-50" transform="rotate(-90 252 76)"/>
+  <circle cx="252" cy="76" r="32" stroke="#f59e0b" stroke-width="10" stroke-dasharray="30 200" stroke-dashoffset="-90" transform="rotate(-90 252 76)"/>
+  <text x="220" y="130" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Loans · Cards · Invest</text>
+</svg>

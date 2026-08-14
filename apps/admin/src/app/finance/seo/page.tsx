@@ -11,8 +11,15 @@ type FinancePageRow = {
   description: string;
   h1: string;
   intro: string;
+  heroImageUrl?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
   metaKeywords?: string | null;
   canonicalUrl?: string | null;
+  educationModules?: Record<
+    string,
+    { title?: string; summary?: string; guideHref?: string | null }
+  > | null;
 };
 
 export default async function FinanceSeoAdminPage() {
@@ -36,7 +43,7 @@ export default async function FinanceSeoAdminPage() {
     <div>
       <PageHeader
         title="Finance page SEO"
-        description="Edit meta titles, descriptions, H1 headings, and intro text for finance hub and listing pages."
+        description="Edit meta titles, descriptions, H1 headings, intro text, and hero images for finance hub and listing pages."
       />
 
       {hub.error ? <p className="text-sm text-red-600">{hub.error}</p> : null}

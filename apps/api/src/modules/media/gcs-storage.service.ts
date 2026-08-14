@@ -11,6 +11,7 @@ import type {
   MediaUploadOptions,
   MediaUploadPayload,
 } from './media-storage.types';
+import { probeImageDimensions } from './image-dimensions';
 
 const MIME_TO_RESOURCE: Record<string, MediaResourceType> = {
   'image/jpeg': 'IMAGE',
@@ -100,7 +101,10 @@ export class GcsStorageService {
       });
     }
     const mime = file.mimetype?.toLowerCase();
-    if (!mime || !ALLOWED_MEDIA_MIME_TYPES.includes(mime as (typeof ALLOWED_MEDIA_MIME_TYPES)[number])) {
+    if (
+      !mime ||
+      !ALLOWED_MEDIA_MIME_TYPES.includes(mime as (typeof ALLOWED_MEDIA_MIME_TYPES)[number])
+    ) {
       throw new BadRequestException({
         success: false,
         error: { code: 'UNSUPPORTED_TYPE', message: `Unsupported file type: ${mime ?? 'unknown'}` },
@@ -135,18 +139,21 @@ export class GcsStorageService {
     const { mime, resourceType } = this.validateUpload(file);
 
     const ext = file.originalname.includes('.')
-      ? file.originalname.split('.').pop()!.toLowerCase().replace(/[^a-z0-9]/g, '')
+      ? file.originalname
+          .split('.')
+          .pop()!
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '')
       : mime.split('/')[1] || 'bin';
-    const safeName = file.originalname
-      .replace(/\.[^.]+$/, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 80) || 'asset';
+    const safeName =
+      file.originalname
+        .replace(/\.[^.]+$/, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 80) || 'asset';
 
-    const folder = options.folderPath
-      ? options.folderPath.replace(/^\/+|\/+$/g, '')
-      : 'uploads';
+    const folder = options.folderPath ? options.folderPath.replace(/^\/+|\/+$/g, '') : 'uploads';
     const objectId = options.publicId ?? `${folder}/${safeName}-${randomUUID().slice(0, 8)}.${ext}`;
     const publicId = objectId.replace(/^\/+/, '');
 
@@ -172,6 +179,7 @@ export class GcsStorageService {
 
     const secureUrl = this.buildPublicUrl(publicId);
     const format = ext || null;
+    const dims = resourceType === 'IMAGE' ? probeImageDimensions(file.buffer, mime) : null;
 
     return {
       publicId,
@@ -180,11 +188,18 @@ export class GcsStorageService {
       resourceType,
       format,
       bytes: file.size,
-      width: null,
-      height: null,
+      width: dims?.width ?? null,
+      height: dims?.height ?? null,
       duration: null,
       thumbnailUrl: resourceType === 'IMAGE' ? secureUrl : null,
-      versions: [{ label: 'original', url: secureUrl, width: null, height: null }],
+      versions: [
+        {
+          label: 'original',
+          url: secureUrl,
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+        },
+      ],
     };
   }
 

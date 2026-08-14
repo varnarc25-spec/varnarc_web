@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState, type ReactNode } from 'react';
+import { type FormEvent, useState, type CSSProperties, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -38,7 +38,10 @@ export function ClassicSectionHead({
   return (
     <div className="flex items-center justify-between gap-4">
       <h2 className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">{title}</h2>
-      <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-[#f97316] hover:underline">
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1 text-sm font-semibold text-[#f97316] hover:underline"
+      >
         {linkLabel}
         <ArrowRight className="h-4 w-4" />
       </Link>
@@ -81,7 +84,8 @@ export function ClassicHeroSection({ popularTerms }: { popularTerms: string[] })
               <span className="text-[#f97316]">Finance, Home, Automobiles</span> &amp; Smart Tools
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-              Calculators, Guides, Product Reviews and Expert Advice to make your life simpler and smarter.
+              Calculators, Guides, Product Reviews and Expert Advice to make your life simpler and
+              smarter.
             </p>
             <form onSubmit={onSubmit} className="mt-5 w-full" role="search">
               <div className="flex w-full flex-col items-start gap-2">
@@ -96,12 +100,17 @@ export function ClassicHeroSection({ popularTerms }: { popularTerms: string[] })
                       autoComplete="off"
                     />
                   </div>
-                  <button type="submit" className="h-12 shrink-0 bg-[#f97316] px-7 text-sm font-semibold text-white hover:bg-[#ea580c]">
+                  <button
+                    type="submit"
+                    className="h-12 shrink-0 bg-[#f97316] px-7 text-sm font-semibold text-white hover:bg-[#ea580c]"
+                  >
                     Search
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2">
-                  <span className="text-[11px] font-semibold text-slate-600">Popular Searches:</span>
+                  <span className="text-[11px] font-semibold text-slate-600">
+                    Popular Searches:
+                  </span>
                   {popularTerms.map((term) => (
                     <Link
                       key={term}
@@ -150,7 +159,10 @@ function CalculatorTile({ name, href, color, icon }: ClassicCalculatorTile) {
       href={href}
       className="group flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-2 py-3 transition hover:-translate-y-0.5 hover:shadow-sm sm:py-4"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg" style={{ backgroundColor: color }}>
+      <div
+        className="flex h-12 w-12 items-center justify-center rounded-lg"
+        style={{ backgroundColor: color }}
+      >
         <HomeIcon name={icon} className="h-6 w-6 text-white" />
       </div>
       <div className="mt-2 line-clamp-2 text-center text-[11px] font-semibold text-slate-700 group-hover:text-[#f97316]">
@@ -188,37 +200,53 @@ export function ClassicCategoriesSection({ title }: { title: string }) {
         <ClassicSectionHead title={title} href="/finance" linkLabel="View all categories" />
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {categories.map((cat) => (
-            <div key={cat.title} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div
+              key={cat.title}
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <Link href={cat.href} className="group flex items-center gap-2">
                     <span
-                      className="flex h-10 w-10 items-center justify-center rounded-xl"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl transition group-hover:opacity-90"
                       style={{ backgroundColor: cat.accentSoft, color: cat.accent }}
                     >
                       <HomeIcon name={cat.icon} className="h-5 w-5" />
                     </span>
-                    <h3 className="text-sm font-extrabold" style={{ color: cat.accent }}>
+                    <h3
+                      className="text-sm font-extrabold underline-offset-2 group-hover:underline"
+                      style={{ color: cat.accent }}
+                    >
                       {cat.title}
                     </h3>
-                  </div>
+                  </Link>
                   <ul className="mt-3 space-y-1.5">
                     {cat.links.slice(0, 6).map((l) => (
                       <li key={l.label}>
-                        <Link href={l.href} className="text-[12px] font-medium text-slate-600 hover:text-[#f97316] hover:underline">
+                        <Link
+                          href={l.href}
+                          className="inline-flex text-[12px] font-medium text-slate-700 no-underline transition-colors hover:font-bold hover:text-[var(--cat-accent)]"
+                          style={{ '--cat-accent': cat.accent } as CSSProperties}
+                        >
                           {l.label}
                         </Link>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <img src={cat.image} alt="" className="h-24 w-24 rounded-xl object-cover" />
+                <Link href={cat.href} aria-label={`Browse ${cat.title}`} className="shrink-0">
+                  <img
+                    src={cat.image}
+                    alt=""
+                    className="h-24 w-24 rounded-xl object-cover transition hover:opacity-90"
+                  />
+                </Link>
               </div>
               <div className="mt-4 flex items-center justify-end">
                 <Link
                   href={cat.href}
-                  className="inline-flex items-center rounded-xl px-3 py-1.5 text-xs font-semibold text-white"
-                  style={{ backgroundColor: cat.accent }}
+                  className="inline-flex items-center rounded-xl px-3 py-1.5 text-xs font-semibold"
+                  style={{ backgroundColor: cat.accent, color: '#ffffff' }}
                 >
                   View all <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
@@ -249,13 +277,21 @@ export function ClassicArticlesSection({
               href={a.href}
               className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow"
             >
-              <img src={a.image} alt="" className="h-24 w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+              <img
+                src={a.image}
+                alt=""
+                className="h-24 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+              />
               <div className="p-3">
-                <div className="text-[10px] font-extrabold uppercase tracking-wide text-[#f97316]">{a.category}</div>
+                <div className="text-[10px] font-extrabold uppercase tracking-wide text-[#f97316]">
+                  {a.category}
+                </div>
                 <div className="mt-2 line-clamp-2 text-[12px] font-semibold text-slate-900 group-hover:text-[#f97316]">
                   {a.title}
                 </div>
-                {a.date ? <div className="mt-1 text-[10px] font-medium text-slate-500">{a.date}</div> : null}
+                {a.date ? (
+                  <div className="mt-1 text-[10px] font-medium text-slate-500">{a.date}</div>
+                ) : null}
               </div>
             </Link>
           ))}
@@ -277,7 +313,10 @@ export function ClassicAiToolsSection({
       <div className="site-container">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-base font-extrabold tracking-tight text-slate-900">{title}</h2>
-          <Link href="/ai-tools" className="inline-flex items-center gap-1 text-sm font-semibold text-[#f97316] hover:underline">
+          <Link
+            href="/ai-tools"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-[#f97316] hover:underline"
+          >
             View all tools <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -288,7 +327,10 @@ export function ClassicAiToolsSection({
               href={t.href}
               className="group flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-2 py-4 transition hover:shadow-sm"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: t.color }}>
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-lg"
+                style={{ backgroundColor: t.color }}
+              >
                 <HomeIcon name={t.icon} className="h-5 w-5 text-white" />
               </div>
               <div className="mt-2 line-clamp-2 text-center text-[11px] font-medium text-slate-700 group-hover:text-[#f97316]">
@@ -314,10 +356,18 @@ export function ClassicTripleColumnSection({
       <div className="site-container">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <ClassicSectionHead title="Compare & Decide Better" href="/compare/products" linkLabel="View all comparisons" />
+            <ClassicSectionHead
+              title="Compare & Decide Better"
+              href="/compare/products"
+              linkLabel="View all comparisons"
+            />
             <div className="mt-4 grid grid-cols-2 gap-3">
               {comparisons.map((c) => (
-                <Link key={c.href} href={c.href} className="rounded-xl border border-slate-100 bg-slate-50 p-3 transition hover:shadow-sm">
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className="rounded-xl border border-slate-100 bg-slate-50 p-3 transition hover:shadow-sm"
+                >
                   <div className="relative mb-2 flex items-center justify-center gap-1">
                     <img src={c.leftImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
                     <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0f172a] px-2 py-0.5 text-[10px] font-bold text-white">
@@ -325,21 +375,32 @@ export function ClassicTripleColumnSection({
                     </span>
                     <img src={c.rightImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
                   </div>
-                  <div className="line-clamp-2 text-center text-[11px] font-semibold text-[#0f172a]">{c.title}</div>
+                  <div className="line-clamp-2 text-center text-[11px] font-semibold text-[#0f172a]">
+                    {c.title}
+                  </div>
                 </Link>
               ))}
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <ClassicSectionHead title="Top Product Reviews" href="/reviews" linkLabel="View all reviews" />
+            <ClassicSectionHead
+              title="Top Product Reviews"
+              href="/reviews"
+              linkLabel="View all reviews"
+            />
             <ul className="mt-4 space-y-3">
               {reviews.map((r) => (
                 <li key={r.href}>
-                  <Link href={r.href} className="flex gap-3 rounded-xl p-2 transition hover:bg-slate-50 hover:shadow-sm">
+                  <Link
+                    href={r.href}
+                    className="flex gap-3 rounded-xl p-2 transition hover:bg-slate-50 hover:shadow-sm"
+                  >
                     <img src={r.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
                     <div className="min-w-0">
-                      <div className="line-clamp-2 text-[12px] font-semibold text-slate-900">{r.title}</div>
+                      <div className="line-clamp-2 text-[12px] font-semibold text-slate-900">
+                        {r.title}
+                      </div>
                       <div className="mt-1">
                         <ClassicStars score={r.score} />
                       </div>
@@ -362,7 +423,9 @@ export function ClassicTripleColumnSection({
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#f97316]">
                     <HomeIcon name={p.icon} className="h-4 w-4" />
                   </span>
-                  <span className="whitespace-nowrap text-[11px] font-semibold text-slate-900">{p.name}</span>
+                  <span className="whitespace-nowrap text-[11px] font-semibold text-slate-900">
+                    {p.name}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -373,10 +436,22 @@ export function ClassicTripleColumnSection({
   );
 }
 
-function TrustItem({ icon, color, title, subtitle }: { icon: ReactNode; color: string; title: string; subtitle: string }) {
+function TrustItem({
+  icon,
+  color,
+  title,
+  subtitle,
+}: {
+  icon: ReactNode;
+  color: string;
+  title: string;
+  subtitle: string;
+}) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${color}`}>
+      <span
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${color}`}
+      >
         {icon}
       </span>
       <div className="min-w-0">
@@ -422,7 +497,9 @@ export function ClassicTrustNewsletterSection() {
           </div>
           <div className="flex w-full shrink-0 items-start gap-3 rounded-2xl bg-[#eef1f5] px-5 py-5 sm:px-6 sm:py-6 lg:w-[360px]">
             <div className="min-w-0 flex-1">
-              <h2 className="text-[15px] font-extrabold tracking-tight text-[#0b1f3a]">Subscribe to Newsletter</h2>
+              <h2 className="text-[15px] font-extrabold tracking-tight text-[#0b1f3a]">
+                Subscribe to Newsletter
+              </h2>
               <p className="mt-1 text-[11px] leading-snug text-slate-600">
                 Get helpful tips, latest articles and tools delivered to your inbox.
               </p>

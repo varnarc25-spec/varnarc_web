@@ -4,6 +4,7 @@ import { ROLE_DEFINITIONS, PERMISSIONS } from '@varnarc/auth';
 import { seedContent } from './seed-content';
 import { enrichExistingCalculators, seedExtendedCalculators } from './seed-calculators';
 import { seedEmiCalculators } from './seed-emi-calculators';
+import { seedLoanCategories } from './seed-loan-categories';
 import { seedAiOps } from './seed-ai';
 import { seedHomepage } from './seed-homepage';
 import { seedNewsletter } from './seed-newsletter';
@@ -2107,6 +2108,7 @@ async function main() {
     automobile: automobile.id,
   });
   await enrichExistingCalculators(prisma);
+  await seedLoanCategories(prisma);
   await seedAiOps(prisma);
 
   // --- Finance Module sample data ---
@@ -2420,39 +2422,121 @@ async function main() {
 
   await prisma.financeFaq.deleteMany({
     where: {
-      question: {
-        in: [
-          'What is an EMI?',
-          'How is SIP different from lump sum investing?',
-          'Are credit card rewards taxable?',
-        ],
-      },
+      OR: [
+        {
+          question: {
+            in: [
+              'What is an EMI?',
+              'How is SIP different from lump sum investing?',
+              'Are credit card rewards taxable?',
+            ],
+          },
+        },
+        { entityType: 'loan_hub' },
+      ],
     },
   });
+
+  const loanHubFaqs: Array<{ question: string; answer: string; sortOrder: number }> = [
+    {
+      question: 'What is a loan?',
+      answer:
+        'A loan is money borrowed from a lender that you agree to repay over time, usually with interest, according to the loan terms. Product rules, fees and repayment schedules vary by lender.',
+      sortOrder: 1,
+    },
+    {
+      question: 'What is an EMI?',
+      answer:
+        'EMI (Equated Monthly Instalment) is the amount paid each month toward a loan. On many reducing-balance loans it covers both principal and interest, and the split between them can change over the tenure.',
+      sortOrder: 2,
+    },
+    {
+      question: 'How is loan EMI calculated?',
+      answer:
+        'For a standard reducing-balance loan, EMI is usually calculated from principal, monthly interest rate and tenure in months. Zero-interest cases are typically principal divided by months. Always confirm the method used in the lender’s offer.',
+      sortOrder: 3,
+    },
+    {
+      question: 'What affects loan eligibility?',
+      answer:
+        'Lenders commonly consider factors such as income, employment type, existing obligations, credit profile, age and product-specific criteria. Listed criteria on comparison sites are indicative — final underwriting rests with the lender.',
+      sortOrder: 4,
+    },
+    {
+      question: 'How does a credit score affect a loan?',
+      answer:
+        'Many lenders use credit scores as one input among several. A stronger history may improve access or pricing for some applicants, but scores alone do not guarantee approval or a specific rate.',
+      sortOrder: 5,
+    },
+    {
+      question: 'Can I get a loan with a low credit score?',
+      answer:
+        'It depends on the lender and product. Some lenders may still consider applications with additional checks, collateral or co-applicants. Outcomes are not guaranteed and policies differ.',
+      sortOrder: 6,
+    },
+    {
+      question: 'What is a loan processing fee?',
+      answer:
+        'A processing fee is an upfront charge some lenders apply when processing a loan. How it is calculated (flat, percentage, with GST, etc.) and whether it is deducted from disbursement varies by product — check the offer document.',
+      sortOrder: 7,
+    },
+    {
+      question: 'What is loan tenure?',
+      answer:
+        'Tenure is the agreed repayment period, usually in months or years. Longer tenures can lower EMI but may increase total interest paid over the life of the loan.',
+      sortOrder: 8,
+    },
+    {
+      question: 'Can I repay a loan early?',
+      answer:
+        'Many products allow part-prepayment or full foreclosure, sometimes after a lock-in period and sometimes with charges. Confirm the current rules with the lender before relying on early repayment.',
+      sortOrder: 9,
+    },
+    {
+      question: 'What are prepayment and foreclosure charges?',
+      answer:
+        'Prepayment charges may apply when you pay part of the outstanding principal early. Foreclosure charges may apply when you close the loan fully before the scheduled end. Amounts and conditions are lender- and product-specific.',
+      sortOrder: 10,
+    },
+    {
+      question: 'What happens if I miss an EMI?',
+      answer:
+        'Missing an EMI can lead to late fees, negative marks on your credit history and follow-up from the lender. Exact consequences depend on the loan agreement and lender policy — contact the lender promptly if you expect difficulty paying.',
+      sortOrder: 11,
+    },
+    {
+      question: 'How should I compare two loans?',
+      answer:
+        'Compare more than the headline rate: total repayment, fees, tenure options, prepayment rules, eligibility criteria and documentation. Prefer offers with clear sources and last-verified dates, then confirm terms with the lender.',
+      sortOrder: 12,
+    },
+    {
+      question: 'What documents are commonly required?',
+      answer:
+        'Common requests include identity proof, address proof, income proof, bank statements and employment or business proofs. Secured loans may also need property or asset documents. Exact lists vary by lender and loan type.',
+      sortOrder: 13,
+    },
+    {
+      question: 'What is the difference between secured and unsecured loans?',
+      answer:
+        'Secured loans are backed by collateral such as property or gold, depending on the product. Unsecured loans generally rely more on income and credit profile. Secured loans may have lower rates depending on lender and borrower profile — they do not always cost less.',
+      sortOrder: 14,
+    },
+    {
+      question: 'What is the difference between fixed and floating interest rates?',
+      answer:
+        'A fixed rate stays constant for the applicable period in the loan terms. A floating rate can change based on lender or benchmark rules, and EMI or tenure may change when the rate resets. Suitability depends on loan type, tenure, rate outlook and preference for predictability.',
+      sortOrder: 15,
+    },
+  ];
+
   await prisma.financeFaq.createMany({
-    data: [
-      {
-        question: 'What is an EMI?',
-        answer:
-          'Equated Monthly Installment — a fixed payment toward a loan each month covering principal and interest.',
-        sortOrder: 1,
-        status: 'PUBLISHED',
-      },
-      {
-        question: 'How is SIP different from lump sum investing?',
-        answer:
-          'SIP invests a fixed amount periodically, averaging purchase cost over time; lump sum invests once.',
-        sortOrder: 2,
-        status: 'PUBLISHED',
-      },
-      {
-        question: 'Are credit card rewards taxable?',
-        answer:
-          'Typically reward points and cashback are not taxed as income in India, but confirm with a tax advisor for your case.',
-        sortOrder: 3,
-        status: 'PUBLISHED',
-      },
-    ],
+    data: loanHubFaqs.map((faq) => ({
+      ...faq,
+      categoryId: loansCat.id,
+      entityType: 'loan_hub',
+      status: 'PUBLISHED' as const,
+    })),
   });
 
   for (const term of [
@@ -2500,6 +2584,57 @@ async function main() {
       categoryId: loansCat.id,
     },
   });
+
+  for (const guide of [
+    {
+      slug: 'loan-fees-and-charges-explained',
+      title: 'Loan fees and charges explained',
+      summary: 'Processing, foreclosure, late fees, and how they affect total cost.',
+      body: 'Compare processing fees, prepayment or foreclosure charges, and late-payment penalties alongside the interest rate. Confirm the final schedule with the lender.',
+    },
+    {
+      slug: 'loan-eligibility-basics',
+      title: 'Loan eligibility basics',
+      summary: 'How income, credit profile, and obligations shape indicative eligibility.',
+      body: 'Lenders weigh income stability, existing EMIs, credit history, and product limits. Online checkers are estimates only — final approval rests with the lender.',
+    },
+    {
+      slug: 'secured-vs-unsecured-loans',
+      title: 'Secured vs unsecured loans',
+      summary: 'Collateral, pricing tendencies, and borrower trade-offs in plain language.',
+      body: 'Secured loans use an asset as security; unsecured loans rely more on profile and capacity. Neither structure guarantees a lower rate for every applicant.',
+    },
+    {
+      slug: 'loan-tenure-and-total-cost',
+      title: 'How loan tenure affects total cost',
+      summary: 'Why longer tenures can lower EMI but raise total interest paid.',
+      body: 'Model EMI and total interest for different tenures with an EMI calculator. Choose a repayment period you can sustain without stretching obligations.',
+    },
+    {
+      slug: 'loan-prepayment-basics',
+      title: 'Loan prepayment basics',
+      summary: 'Tenure reduction vs EMI reduction, and charges to watch for.',
+      body: 'Partial or full prepayment may cut interest or shorten tenure depending on lender rules. Check foreclosure and part-prepayment charges before you pay ahead.',
+    },
+  ] as const) {
+    await prisma.financeGuide.upsert({
+      where: { slug: guide.slug },
+      update: {
+        title: guide.title,
+        summary: guide.summary,
+        body: guide.body,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        categoryId: loansCat.id,
+      },
+      create: {
+        ...guide,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        categoryId: loansCat.id,
+      },
+    });
+  }
 
   await prisma.financeGuide.upsert({
     where: { slug: 'sip-basics-for-beginners' },

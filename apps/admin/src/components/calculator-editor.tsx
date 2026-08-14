@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 import { CalculatorAiPanel } from '@/components/calculator-ai-panel';
+import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 
 type FieldDraft = {
   key: string;
@@ -42,6 +43,9 @@ export function CalculatorEditor({
     seoDescription?: string | null;
     resultTemplate?: unknown;
     settings?: unknown;
+    illustrationUrl?: string | null;
+    illustrationMediaId?: string | null;
+    illustrationAlt?: string | null;
     fields?: Array<{
       key: string;
       label: string;
@@ -60,9 +64,13 @@ export function CalculatorEditor({
   const [slug, setSlug] = useState(initial?.slug || '');
   const [description, setDescription] = useState(initial?.description || '');
   const [categoryId, setCategoryId] = useState(initial?.categoryId || '');
+  const [illustration, setIllustration] = useState<EntityMediaValue>({
+    mediaId: initial?.illustrationMediaId ?? null,
+    url: initial?.illustrationUrl ?? null,
+    alt: initial?.illustrationAlt ?? '',
+  });
   const [formula, setFormula] = useState(
-    initial?.formula ||
-      JSON.stringify({ type: 'static', outputs: { result: 'a + b' } }, null, 2),
+    initial?.formula || JSON.stringify({ type: 'static', outputs: { result: 'a + b' } }, null, 2),
   );
   const [resultTemplate, setResultTemplate] = useState(
     JSON.stringify(initial?.resultTemplate ?? defaultResultTemplate, null, 2),
@@ -88,8 +96,22 @@ export function CalculatorEditor({
       sortOrder: f.sortOrder,
       required: f.required,
     })) || [
-      { key: 'a', label: 'A', fieldType: 'number', defaultValue: '1', sortOrder: 0, required: true },
-      { key: 'b', label: 'B', fieldType: 'number', defaultValue: '1', sortOrder: 1, required: true },
+      {
+        key: 'a',
+        label: 'A',
+        fieldType: 'number',
+        defaultValue: '1',
+        sortOrder: 0,
+        required: true,
+      },
+      {
+        key: 'b',
+        label: 'B',
+        fieldType: 'number',
+        defaultValue: '1',
+        sortOrder: 1,
+        required: true,
+      },
     ],
   );
   const [previewInputs, setPreviewInputs] = useState('{"a":10,"b":5}');
@@ -111,9 +133,17 @@ export function CalculatorEditor({
     try {
       const body = {
         name,
-        slug: slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        slug:
+          slug ||
+          name
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, ''),
         description: description || null,
         categoryId: categoryId || null,
+        illustrationUrl: illustration.url || null,
+        illustrationMediaId: illustration.mediaId || null,
+        illustrationAlt: illustration.alt || null,
         formula,
         resultTemplate: parseJsonField('result template', resultTemplate),
         settings: parseJsonField('settings', settings),
@@ -126,11 +156,14 @@ export function CalculatorEditor({
         })),
       };
 
-      const res = await fetch(isNew ? '/api/admin/calculators' : `/api/admin/calculators/${initial!.id}`, {
-        method: isNew ? 'POST' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const res = await fetch(
+        isNew ? '/api/admin/calculators' : `/api/admin/calculators/${initial!.id}`,
+        {
+          method: isNew ? 'POST' : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      );
       const json = (await res.json()) as { data?: { id: string }; error?: { message?: string } };
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
 
@@ -196,11 +229,19 @@ export function CalculatorEditor({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block text-[var(--varnarc-subtle)]">Name</span>
-          <input className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-[var(--varnarc-subtle)]">Slug</span>
-          <input className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3" value={slug} onChange={(e) => setSlug(e.target.value)} />
+          <input
+            className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+          />
         </label>
       </div>
 
@@ -218,11 +259,19 @@ export function CalculatorEditor({
 
       <label className="block text-sm">
         <span className="mb-1 block text-[var(--varnarc-subtle)]">Description</span>
-        <textarea className="min-h-20 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <textarea
+          className="min-h-20 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </label>
       <label className="block text-sm">
         <span className="mb-1 block text-[var(--varnarc-subtle)]">Category</span>
-        <select className="h-10 w-full max-w-md rounded-md border border-[var(--varnarc-border)] px-3" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+        <select
+          className="h-10 w-full max-w-md rounded-md border border-[var(--varnarc-border)] px-3"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+        >
           <option value="">None</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
@@ -231,6 +280,14 @@ export function CalculatorEditor({
           ))}
         </select>
       </label>
+
+      <EntityMediaField
+        label="Optional illustration"
+        help="Shown on calculator cards and related-tool rails when set."
+        value={illustration}
+        onChange={setIllustration}
+        showTitle
+      />
 
       <div>
         <div className="mb-2 flex items-center justify-between">
@@ -256,18 +313,73 @@ export function CalculatorEditor({
         </div>
         <div className="space-y-3">
           {fields.map((f, idx) => (
-            <div key={idx} className="grid gap-2 rounded-md border border-[var(--varnarc-border)] p-3 md:grid-cols-5">
-              <input className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm" placeholder="key" value={f.key} onChange={(e) => setFields((prev) => prev.map((x, i) => (i === idx ? { ...x, key: e.target.value } : x)))} />
-              <input className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm" placeholder="label" value={f.label} onChange={(e) => setFields((prev) => prev.map((x, i) => (i === idx ? { ...x, label: e.target.value } : x)))} />
-              <select className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm" value={f.fieldType} onChange={(e) => setFields((prev) => prev.map((x, i) => (i === idx ? { ...x, fieldType: e.target.value } : x)))}>
-                {['number', 'currency', 'percentage', 'slider', 'dropdown', 'radio', 'checkbox', 'date', 'month', 'year', 'text', 'hidden', 'computed'].map((t) => (
+            <div
+              key={idx}
+              className="grid gap-2 rounded-md border border-[var(--varnarc-border)] p-3 md:grid-cols-5"
+            >
+              <input
+                className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm"
+                placeholder="key"
+                value={f.key}
+                onChange={(e) =>
+                  setFields((prev) =>
+                    prev.map((x, i) => (i === idx ? { ...x, key: e.target.value } : x)),
+                  )
+                }
+              />
+              <input
+                className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm"
+                placeholder="label"
+                value={f.label}
+                onChange={(e) =>
+                  setFields((prev) =>
+                    prev.map((x, i) => (i === idx ? { ...x, label: e.target.value } : x)),
+                  )
+                }
+              />
+              <select
+                className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm"
+                value={f.fieldType}
+                onChange={(e) =>
+                  setFields((prev) =>
+                    prev.map((x, i) => (i === idx ? { ...x, fieldType: e.target.value } : x)),
+                  )
+                }
+              >
+                {[
+                  'number',
+                  'currency',
+                  'percentage',
+                  'slider',
+                  'dropdown',
+                  'radio',
+                  'checkbox',
+                  'date',
+                  'month',
+                  'year',
+                  'text',
+                  'hidden',
+                  'computed',
+                ].map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
                 ))}
               </select>
-              <input className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm" placeholder="default" value={f.defaultValue} onChange={(e) => setFields((prev) => prev.map((x, i) => (i === idx ? { ...x, defaultValue: e.target.value } : x)))} />
-              <Button type="button" onClick={() => setFields((prev) => prev.filter((_, i) => i !== idx))}>
+              <input
+                className="h-9 rounded border border-[var(--varnarc-border)] px-2 text-sm"
+                placeholder="default"
+                value={f.defaultValue}
+                onChange={(e) =>
+                  setFields((prev) =>
+                    prev.map((x, i) => (i === idx ? { ...x, defaultValue: e.target.value } : x)),
+                  )
+                }
+              />
+              <Button
+                type="button"
+                onClick={() => setFields((prev) => prev.filter((_, i) => i !== idx))}
+              >
                 Remove
               </Button>
             </div>
@@ -276,21 +388,40 @@ export function CalculatorEditor({
       </div>
 
       <label className="block text-sm">
-        <span className="mb-1 block text-[var(--varnarc-subtle)]">Formula JSON (static / rules / api)</span>
-        <textarea className="min-h-40 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs" value={formula} onChange={(e) => setFormula(e.target.value)} />
+        <span className="mb-1 block text-[var(--varnarc-subtle)]">
+          Formula JSON (static / rules / api)
+        </span>
+        <textarea
+          className="min-h-40 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs"
+          value={formula}
+          onChange={(e) => setFormula(e.target.value)}
+        />
         <span className="mt-1 block text-xs text-[var(--varnarc-subtle)]">
-          Supports if(cond,a,b), comparisons, ternary a&gt;b?x:y, rules[], and type:&quot;api&quot; with allowlisted hosts.
+          Supports if(cond,a,b), comparisons, ternary a&gt;b?x:y, rules[], and type:&quot;api&quot;
+          with allowlisted hosts.
         </span>
       </label>
 
       <label className="block text-sm">
-        <span className="mb-1 block text-[var(--varnarc-subtle)]">Result template JSON (cards / table / chart / breakdown)</span>
-        <textarea className="min-h-32 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs" value={resultTemplate} onChange={(e) => setResultTemplate(e.target.value)} />
+        <span className="mb-1 block text-[var(--varnarc-subtle)]">
+          Result template JSON (cards / table / chart / breakdown)
+        </span>
+        <textarea
+          className="min-h-32 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs"
+          value={resultTemplate}
+          onChange={(e) => setResultTemplate(e.target.value)}
+        />
       </label>
 
       <label className="block text-sm">
-        <span className="mb-1 block text-[var(--varnarc-subtle)]">Settings JSON (wizard mode, FAQ)</span>
-        <textarea className="min-h-28 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs" value={settings} onChange={(e) => setSettings(e.target.value)} />
+        <span className="mb-1 block text-[var(--varnarc-subtle)]">
+          Settings JSON (wizard mode, FAQ)
+        </span>
+        <textarea
+          className="min-h-28 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs"
+          value={settings}
+          onChange={(e) => setSettings(e.target.value)}
+        />
         <span className="mt-1 block text-xs text-[var(--varnarc-subtle)]">
           {`{"mode":"wizard","steps":[{"title":"Loan","fields":["principal","annualRate"]}],"faq":[{"q":"...","a":"..."}]}`}
         </span>
@@ -299,23 +430,37 @@ export function CalculatorEditor({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block text-[var(--varnarc-subtle)]">SEO title</span>
-          <input className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3" value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
+          <input
+            className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+          />
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-[var(--varnarc-subtle)]">SEO description</span>
-          <input className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3" value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} />
+          <input
+            className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+          />
         </label>
       </div>
 
       {!isNew ? (
         <div className="rounded-lg border border-[var(--varnarc-border)] p-4">
           <h3 className="mb-2 text-sm font-semibold">Preview</h3>
-          <textarea className="mb-2 min-h-16 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs" value={previewInputs} onChange={(e) => setPreviewInputs(e.target.value)} />
+          <textarea
+            className="mb-2 min-h-16 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs"
+            value={previewInputs}
+            onChange={(e) => setPreviewInputs(e.target.value)}
+          />
           <Button type="button" onClick={() => void runPreview()}>
             Run preview
           </Button>
           {previewOut ? (
-            <pre className="mt-3 max-h-60 overflow-auto rounded bg-[var(--varnarc-muted)] p-3 text-xs">{previewOut}</pre>
+            <pre className="mt-3 max-h-60 overflow-auto rounded bg-[var(--varnarc-muted)] p-3 text-xs">
+              {previewOut}
+            </pre>
           ) : null}
         </div>
       ) : null}

@@ -3,11 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@varnarc/ui';
-import { MediaPicker } from '@/components/media-picker';
 import { RelatedArticlesPicker } from '@/components/related-articles-picker';
 import { ArticleAiPanel } from '@/components/article-ai-panel';
 import { ArticleContentEditor } from '@/components/article-content-editor';
 import { ArticleSeoGenerator } from '@/components/article-seo-generator';
+import { ArticleFeaturedImageField } from '@/components/article-featured-image-field';
+import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 import { DateTimeLocalInput } from '@/components/datetime-local-input';
 
 type CategoryOption = { id: string; name: string; slug: string; parentId?: string | null };
@@ -32,7 +33,8 @@ function apiErrorMessage(json: { error?: { message?: string; code?: string } }, 
 }
 
 function parseSponsorMeta(metadata: unknown) {
-  const root = metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>) : {};
+  const root =
+    metadata && typeof metadata === 'object' ? (metadata as Record<string, unknown>) : {};
   const sponsor =
     root.sponsor && typeof root.sponsor === 'object'
       ? (root.sponsor as Record<string, unknown>)
@@ -57,6 +59,10 @@ export function ArticleEditActions({
   categoryId = null,
   featuredImageId = null,
   featuredImageUrl = null,
+  heroImageId = null,
+  heroImageUrl = null,
+  ogImageId = null,
+  ogImageUrl = null,
   relatedIds = [],
   relatedLabels = {},
   publishedAt = null,
@@ -75,6 +81,10 @@ export function ArticleEditActions({
   categoryId?: string | null;
   featuredImageId?: string | null;
   featuredImageUrl?: string | null;
+  heroImageId?: string | null;
+  heroImageUrl?: string | null;
+  ogImageId?: string | null;
+  ogImageUrl?: string | null;
   relatedIds?: string[];
   relatedLabels?: Record<string, string>;
   publishedAt?: string | null;
@@ -94,6 +104,10 @@ export function ArticleEditActions({
     categoryId: categoryId || '',
     featuredImageId: featuredImageId || '',
     featuredImageUrl: featuredImageUrl || '',
+    heroImageId: heroImageId || '',
+    heroImageUrl: heroImageUrl || '',
+    ogImageId: ogImageId || '',
+    ogImageUrl: ogImageUrl || '',
     relatedIds,
     scheduleAt: toLocalInputValue(publishedAt),
     seoTitle: seoTitle || '',
@@ -118,9 +132,12 @@ export function ArticleEditActions({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'}/categories/tree`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'}/categories/tree`,
+          {
+            cache: 'no-store',
+          },
+        );
         const json = (await res.json()) as {
           data?: Array<CategoryOption & { children?: CategoryOption[] }>;
         };
@@ -162,6 +179,8 @@ export function ArticleEditActions({
       isFeatured: f.isFeatured,
       categoryId: f.categoryId || null,
       featuredImageId: f.featuredImageId || null,
+      heroImageId: f.heroImageId || null,
+      ogImageId: f.ogImageId || null,
       relatedIds: f.relatedIds,
       metadata: {
         ...baseMeta,
@@ -232,6 +251,8 @@ export function ArticleEditActions({
     form.isFeatured,
     form.categoryId,
     form.featuredImageId,
+    form.heroImageId,
+    form.ogImageId,
     form.relatedIds,
     form.seoTitle,
     form.seoDescription,
@@ -583,16 +604,53 @@ export function ArticleEditActions({
         ) : null}
       </div>
 
-      <div>
-        <span className="mb-1 block text-sm text-[var(--varnarc-subtle)]">Featured image</span>
-        <MediaPicker
-          value={form.featuredImageId || null}
-          previewUrl={form.featuredImageUrl || null}
-          onChange={(id, url) =>
+      <ArticleFeaturedImageField
+        value={form.featuredImageId || null}
+        previewUrl={form.featuredImageUrl || null}
+        title={form.title}
+        excerpt={form.excerpt}
+        vertical="finance"
+        onChange={(id, url) =>
+          setForm((f) => ({
+            ...f,
+            featuredImageId: id || '',
+            featuredImageUrl: url || '',
+          }))
+        }
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <EntityMediaField
+          label="Hero image"
+          help="Optional full-bleed hero for the article page."
+          value={{
+            mediaId: form.heroImageId || null,
+            url: form.heroImageUrl || null,
+            alt: '',
+          }}
+          onChange={(next: EntityMediaValue) =>
             setForm((f) => ({
               ...f,
-              featuredImageId: id || '',
-              featuredImageUrl: url || '',
+              heroImageId: next.mediaId || '',
+              heroImageUrl: next.url || '',
+            }))
+          }
+          showTitle
+          showCaption
+        />
+        <EntityMediaField
+          label="OG / social share image"
+          help="Used for Open Graph and social previews when set."
+          value={{
+            mediaId: form.ogImageId || null,
+            url: form.ogImageUrl || null,
+            alt: '',
+          }}
+          onChange={(next: EntityMediaValue) =>
+            setForm((f) => ({
+              ...f,
+              ogImageId: next.mediaId || '',
+              ogImageUrl: next.url || '',
             }))
           }
         />
@@ -679,7 +737,10 @@ export function ArticleEditActions({
                 Close
               </Button>
             </div>
-            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            <div
+              className="prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
+            />
           </div>
         </div>
       ) : null}

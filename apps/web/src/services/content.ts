@@ -17,7 +17,31 @@ export type ArticleListItem = {
   isFeatured?: boolean;
   readingTimeMinutes?: number | null;
   category?: ArticleCategoryRef | null;
-  featuredImage?: { url: string; secureUrl?: string | null } | null;
+  featuredImage?: {
+    url: string;
+    secureUrl?: string | null;
+    alt?: string | null;
+    title?: string | null;
+    caption?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
+  heroImage?: {
+    url: string;
+    secureUrl?: string | null;
+    alt?: string | null;
+    title?: string | null;
+    caption?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
+  ogImage?: {
+    url: string;
+    secureUrl?: string | null;
+    alt?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
 };
 
 export function articleCardPropsFromListItem(a: ArticleListItem) {
@@ -130,10 +154,9 @@ export async function fetchMenuByLocation(location: string) {
 
 export async function searchContent(q: string, limit = 20) {
   try {
-    return await apiPublicFetch<SearchResult>(
-      `/search?q=${encodeURIComponent(q)}&limit=${limit}`,
-      { cache: 'no-store' },
-    );
+    return await apiPublicFetch<SearchResult>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: { query: q, articles: [], pages: [] } as SearchResult };
   }
@@ -151,6 +174,8 @@ export type CalculatorListItem = {
   name: string;
   slug: string;
   description: string | null;
+  illustrationUrl?: string | null;
+  illustrationAlt?: string | null;
 };
 
 export type BusinessListItem = {

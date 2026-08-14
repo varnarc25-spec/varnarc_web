@@ -8,7 +8,22 @@ type CategoryDetail = {
   name: string;
   slug: string;
   description?: string | null;
+  shortDescription?: string | null;
+  introduction?: string | null;
   sortOrder?: number | null;
+  loanHubEnabled?: boolean | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  contentSections?: Record<string, unknown> | null;
+  icon?: string | null;
+  iconMediaId?: string | null;
+  iconAlt?: string | null;
+  featuredImage?: string | null;
+  featuredImageMediaId?: string | null;
+  featuredImageAlt?: string | null;
+  heroImage?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
 };
 
 type SeoMeta = {
@@ -52,16 +67,41 @@ export default async function FinanceCategoryEditPage({
         </Card>
       ) : (
         <>
-          <Badge className="mb-4">{category.slug}</Badge>
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <Badge>{category.slug}</Badge>
+            {category.loanHubEnabled ? (
+              <Link
+                href={`https://varnarc.com/finance/loans/${category.slug}`}
+                className="text-xs font-semibold text-[var(--varnarc-brand)] hover:underline"
+              >
+                Public category page →
+              </Link>
+            ) : null}
+          </div>
           <FinanceCategoryEditForm
             id={category.id}
             initial={{
               name: category.name,
               slug: category.slug,
               description: category.description,
+              shortDescription: category.shortDescription,
+              introduction: category.introduction,
               sortOrder: category.sortOrder,
+              loanHubEnabled: category.loanHubEnabled,
+              metaTitle: category.metaTitle,
+              metaDescription: category.metaDescription,
+              contentSections: category.contentSections,
               seoTitle: seoResult.data?.title,
               seoDescription: seoResult.data?.description,
+              icon: category.icon,
+              iconMediaId: category.iconMediaId,
+              iconAlt: category.iconAlt,
+              featuredImage: category.featuredImage,
+              featuredImageMediaId: category.featuredImageMediaId,
+              featuredImageAlt: category.featuredImageAlt,
+              heroImage: category.heroImage,
+              heroImageMediaId: category.heroImageMediaId,
+              heroImageAlt: category.heroImageAlt,
             }}
           />
         </>

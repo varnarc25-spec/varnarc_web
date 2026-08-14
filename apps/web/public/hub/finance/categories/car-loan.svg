@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none" role="img" aria-label="">
+  <rect width="480" height="360" rx="28" fill="#f7f9fc"/>
+  <circle cx="64" cy="80" r="48" fill="#e8eef5" opacity="0.7"/>
+  <circle cx="408" cy="300" r="50" fill="#ffedd5" opacity="0.45"/>
+
+  <!-- Unbranded car -->
+  <path d="M74 198h48l28-40h110l32 40h54v44H74v-44z" fill="#0b1f3a"/>
+  <path d="M140 158h96l22 32H124l16-32z" fill="#163255"/>
+  <rect x="148" y="168" width="36" height="18" rx="4" fill="#e8eef5" opacity="0.35"/>
+  <rect x="196" y="168" width="36" height="18" rx="4" fill="#e8eef5" opacity="0.25"/>
+  <circle cx="128" cy="244" r="22" fill="#122b4a"/>
+  <circle cx="128" cy="244" r="10" fill="#94a3b8" opacity="0.5"/>
+  <circle cx="278" cy="244" r="22" fill="#122b4a"/>
+  <circle cx="278" cy="244" r="10" fill="#94a3b8" opacity="0.5"/>
+  <circle cx="318" cy="210" r="5" fill="#f97316"/>
+
+  <!-- Financing document -->
+  <rect x="318" y="64" width="116" height="148" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="338" y="88" width="76" height="9" rx="4.5" fill="#0b1f3a" opacity="0.8"/>
+  <rect x="338" y="110" width="58" height="7" rx="3.5" fill="#94a3b8" opacity="0.4"/>
+  <rect x="338" y="130" width="68" height="7" rx="3.5" fill="#94a3b8" opacity="0.35"/>
+  <rect x="338" y="160" width="52" height="22" rx="7" fill="#fff4eb"/>
+  <rect x="348" y="167" width="32" height="8" rx="4" fill="#f97316" opacity="0.85"/>
+
+  <!-- Payment schedule -->
+  <rect x="88" y="278" width="248" height="48" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <circle cx="120" cy="302" r="5" fill="#f97316"/>
+  <circle cx="168" cy="302" r="4.5" fill="#0b1f3a" opacity="0.7"/>
+  <circle cx="216" cy="302" r="4.5" fill="#cbd5e1"/>
+  <circle cx="264" cy="302" r="4.5" fill="#cbd5e1"/>
+  <circle cx="312" cy="302" r="4.5" fill="#cbd5e1"/>
+  <path d="M120 302h192" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>
+</svg>

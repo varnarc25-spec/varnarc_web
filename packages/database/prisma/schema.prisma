@@ -571,6 +571,7 @@ model MediaAsset {
   height       Int?
   duration     Int?
   thumbnailUrl String?           @map("thumbnail_url")
+  title        String?
   alt          String?
   caption      String?
   description  String?
@@ -585,7 +586,9 @@ model MediaAsset {
   albums      MediaAlbumAsset[]
   tags        MediaAssetTag[]
   usage       MediaUsage[]
-  articles    Article[]          @relation("ArticleFeaturedImage")
+  articlesFeatured Article[]     @relation("ArticleFeaturedImage")
+  articlesHero     Article[]     @relation("ArticleHeroImage")
+  articlesOg       Article[]     @relation("ArticleOgImage")
   themeAssets ThemeAsset[]
   @@index([folderId])
   @@index([resourceType])
@@ -673,6 +676,8 @@ model Article {
   authorId        String        @map("author_id") @db.Uuid
   categoryId      String?       @map("category_id") @db.Uuid
   featuredImageId String?       @map("featured_image_id") @db.Uuid
+  heroImageId     String?       @map("hero_image_id") @db.Uuid
+  ogImageId       String?       @map("og_image_id") @db.Uuid
   title           String
   slug            String        @unique
   excerpt         String?
@@ -690,6 +695,8 @@ model Article {
   author        User             @relation("ArticleAuthor", fields: [authorId], references: [id])
   category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   featuredImage MediaAsset?      @relation("ArticleFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
+  heroImage     MediaAsset?      @relation("ArticleHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+  ogImage       MediaAsset?      @relation("ArticleOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
   versions      ArticleVersion[]
   tags          ArticleTag[]
   comments      Comment[]
@@ -699,6 +706,8 @@ model Article {
   @@index([categoryId, status])
   @@index([authorId, publishedAt])
   @@index([isFeatured, status])
+  @@index([heroImageId])
+  @@index([ogImageId])
   @@map("articles")
 }
 
@@ -1039,6 +1048,9 @@ model Calculator {
   name           String
   description    String?
   icon           String?
+  illustrationUrl     String?  @map("illustration_url")
+  illustrationMediaId String?  @map("illustration_media_id") @db.Uuid
+  illustrationAlt     String?  @map("illustration_alt")
   categoryId     String?       @map("category_id") @db.Uuid
   status         PublishStatus @default(DRAFT)
   version        Int           @default(1)
@@ -1061,6 +1073,7 @@ model Calculator {
   analytics      CalculatorAnalyticsEvent[]
   @@index([status, slug])
   @@index([categoryId])
+  @@index([illustrationMediaId])
   @@map("calculators")
 }
 
@@ -1147,86 +1160,159 @@ model SavedCalculation {
 }
 
 model FinanceCategory {
-  id          String    @id @default(uuid()) @db.Uuid
-  name        String
-  slug        String    @unique
-  description String?
-  sortOrder   Int       @default(0) @map("sort_order")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
-  createdBy   String?   @map("created_by") @db.Uuid
-  updatedBy   String?   @map("updated_by") @db.Uuid
-  loans       Loan[]
-  creditCards CreditCard[]
-  insurance   InsuranceProduct[]
-  investments InvestmentProduct[]
-  faqs        FinanceFaq[]
-  guides      FinanceGuide[]
+  id                 String         @id @default(uuid()) @db.Uuid
+  name               String
+  slug               String         @unique
+  description        String?
+  shortDescription   String?        @map("short_description")
+  introduction       String?
+  icon               String?
+  iconMediaId        String?        @map("icon_media_id") @db.Uuid
+  iconAlt            String?        @map("icon_alt")
+  featuredImage      String?        @map("featured_image")
+  featuredImageMediaId String?      @map("featured_image_media_id") @db.Uuid
+  featuredImageAlt   String?        @map("featured_image_alt")
+  heroImage          String?        @map("hero_image")
+  heroImageMediaId   String?        @map("hero_image_media_id") @db.Uuid
+  heroImageAlt       String?        @map("hero_image_alt")
+  minInterestRate    Decimal?       @map("min_interest_rate") @db.Decimal(8, 4)
+  maxInterestRate    Decimal?       @map("max_interest_rate") @db.Decimal(8, 4)
+  typicalMinAmount   Decimal?       @map("typical_min_amount") @db.Decimal(14, 2)
+  typicalMaxAmount   Decimal?       @map("typical_max_amount") @db.Decimal(14, 2)
+  typicalMinTenure   Int?           @map("typical_min_tenure")
+  typicalMaxTenure   Int?           @map("typical_max_tenure")
+  metaTitle          String?        @map("meta_title")
+  metaDescription    String?        @map("meta_description")
+  seoContent         String?        @map("seo_content")
+  contentSections    Json?          @map("content_sections")
+  loanHubEnabled     Boolean        @default(false) @map("loan_hub_enabled")
+  status             PublishStatus  @default(DRAFT)
+  publishedAt        DateTime?      @map("published_at")
+  sortOrder          Int            @default(0) @map("sort_order")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  deletedAt          DateTime?      @map("deleted_at")
+  createdBy          String?        @map("created_by") @db.Uuid
+  updatedBy          String?        @map("updated_by") @db.Uuid
+  loans              Loan[]
+  creditCards        CreditCard[]
+  insurance          InsuranceProduct[]
+  investments        InvestmentProduct[]
+  faqs               FinanceFaq[]
+  guides             FinanceGuide[]
   @@index([sortOrder])
+  @@index([loanHubEnabled, status])
+  @@index([featuredImageMediaId])
   @@map("finance_categories")
 }
 
 model Bank {
-  id            String        @id @default(uuid()) @db.Uuid
-  name          String
-  slug          String        @unique
-  logoUrl       String?       @map("logo_url")
-  logoMediaId   String?       @map("logo_media_id") @db.Uuid
-  website       String?
-  description   String?
-  status        PublishStatus @default(DRAFT)
-  featured      Boolean       @default(false)
-  seoTitle      String?       @map("seo_title")
-  seoDescription String?      @map("seo_description")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  deletedAt     DateTime?     @map("deleted_at")
-  createdBy     String?       @map("created_by") @db.Uuid
-  updatedBy     String?       @map("updated_by") @db.Uuid
-  loans         Loan[]
-  creditCards   CreditCard[]
-  rates         InterestRate[]
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String
+  slug           String        @unique
+  legalName      String?       @map("legal_name")
+  lenderType     String?       @map("lender_type")
+  logoUrl        String?       @map("logo_url")
+  logoMediaId    String?       @map("logo_media_id") @db.Uuid
+  logoAlt        String?       @map("logo_alt")
+  website        String?
+  description    String?
+  headquarters   String?
+  supportUrl     String?       @map("support_url")
+  sourceUrl      String?       @map("source_url")
+  status         PublishStatus @default(DRAFT)
+  featured       Boolean       @default(false)
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  loans          Loan[]
+  creditCards    CreditCard[]
+  rates          InterestRate[]
   @@index([status])
+  @@index([lenderType])
+  @@index([logoMediaId])
   @@map("banks")
 }
 
 model Loan {
-  id             String           @id @default(uuid()) @db.Uuid
-  bankId         String           @map("bank_id") @db.Uuid
-  categoryId     String?          @map("category_id") @db.Uuid
-  name           String
-  slug           String
-  loanType       String           @map("loan_type")
-  description    String?
-  interestRate   Decimal?         @map("interest_rate") @db.Decimal(8, 4)
-  processingFee  Decimal?         @map("processing_fee") @db.Decimal(8, 4)
-  tenureMin      Int?             @map("tenure_min")
-  tenureMax      Int?             @map("tenure_max")
-  maxAmount      Decimal?         @map("max_amount") @db.Decimal(14, 2)
-  eligibility    String?
-  affiliateUrl   String?          @map("affiliate_url")
-  pros           String?
-  cons           String?
-  featured       Boolean          @default(false)
-  status         PublishStatus    @default(DRAFT)
-  reviewProductId String?         @map("review_product_id") @db.Uuid
-  metadata       Json?
-  seoTitle       String?          @map("seo_title")
-  seoDescription String?          @map("seo_description")
-  publishedAt    DateTime?        @map("published_at")
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
-  deletedAt      DateTime?        @map("deleted_at")
-  createdBy      String?          @map("created_by") @db.Uuid
-  updatedBy      String?          @map("updated_by") @db.Uuid
-  bank           Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade)
-  category       FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  rates          InterestRate[]
+  id                      String            @id @default(uuid()) @db.Uuid
+  bankId                  String            @map("bank_id") @db.Uuid
+  categoryId              String?           @map("category_id") @db.Uuid
+  name                    String
+  slug                    String
+  loanType                String            @map("loan_type")
+  shortDescription        String?           @map("short_description")
+  description             String?
+  interestRate            Decimal?          @map("interest_rate") @db.Decimal(8, 4)
+  interestRateMin         Decimal?          @map("interest_rate_min") @db.Decimal(8, 4)
+  interestRateMax         Decimal?          @map("interest_rate_max") @db.Decimal(8, 4)
+  rateType                String?           @map("rate_type")
+  benchmarkType           String?           @map("benchmark_type")
+  processingFee           Decimal?          @map("processing_fee") @db.Decimal(8, 4)
+  processingFeeMin        Decimal?          @map("processing_fee_min") @db.Decimal(8, 4)
+  processingFeeMax        Decimal?          @map("processing_fee_max") @db.Decimal(8, 4)
+  processingFeeText       String?           @map("processing_fee_text")
+  foreclosureChargeText   String?           @map("foreclosure_charge_text")
+  prepaymentChargeText    String?           @map("prepayment_charge_text")
+  latePaymentChargeText   String?           @map("late_payment_charge_text")
+  tenureMin               Int?              @map("tenure_min")
+  tenureMax               Int?              @map("tenure_max")
+  loanAmountMin           Decimal?          @map("loan_amount_min") @db.Decimal(14, 2)
+  loanAmountMax           Decimal?          @map("loan_amount_max") @db.Decimal(14, 2)
+  maxAmount               Decimal?          @map("max_amount") @db.Decimal(14, 2)
+  minimumAge              Int?              @map("minimum_age")
+  maximumAge              Int?              @map("maximum_age")
+  minimumIncome           Decimal?          @map("minimum_income") @db.Decimal(14, 2)
+  minimumCreditScore      Int?              @map("minimum_credit_score")
+  employmentTypes         Json?             @map("employment_types")
+  eligibility             String?
+  eligibilitySummary      String?           @map("eligibility_summary")
+  documentsRequired       Json?             @map("documents_required")
+  features                Json?
+  benefits                String?
+  disadvantages           String?
+  applicationProcess      String?           @map("application_process")
+  approvalTime            String?           @map("approval_time")
+  disbursementTime        String?           @map("disbursement_time")
+  officialApplicationUrl  String?           @map("official_application_url")
+  sourceUrl               String?           @map("source_url")
+  rateLastVerifiedAt      DateTime?         @map("rate_last_verified_at")
+  affiliateUrl            String?           @map("affiliate_url")
+  pros                    String?
+  cons                    String?
+  featured                Boolean           @default(false)
+  sponsored               Boolean           @default(false)
+  sponsoredDisclosure     String?           @map("sponsored_disclosure")
+  needsRateReview         Boolean           @default(false) @map("needs_rate_review")
+  status                  PublishStatus     @default(DRAFT)
+  reviewProductId         String?           @map("review_product_id") @db.Uuid
+  metadata                Json?
+  seoTitle                String?           @map("seo_title")
+  seoDescription          String?           @map("seo_description")
+  canonicalUrl            String?           @map("canonical_url")
+  publishedAt             DateTime?         @map("published_at")
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+  deletedAt               DateTime?         @map("deleted_at")
+  createdBy               String?           @map("created_by") @db.Uuid
+  updatedBy               String?           @map("updated_by") @db.Uuid
+  bank                    Bank              @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  category                FinanceCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  rates                   InterestRate[]
+  rateHistories           LoanRateHistory[]
   @@unique([bankId, slug])
+  @@index([categoryId, slug])
   @@index([loanType])
   @@index([status])
   @@index([categoryId])
+  @@index([featured, status])
+  @@index([sponsored, status])
+  @@index([needsRateReview, status])
+  @@index([rateLastVerifiedAt])
   @@map("loans")
 }
 
@@ -1345,19 +1431,22 @@ model InterestRate {
 }
 
 model FinanceFaq {
-  id         String    @id @default(uuid()) @db.Uuid
-  categoryId String?   @map("category_id") @db.Uuid
+  id         String         @id @default(uuid()) @db.Uuid
+  categoryId String?        @map("category_id") @db.Uuid
+  entityType String?        @map("entity_type")
+  entityId   String?        @map("entity_id") @db.Uuid
   question   String
   answer     String
-  sortOrder  Int       @default(0) @map("sort_order")
-  status     PublishStatus @default(PUBLISHED)
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  deletedAt  DateTime? @map("deleted_at")
-  createdBy  String?   @map("created_by") @db.Uuid
-  updatedBy  String?   @map("updated_by") @db.Uuid
+  sortOrder  Int            @default(0) @map("sort_order")
+  status     PublishStatus  @default(PUBLISHED)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+  deletedAt  DateTime?      @map("deleted_at")
+  createdBy  String?        @map("created_by") @db.Uuid
+  updatedBy  String?        @map("updated_by") @db.Uuid
   category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   @@index([status, sortOrder])
+  @@index([entityType, entityId])
   @@map("finance_faqs")
 }
 
@@ -1430,20 +1519,66 @@ model AffiliateLead {
 }
 
 model FinanceComparison {
-  id          String        @id @default(uuid()) @db.Uuid
-  title       String
-  slug        String        @unique
-  entityType  String        @map("entity_type")
-  entityIds   Json          @map("entity_ids")
-  status      PublishStatus @default(DRAFT)
-  publishedAt DateTime?     @map("published_at")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-  deletedAt   DateTime?     @map("deleted_at")
-  createdBy   String?       @map("created_by") @db.Uuid
-  updatedBy   String?       @map("updated_by") @db.Uuid
+  id               String         @id @default(uuid()) @db.Uuid
+  title            String
+  slug             String         @unique
+  entityType       String         @map("entity_type")
+  entityIds        Json           @map("entity_ids")
+  intro            String?
+  seoTitle         String?        @map("seo_title")
+  seoDescription   String?        @map("seo_description")
+  canonicalUrl     String?        @map("canonical_url")
+  methodologyNote  String?        @map("methodology_note")
+  noindex          Boolean        @default(false)
+  status           PublishStatus  @default(DRAFT)
+  publishedAt      DateTime?      @map("published_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  deletedAt        DateTime?      @map("deleted_at")
+  createdBy        String?        @map("created_by") @db.Uuid
+  updatedBy        String?        @map("updated_by") @db.Uuid
   @@index([status])
+  @@index([entityType, status])
   @@map("finance_comparisons")
+}
+
+model LoanRateHistory {
+  id               String    @id @default(uuid()) @db.Uuid
+  loanId           String    @map("loan_id") @db.Uuid
+  interestRateMin  Decimal?  @map("interest_rate_min") @db.Decimal(8, 4)
+  interestRateMax  Decimal?  @map("interest_rate_max") @db.Decimal(8, 4)
+  sourceUrl        String?   @map("source_url")
+  effectiveDate    DateTime  @map("effective_date")
+  verifiedAt       DateTime? @map("verified_at")
+  notes            String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  createdBy        String?   @map("created_by") @db.Uuid
+  updatedBy        String?   @map("updated_by") @db.Uuid
+  loan             Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  @@index([loanId, effectiveDate])
+  @@map("loan_rate_histories")
+}
+
+model ContentSource {
+  id           String         @id @default(uuid()) @db.Uuid
+  name         String
+  sourceUrl    String         @map("source_url")
+  entityType   String?        @map("entity_type")
+  entityId     String?        @map("entity_id") @db.Uuid
+  retrievedAt  DateTime?      @map("retrieved_at")
+  verifiedAt   DateTime?      @map("verified_at")
+  notes        String?
+  status       PublishStatus  @default(PUBLISHED)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+  createdBy    String?        @map("created_by") @db.Uuid
+  updatedBy    String?        @map("updated_by") @db.Uuid
+  @@index([entityType, entityId])
+  @@index([status])
+  @@map("content_sources")
 }
 
 model FinanceRateFeed {

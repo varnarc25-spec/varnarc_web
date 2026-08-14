@@ -32,6 +32,8 @@ export const createArticleSchema = z.object({
   content: z.string().min(1),
   categoryId: uuidSchema.optional().nullable(),
   featuredImageId: uuidSchema.optional().nullable(),
+  heroImageId: uuidSchema.optional().nullable(),
+  ogImageId: uuidSchema.optional().nullable(),
   status: publishStatusSchema.default('DRAFT'),
   publishedAt: z.coerce.date().optional().nullable(),
   isFeatured: z.boolean().default(false),
@@ -143,6 +145,13 @@ export const suggestRelatedArticlesSchema = z.object({
   limit: z.number().int().min(1).max(10).default(5),
 });
 
+export const generateArticleImageSchema = z.object({
+  title: z.string().min(3).max(300),
+  excerpt: z.string().max(2000).optional().nullable(),
+  vertical: articleVerticalSchema.default('finance'),
+  styleHint: z.string().max(400).optional().nullable(),
+});
+
 export type CreateArticleInput = z.infer<typeof createArticleSchema>;
 export type UpdateArticleInput = z.infer<typeof updateArticleSchema>;
 export type ScheduleContentInput = z.infer<typeof scheduleContentSchema>;
@@ -166,3 +175,4 @@ export type CommentListQuery = z.infer<typeof commentListQuerySchema>;
 export type GenerateArticleDraftInput = z.infer<typeof generateArticleDraftSchema>;
 export type ImproveArticleInput = z.infer<typeof improveArticleSchema>;
 export type SuggestRelatedArticlesInput = z.infer<typeof suggestRelatedArticlesSchema>;
+export type GenerateArticleImageInput = z.infer<typeof generateArticleImageSchema>;

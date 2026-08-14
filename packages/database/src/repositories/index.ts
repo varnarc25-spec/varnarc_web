@@ -1,5 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
-import { UserRepository, RoleRepository, PermissionRepository, AuditLogRepository } from './identity/user.repository';
+import {
+  UserRepository,
+  RoleRepository,
+  PermissionRepository,
+  AuditLogRepository,
+} from './identity/user.repository';
 import { SecurityEventRepository } from './security/security.repository';
 import {
   ArticleRepository,
@@ -9,7 +14,12 @@ import {
   TagRepository,
   CommentRepository,
 } from './cms/cms.repository';
-import { MediaAssetRepository, MediaFolderRepository, MediaAlbumRepository, MediaUsageRepository } from './media/media.repository';
+import {
+  MediaAssetRepository,
+  MediaFolderRepository,
+  MediaAlbumRepository,
+  MediaUsageRepository,
+} from './media/media.repository';
 import {
   AdCampaignRepository,
   AdPlacementRepository,
@@ -30,6 +40,8 @@ import {
   InvestmentProductRepository,
   InterestRateRepository,
   FinanceGuideRepository,
+  LoanRateHistoryRepository,
+  ContentSourceRepository,
 } from './finance/finance.repository';
 import {
   ConstructionCategoryRepository,
@@ -109,14 +121,23 @@ import {
   UserPreferenceRepository,
 } from './user-module/user-module.repository';
 import { AiJobRepository, AiModelRepository, AiPromptRepository } from './ai/ai.repository';
-import { PlanRepository, SubscriptionRepository, InvoiceRepository, PaymentRepository } from './premium/premium.repository';
+import {
+  PlanRepository,
+  SubscriptionRepository,
+  InvoiceRepository,
+  PaymentRepository,
+} from './premium/premium.repository';
 import {
   ApiKeyRepository,
   ApiRequestLogRepository,
   WebhookDeliveryRepository,
   WebhookEndpointRepository,
 } from './api/api.repository';
-import { NewsletterSubscriberRepository, NewsletterTemplateRepository, NewsletterCampaignRepository } from './newsletter/newsletter.repository';
+import {
+  NewsletterSubscriberRepository,
+  NewsletterTemplateRepository,
+  NewsletterCampaignRepository,
+} from './newsletter/newsletter.repository';
 
 export * from './base.repository';
 export * from './identity/user.repository';
@@ -187,6 +208,8 @@ export function createRepositories(db: PrismaClient) {
     investmentProducts: new InvestmentProductRepository(db),
     interestRates: new InterestRateRepository(db),
     financeGuides: new FinanceGuideRepository(db),
+    loanRateHistories: new LoanRateHistoryRepository(db),
+    contentSources: new ContentSourceRepository(db),
     constructionCategories: new ConstructionCategoryRepository(db),
     constructionBrands: new ConstructionBrandRepository(db),
     constructionMaterials: new ConstructionMaterialRepository(db),

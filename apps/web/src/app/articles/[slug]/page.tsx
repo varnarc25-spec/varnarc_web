@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArticleLayout } from '@/components/layout/article-layout';
-import { ArticleCommentsSection, type ArticleComment } from '@/components/articles/article-comments-section';
+import {
+  ArticleCommentsSection,
+  type ArticleComment,
+} from '@/components/articles/article-comments-section';
 import { ArticleSubscribeBar } from '@/components/articles/article-subscribe-bar';
 import { BookmarkButton } from '@/components/bookmark-button';
 import { ArticleAiSummarizer } from '@/components/articles/article-ai-summarizer';
@@ -15,6 +18,7 @@ import { apiServerFetch } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 import { RecordContentView } from '@/components/record-content-view';
 import { SponsoredLabel } from '@/components/business/sponsored-label';
+import { CmsMediaImage } from '@/components/cms/cms-media-image';
 import { parseArticleSponsor } from '@/lib/article-sponsor';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -25,12 +29,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const { data } = await fetchArticleBySlug(slug);
+    const og =
+      data.ogImage?.secureUrl ||
+      data.ogImage?.url ||
+      data.featuredImage?.secureUrl ||
+      data.featuredImage?.url ||
+      null;
     return buildSeoMetadata({
       entityType: 'article',
       entityId: data.id,
       path: `/articles/${slug}`,
       title: data.title,
       description: data.excerpt,
+      image: og,
     });
   } catch {
     return { title: 'Article' };
@@ -80,9 +91,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           publishedLabel={[
             formatDate(data.publishedAt),
             data.readingTimeMinutes ? `${data.readingTimeMinutes} min read` : null,
-            data.author?.username
-              ? `By ${data.author.displayName || data.author.username}`
-              : null,
+            data.author?.username ? `By ${data.author.displayName || data.author.username}` : null,
           ]
             .filter(Boolean)
             .join(' · ')}
@@ -126,9 +135,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           ) : null}
           <ArticleSubscribeBar
             author={data.author}
-            category={
-              data.category ? { slug: data.category.slug, name: data.category.name } : null
-            }
+            category={data.category ? { slug: data.category.slug, name: data.category.name } : null}
             tags={(data.tags ?? []).map((row) => ({
               slug: row.tag.slug,
               name: row.tag.name,
@@ -137,6 +144,41 @@ export default async function ArticleDetailPage({ params }: Props) {
           <div className="mb-6">
             <BookmarkButton entityType="article" entityId={data.id} />
           </div>
+          {(() => {
+            const hero =
+              data.heroImage || data.featuredImage
+                ? {
+                    src:
+                      data.heroImage?.secureUrl ||
+                      data.heroImage?.url ||
+                      data.featuredImage?.secureUrl ||
+                      data.featuredImage?.url ||
+                      '',
+                    alt:
+                      data.heroImage?.alt?.trim() || data.featuredImage?.alt?.trim() || data.title,
+                    title: data.heroImage?.title || data.featuredImage?.title,
+                    caption: data.heroImage?.caption || data.featuredImage?.caption,
+                    width: data.heroImage?.width || data.featuredImage?.width || 1200,
+                    height: data.heroImage?.height || data.featuredImage?.height || 675,
+                  }
+                : null;
+            if (!hero?.src) return null;
+            return (
+              <div className="mb-8 overflow-hidden rounded-2xl bg-[#e8eef5]">
+                <CmsMediaImage
+                  src={hero.src}
+                  alt={hero.alt}
+                  title={hero.title}
+                  caption={hero.caption}
+                  width={hero.width}
+                  height={hero.height}
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </div>
+            );
+          })()}
           <ArticleAiSummarizer title={data.title} content={data.content || data.excerpt || ''} />
           <MarkdownContent content={data.content || data.excerpt || ''} />
           {data.related?.length ? (

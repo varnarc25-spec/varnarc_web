@@ -19,6 +19,7 @@ export const financePageKeySchema = z.enum([
   'credit-score',
   'portfolio',
   'goals',
+  'loans-methodology',
 ]);
 
 export type FinancePageKey = z.infer<typeof financePageKeySchema>;
@@ -39,6 +40,7 @@ export const FINANCE_PAGE_IDS: Record<FinancePageKey, string> = {
   'credit-score': 'f0000001-0000-4000-8000-00000000000d',
   portfolio: 'f0000001-0000-4000-8000-00000000000e',
   goals: 'f0000001-0000-4000-8000-00000000000f',
+  'loans-methodology': 'f0000001-0000-4000-8000-000000000010',
 };
 
 export type FinancePageDefaults = {
@@ -66,10 +68,12 @@ export const FINANCE_PAGE_DEFAULTS: Record<FinancePageKey, FinancePageDefaults> 
   loans: {
     path: '/finance/loans',
     label: 'Loans listing',
-    title: 'Loans',
-    description: 'Compare home, personal, and business loan products.',
-    h1: 'Loans',
-    intro: 'Browse and compare loan products from partner banks.',
+    title: 'Compare Loans | Interest Rates, Fees & EMI Tools',
+    description:
+      'Compare loan options, interest rates, fees, loan amounts and repayment terms from banks and financial institutions.',
+    h1: 'Compare Loans',
+    intro:
+      'Compare interest rates, fees, loan amounts and repayment terms from banks and financial institutions.',
   },
   'credit-cards': {
     path: '/finance/credit-cards',
@@ -175,6 +179,16 @@ export const FINANCE_PAGE_DEFAULTS: Record<FinancePageKey, FinancePageDefaults> 
     h1: 'Financial goals',
     intro: 'Set targets and monitor your progress.',
   },
+  'loans-methodology': {
+    path: '/finance/loans/methodology',
+    label: 'Loan methodology',
+    title: 'How Varnarc Compares Loans',
+    description:
+      'How Varnarc sources loan data, displays rates and fees, handles featured and sponsored listings, and sorts comparisons.',
+    h1: 'How Varnarc Compares Loans',
+    intro:
+      'A plain-language note on how loan information is stored, shown, and sorted on Varnarc — not a lending offer or approval.',
+  },
 };
 
 export const FINANCE_PAGE_KEYS = financePageKeySchema.options;
@@ -186,6 +200,30 @@ export const updateFinancePageSeoSchema = z.object({
   intro: z.string().max(500).optional().nullable(),
   metaKeywords: z.string().max(500).optional().nullable(),
   canonicalUrl: z.string().max(500).optional().nullable().or(z.literal('')),
+  heroImageUrl: z
+    .string()
+    .max(500)
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .refine(
+      (v) => !v || v.startsWith('/') || /^https?:\/\//i.test(v),
+      'Must be a site path or absolute URL',
+    ),
+  heroImageMediaId: uuidSchema.optional().nullable(),
+  heroImageAlt: z.string().max(300).optional().nullable(),
+  /** Modular hub education copy overrides (loans page). */
+  educationModules: z
+    .record(
+      z.string().max(64),
+      z.object({
+        title: z.string().max(200).optional(),
+        summary: z.string().max(1000).optional(),
+        guideHref: z.string().max(500).optional().nullable(),
+      }),
+    )
+    .optional()
+    .nullable(),
 });
 
 export const createFinanceGuideSchema = z.object({

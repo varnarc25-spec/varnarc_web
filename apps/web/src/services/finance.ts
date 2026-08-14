@@ -5,6 +5,28 @@ export type FinanceCategory = {
   name: string;
   slug: string;
   description?: string | null;
+  shortDescription?: string | null;
+  introduction?: string | null;
+  icon?: string | null;
+  iconMediaId?: string | null;
+  iconAlt?: string | null;
+  featuredImage?: string | null;
+  featuredImageMediaId?: string | null;
+  featuredImageAlt?: string | null;
+  heroImage?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
+  loanHubEnabled?: boolean;
+  typicalMinAmount?: number | string | null;
+  typicalMaxAmount?: number | string | null;
+  typicalMinTenure?: number | null;
+  typicalMaxTenure?: number | null;
+  minInterestRate?: number | string | null;
+  maxInterestRate?: number | string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  seoContent?: string | null;
+  contentSections?: Record<string, unknown> | null;
 };
 
 export type FinanceDashboard = {
@@ -22,21 +44,45 @@ export type FinanceLoan = {
   id: string;
   name: string;
   slug: string;
+  shortDescription?: string | null;
   description?: string | null;
   loanType: string;
   interestRate?: number | string | null;
+  interestRateMin?: number | string | null;
+  interestRateMax?: number | string | null;
+  rateType?: string | null;
   processingFee?: number | string | null;
+  processingFeeMin?: number | string | null;
+  processingFeeMax?: number | string | null;
+  processingFeeText?: string | null;
   tenureMin?: number | null;
   tenureMax?: number | null;
+  loanAmountMin?: number | string | null;
+  loanAmountMax?: number | string | null;
   maxAmount?: number | string | null;
+  minimumCreditScore?: number | null;
   eligibility?: string | null;
+  eligibilitySummary?: string | null;
+  features?: unknown;
   affiliateUrl?: string | null;
+  officialApplicationUrl?: string | null;
+  sourceUrl?: string | null;
+  rateLastVerifiedAt?: string | null;
   pros?: string | null;
   cons?: string | null;
   featured?: boolean;
+  sponsored?: boolean;
+  sponsoredDisclosure?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
-  bank?: { id: string; name: string; slug: string } | null;
+  canonicalUrl?: string | null;
+  bank?: {
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl?: string | null;
+    logoAlt?: string | null;
+  } | null;
   category?: { id: string; name: string; slug: string } | null;
 };
 
@@ -110,12 +156,63 @@ type ListOptions = {
   loanType?: string;
 };
 
+export type LoanListOptions = {
+  limit?: number;
+  cursor?: string;
+  featured?: boolean;
+  sponsored?: boolean;
+  categoryId?: string;
+  categorySlug?: string;
+  bankId?: string;
+  loanType?: string;
+  rateMin?: number;
+  rateMax?: number;
+  amountMin?: number;
+  amountMax?: number;
+  tenureMin?: number;
+  tenureMax?: number;
+  processingFeeMax?: number;
+  creditScoreMaxRequired?: number;
+  employmentType?: string;
+  sort?:
+    | 'recommended'
+    | 'lowest_interest'
+    | 'highest_amount'
+    | 'lowest_processing_fee'
+    | 'longest_tenure';
+};
+
 function buildQs(options?: ListOptions) {
   const qs = new URLSearchParams({ limit: String(options?.limit ?? 24) });
   if (options?.featured) qs.set('featured', 'true');
   if (options?.categoryId) qs.set('categoryId', options.categoryId);
   if (options?.bankId) qs.set('bankId', options.bankId);
   if (options?.loanType) qs.set('loanType', options.loanType);
+  return qs.toString();
+}
+
+function buildLoanQs(options?: LoanListOptions) {
+  const qs = new URLSearchParams({ limit: String(options?.limit ?? 24) });
+  if (options?.cursor) qs.set('cursor', options.cursor);
+  if (options?.featured) qs.set('featured', 'true');
+  if (options?.sponsored) qs.set('sponsored', 'true');
+  if (options?.categoryId) qs.set('categoryId', options.categoryId);
+  if (options?.categorySlug) qs.set('categorySlug', options.categorySlug);
+  if (options?.bankId) qs.set('bankId', options.bankId);
+  if (options?.loanType) qs.set('loanType', options.loanType);
+  if (options?.rateMin != null) qs.set('rateMin', String(options.rateMin));
+  if (options?.rateMax != null) qs.set('rateMax', String(options.rateMax));
+  if (options?.amountMin != null) qs.set('amountMin', String(options.amountMin));
+  if (options?.amountMax != null) qs.set('amountMax', String(options.amountMax));
+  if (options?.tenureMin != null) qs.set('tenureMin', String(options.tenureMin));
+  if (options?.tenureMax != null) qs.set('tenureMax', String(options.tenureMax));
+  if (options?.processingFeeMax != null)
+    qs.set('processingFeeMax', String(options.processingFeeMax));
+  if (options?.creditScoreMaxRequired != null) {
+    qs.set('creditScoreMaxRequired', String(options.creditScoreMaxRequired));
+  }
+  if (options?.employmentType) qs.set('employmentType', options.employmentType);
+  if (options?.sort) qs.set('sort', options.sort);
   return qs.toString();
 }
 
@@ -135,9 +232,38 @@ export async function fetchFinanceCategories() {
   }
 }
 
-export async function fetchFinanceLoans(options?: ListOptions) {
+export async function fetchLoanCategories() {
   try {
-    return await apiPublicFetch<FinanceLoan[]>(`/finance/loans?${buildQs(options)}`, {
+    const res = await apiPublicFetch<FinanceCategory[]>('/finance/loan-categories', {
+      cache: 'no-store',
+    });
+    if (Array.isArray(res.data) && res.data.length > 0) return res;
+  } catch {
+    // Endpoint may not exist on older/production API builds yet.
+  }
+
+  try {
+    const res = await apiPublicFetch<FinanceCategory[]>('/finance/categories', {
+      cache: 'no-store',
+    });
+    const { LOAN_HUB_SLUGS } = await import('@/lib/loan-hub-categories');
+    const filtered = (res.data ?? []).filter((c) => c.loanHubEnabled || LOAN_HUB_SLUGS.has(c.slug));
+    if (filtered.length > 0) return { data: filtered };
+  } catch {
+    // Fall through to static structural list.
+  }
+
+  const { LOAN_HUB_CATEGORY_FALLBACK } = await import('@/lib/loan-hub-categories');
+  return { data: LOAN_HUB_CATEGORY_FALLBACK };
+}
+
+export async function fetchFinanceLoans(options?: LoanListOptions | ListOptions) {
+  try {
+    const qs =
+      options && ('sort' in options || 'categorySlug' in options || 'rateMin' in options)
+        ? buildLoanQs(options as LoanListOptions)
+        : buildQs(options as ListOptions | undefined);
+    return await apiPublicFetch<FinanceLoan[]>(`/finance/loans?${qs}`, {
       cache: 'no-store',
     });
   } catch {
@@ -214,6 +340,7 @@ export type FinanceBank = {
   description?: string | null;
   website?: string | null;
   logoUrl?: string | null;
+  logoAlt?: string | null;
   featured?: boolean;
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -227,17 +354,21 @@ export type FinanceGuide = {
   slug: string;
   title: string;
   summary?: string | null;
-  category?: string | null;
+  category?: string | { name?: string | null; slug?: string | null } | null;
   content?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  publishedAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export type FinanceFaq = {
   id: string;
   question: string;
   answer: string;
-  category?: string | null;
+  category?: string | { name?: string | null; slug?: string | null } | null;
+  entityType?: string | null;
+  entityId?: string | null;
   sortOrder?: number | null;
 };
 
@@ -294,8 +425,15 @@ export type FinancePageSeo = {
   description: string;
   h1: string;
   intro: string;
+  heroImageUrl?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
   metaKeywords?: string | null;
   canonicalUrl?: string | null;
+  educationModules?: Record<
+    string,
+    { title?: string; summary?: string; guideHref?: string | null }
+  > | null;
 };
 
 export async function fetchFinancePageSeo(pageKey: string) {

@@ -21,33 +21,35 @@ export type ModuleHubMeta = {
   searchPlaceholder: string;
 };
 
-const DEFAULT_TRUST: HubTrustItem[] = [
+const FINANCE_TRUST: HubTrustItem[] = [
   {
     icon: 'scale',
     title: 'Unbiased comparisons',
-    description: 'Independent research — no paid rankings.',
-  },
-  {
-    icon: 'shield',
-    title: 'Trusted information',
-    description: 'Clear sources and regularly updated data.',
+    description: 'No paid rankings.',
   },
   {
     icon: 'calculator',
-    title: 'Free calculators',
-    description: 'Plan with accurate, easy-to-use tools.',
-  },
-  {
-    icon: 'book',
-    title: 'Expert guides',
-    description: 'Step-by-step help for real decisions.',
+    title: 'Accurate calculators',
+    description: 'Free planning tools.',
   },
   {
     icon: 'zap',
-    title: 'Fast & simple',
-    description: 'Find answers without clutter or confusion.',
+    title: 'Latest information',
+    description: 'Regularly updated rates.',
+  },
+  {
+    icon: 'shield',
+    title: 'Secure & trusted',
+    description: 'Private and protected.',
+  },
+  {
+    icon: 'book',
+    title: 'Expert resources',
+    description: 'Guides for real decisions.',
   },
 ];
+
+const DEFAULT_TRUST: HubTrustItem[] = FINANCE_TRUST;
 
 const DEFAULT_STEPS: HubHeroStep[] = [
   {
@@ -61,15 +63,15 @@ const DEFAULT_STEPS: HubHeroStep[] = [
     icon: 'scale',
     title: 'Compare',
     description: 'Side-by-side product views',
-    iconBg: 'bg-emerald-100',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-sky-100',
+    iconColor: 'text-sky-600',
   },
   {
     icon: 'check',
     title: 'Choose',
     description: 'Pick what fits your goals',
-    iconBg: 'bg-violet-100',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-600',
   },
   {
     icon: 'piggy',
@@ -84,11 +86,11 @@ export const MODULE_HUB_META: Record<string, ModuleHubMeta> = {
   finance: {
     badge: 'FINANCE, SIMPLIFIED',
     trustTitle: 'Why use Varnarc Finance?',
-    trustItems: DEFAULT_TRUST,
+    trustItems: FINANCE_TRUST,
     disclaimer:
-      'Varnarc provides general information and tools for education only. Rates, fees, and eligibility vary by provider. Verify details with banks and insurers before applying.',
+      'Varnarc provides general information and tools for education only. We are not a financial advisor, bank, or insurer. Rates, fees, and eligibility vary by provider — verify details before applying.',
     heroSteps: DEFAULT_STEPS,
-    searchPlaceholder: 'Search loans, cards, insurance, calculators…',
+    searchPlaceholder: 'Try Home Loan EMI, SIP, or Credit Cards…',
   },
   construction: {
     badge: 'HOME & CONSTRUCTION',

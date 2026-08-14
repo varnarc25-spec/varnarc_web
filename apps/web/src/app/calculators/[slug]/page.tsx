@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
 import { AdBanner } from '@/components/business/ad-banner';
 import { CalculatorRunner } from '@/features/calculators/calculator-runner';
@@ -12,8 +13,20 @@ import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { apiPublicFetch, ApiError } from '@/services/api-client';
 import { RecordContentView } from '@/components/record-content-view';
 import { SectionErrorBoundary } from '@/components/shared/section-error-boundary';
+import {
+  calculatorCanonicalPath,
+  calculatorContextNotice,
+  hasCalculatorQueryParams,
+  parseCalculatorParams,
+} from '@/lib/calculator-query';
+import { loansHubPath } from '@/lib/finance-routes';
+import { isLoanHubCategorySlug } from '@/lib/loan-hub-categories';
+import Link from 'next/link';
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 function titleFromSlug(slug: string) {
   return slug
@@ -71,26 +84,48 @@ type CalculatorDetail = {
   } | null;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const sp = await searchParams;
+  const flat: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(sp)) {
+    flat[key] = Array.isArray(value) ? value[0] : value;
+  }
+  const filtered = hasCalculatorQueryParams(flat);
+  const canonical = calculatorCanonicalPath(slug);
+
   try {
     const { data } = await apiPublicFetch<CalculatorDetail>(`/calculators/slug/${slug}`, {
       cache: 'no-store',
     });
-    return buildSeoMetadata({
+    const metadata = await buildSeoMetadata({
       entityType: 'calculator',
       entityId: data.id,
-      path: `/calculators/${slug}`,
+      path: canonical,
       title: data.seoTitle || data.name,
       description: data.seoDescription || data.description,
     });
+    return {
+      ...metadata,
+      alternates: { ...metadata.alternates, canonical },
+      robots: filtered
+        ? { index: false, follow: true }
+        : (metadata.robots ?? { index: true, follow: true }),
+    };
   } catch {
-    return { title: titleFromSlug(slug), alternates: { canonical: `/calculators/${slug}` } };
+    return {
+      title: titleFromSlug(slug),
+      alternates: { canonical },
+      robots: filtered ? { index: false, follow: true } : { index: true, follow: true },
+    };
   }
 }
 
-export default async function CalculatorDetailPage({ params }: Props) {
+export default async function CalculatorDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const parsedQuery = parseCalculatorParams(sp);
+  const contextNotice = calculatorContextNotice(parsedQuery);
   let calc: CalculatorDetail | null = null;
   let relatedArticles: RelatedArticle[] = [];
   let relatedCalcs: Array<{ name: string; slug: string }> = [];
@@ -209,16 +244,78 @@ export default async function CalculatorDetailPage({ params }: Props) {
                 <BookmarkButton entityType="calculator" entityId={calc.id} />
               </div>
             ) : null}
+            {contextNotice ? (
+              <p className="rounded-xl border border-slate-200 bg-[#f8fafc] px-4 py-3 text-xs leading-relaxed text-slate-600">
+                {contextNotice}
+              </p>
+            ) : null}
+            {(() => {
+              const categorySlug =
+                parsedQuery.category && isLoanHubCategorySlug(parsedQuery.category)
+                  ? parsedQuery.category
+                  : null;
+              const categoryByCalc: Record<string, { href: string; label: string }> = {
+                'personal-loan-emi': {
+                  href: '/finance/loans/personal-loan',
+                  label: 'Compare Personal Loans',
+                },
+                'home-loan-emi': { href: '/finance/loans/home-loan', label: 'Compare Home Loans' },
+                'car-loan': { href: '/finance/loans/car-loan', label: 'Compare Car Loans' },
+                'education-loan-emi': {
+                  href: '/finance/loans/education-loan',
+                  label: 'Compare Education Loans',
+                },
+                'business-loan-emi': {
+                  href: '/finance/loans/business-loan',
+                  label: 'Compare Business Loans',
+                },
+                'gold-loan-emi': { href: '/finance/loans/gold-loan', label: 'Compare Gold Loans' },
+                'bike-loan-emi': {
+                  href: '/finance/loans/two-wheeler-loan',
+                  label: 'Compare Two-Wheeler Loans',
+                },
+                'loan-against-property-emi': {
+                  href: '/finance/loans/loan-against-property',
+                  label: 'Compare Loan Against Property',
+                },
+                emi: { href: '/finance/loans', label: 'Browse all loans' },
+              };
+              const related = categorySlug
+                ? {
+                    href: loansHubPath({ categorySlug }),
+                    label: `Compare ${categorySlug.replace(/-/g, ' ')} →`,
+                  }
+                : categoryByCalc[slug];
+              if (!related) return null;
+              return (
+                <p className="text-sm">
+                  <Link
+                    href={related.href}
+                    className="font-semibold text-[#0b1f3a] underline-offset-2 hover:text-[#f97316] hover:underline"
+                  >
+                    {related.label.endsWith('→') ? related.label : `${related.label} →`}
+                  </Link>
+                </p>
+              );
+            })()}
             {calc?.id ? (
               <SectionErrorBoundary>
-                <CalculatorRunner
-                  calculatorId={calc.id}
-                  name={name}
-                  calculatorSlug={slug}
-                  fields={calc.fields ?? []}
-                  resultTemplate={calc.resultTemplate}
-                  settings={calculatorSettings}
-                />
+                <Suspense
+                  fallback={
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
+                      Loading calculator…
+                    </div>
+                  }
+                >
+                  <CalculatorRunner
+                    calculatorId={calc.id}
+                    name={name}
+                    calculatorSlug={slug}
+                    fields={calc.fields ?? []}
+                    resultTemplate={calc.resultTemplate}
+                    settings={calculatorSettings}
+                  />
+                </Suspense>
               </SectionErrorBoundary>
             ) : (
               <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">

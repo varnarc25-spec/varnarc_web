@@ -6,11 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { Repositories } from '@varnarc/database';
-import {
-  hasPermission,
-  isAdminRole,
-  PERMISSIONS,
-} from '@varnarc/auth';
+import { hasPermission, isAdminRole, PERMISSIONS } from '@varnarc/auth';
 import type {
   CreateArticleInput,
   CursorPaginationQuery,
@@ -163,9 +159,17 @@ export class ArticlesService {
   }
 
   async create(input: CreateArticleInput, authorId: string) {
-    const { tagIds, relatedIds, seo, ...rest } = input;
-    const readingTimeMinutes =
-      rest.readingTimeMinutes ?? estimateReadingTimeMinutes(rest.content);
+    const {
+      tagIds,
+      relatedIds,
+      seo,
+      featuredImageId,
+      heroImageId,
+      ogImageId,
+      categoryId,
+      ...rest
+    } = input;
+    const readingTimeMinutes = rest.readingTimeMinutes ?? estimateReadingTimeMinutes(rest.content);
 
     const article = await this.repos.articles.create({
       title: rest.title,
@@ -178,13 +182,11 @@ export class ArticlesService {
       readingTimeMinutes,
       metadata: rest.metadata as never,
       author: { connect: { id: authorId } },
-      ...(rest.categoryId ? { category: { connect: { id: rest.categoryId } } } : {}),
-      ...(rest.featuredImageId
-        ? { featuredImage: { connect: { id: rest.featuredImageId } } }
-        : {}),
-      ...(tagIds?.length
-        ? { tags: { create: tagIds.map((tagId) => ({ tagId })) } }
-        : {}),
+      ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
+      ...(featuredImageId ? { featuredImage: { connect: { id: featuredImageId } } } : {}),
+      ...(heroImageId ? { heroImage: { connect: { id: heroImageId } } } : {}),
+      ...(ogImageId ? { ogImage: { connect: { id: ogImageId } } } : {}),
+      ...(tagIds?.length ? { tags: { create: tagIds.map((tagId) => ({ tagId })) } } : {}),
       createdBy: authorId,
       updatedBy: authorId,
     });
@@ -217,7 +219,16 @@ export class ArticlesService {
   async update(id: string, input: UpdateArticleInput, user: CurrentUser) {
     const existing = await this.getById(id);
     this.assertCanEdit(existing, user);
-    const { tagIds, relatedIds, seo, categoryId, featuredImageId, ...rest } = input;
+    const {
+      tagIds,
+      relatedIds,
+      seo,
+      categoryId,
+      featuredImageId,
+      heroImageId,
+      ogImageId,
+      ...rest
+    } = input;
 
     if (tagIds) {
       await this.repos.articles.update(id, { tags: { deleteMany: {} } });
@@ -252,6 +263,16 @@ export class ArticlesService {
           ? { featuredImage: { connect: { id: featuredImageId } } }
           : { featuredImage: { disconnect: true } }
         : {}),
+      ...(heroImageId !== undefined
+        ? heroImageId
+          ? { heroImage: { connect: { id: heroImageId } } }
+          : { heroImage: { disconnect: true } }
+        : {}),
+      ...(ogImageId !== undefined
+        ? ogImageId
+          ? { ogImage: { connect: { id: ogImageId } } }
+          : { ogImage: { disconnect: true } }
+        : {}),
       updatedBy: user.id,
     });
 
@@ -267,10 +288,16 @@ export class ArticlesService {
     }
 
     const updated = await this.getById(id);
-    await this.audit(user.id, 'article.update', id, { status: existing.status }, {
-      status: updated.status,
-      title: updated.title,
-    });
+    await this.audit(
+      user.id,
+      'article.update',
+      id,
+      { status: existing.status },
+      {
+        status: updated.status,
+        title: updated.title,
+      },
+    );
     await this.bust(existing.slug);
     await this.bust(updated.slug);
     void this.searchIndexer.indexArticle(id);
@@ -287,9 +314,15 @@ export class ArticlesService {
         error: { code: 'NOT_FOUND', message: 'Article not found.' },
       });
     }
-    await this.audit(user.id, 'article.publish', id, { status: existing.status }, {
-      status: 'PUBLISHED',
-    });
+    await this.audit(
+      user.id,
+      'article.publish',
+      id,
+      { status: existing.status },
+      {
+        status: 'PUBLISHED',
+      },
+    );
     await this.bust(existing.slug);
     void this.searchIndexer.indexArticle(id);
     return this.getById(id);
@@ -305,10 +338,16 @@ export class ArticlesService {
         error: { code: 'NOT_FOUND', message: 'Article not found.' },
       });
     }
-    await this.audit(user.id, 'article.schedule', id, { status: existing.status }, {
-      status: 'SCHEDULED',
-      publishedAt: input.publishedAt.toISOString(),
-    });
+    await this.audit(
+      user.id,
+      'article.schedule',
+      id,
+      { status: existing.status },
+      {
+        status: 'SCHEDULED',
+        publishedAt: input.publishedAt.toISOString(),
+      },
+    );
     await this.bust(existing.slug);
     return this.getById(id);
   }
@@ -323,9 +362,15 @@ export class ArticlesService {
         error: { code: 'NOT_FOUND', message: 'Article not found.' },
       });
     }
-    await this.audit(user.id, 'article.submit_review', id, { status: existing.status }, {
-      status: 'REVIEW',
-    });
+    await this.audit(
+      user.id,
+      'article.submit_review',
+      id,
+      { status: existing.status },
+      {
+        status: 'REVIEW',
+      },
+    );
     return this.getById(id);
   }
 
@@ -341,9 +386,15 @@ export class ArticlesService {
         error: { code: 'NOT_FOUND', message: 'Article not found.' },
       });
     }
-    await this.audit(user.id, 'article.approve_review', id, { status: existing.status }, {
-      status: 'DRAFT',
-    });
+    await this.audit(
+      user.id,
+      'article.approve_review',
+      id,
+      { status: existing.status },
+      {
+        status: 'DRAFT',
+      },
+    );
     return this.getById(id);
   }
 
@@ -359,10 +410,16 @@ export class ArticlesService {
         error: { code: 'NOT_FOUND', message: 'Article not found.' },
       });
     }
-    await this.audit(user.id, 'article.reject_review', id, { status: existing.status }, {
-      status: 'DRAFT',
-      notes: notes ?? null,
-    });
+    await this.audit(
+      user.id,
+      'article.reject_review',
+      id,
+      { status: existing.status },
+      {
+        status: 'DRAFT',
+        notes: notes ?? null,
+      },
+    );
     return this.getById(id);
   }
 
@@ -391,6 +448,8 @@ export class ArticlesService {
         isFeatured: false,
         categoryId: source.categoryId,
         featuredImageId: source.featuredImageId,
+        heroImageId: source.heroImageId,
+        ogImageId: source.ogImageId,
         tagIds,
         relatedIds,
         metadata: source.metadata as never,

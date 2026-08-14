@@ -39,9 +39,7 @@ const FILE_SIGNATURES: Record<string, number[][]> = {
 export function validateFileSignature(buffer: Buffer, mimeType: string): boolean {
   const signatures = FILE_SIGNATURES[mimeType.toLowerCase()];
   if (!signatures?.length) return true;
-  return signatures.some((signature) =>
-    signature.every((byte, index) => buffer[index] === byte),
-  );
+  return signatures.some((signature) => signature.every((byte, index) => buffer[index] === byte));
 }
 
 export const mediaListQuerySchema = cursorPaginationQuerySchema.extend({
@@ -77,6 +75,7 @@ export const createMediaAssetSchema = z.object({
   height: z.number().int().positive().optional().nullable(),
   duration: z.number().int().nonnegative().optional().nullable(),
   thumbnailUrl: z.string().url().optional().nullable(),
+  title: z.string().max(200).optional().nullable(),
   alt: z.string().max(300).optional().nullable(),
   caption: z.string().max(500).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),

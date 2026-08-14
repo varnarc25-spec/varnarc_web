@@ -19,6 +19,8 @@ export class ArticleRepository extends BaseRepository {
         author: true,
         category: true,
         featuredImage: true,
+        heroImage: true,
+        ogImage: true,
         tags: { include: { tag: true } },
         relatedFrom: {
           orderBy: { sortOrder: 'asc' },
@@ -46,6 +48,8 @@ export class ArticleRepository extends BaseRepository {
         author: true,
         category: true,
         featuredImage: true,
+        heroImage: true,
+        ogImage: true,
         tags: { include: { tag: true } },
         relatedFrom: {
           orderBy: { sortOrder: 'asc' },
@@ -355,7 +359,13 @@ export class CategoryRepository extends BaseRepository {
     });
   }
 
-  list(params: CursorPageParams & { status?: PublishStatus; search?: string; parentId?: string | null } = {}) {
+  list(
+    params: CursorPageParams & {
+      status?: PublishStatus;
+      search?: string;
+      parentId?: string | null;
+    } = {},
+  ) {
     return listActiveWithCursor<Category>(this.db.category, {
       ...params,
       where: {
