@@ -31,9 +31,7 @@ describe('dedicated loan category pages', () => {
   it('uses Personal Loan H1/intro/breadcrumb copy', () => {
     expect(resolveCategoryH1('personal-loan')).toBe('Compare Personal Loans');
     expect(resolveCategoryBreadcrumbLabel('personal-loan')).toBe('Personal Loans');
-    expect(resolveCategoryIntro('personal-loan')).toContain(
-      'personal loan interest rates, loan amounts, repayment tenure, fees',
-    );
+    expect(resolveCategoryIntro('personal-loan')).toContain('monthly EMI');
     expect(resolveCategoryIntro('personal-loan', { introduction: 'CMS intro' })).toBe('CMS intro');
   });
 

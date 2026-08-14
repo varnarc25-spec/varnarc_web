@@ -88,6 +88,55 @@ export function monthsFromTenure(value: number, unit: 'months' | 'years'): numbe
   return unit === 'years' ? Math.round(value * 12) : Math.floor(value);
 }
 
+/**
+ * Reverse EMI: principal that can be supported by a target monthly EMI.
+ * P = EMI × ((1+r)^n − 1) / (r × (1+r)^n); zero rate: P = EMI × n
+ */
+export function calculatePrincipalFromEmi(input: {
+  monthlyEmi: number;
+  annualRatePercent: number;
+  tenureMonths: number;
+}): number | null {
+  const emi = input.monthlyEmi;
+  const annualRatePercent = input.annualRatePercent;
+  const n = Math.floor(input.tenureMonths);
+
+  if (!Number.isFinite(emi) || emi <= 0) return null;
+  if (!Number.isFinite(annualRatePercent) || annualRatePercent < EMI_LIMITS.rateMin) return null;
+  if (!Number.isFinite(n) || n < EMI_LIMITS.tenureMonthsMin) return null;
+  if (annualRatePercent > EMI_LIMITS.rateMax) return null;
+  if (n > EMI_LIMITS.tenureMonthsMax) return null;
+
+  let principal: number;
+  if (annualRatePercent === 0) {
+    principal = emi * n;
+  } else {
+    const r = annualRatePercent / 12 / 100;
+    const factor = Math.pow(1 + r, n);
+    principal = (emi * (factor - 1)) / (r * factor);
+  }
+
+  if (!Number.isFinite(principal) || principal <= 0) return null;
+  return Math.min(principal, EMI_LIMITS.amountMax);
+}
+
+/** Illustrative FOIR cap for affordability estimates (not a lender rule). */
+export const ILLUSTRATIVE_FOIR_RATIO = 0.4;
+
+export function estimateAffordableEmi(input: {
+  monthlyIncome: number;
+  existingEmis: number;
+  foirRatio?: number;
+}): number | null {
+  const income = input.monthlyIncome;
+  const existing = input.existingEmis;
+  const foir = input.foirRatio ?? ILLUSTRATIVE_FOIR_RATIO;
+  if (!Number.isFinite(income) || income <= 0) return null;
+  if (!Number.isFinite(existing) || existing < 0) return null;
+  if (!Number.isFinite(foir) || foir <= 0 || foir > 1) return null;
+  return Math.max(0, income * foir - existing);
+}
+
 export const EMI_VALIDATION_MESSAGES: Record<EmiValidationError, string> = {
   invalid_amount: 'Enter a loan amount greater than zero.',
   amount_too_high: `Loan amount cannot exceed ₹${EMI_LIMITS.amountMax.toLocaleString('en-IN')}.`,

@@ -5,16 +5,26 @@ import { financeGuidesPath } from '@/lib/finance-routes';
 import { LoanSectionHeader } from '@/components/loans/loan-section-header';
 import { LoanIllustrationFrame } from '@/components/loans/loan-illustration-frame';
 
-export function LoanGuidesSection({ guides }: { guides: LoanGuideCardModel[] }) {
+export function LoanGuidesSection({
+  guides,
+  title = 'Latest Loan Guides',
+  description = 'Practical explainers on loans, EMI, eligibility, and credit.',
+  actionLabel = 'View All Loan Guides →',
+}: {
+  guides: LoanGuideCardModel[];
+  title?: string;
+  description?: string;
+  actionLabel?: string;
+}) {
   if (!guides.length) return null;
 
   return (
     <section id="loan-guides-heading" aria-labelledby="loan-guides-title">
       <LoanSectionHeader
         id="loan-guides-title"
-        title="Latest Loan Guides"
-        description="Practical explainers on loans, EMI, eligibility, and credit."
-        action={{ href: financeGuidesPath(), label: 'View All Loan Guides →' }}
+        title={title}
+        description={description}
+        action={{ href: financeGuidesPath(), label: actionLabel }}
       />
 
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

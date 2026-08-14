@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <!-- Soft editorial backdrop -->
+  <rect width="640" height="360" rx="28" fill="#f7f9fc"/>
+  <circle cx="92" cy="78" r="64" fill="#e8eef5" opacity="0.85"/>
+  <circle cx="558" cy="286" r="78" fill="#ffedd5" opacity="0.45"/>
+  <circle cx="520" cy="58" r="36" fill="#fff7ed" opacity="0.7"/>
+
+  <!-- Flow: Amount → EMI → Calendar -->
+  <path d="M198 170 H240" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+  <path d="M392 170 H442" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="240" cy="170" r="4.5" fill="#f97316"/>
+  <circle cx="442" cy="170" r="4.5" fill="#f97316"/>
+
+  <!-- 1. Loan amount -->
+  <rect x="48" y="96" width="150" height="148" rx="22" fill="#0b1f3a"/>
+  <circle cx="123" cy="148" r="28" fill="#122b4a"/>
+  <circle cx="123" cy="148" r="18" fill="none" stroke="#f97316" stroke-width="4"/>
+  <path d="M123 136 v24M111 148 h24" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+  <rect x="76" y="196" width="94" height="10" rx="5" fill="#fff" opacity="0.28"/>
+  <rect x="88" y="216" width="70" height="8" rx="4" fill="#f97316" opacity="0.9"/>
+
+  <!-- 2. Monthly EMI board -->
+  <rect x="248" y="72" width="144" height="196" rx="22" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="248" y="72" width="144" height="44" rx="22" fill="#0b1f3a"/>
+  <rect x="248" y="94" width="144" height="22" fill="#0b1f3a"/>
+  <circle cx="272" cy="94" r="5" fill="#f97316"/>
+  <rect x="286" y="89" width="72" height="10" rx="5" fill="#fff" opacity="0.3"/>
+
+  <rect x="272" y="136" width="96" height="14" rx="7" fill="#94a3b8" opacity="0.35"/>
+  <rect x="272" y="162" width="80" height="22" rx="8" fill="#f97316"/>
+  <rect x="272" y="198" width="96" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="272" y="216" width="72" height="8" rx="4" fill="#e2e8f0"/>
+
+  <circle cx="280" cy="246" r="5" fill="#0b1f3a"/>
+  <circle cx="300" cy="246" r="5" fill="#0b1f3a" opacity="0.7"/>
+  <circle cx="320" cy="246" r="5" fill="#f97316"/>
+  <circle cx="340" cy="246" r="5" fill="#cbd5e1"/>
+  <circle cx="360" cy="246" r="5" fill="#cbd5e1"/>
+
+  <!-- 3. Repayment calendar -->
+  <rect x="442" y="96" width="150" height="168" rx="22" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="442" y="96" width="150" height="36" rx="22" fill="#0b1f3a"/>
+  <rect x="442" y="114" width="150" height="18" fill="#0b1f3a"/>
+  <circle cx="466" cy="114" r="4" fill="#f97316"/>
+  <circle cx="568" cy="114" r="4" fill="#fff" opacity="0.4"/>
+
+  <circle cx="470" cy="156" r="6" fill="#e2e8f0"/>
+  <circle cx="498" cy="156" r="6" fill="#0b1f3a" opacity="0.85"/>
+  <circle cx="526" cy="156" r="6" fill="#e2e8f0"/>
+  <circle cx="554" cy="156" r="6" fill="#e2e8f0"/>
+
+  <circle cx="470" cy="184" r="6" fill="#e2e8f0"/>
+  <circle cx="498" cy="184" r="6" fill="#f97316"/>
+  <circle cx="526" cy="184" r="6" fill="#e2e8f0"/>
+  <circle cx="554" cy="184" r="6" fill="#e2e8f0"/>
+
+  <circle cx="470" cy="212" r="6" fill="#e2e8f0"/>
+  <circle cx="498" cy="212" r="6" fill="#e2e8f0"/>
+  <circle cx="526" cy="212" r="6" fill="#0b1f3a" opacity="0.45"/>
+  <circle cx="554" cy="212" r="6" fill="#e2e8f0"/>
+
+  <rect x="462" y="236" width="110" height="8" rx="4" fill="#e8eef5"/>
+  <rect x="462" y="236" width="68" height="8" rx="4" fill="#f97316"/>
+
+  <!-- Timeline strip -->
+  <rect x="196" y="292" width="248" height="36" rx="18" fill="#fff" stroke="#e2e8f0"/>
+  <circle cx="220" cy="310" r="6" fill="#0b1f3a"/>
+  <rect x="236" y="306" width="120" height="8" rx="4" fill="#cbd5e1"/>
+  <rect x="236" y="306" width="72" height="8" rx="4" fill="#0b1f3a"/>
+  <circle cx="368" cy="310" r="6" fill="#f97316"/>
+  <rect x="384" y="306" width="40" height="8" rx="4" fill="#fdba74" opacity="0.85"/>
+</svg>

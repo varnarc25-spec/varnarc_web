@@ -56,6 +56,25 @@ export function resolveLoanHeroImage(input: {
 }
 
 /**
+ * Category landing hero: prefer LoanCategory CMS/media, then shared hub illustration family.
+ */
+export function resolveLoanCategoryHeroImage(input: {
+  categorySlug?: string | null;
+  heroImageUrl?: string | null;
+  featuredImageUrl?: string | null;
+}): string {
+  const cmsHero = input.heroImageUrl?.trim();
+  if (cmsHero) return cmsHero;
+  const cmsFeatured = input.featuredImageUrl?.trim();
+  if (cmsFeatured) return cmsFeatured;
+  return resolveLoanHeroImage({
+    categorySlug: input.categorySlug,
+    heroImageUrl: null,
+    featuredImageUrl: null,
+  });
+}
+
+/**
  * Guide / article card cover on the loans hub.
  * Prefer category SVG (or hub asset) over photorealistic CMS covers.
  */

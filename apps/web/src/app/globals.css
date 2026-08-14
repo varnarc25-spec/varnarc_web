@@ -269,3 +269,69 @@ select:focus-visible {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
+
+/* Personal Loan page — scoped visual system (does not alter global tokens) */
+.pl-page {
+  --pl-navy: #0b1f3a;
+  --pl-navy-soft: #122b4a;
+  --pl-orange: #f97316;
+  --pl-orange-soft: #fff7ed;
+  --pl-surface-1: #ffffff;
+  --pl-surface-2: #f4f6f9;
+  --pl-surface-3: #faf7f2;
+  --pl-surface-4: #eef2f7;
+  --pl-ink: #0b1f3a;
+  --pl-muted: #64748b;
+  --pl-border: #e8edf3;
+  --pl-radius-sm: 0.5rem;
+  --pl-radius-md: 0.75rem;
+  --pl-radius-lg: 1rem;
+  --pl-section-y: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.pl-page .pl-section {
+  padding-block: var(--pl-section-y);
+}
+
+.pl-page .pl-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pl-orange);
+}
+
+.pl-page .pl-h2 {
+  margin-top: 0.375rem;
+  font-size: clamp(1.3125rem, 2.1vw, 1.625rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pl-navy);
+}
+
+.pl-page .pl-lede {
+  margin-top: 0.625rem;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--pl-muted);
+}
+
+.pl-page .pl-metric-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--pl-navy);
+}
+
+.pl-page .pl-metric-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pl-muted);
+}
+
+.pl-page .pl-divider {
+  border-color: var(--pl-border);
+}

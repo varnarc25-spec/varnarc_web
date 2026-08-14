@@ -1,6 +1,7 @@
 import { calculatorHref, isKnownCalculatorSlug } from '@/lib/finance-routes';
 import type { LoanCategorySlug } from '@/lib/loan-hub-categories';
 import type { ContextualLink } from '@/lib/loan-contextual-links';
+import { PERSONAL_LOAN_INTRO } from '@/lib/personal-loan-page';
 
 export type { LoanCategorySlug };
 
@@ -43,8 +44,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   'personal-loan': {
     h1: 'Compare Personal Loans',
     breadcrumbLabel: 'Personal Loans',
-    intro:
-      'Compare personal loan interest rates, loan amounts, repayment tenure, fees and eligibility requirements.',
+    intro: PERSONAL_LOAN_INTRO,
     metaTitle: 'Compare Personal Loans | Rates, EMI & Eligibility',
     metaDescription:
       'Compare personal loan interest rates, amounts, tenure, processing fees and eligibility from banks and NBFCs. Estimate EMI before you apply.',

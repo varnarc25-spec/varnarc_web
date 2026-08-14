@@ -178,6 +178,7 @@ function FilterFields({
   banks,
   moreOpen,
   setMoreOpen,
+  hideLoanType = false,
 }: {
   draft: LoanFilterState;
   setDraft: Dispatch<SetStateAction<LoanFilterState>>;
@@ -185,25 +186,28 @@ function FilterFields({
   banks: FinanceBank[];
   moreOpen: boolean;
   setMoreOpen: (open: boolean) => void;
+  hideLoanType?: boolean;
 }) {
   return (
     <div className="space-y-3.5">
-      <div>
-        <FieldLabel htmlFor="loan-filter-type">Loan Type</FieldLabel>
-        <select
-          id="loan-filter-type"
-          value={draft.categorySlug ?? ''}
-          onChange={(e) => setDraft((d) => ({ ...d, categorySlug: e.target.value || undefined }))}
-          className={inputClass}
-        >
-          <option value="">All</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      {hideLoanType ? null : (
+        <div>
+          <FieldLabel htmlFor="loan-filter-type">Loan Type</FieldLabel>
+          <select
+            id="loan-filter-type"
+            value={draft.categorySlug ?? ''}
+            onChange={(e) => setDraft((d) => ({ ...d, categorySlug: e.target.value || undefined }))}
+            className={inputClass}
+          >
+            <option value="">All</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <FieldLabel htmlFor="loan-filter-lender">Lender</FieldLabel>
@@ -339,10 +343,19 @@ export function LoanFilters({
   categories,
   banks,
   current,
+  hideLoanType = false,
+  lockCategorySlug,
+  quiet = false,
 }: {
   categories: FinanceCategory[];
   banks: FinanceBank[];
   current: LoanFilterState;
+  /** Hide Loan Type control (e.g. Personal Loan page). */
+  hideLoanType?: boolean;
+  /** Force category slug on apply/clear when Loan Type is hidden. */
+  lockCategorySlug?: string;
+  /** Quieter visual weight so product results dominate (Personal Loan page). */
+  quiet?: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -396,7 +409,9 @@ export function LoanFilters({
     };
   }, [drawerOpen]);
 
-  const activeCount = countActiveFilters(current);
+  const activeCount = countActiveFilters(
+    hideLoanType || lockCategorySlug ? { ...current, categorySlug: undefined } : current,
+  );
 
   function apply(e?: FormEvent) {
     e?.preventDefault();
@@ -404,6 +419,7 @@ export function LoanFilters({
       router.push(
         buildHref({
           ...draft,
+          categorySlug: lockCategorySlug ?? draft.categorySlug,
           sort: current.sort ?? draft.sort ?? 'recommended',
         }),
       );
@@ -412,9 +428,9 @@ export function LoanFilters({
   }
 
   function clear() {
-    // Clear filters only — keep current sort when present.
     const next: LoanFilterState = {};
     if (current.sort) next.sort = current.sort;
+    if (lockCategorySlug) next.categorySlug = lockCategorySlug;
     setDraft(next);
     startTransition(() => {
       router.push(buildHref(next));
@@ -423,7 +439,7 @@ export function LoanFilters({
   }
 
   const actions = (
-    <div className="flex gap-2 pt-1">
+    <div className={`flex gap-2 ${quiet ? 'pt-0.5' : 'pt-1'}`}>
       <button
         type="submit"
         className="min-h-11 flex-1 rounded-lg bg-[#0b1f3a] px-3 text-sm font-semibold text-white hover:bg-[#122b4a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2"
@@ -433,7 +449,11 @@ export function LoanFilters({
       <button
         type="button"
         onClick={clear}
-        className="min-h-11 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2"
+        className={`min-h-11 rounded-lg px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 ${
+          quiet
+            ? 'text-slate-500 hover:text-[#0b1f3a]'
+            : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+        }`}
       >
         Clear
       </button>
@@ -448,6 +468,7 @@ export function LoanFilters({
       banks={banks}
       moreOpen={moreOpen}
       setMoreOpen={setMoreOpen}
+      hideLoanType={hideLoanType}
     />
   );
 
@@ -478,16 +499,34 @@ export function LoanFilters({
       </div>
 
       {/* Desktop sticky sidebar — lighter so results stay dominant */}
-      <aside className="hidden rounded-2xl bg-white p-3.5 ring-1 ring-slate-200/80 lg:sticky lg:top-24 lg:block lg:self-start">
+      <aside
+        className={`hidden lg:sticky lg:top-24 lg:block lg:self-start ${
+          quiet
+            ? 'rounded-xl bg-white/60 p-3'
+            : 'rounded-2xl bg-white p-3.5 ring-1 ring-slate-200/80'
+        }`}
+      >
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-bold text-[#0b1f3a]">Filters</p>
+          <p
+            className={
+              quiet
+                ? 'text-[11px] font-semibold uppercase tracking-wide text-slate-500'
+                : 'text-sm font-bold text-[#0b1f3a]'
+            }
+          >
+            Filters
+          </p>
           {activeCount > 0 ? (
             <span className="rounded-full bg-[#e8eef5] px-2 py-0.5 text-[11px] font-semibold text-[#0b1f3a]">
               {activeCount} active
             </span>
           ) : null}
         </div>
-        <form onSubmit={apply} className="mt-3 space-y-3.5" aria-label="Loan filters">
+        <form
+          onSubmit={apply}
+          className={`mt-3 ${quiet ? 'space-y-2.5' : 'space-y-3.5'}`}
+          aria-label="Loan filters"
+        >
           {formBody}
           {actions}
         </form>
@@ -551,23 +590,30 @@ export function LoanActiveFilterChips({
   current,
   categories,
   banks,
+  hideCategoryChip = false,
+  lockCategorySlug,
 }: {
   current: LoanFilterState;
   categories: FinanceCategory[];
   banks: FinanceBank[];
+  /** Hide category chip on category-locked pages (e.g. Personal Loan). */
+  hideCategoryChip?: boolean;
+  lockCategorySlug?: string;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const chips = useMemo(
-    () => getLoanFilterChips(current, categories, banks),
-    [current, categories, banks],
-  );
+  const chips = useMemo(() => {
+    const all = getLoanFilterChips(current, categories, banks);
+    return hideCategoryChip ? all.filter((c) => c.key !== 'categorySlug') : all;
+  }, [current, categories, banks, hideCategoryChip]);
 
   if (!chips.length) return null;
 
   function removeChip(key: FilterKey) {
+    if (key === 'categorySlug' && lockCategorySlug) return;
     const next: LoanFilterState = { ...current };
     delete next[key];
+    if (lockCategorySlug) next.categorySlug = lockCategorySlug;
     startTransition(() => {
       router.push(buildHref(next));
     });
@@ -576,6 +622,7 @@ export function LoanActiveFilterChips({
   function clearAll() {
     const next: LoanFilterState = {};
     if (current.sort) next.sort = current.sort;
+    if (lockCategorySlug) next.categorySlug = lockCategorySlug;
     startTransition(() => {
       router.push(buildHref(next));
     });

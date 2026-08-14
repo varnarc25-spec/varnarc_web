@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isVarnarcHubAsset,
   resolveLoanCategoryCardImage,
+  resolveLoanCategoryHeroImage,
   resolveLoanGuideCoverImage,
   resolveLoanHeroImage,
   LOAN_DEFAULT_CATEGORY_ASSET,
@@ -40,6 +41,23 @@ describe('loan visual assets', () => {
         heroImageUrl: 'https://cdn.example.com/uploads/house.jpg',
       }),
     ).toBe('/hub/finance/categories/home-loan.svg');
+  });
+
+  it('prefers LoanCategory CMS media on category landings', () => {
+    expect(
+      resolveLoanCategoryHeroImage({
+        categorySlug: 'personal-loan',
+        heroImageUrl: 'https://cdn.example.com/uploads/personal-hero.jpg',
+      }),
+    ).toBe('https://cdn.example.com/uploads/personal-hero.jpg');
+
+    expect(
+      resolveLoanCategoryHeroImage({
+        categorySlug: 'personal-loan',
+        heroImageUrl: null,
+        featuredImageUrl: null,
+      }),
+    ).toBe('/hub/finance/categories/personal-loan.svg');
   });
 
   it('prefers category art for guide covers', () => {

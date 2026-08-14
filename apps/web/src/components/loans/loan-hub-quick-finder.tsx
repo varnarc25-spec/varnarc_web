@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState, useTransition, type FormEvent } from 'react';
 import type { FinanceCategory } from '@/services/finance';
 import { isLoanHubCategorySlug } from '@/lib/loan-hub-categories';
 import { financeEligibilityPath, loansHubPath } from '@/lib/finance-routes';
+import { LOAN_CATALOG_FILTER_KEYS } from '@/lib/loan-path';
 
 const TENURE_OPTIONS = [
   { label: '12 months', value: '12' },
@@ -33,12 +34,17 @@ function formatAmountDisplay(raw: string): string {
   return new Intl.NumberFormat('en-IN').format(n);
 }
 
+function digitsOnly(value: string | null | undefined): string {
+  if (!value) return '';
+  return value.replace(/\D/g, '');
+}
+
 /**
  * Interactive quick-finder only — keeps hero SEO copy on the server.
  * Uses startTransition so filter navigation stays responsive (INP).
  *
  * Hub mode: loan type + amount + tenure.
- * Category mode: amount + tenure + optional employment (loan type locked to page).
+ * Category mode: amount + tenure + employment (no income / credit score).
  */
 export function LoanHubQuickFinder({
   categories,
@@ -50,30 +56,54 @@ export function LoanHubQuickFinder({
   activeCategorySlug?: string;
   /** Category pages pass e.g. "Compare Personal Loans". Hub keeps default. */
   compareCtaLabel?: string;
-  /** Category pages pass e.g. "Check Personal Loan Eligibility". */
+  /** Category pages pass e.g. "Check eligibility". */
   eligibilityLabel?: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const categoryMode = Boolean(activeCategorySlug && isLoanHubCategorySlug(activeCategorySlug));
+
   const [loanType, setLoanType] = useState(activeCategorySlug ?? '');
-  const [amountDigits, setAmountDigits] = useState('');
-  const [tenure, setTenure] = useState('');
-  const [employmentType, setEmploymentType] = useState('');
+  const [amountDigits, setAmountDigits] = useState(() =>
+    digitsOnly(searchParams.get('amountMin') ?? searchParams.get('amountMax')),
+  );
+  const [tenure, setTenure] = useState(() => searchParams.get('tenureMin') ?? '');
+  const [employmentType, setEmploymentType] = useState(
+    () => searchParams.get('employmentType') ?? '',
+  );
 
   const amountDisplay = useMemo(() => formatAmountDisplay(amountDigits), [amountDigits]);
   const submitLabel = compareCtaLabel?.trim() || 'Compare Loans';
-  const eligibilityText = eligibilityLabel?.trim() || 'Check loan eligibility';
+  const eligibilityText = eligibilityLabel?.trim() || 'Check eligibility';
   const eligibilityHref = categoryMode
     ? financeEligibilityPath({ loanType: activeCategorySlug })
     : '/finance/eligibility';
 
+  function currentCatalogFilters(): Record<string, string | undefined> {
+    const filters: Record<string, string | undefined> = {};
+    for (const key of LOAN_CATALOG_FILTER_KEYS) {
+      if (key === 'cursor') continue;
+      const value = searchParams.get(key);
+      if (value) filters[key] = value;
+    }
+    return filters;
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const filters: Record<string, string | undefined> = {};
+    const filters = currentCatalogFilters();
+
     if (amountDigits) filters.amountMin = amountDigits;
+    else delete filters.amountMin;
+
     if (tenure) filters.tenureMin = tenure;
-    if (categoryMode && employmentType) filters.employmentType = employmentType;
+    else delete filters.tenureMin;
+
+    if (categoryMode) {
+      if (employmentType) filters.employmentType = employmentType;
+      else delete filters.employmentType;
+    }
 
     const targetSlug = categoryMode
       ? activeCategorySlug
@@ -97,13 +127,15 @@ export function LoanHubQuickFinder({
       aria-label="Quick loan finder"
     >
       <div
-        className={`grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 ${
-          categoryMode ? 'lg:grid-cols-4' : 'lg:grid-cols-4'
-        } lg:gap-3`}
+        className={
+          categoryMode
+            ? 'grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4'
+            : 'grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4'
+        }
       >
         {categoryMode ? null : (
           <label className="block text-xs font-semibold text-slate-700 min-[400px]:col-span-2 lg:col-span-1">
-            Loan Type
+            Loan type
             <select
               value={loanType}
               onChange={(e) => setLoanType(e.target.value)}
@@ -132,6 +164,8 @@ export function LoanHubQuickFinder({
               type="text"
               inputMode="numeric"
               autoComplete="off"
+              name="loanAmount"
+              aria-label="Loan amount in Indian rupees"
               value={amountDisplay}
               onChange={(e) => setAmountDigits(e.target.value.replace(/\D/g, ''))}
               placeholder="5,00,000"
@@ -142,7 +176,13 @@ export function LoanHubQuickFinder({
 
         <label className="block text-xs font-semibold text-slate-700">
           Preferred tenure
-          <select value={tenure} onChange={(e) => setTenure(e.target.value)} className={fieldClass}>
+          <select
+            name="preferredTenure"
+            value={tenure}
+            onChange={(e) => setTenure(e.target.value)}
+            className={fieldClass}
+            aria-label="Preferred tenure"
+          >
             <option value="">Any tenure</option>
             {TENURE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -154,11 +194,13 @@ export function LoanHubQuickFinder({
 
         {categoryMode ? (
           <label className="block text-xs font-semibold text-slate-700">
-            Employment type <span className="font-normal text-slate-400">(optional)</span>
+            Employment type
             <select
+              name="employmentType"
               value={employmentType}
               onChange={(e) => setEmploymentType(e.target.value)}
               className={fieldClass}
+              aria-label="Employment type"
             >
               <option value="">Any</option>
               {EMPLOYMENT_OPTIONS.map((opt) => (
@@ -170,23 +212,17 @@ export function LoanHubQuickFinder({
           </label>
         ) : null}
 
-        <div
-          className={`flex flex-col justify-end gap-2 ${
-            categoryMode
-              ? 'min-[400px]:col-span-2 lg:col-span-1'
-              : 'min-[400px]:col-span-2 lg:col-span-1'
-          }`}
-        >
+        <div className="flex flex-col justify-end gap-2 min-[400px]:col-span-2 lg:col-span-1">
           <button
             type="submit"
             disabled={pending}
-            className="min-h-11 w-full rounded-xl bg-[#0b1f3a] px-4 text-sm font-semibold text-white transition hover:bg-[#122b4a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:opacity-70"
+            className="min-h-11 w-full rounded-xl bg-[#0b1f3a] px-4 text-sm font-semibold text-white transition hover:bg-[#122b4a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {pending ? 'Updating…' : submitLabel}
           </button>
           <Link
             href={eligibilityHref}
-            className="group inline-flex min-h-9 items-center justify-center text-center text-xs font-semibold text-slate-600 transition hover:text-[#f97316] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316]"
+            className="group inline-flex min-h-9 items-center justify-center text-center text-xs font-semibold text-slate-600 transition hover:text-[#f97316] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2"
           >
             {eligibilityText}
             <span

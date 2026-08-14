@@ -42,7 +42,9 @@ import {
 import { computeLoanCategoryStats } from '@/lib/loan-category-stats';
 import { pickLoanCategoryFaqs } from '@/lib/loan-category-faqs';
 import { buildLoanCategoryGuideCards } from '@/lib/loan-guides';
-import { resolveLoanHeroImage } from '@/lib/loan-visual-assets';
+import { resolveLoanCategoryHeroImage } from '@/lib/loan-visual-assets';
+import { LOAN_CATEGORY_HERO_BENEFITS } from '@/components/loans/loan-hub-hero';
+import { PersonalLoanPage } from '@/components/loans/personal-loan-page';
 
 export type LoanCategoryPageProps = {
   slug: LoanCategorySlug;
@@ -73,9 +75,36 @@ function parseContentSections(
 
 /**
  * Dedicated loan category landing page.
- * Reuses catalog primitives (hero/filters/results) but is not a clone of the hub.
+ * Personal Loan uses a deeper decision layout; other categories keep this template.
  */
-export function LoanCategoryPage({
+export function LoanCategoryPage(props: LoanCategoryPageProps) {
+  if (props.slug === 'personal-loan') {
+    return (
+      <PersonalLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  return <LoanCategoryPageGeneric {...props} />;
+}
+
+function LoanCategoryPageGeneric({
   slug,
   category,
   categories,
@@ -101,7 +130,7 @@ export function LoanCategoryPage({
   const h1 = resolveCategoryH1(slug, category.name);
   const breadcrumbLabel = resolveCategoryBreadcrumbLabel(slug, category.name);
   const intro = resolveCategoryIntro(slug, category);
-  const heroImageUrl = resolveLoanHeroImage({
+  const heroImageUrl = resolveLoanCategoryHeroImage({
     categorySlug: slug,
     heroImageUrl: category.heroImage,
     featuredImageUrl: category.featuredImage,
@@ -182,7 +211,9 @@ export function LoanCategoryPage({
               heroImageUrl={heroImageUrl}
               heroImageAlt={heroImageAlt}
               compareCtaLabel={h1}
-              eligibilityLabel={`Check ${category.name} Eligibility`}
+              eligibilityLabel="Check eligibility"
+              benefitPoints={LOAN_CATEGORY_HERO_BENEFITS}
+              preferProvidedHeroImage
             />
           </div>
 

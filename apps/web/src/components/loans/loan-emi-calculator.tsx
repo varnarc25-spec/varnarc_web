@@ -115,6 +115,10 @@ export function LoanEmiCalculator({
   initialTenure,
   initialTenureUnit,
   initialTenureMonths,
+  title = 'Loan EMI Calculator',
+  eyebrow = 'Estimate repayment',
+  description = 'Estimate monthly repayment before you shortlist lenders. Defaults are for illustration only.',
+  amountPresets,
 }: {
   initialAmount?: number;
   initialRate?: number;
@@ -122,6 +126,10 @@ export function LoanEmiCalculator({
   initialTenureUnit?: 'months' | 'years';
   /** @deprecated Prefer initialTenure + initialTenureUnit */
   initialTenureMonths?: number;
+  title?: string;
+  eyebrow?: string;
+  description?: string;
+  amountPresets?: ReadonlyArray<{ label: string; amount: number }>;
 }) {
   const searchParams = useSearchParams();
   const parsedUrl = parseEmiQuery(searchParams);
@@ -228,18 +236,15 @@ export function LoanEmiCalculator({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#f97316]">
-              Estimate repayment
+              {eyebrow}
             </p>
             <h2
               id="loan-emi-calculator-heading"
               className="mt-1 text-xl font-extrabold tracking-tight text-[#0b1f3a] sm:text-2xl"
             >
-              Loan EMI Calculator
+              {title}
             </h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-              Estimate monthly repayment before you shortlist lenders. Defaults are for illustration
-              only.
-            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{description}</p>
             {productNotice ? (
               <p className="mt-2 text-xs leading-relaxed text-slate-500">{productNotice}</p>
             ) : null}
@@ -248,6 +253,23 @@ export function LoanEmiCalculator({
 
         <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
           <div className="space-y-3.5 rounded-2xl bg-[#f8fafc] p-4 sm:p-5">
+            {amountPresets?.length ? (
+              <div>
+                <p className="text-xs font-semibold text-slate-700">Quick amounts</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {amountPresets.map((preset) => (
+                    <button
+                      key={preset.amount}
+                      type="button"
+                      onClick={() => setAmount(String(preset.amount))}
+                      className="inline-flex min-h-9 items-center rounded-full bg-white px-3 text-xs font-semibold text-[#0b1f3a] ring-1 ring-slate-200/80 transition hover:text-[#f97316] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316]"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <label className="block text-xs font-semibold text-slate-700">
               Loan amount
               <input
