@@ -35,7 +35,7 @@ export const LOAN_HUB_CATEGORY_FALLBACK: FinanceCategory[] = [
     shortDescription:
       'Compare unsecured financing for personal expenses, with flexible tenure and repayment options.',
     introduction:
-      'Compare personal loan rates, loan amounts, repayment tenure, processing fees and eligibility requirements.',
+      'Compare personal loan interest rates, loan amounts, repayment tenure, fees and eligibility requirements.',
     typicalMinTenure: 12,
     typicalMaxTenure: 60,
   },

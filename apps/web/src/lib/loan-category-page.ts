@@ -4,14 +4,28 @@ import type { ContextualLink } from '@/lib/loan-contextual-links';
 
 export type { LoanCategorySlug };
 
+export type LoanCategorySectionLayout =
+  'prose' | 'stepper' | 'factor-cards' | 'compare-table' | 'checklist' | 'pros-cons';
+
 export type LoanCategorySection = {
   key: string;
   title: string;
   body: string;
+  /** Visual presentation for category education (titles/layouts stay in code; CMS overrides body). */
+  layout?: LoanCategorySectionLayout;
+  steps?: string[];
+  factors?: Array<{ title: string; detail: string }>;
+  compareHeaders?: [string, string];
+  compareRows?: Array<{ label: string; left: string; right: string }>;
+  checklist?: string[];
+  pros?: string[];
+  cons?: string[];
 };
 
 export type LoanCategoryPageCopy = {
   h1: string;
+  /** Breadcrumb trail label (may differ from CMS singular name). */
+  breadcrumbLabel: string;
   intro: string;
   metaTitle: string;
   metaDescription: string;
@@ -28,8 +42,9 @@ function calc(slug: Parameters<typeof calculatorHref>[0], label: string): Contex
 export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryPageCopy> = {
   'personal-loan': {
     h1: 'Compare Personal Loans',
+    breadcrumbLabel: 'Personal Loans',
     intro:
-      'Compare personal loan rates, loan amounts, repayment tenure, processing fees and eligibility requirements.',
+      'Compare personal loan interest rates, loan amounts, repayment tenure, fees and eligibility requirements.',
     metaTitle: 'Compare Personal Loans | Rates, EMI & Eligibility',
     metaDescription:
       'Compare personal loan interest rates, amounts, tenure, processing fees and eligibility from banks and NBFCs. Estimate EMI before you apply.',
@@ -37,62 +52,182 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
       calc('personal-loan-emi', 'Personal Loan EMI Calculator'),
       calc('loan-eligibility', 'Loan Eligibility Calculator'),
       calc('loan-prepayment', 'Loan Prepayment Calculator'),
+      calc('debt-planner', 'Debt-to-Income / EMI Burden Calculator'),
+      calc('emi-rate-compare', 'Interest Rate Comparison Calculator'),
     ],
     sections: [
       {
         key: 'whatIs',
         title: 'What is a Personal Loan?',
-        body: 'A personal loan is typically an unsecured credit facility used for personal expenses such as medical needs, travel, education support, debt consolidation or home improvements. Approval and pricing usually depend on income, credit profile and lender policy — not on pledged collateral.',
+        layout: 'prose',
+        body: 'A personal loan is typically an unsecured credit facility for personal expenses such as medical needs, travel, education support, debt consolidation or home improvements. Approval and pricing usually depend on income, credit profile and lender policy — not on pledged collateral.',
       },
       {
         key: 'howItWorks',
         title: 'How Personal Loans Work',
+        layout: 'stepper',
         body: 'After application and verification, lenders may sanction an amount and tenure. Disbursal is often to your bank account. You repay through EMIs that cover principal and interest. Always confirm final terms in the sanction letter before accepting.',
+        steps: [
+          'Apply with KYC and income details',
+          'Lender verifies profile and credit',
+          'Sanction letter confirms amount, rate and tenure',
+          'Funds disburse to your account',
+          'Repay via scheduled EMIs',
+        ],
       },
       {
         key: 'interestRates',
         title: 'Personal Loan Interest Rates',
-        body: 'Displayed rates on comparison pages are starting or illustrative figures where verified. Your offered rate can differ based on credit score, income stability, existing obligations and lender risk assessment. Compare APR-style cost, not only the headline rate.',
+        layout: 'prose',
+        body: 'Displayed rates on comparison pages are starting or illustrative figures where verified. Your offered rate can differ based on credit score, income stability, existing obligations and lender risk assessment. Compare total cost, not only the headline rate.',
+      },
+      {
+        key: 'rateFactors',
+        title: 'What Affects Your Rate?',
+        layout: 'factor-cards',
+        body: 'Lenders price personal loans from risk and product rules. Improving one factor helps, but offers still vary by bank or NBFC policy.',
+        factors: [
+          { title: 'Credit score', detail: 'Stronger history can improve pricing odds.' },
+          { title: 'Income stability', detail: 'Steady salary or business cash flow matters.' },
+          { title: 'Existing EMIs', detail: 'High obligations can tighten offers.' },
+          { title: 'Employment type', detail: 'Salaried vs self-employed policies differ.' },
+          { title: 'Loan amount & tenure', detail: 'Ticket size and term affect risk.' },
+          { title: 'Relationship & offers', detail: 'Existing customers may see different rates.' },
+        ],
       },
       {
         key: 'eligibility',
         title: 'Eligibility',
+        layout: 'checklist',
         body: 'Common factors include age, employment type, minimum income, work experience, residence stability and credit history. Each lender publishes its own criteria — use eligibility tools only as indicative checks, not as approval guarantees.',
-      },
-      {
-        key: 'creditScore',
-        title: 'Credit Score',
-        body: 'A stronger credit score can improve approval odds and pricing for unsecured personal loans. Lenders may also review repayment history, credit utilisation and recent enquiries. Improving score quality before applying can help, but results vary by lender.',
+        checklist: [
+          'Age within lender-stated limits',
+          'Minimum income / turnover threshold',
+          'Stable employment or business vintage',
+          'Acceptable credit profile',
+          'Manageable existing obligations',
+        ],
       },
       {
         key: 'documents',
         title: 'Documents Required',
+        layout: 'checklist',
         body: 'Typical document sets include identity and address proof, income documents (salary slips or ITRs), bank statements and photographs. Self-employed applicants may need business proofs. Exact lists differ by lender and profile.',
+        checklist: [
+          'Identity and address proof (KYC)',
+          'Income proofs (salary slips / ITR)',
+          'Recent bank statements',
+          'Photographs as required',
+          'Business proofs for self-employed (if asked)',
+        ],
       },
       {
         key: 'fees',
-        title: 'Fees and Charges',
+        title: 'Fees & Charges',
+        layout: 'checklist',
         body: 'Beyond interest, review processing fees, GST where applicable, foreclosure or prepayment charges, late payment fees and any documentation charges. Missing fee data on a listing means it is not currently verified — confirm with the lender.',
+        checklist: [
+          'Processing fee (and GST if applicable)',
+          'Prepayment / foreclosure charges',
+          'Late payment or bounce fees',
+          'Documentation or other admin charges',
+        ],
       },
       {
         key: 'emiCalculation',
-        title: 'EMI Calculation',
+        title: 'EMI',
+        layout: 'prose',
         body: 'EMI depends on principal, annual interest rate and tenure. Use an EMI calculator to compare scenarios. Illustrative EMIs are not offers; actual schedules follow the lender’s reducing-balance method and sanction terms.',
+      },
+      {
+        key: 'creditScore',
+        title: 'Credit Score',
+        layout: 'prose',
+        body: 'A stronger credit score can improve approval odds and pricing for unsecured personal loans. Lenders may also review repayment history, credit utilisation and recent enquiries. Improving score quality before applying can help, but results vary by lender.',
+      },
+      {
+        key: 'tenure',
+        title: 'Tenure',
+        layout: 'compare-table',
+        body: 'Shorter tenure raises EMI but usually lowers total interest. Longer tenure eases monthly outflow but can increase overall cost. Match tenure to cash flow — not only to the lowest EMI.',
+        compareHeaders: ['Shorter tenure', 'Longer tenure'],
+        compareRows: [
+          { label: 'Monthly EMI', left: 'Higher', right: 'Lower' },
+          { label: 'Total interest', left: 'Often lower', right: 'Often higher' },
+          { label: 'Cash-flow fit', left: 'Needs stronger surplus', right: 'Easier monthly fit' },
+        ],
       },
       {
         key: 'prepayment',
         title: 'Prepayment',
+        layout: 'prose',
         body: 'Some personal loans allow part-prepayment or foreclosure with or without charges after a lock-in. Check whether savings on interest outweigh fees, and whether prepayment reduces EMI or tenure.',
       },
       {
         key: 'alternatives',
         title: 'Personal Loan vs Credit Card',
-        body: 'Personal loans usually offer fixed tenure EMIs for larger amounts. Credit cards suit shorter revolving spends but can be costlier if balances roll at high rates. Choose based on amount, repayment horizon and total cost.',
+        layout: 'compare-table',
+        body: 'Personal loans usually offer fixed tenure EMIs for larger amounts. Credit cards suit shorter revolving spends but can be costlier if balances roll at high rates.',
+        compareHeaders: ['Personal loan', 'Credit card'],
+        compareRows: [
+          { label: 'Best for', left: 'Larger planned amounts', right: 'Short revolving spends' },
+          { label: 'Repayment', left: 'Fixed EMI schedule', right: 'Minimum due / revolving' },
+          { label: 'Cost clarity', left: 'Rate + fees upfront', right: 'High if balance rolls' },
+        ],
       },
       {
-        key: 'securedVsUnsecured',
-        title: 'Secured vs Unsecured Borrowing',
-        body: 'Personal loans are generally unsecured. Secured options (gold loan, loan against property) may offer different pricing or amounts because collateral reduces lender risk — but they also create asset-related obligations if you default.',
+        key: 'vsLap',
+        title: 'Personal Loan vs Loan Against Property',
+        layout: 'compare-table',
+        body: 'Personal loans are generally unsecured and faster for smaller tickets. Loan against property uses collateral and may support larger amounts or different pricing — with asset risk if you default.',
+        compareHeaders: ['Personal loan', 'Loan against property'],
+        compareRows: [
+          { label: 'Collateral', left: 'Usually none', right: 'Property pledged' },
+          { label: 'Typical ticket', left: 'Lower to mid', right: 'Often higher' },
+          { label: 'Risk if default', left: 'Credit / recovery', right: 'Asset at risk' },
+        ],
+      },
+      {
+        key: 'advantages',
+        title: 'Advantages & Considerations',
+        layout: 'pros-cons',
+        body: 'Personal loans can fund needs without selling investments — but unsecured pricing and fees still deserve careful comparison.',
+        pros: [
+          'No collateral in most cases',
+          'Predictable EMI schedule',
+          'Useful for consolidation or planned expenses',
+        ],
+        cons: [
+          'Rates can be higher than secured products',
+          'Fees and GST add to total cost',
+          'Over-borrowing hurts future eligibility',
+        ],
+      },
+      {
+        key: 'mistakes',
+        title: 'Common Mistakes',
+        layout: 'checklist',
+        body: 'Avoid comparing only the headline rate. Confirm fees, tenure fit, and repayment capacity before you apply.',
+        checklist: [
+          'Ignoring processing and foreclosure fees',
+          'Choosing tenure only for the lowest EMI',
+          'Applying to many lenders at once without need',
+          'Borrowing more than the planned use-case',
+          'Skipping the sanction-letter review',
+        ],
+      },
+      {
+        key: 'howToApply',
+        title: 'Application Process',
+        layout: 'stepper',
+        body: 'A typical personal loan journey is short, but each lender’s verification steps can differ. Keep documents ready and read the sanction letter carefully.',
+        steps: [
+          'Shortlist products that fit amount and tenure',
+          'Check eligibility and gather documents',
+          'Submit application with accurate details',
+          'Complete verification / KYC as asked',
+          'Review sanction terms, then accept disbursal',
+        ],
       },
     ],
     defaultFaqs: [
@@ -111,10 +246,26 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
         answer:
           'Yes. Use the Personal Loan EMI Calculator with an illustrative amount, rate and tenure. Results are estimates only.',
       },
+      {
+        question: 'What documents are usually required?',
+        answer:
+          'KYC, income proofs, and bank statements are common. Self-employed applicants may need business proofs. Exact lists vary by lender.',
+      },
+      {
+        question: 'Does a higher credit score guarantee a lower rate?',
+        answer:
+          'No. A stronger score can improve odds, but income, obligations, employment type and lender policy also matter.',
+      },
+      {
+        question: 'Can I prepay a personal loan early?',
+        answer:
+          'Many lenders allow part-prepayment or foreclosure, sometimes after a lock-in and sometimes with charges. Confirm the product’s current policy.',
+      },
     ],
   },
   'home-loan': {
     h1: 'Compare Home Loans',
+    breadcrumbLabel: 'Home Loans',
     intro:
       'Compare home loan interest rates, loan amounts, tenure, processing fees, LTV and eligibility for buying or building a home.',
     metaTitle: 'Compare Home Loans | Rates, EMI, LTV & Eligibility',
@@ -213,6 +364,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'car-loan': {
     h1: 'Compare Car Loans',
+    breadcrumbLabel: 'Car Loans',
     intro:
       'Compare new and used car loan rates, down payment expectations, tenure, processing fees and eligibility.',
     metaTitle: 'Compare Car Loans | New & Used Vehicle Financing',
@@ -290,6 +442,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'education-loan': {
     h1: 'Compare Education Loans',
+    breadcrumbLabel: 'Education Loans',
     intro:
       'Compare education loan options for domestic study and study abroad, including tenure, moratorium concepts, collateral and eligibility.',
     metaTitle: 'Compare Education Loans | India & Abroad',
@@ -356,6 +509,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'business-loan': {
     h1: 'Compare Business Loans',
+    breadcrumbLabel: 'Business Loans',
     intro:
       'Compare business loan options for working capital and term needs, including eligibility, documentation and repayment structures.',
     metaTitle: 'Compare Business Loans | Working Capital & Term Loans',
@@ -427,6 +581,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'gold-loan': {
     h1: 'Compare Gold Loans',
+    breadcrumbLabel: 'Gold Loans',
     intro:
       'Compare gold loan options secured against jewellery, including tenure, repayment styles and eligibility basics.',
     metaTitle: 'Compare Gold Loans | LTV, Tenure & Repayment',
@@ -493,6 +648,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'two-wheeler-loan': {
     h1: 'Compare Two-Wheeler Loans',
+    breadcrumbLabel: 'Two-Wheeler Loans',
     intro:
       'Compare two-wheeler loan rates, tenure, down payment expectations, processing fees and eligibility for scooters and motorcycles.',
     metaTitle: 'Compare Two-Wheeler Loans | EMI & Eligibility',
@@ -554,6 +710,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
   },
   'loan-against-property': {
     h1: 'Compare Loan Against Property',
+    breadcrumbLabel: 'Loan Against Property',
     intro:
       'Compare loan against property options secured by residential or commercial property, including tenure, eligibility and fee considerations.',
     metaTitle: 'Compare Loan Against Property | Rates & Eligibility',
@@ -668,6 +825,13 @@ export function resolveCategoryH1(slug: LoanCategorySlug, categoryName?: string 
   return LOAN_CATEGORY_PAGE_DEFAULTS[slug].h1;
 }
 
+export function resolveCategoryBreadcrumbLabel(
+  slug: LoanCategorySlug,
+  categoryName?: string | null,
+): string {
+  return LOAN_CATEGORY_PAGE_DEFAULTS[slug].breadcrumbLabel || categoryName?.trim() || slug;
+}
+
 export function resolveCategoryIntro(
   slug: LoanCategorySlug,
   category?: {
@@ -707,6 +871,7 @@ export const LOAN_CATEGORY_SECTION_KEYS = [
   'whatIs',
   'howItWorks',
   'interestRates',
+  'rateFactors',
   'fixedVsFloating',
   'eligibility',
   'ltv',
@@ -721,6 +886,10 @@ export const LOAN_CATEGORY_SECTION_KEYS = [
   'joint',
   'securedVsUnsecured',
   'alternatives',
+  'vsLap',
+  'advantages',
+  'mistakes',
+  'howToApply',
   'hypothecation',
   'moratorium',
   'collateral',

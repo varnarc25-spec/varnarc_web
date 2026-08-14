@@ -1601,14 +1601,20 @@ export function FinanceCategoryEditForm({
     'whatIs',
     'howItWorks',
     'interestRates',
+    'rateFactors',
     'eligibility',
     'creditScore',
     'documents',
     'fees',
     'emiCalculation',
+    'tenure',
     'prepayment',
     'securedVsUnsecured',
     'alternatives',
+    'vsLap',
+    'advantages',
+    'mistakes',
+    'howToApply',
   ] as const;
 
   async function save() {

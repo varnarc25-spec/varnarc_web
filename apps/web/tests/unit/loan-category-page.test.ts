@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LOAN_CATEGORY_PAGE_DEFAULTS,
+  resolveCategoryBreadcrumbLabel,
   resolveCategoryEducationSections,
   resolveCategoryH1,
   resolveCategoryIntro,
@@ -19,6 +20,7 @@ describe('dedicated loan category pages', () => {
       expect(isLoanHubCategorySlug(slug)).toBe(true);
       const defaults = LOAN_CATEGORY_PAGE_DEFAULTS[slug];
       expect(defaults.h1.startsWith('Compare')).toBe(true);
+      expect(defaults.breadcrumbLabel.length).toBeGreaterThan(3);
       expect(defaults.intro.length).toBeGreaterThan(20);
       expect(defaults.sections.length).toBeGreaterThan(3);
       expect(defaults.relatedCalculators.length).toBeGreaterThan(0);
@@ -26,10 +28,48 @@ describe('dedicated loan category pages', () => {
     }
   });
 
-  it('uses Personal Loan H1/intro copy', () => {
+  it('uses Personal Loan H1/intro/breadcrumb copy', () => {
     expect(resolveCategoryH1('personal-loan')).toBe('Compare Personal Loans');
-    expect(resolveCategoryIntro('personal-loan')).toContain('personal loan rates');
+    expect(resolveCategoryBreadcrumbLabel('personal-loan')).toBe('Personal Loans');
+    expect(resolveCategoryIntro('personal-loan')).toContain(
+      'personal loan interest rates, loan amounts, repayment tenure, fees',
+    );
     expect(resolveCategoryIntro('personal-loan', { introduction: 'CMS intro' })).toBe('CMS intro');
+  });
+
+  it('ships the reusable Personal Loan education + calculator set', () => {
+    const defaults = LOAN_CATEGORY_PAGE_DEFAULTS['personal-loan'];
+    const keys = defaults.sections.map((s) => s.key);
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        'whatIs',
+        'howItWorks',
+        'interestRates',
+        'rateFactors',
+        'eligibility',
+        'documents',
+        'fees',
+        'emiCalculation',
+        'creditScore',
+        'tenure',
+        'prepayment',
+        'alternatives',
+        'vsLap',
+        'advantages',
+        'mistakes',
+        'howToApply',
+      ]),
+    );
+    expect(defaults.sections.some((s) => s.layout === 'stepper')).toBe(true);
+    expect(defaults.sections.some((s) => s.layout === 'compare-table')).toBe(true);
+    expect(defaults.relatedCalculators.map((c) => c.href)).toEqual([
+      '/calculators/personal-loan-emi',
+      '/calculators/loan-eligibility',
+      '/calculators/loan-prepayment',
+      '/calculators/debt-planner',
+      '/calculators/emi-rate-compare',
+    ]);
+    expect(defaults.defaultFaqs.length).toBeGreaterThanOrEqual(5);
   });
 
   it('merges CMS education overrides without inventing empty content', () => {
@@ -39,6 +79,7 @@ describe('dedicated loan category pages', () => {
     });
     expect(merged.find((s) => s.key === 'whatIs')?.body).toBe('CMS what is copy');
     expect(merged.find((s) => s.key === 'howItWorks')?.body.length).toBeGreaterThan(10);
+    expect(merged.find((s) => s.key === 'howItWorks')?.layout).toBe('stepper');
   });
 
   it('resolves SEO from CMS or defaults', () => {

@@ -35,14 +35,13 @@ import {
   resolveCategoryEducationSections,
   resolveCategoryH1,
   resolveCategoryIntro,
+  resolveCategoryBreadcrumbLabel,
   resolveCategoryRelatedCalculators,
   type CategoryContentSections,
 } from '@/lib/loan-category-page';
 import { computeLoanCategoryStats } from '@/lib/loan-category-stats';
 import { pickLoanCategoryFaqs } from '@/lib/loan-category-faqs';
-import { buildLoanGuideCards } from '@/lib/loan-guides';
-import { inferRelatedLoanCategorySlug } from '@/lib/loan-contextual-links';
-import type { ContextualLink } from '@/lib/loan-contextual-links';
+import { buildLoanCategoryGuideCards } from '@/lib/loan-guides';
 import { resolveLoanHeroImage } from '@/lib/loan-visual-assets';
 
 export type LoanCategoryPageProps = {
@@ -100,6 +99,7 @@ export function LoanCategoryPage({
   const cmsSections = parseContentSections(category.contentSections);
 
   const h1 = resolveCategoryH1(slug, category.name);
+  const breadcrumbLabel = resolveCategoryBreadcrumbLabel(slug, category.name);
   const intro = resolveCategoryIntro(slug, category);
   const heroImageUrl = resolveLoanHeroImage({
     categorySlug: slug,
@@ -116,21 +116,22 @@ export function LoanCategoryPage({
   const relatedCalculators = resolveCategoryRelatedCalculators(slug, cmsSections);
   const categoryFaqs: HubFaqItem[] = pickLoanCategoryFaqs(faqs, slug, category.id, 8);
 
-  const categoryGuides = guides.filter((g) => {
-    const catSlug = g.category && typeof g.category === 'object' ? g.category.slug : null;
-    if (catSlug === slug) return true;
-    return inferRelatedLoanCategorySlug(g.title, g.summary, g.slug) === slug;
+  const relatedGuideSlugs = Array.isArray(cmsSections?.relatedGuideSlugs)
+    ? cmsSections.relatedGuideSlugs.filter((s): s is string => typeof s === 'string')
+    : null;
+  const guideCards = buildLoanCategoryGuideCards({
+    categorySlug: slug,
+    relatedGuideSlugs,
+    articles,
+    guides,
+    limit: 6,
   });
-  const categoryArticles = articles.filter(
-    (a) => inferRelatedLoanCategorySlug(a.title, a.excerpt, a.slug) === slug,
-  );
-  const guideCards = buildLoanGuideCards(categoryArticles, categoryGuides, 6);
 
   const breadcrumbLd = breadcrumbJsonLd([
     { name: 'Home', url: `${siteUrl}/` },
     { name: 'Finance', url: `${siteUrl}/finance` },
     { name: 'Loans', url: `${siteUrl}/finance/loans` },
-    { name: category.name, url: `${siteUrl}${pathname}` },
+    { name: breadcrumbLabel, url: `${siteUrl}${pathname}` },
   ]);
 
   const webPageLd = {
@@ -168,7 +169,7 @@ export function LoanCategoryPage({
               { label: 'Home', href: '/' },
               { label: 'Finance', href: '/finance' },
               { label: 'Loans', href: '/finance/loans' },
-              { label: category.name },
+              { label: breadcrumbLabel },
             ]}
           />
 
@@ -180,6 +181,8 @@ export function LoanCategoryPage({
               activeCategorySlug={slug}
               heroImageUrl={heroImageUrl}
               heroImageAlt={heroImageAlt}
+              compareCtaLabel={h1}
+              eligibilityLabel={`Check ${category.name} Eligibility`}
             />
           </div>
 
@@ -302,4 +305,4 @@ function LinkChip({ href, label }: { href: string; label: string }) {
 }
 
 // Re-export for callers that need resolved calculator links without rendering the page.
-export type { ContextualLink };
+export type { ContextualLink } from '@/lib/loan-contextual-links';

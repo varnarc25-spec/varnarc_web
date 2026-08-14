@@ -25,6 +25,8 @@ export function LoanHubHero({
   activeCategorySlug,
   heroImageUrl,
   heroImageAlt,
+  compareCtaLabel,
+  eligibilityLabel,
 }: {
   title: string;
   intro: string;
@@ -32,6 +34,8 @@ export function LoanHubHero({
   activeCategorySlug?: string;
   heroImageUrl?: string | null;
   heroImageAlt?: string | null;
+  compareCtaLabel?: string;
+  eligibilityLabel?: string;
 }) {
   // Prefer first-party hub art only — mixed CMS photography breaks visual system.
   const illustrationSrc =
@@ -101,7 +105,12 @@ export function LoanHubHero({
             })}
           </nav>
 
-          <LoanHubQuickFinder categories={categories} activeCategorySlug={activeCategorySlug} />
+          <LoanHubQuickFinder
+            categories={categories}
+            activeCategorySlug={activeCategorySlug}
+            compareCtaLabel={compareCtaLabel}
+            eligibilityLabel={eligibilityLabel}
+          />
         </div>
 
         <div className="relative mx-auto hidden w-full max-w-[220px] sm:block md:max-w-[260px] lg:max-w-none">

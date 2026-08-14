@@ -185,3 +185,104 @@ export function buildLoanGuideCards(
 
   return [...fromArticles, ...fromGuides].slice(0, limit);
 }
+
+const PERSONAL_CATEGORY_GUIDE_PATTERNS = [
+  /\bpersonal\s+loans?\b/i,
+  /\bemi\b/i,
+  /\bloan\s+eligibility\b/i,
+  /\bcredit\s+scores?\b/i,
+  /\brepayment\b/i,
+  /\bprepayment\b/i,
+] as const;
+
+function matchesPersonalLoanCategoryGuide(text: string): boolean {
+  if (!isLoanRelatedGuideText(text)) return false;
+  return PERSONAL_CATEGORY_GUIDE_PATTERNS.some((re) => re.test(text));
+}
+
+function cardBySlug(
+  slug: string,
+  articles: ArticleListItem[],
+  guides: FinanceGuide[],
+): LoanGuideCardModel | null {
+  const article = articles.find((a) => a.slug === slug);
+  if (article) {
+    return {
+      id: article.id,
+      title: article.title,
+      href: articlePath(article.slug),
+      excerpt: article.excerpt,
+      categoryLabel: article.category?.name?.trim() || 'Loans',
+      imageUrl: resolveLoanGuideImageUrl({
+        featuredUrl: resolveArticleImageUrl(article),
+        slug: article.slug,
+        title: article.title,
+        excerpt: article.excerpt,
+        categoryLabel: article.category?.name,
+      }),
+      updatedAt: article.publishedAt,
+      readingTimeMinutes: article.readingTimeMinutes ?? null,
+      relatedCategorySlug: inferRelatedLoanCategorySlug(
+        article.title,
+        article.excerpt,
+        article.category?.name,
+        article.slug,
+      ),
+    };
+  }
+
+  const guide = guides.find((g) => g.slug === slug);
+  if (!guide) return null;
+  return financeGuideToLoanGuideCard(guide);
+}
+
+/**
+ * Category landing guides: honour CMS relatedGuideSlugs first, then topic-filtered content.
+ * Personal loan pages stay scoped to PL / EMI / eligibility / credit / repayment topics.
+ */
+export function buildLoanCategoryGuideCards(input: {
+  categorySlug: string;
+  relatedGuideSlugs?: string[] | null;
+  articles: ArticleListItem[];
+  guides: FinanceGuide[];
+  limit?: number;
+}): LoanGuideCardModel[] {
+  const limit = input.limit ?? 6;
+  const cards: LoanGuideCardModel[] = [];
+  const seen = new Set<string>();
+
+  for (const raw of input.relatedGuideSlugs ?? []) {
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    const card = cardBySlug(raw.trim(), input.articles, input.guides);
+    if (!card || seen.has(card.id)) continue;
+    seen.add(card.id);
+    cards.push(card);
+    if (cards.length >= limit) return cards;
+  }
+
+  const inferredArticles =
+    input.categorySlug === 'personal-loan'
+      ? input.articles.filter((a) =>
+          matchesPersonalLoanCategoryGuide(
+            haystack(a.title, a.excerpt, a.category?.name, a.category?.slug, a.slug),
+          ),
+        )
+      : input.articles;
+  const inferredGuides =
+    input.categorySlug === 'personal-loan'
+      ? input.guides.filter((g) =>
+          matchesPersonalLoanCategoryGuide(
+            haystack(g.title, g.summary, g.content, categoryNameFromGuide(g), g.slug),
+          ),
+        )
+      : input.guides;
+
+  for (const card of buildLoanGuideCards(inferredArticles, inferredGuides, limit)) {
+    if (seen.has(card.id)) continue;
+    seen.add(card.id);
+    cards.push(card);
+    if (cards.length >= limit) break;
+  }
+
+  return cards;
+}
