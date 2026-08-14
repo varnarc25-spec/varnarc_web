@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#faf7f2"/>
+  <circle cx="72" cy="68" r="54" fill="#e8eef5" opacity="0.85"/>
+  <circle cx="568" cy="292" r="76" fill="#ffedd5" opacity="0.45"/>
+  <circle cx="528" cy="58" r="32" fill="#fff7ed" opacity="0.8"/>
+
+  <!-- House / property -->
+  <path d="M108 218 L188 142 L268 218 V278 H108 Z" fill="#0b1f3a"/>
+  <rect x="158" y="222" width="40" height="56" rx="4" fill="#faf7f2"/>
+  <rect x="124" y="228" width="24" height="24" rx="3" fill="#e8eef5"/>
+  <rect x="208" y="228" width="24" height="24" rx="3" fill="#e8eef5"/>
+  <path d="M188 128 L198 118 L208 128" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="168" y="248" width="20" height="8" rx="2" fill="#f97316" opacity="0.9"/>
+
+  <!-- Property value block -->
+  <rect x="286" y="148" width="96" height="104" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="302" y="168" width="64" height="10" rx="5" fill="#94a3b8" opacity="0.35"/>
+  <rect x="302" y="188" width="64" height="22" rx="6" fill="#0b1f3a"/>
+  <rect x="302" y="218" width="48" height="8" rx="4" fill="#64748b" opacity="0.4"/>
+  <rect x="302" y="232" width="36" height="8" rx="4" fill="#64748b" opacity="0.25"/>
+
+  <!-- Down payment portion -->
+  <rect x="292" y="262" width="84" height="28" rx="10" fill="#f97316" opacity="0.2"/>
+  <rect x="300" y="270" width="44" height="12" rx="6" fill="#f97316"/>
+  <rect x="352" y="270" width="16" height="12" rx="4" fill="#0b1f3a" opacity="0.65"/>
+
+  <!-- Loan document -->
+  <rect x="408" y="108" width="108" height="136" rx="14" fill="#0b1f3a"/>
+  <rect x="424" y="132" width="76" height="8" rx="4" fill="#fff" opacity="0.28"/>
+  <rect x="424" y="150" width="60" height="8" rx="4" fill="#fff" opacity="0.2"/>
+  <rect x="424" y="176" width="76" height="32" rx="8" fill="#122b4a"/>
+  <circle cx="444" cy="192" r="5" fill="#f97316"/>
+  <rect x="456" y="187" width="32" height="10" rx="4" fill="#fff" opacity="0.35"/>
+  <rect x="424" y="218" width="52" height="6" rx="3" fill="#fff" opacity="0.18"/>
+
+  <!-- EMI calendar dots -->
+  <rect x="408" y="262" width="108" height="36" rx="10" fill="#fff" stroke="#e2e8f0" stroke-width="1.2"/>
+  <circle cx="428" cy="280" r="4" fill="#0b1f3a"/>
+  <circle cx="448" cy="280" r="4" fill="#0b1f3a"/>
+  <circle cx="468" cy="280" r="4" fill="#f97316"/>
+  <circle cx="488" cy="280" r="4" fill="#0b1f3a"/>
+  <circle cx="508" cy="280" r="4" fill="#94a3b8"/>
+
+  <!-- Long repayment timeline -->
+  <rect x="88" y="318" width="464" height="10" rx="5" fill="#e8edf3"/>
+  <rect x="88" y="318" width="296" height="10" rx="5" fill="#0b1f3a" opacity="0.78"/>
+  <circle cx="88" cy="323" r="7" fill="#0b1f3a"/>
+  <circle cx="196" cy="323" r="5" fill="#64748b"/>
+  <circle cx="304" cy="323" r="5" fill="#64748b"/>
+  <circle cx="384" cy="323" r="8" fill="#f97316"/>
+  <circle cx="464" cy="323" r="5" fill="#64748b"/>
+  <circle cx="552" cy="323" r="7" fill="#94a3b8"/>
+
+  <!-- Connectors -->
+  <path d="M268 228 H286" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M382 200 H408" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="286" cy="228" r="3.5" fill="#f97316"/>
+  <circle cx="408" cy="200" r="3.5" fill="#f97316"/>
+</svg>

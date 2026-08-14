@@ -44,6 +44,7 @@ import { pickLoanCategoryFaqs } from '@/lib/loan-category-faqs';
 import { buildLoanCategoryGuideCards } from '@/lib/loan-guides';
 import { resolveLoanCategoryHeroImage } from '@/lib/loan-visual-assets';
 import { LOAN_CATEGORY_HERO_BENEFITS } from '@/components/loans/loan-hub-hero';
+import { HomeLoanPage } from '@/components/loans/home-loan-page';
 import { PersonalLoanPage } from '@/components/loans/personal-loan-page';
 
 export type LoanCategoryPageProps = {
@@ -57,6 +58,7 @@ export type LoanCategoryPageProps = {
   sort: string;
   cursorMeta?: CursorMeta | null;
   nextPageHref?: string | null;
+  loansFetchFailed?: boolean;
   faqs: FinanceFaq[];
   guides: FinanceGuide[];
   articles: ArticleListItem[];
@@ -75,9 +77,33 @@ function parseContentSections(
 
 /**
  * Dedicated loan category landing page.
- * Personal Loan uses a deeper decision layout; other categories keep this template.
+ * Personal Loan and Home Loan use deeper decision layouts; other categories keep this template.
  */
 export function LoanCategoryPage(props: LoanCategoryPageProps) {
+  if (props.slug === 'home-loan') {
+    return (
+      <HomeLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
   if (props.slug === 'personal-loan') {
     return (
       <PersonalLoanPage

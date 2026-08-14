@@ -144,6 +144,7 @@ async function renderCategoryPage(
 
   const banks = banksRes.data ?? [];
   const loans = loansRes.data ?? [];
+  const loansFetchFailed = 'error' in loansRes && loansRes.error === true;
   const featuredLoans = (featuredRes.data ?? []).filter((l) => l.featured);
   const cursorMeta = parseCursorMeta(loansRes.meta);
 
@@ -186,6 +187,7 @@ async function renderCategoryPage(
       sort={sort}
       cursorMeta={cursorMeta}
       nextPageHref={nextPageHref}
+      loansFetchFailed={loansFetchFailed}
       faqs={faqsRes.data ?? []}
       guides={guidesRes.data ?? []}
       articles={articlesRes.data ?? []}

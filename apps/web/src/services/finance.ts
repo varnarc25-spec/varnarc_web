@@ -267,7 +267,7 @@ export async function fetchFinanceLoans(options?: LoanListOptions | ListOptions)
       cache: 'no-store',
     });
   } catch {
-    return { data: [] as FinanceLoan[], meta: undefined };
+    return { data: [] as FinanceLoan[], meta: undefined, error: true as const };
   }
 }
 
