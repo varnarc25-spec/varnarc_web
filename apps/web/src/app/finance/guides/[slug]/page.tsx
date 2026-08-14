@@ -53,7 +53,9 @@ export default async function FinanceGuideDetailPage({ params }: Props) {
       />
       {guide.category ? (
         <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#f97316]">
-          {guide.category}
+          {typeof guide.category === 'string'
+            ? guide.category
+            : guide.category.name?.trim() || guide.category.slug?.trim() || 'Guide'}
         </p>
       ) : null}
 

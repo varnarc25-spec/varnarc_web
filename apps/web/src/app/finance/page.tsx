@@ -144,7 +144,7 @@ function mergeFinanceCalculatorItems(
 ): HubGridItem[] {
   const fallbackByHref = new Map(fallbacks.map((item) => [item.href, item]));
 
-  const fromApi = apiItems
+  const fromApi: HubGridItem[] = apiItems
     .filter((calc) => FINANCE_CALCULATOR_SLUG_HINTS.some((hint) => calc.slug.includes(hint)))
     .map((calc) => {
       const href = `/calculators/${calc.slug}`;
@@ -158,7 +158,7 @@ function mergeFinanceCalculatorItems(
     });
 
   const seen = new Set(fromApi.map((item) => item.href));
-  const merged = [...fromApi];
+  const merged: HubGridItem[] = [...fromApi];
 
   for (const item of fallbacks) {
     if (!seen.has(item.href)) {

@@ -38,7 +38,9 @@ export default async function FinanceGuidesPage() {
             >
               {guide.category ? (
                 <span className="text-xs font-semibold uppercase tracking-wide text-[#f97316]">
-                  {guide.category}
+                  {typeof guide.category === 'string'
+                    ? guide.category
+                    : guide.category.name?.trim() || guide.category.slug?.trim() || 'Guide'}
                 </span>
               ) : null}
               <h2 className="mt-1 text-base font-extrabold text-[#0b1f3a]">{guide.title}</h2>
