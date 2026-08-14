@@ -30,11 +30,8 @@ export const CMP_TEST_SCRIPT_MARKERS: Record<CmpTestScriptCategory, string> = {
 
 /**
  * Load fake third-party scripts for CMP verification (banner, consent gating, scanner).
- * Production defaults to true unless NEXT_PUBLIC_CMP_TEST_SCRIPTS=false.
+ * Opt-in only via NEXT_PUBLIC_CMP_TEST_SCRIPTS=true.
  */
 export function isCmpTestScriptsEnabled(): boolean {
-  const flag = process.env.NEXT_PUBLIC_CMP_TEST_SCRIPTS?.trim();
-  if (flag === 'false') return false;
-  if (flag === 'true') return true;
-  return process.env.NODE_ENV === 'production';
+  return process.env.NEXT_PUBLIC_CMP_TEST_SCRIPTS?.trim() === 'true';
 }

@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import { getCmpDomainKey, getCmpEnv, getCmpSdkUrl } from '@/lib/cmp-config';
+import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
 
 function ensureCmpTestScriptsLoader() {
+  if (!isCmpTestScriptsEnabled()) return;
   if (document.getElementById('cmp-test-scripts')) return;
 
   const script = document.createElement('script');
@@ -21,12 +23,14 @@ export function CmpSdkScript() {
   const loaded = useRef(false);
   const domainKey = getCmpDomainKey();
   const sdkUrl = getCmpSdkUrl();
+  const testScriptsEnabled = isCmpTestScriptsEnabled();
 
   useEffect(() => {
+    if (!testScriptsEnabled) return;
     ensureCmpTestScriptsLoader();
     document.addEventListener('cmp:ready', ensureCmpTestScriptsLoader);
     return () => document.removeEventListener('cmp:ready', ensureCmpTestScriptsLoader);
-  }, []);
+  }, [testScriptsEnabled]);
 
   useEffect(() => {
     if (loaded.current || !domainKey || !sdkUrl) return;
@@ -36,7 +40,7 @@ export function CmpSdkScript() {
     );
     if (existing) {
       loaded.current = true;
-      ensureCmpTestScriptsLoader();
+      if (testScriptsEnabled) ensureCmpTestScriptsLoader();
       return;
     }
 
@@ -46,15 +50,21 @@ export function CmpSdkScript() {
     script.async = true;
     script.setAttribute('data-domain-key', domainKey);
     script.setAttribute('data-env', getCmpEnv());
-    script.setAttribute('data-test-scripts', 'true');
-    script.addEventListener('load', ensureCmpTestScriptsLoader, { once: true });
+    if (testScriptsEnabled) {
+      script.setAttribute('data-test-scripts', 'true');
+    }
+    if (testScriptsEnabled) {
+      script.addEventListener('load', ensureCmpTestScriptsLoader, { once: true });
+    }
     document.head.appendChild(script);
     loaded.current = true;
 
     return () => {
-      script.removeEventListener('load', ensureCmpTestScriptsLoader);
+      if (testScriptsEnabled) {
+        script.removeEventListener('load', ensureCmpTestScriptsLoader);
+      }
     };
-  }, [domainKey, sdkUrl]);
+  }, [domainKey, sdkUrl, testScriptsEnabled]);
 
   return null;
 }
