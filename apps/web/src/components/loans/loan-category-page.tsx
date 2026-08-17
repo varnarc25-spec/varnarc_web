@@ -4,6 +4,7 @@ import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { AdBanner } from '@/components/business/ad-banner';
 import { HubFaqSection } from '@/components/hub/hub-faq-section';
 import { LoanDisclaimer } from '@/components/loans/loan-disclaimer';
+import { LoanTypeNav } from '@/components/loans/loan-type-nav';
 import { LoanHubHero } from '@/components/loans/loan-hub-hero';
 import {
   LoanFilters,
@@ -252,6 +253,7 @@ function LoanCategoryPageGeneric({
               { label: breadcrumbLabel },
             ]}
           />
+          <LoanTypeNav currentSlug={slug} categories={categories} />
 
           <div className="mt-3">
             <LoanHubHero
