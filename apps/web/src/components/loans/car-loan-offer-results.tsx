@@ -196,9 +196,7 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
           <LenderMark loan={loan} lenderName={lenderName} />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1">
-              <p className="truncate text-[11px] font-medium text-[var(--cl-muted)]">
-                {lenderName}
-              </p>
+              <p className="truncate text-xs font-medium text-[var(--cl-muted)]">{lenderName}</p>
               {loan.featured ? (
                 <span className="rounded bg-[var(--cl-navy)]/90 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white">
                   Featured
@@ -219,12 +217,12 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
               </Link>
             </p>
             {freshness.verifiedLabel ? (
-              <p className="mt-0.5 truncate text-[11px] text-[var(--cl-muted)]">
+              <p className="mt-0.5 truncate text-xs text-[var(--cl-muted)]">
                 Rates verified: {freshness.verifiedLabel}
                 {freshness.publicNotice ? ` · ${freshness.publicNotice}` : ''}
               </p>
             ) : (
-              <p className="mt-0.5 truncate text-[11px] text-[var(--cl-muted)]">
+              <p className="mt-0.5 truncate text-xs text-[var(--cl-muted)]">
                 Verified date: Not currently available
               </p>
             )}
@@ -418,12 +416,12 @@ export function CarLoanOfferResults({
               </svg>
             </div>
             <h3 className="text-sm font-bold text-[var(--cl-navy)]">
-              {filtersActive ? 'No matching Car Loans' : "Car Loan offers aren't listed right now"}
+              {filtersActive ? 'No matching Car Loans' : 'No Car Loan offers are currently listed'}
             </h3>
-            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-[var(--cl-muted)]">
+            <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-[var(--cl-muted)]">
               {filtersActive
                 ? 'Try changing your loan amount, tenure or filters to explore available options.'
-                : 'Check back soon, or continue with the planning tools above while products are being updated.'}
+                : "We're building our Car Loan comparison catalog. You can still estimate EMI, plan your down payment and explore Car Loan tools."}
             </p>
             <div className="mt-2.5 flex flex-wrap items-center justify-center gap-3">
               {filtersActive ? (
@@ -433,7 +431,22 @@ export function CarLoanOfferResults({
                 >
                   Clear Filters
                 </Link>
-              ) : null}
+              ) : (
+                <>
+                  <Link
+                    href={calculatorHref('car-loan')}
+                    className="inline-flex min-h-10 items-center justify-center rounded-[var(--cl-radius-md)] bg-[var(--cl-navy)] px-4 text-sm font-semibold !text-white transition duration-150 hover:bg-[var(--cl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)]"
+                  >
+                    Calculate Car Loan EMI
+                  </Link>
+                  <Link
+                    href={financeEligibilityPath({ loanType: 'car' })}
+                    className="inline-flex min-h-10 items-center justify-center rounded-[var(--cl-radius-md)] border border-[var(--cl-border)] bg-white px-4 text-sm font-semibold text-[var(--cl-navy)] transition duration-150 hover:border-[var(--cl-navy)]/30 hover:text-[var(--cl-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)]"
+                  >
+                    Check Car Loan Eligibility
+                  </Link>
+                </>
+              )}
               <a
                 href="#car-loan-snapshot"
                 className="inline-flex min-h-10 items-center justify-center rounded-[var(--cl-radius-md)] border border-[var(--cl-border)] bg-white px-4 text-sm font-semibold text-[var(--cl-navy)] transition duration-150 hover:border-[var(--cl-navy)]/30 hover:text-[var(--cl-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)]"
@@ -458,7 +471,7 @@ export function CarLoanOfferResults({
         <p className="text-xs text-slate-500">
           Optional:{' '}
           <Link
-            href={financeEligibilityPath({ loanType: 'car-loan' })}
+            href={financeEligibilityPath({ loanType: 'car' })}
             className="font-semibold text-slate-600 underline-offset-2 hover:text-[var(--cl-orange)] hover:underline"
           >
             Check Eligibility

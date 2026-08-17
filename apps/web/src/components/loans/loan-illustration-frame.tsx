@@ -44,15 +44,19 @@ export function LoanIllustrationFrame({
   if (!src?.trim()) {
     return (
       <div
-        className={`relative flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#e8eef5] via-[#f8fafc] to-[#fff7ed]/70 ${aspectClass} ${className}`}
+        className={`relative flex items-center justify-center overflow-hidden rounded-xl bg-[#faf7f2] ${aspectClass} ${className}`}
+        role="img"
+        aria-label={alt}
       >
-        {fallback}
+        {fallback ?? (
+          <div className="mx-6 h-16 w-full max-w-[12rem] rounded-xl bg-[#eef2f7]" aria-hidden />
+        )}
       </div>
     );
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-[#f7f9fc] ${aspectClass} ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl bg-[#faf7f2] ${aspectClass} ${className}`}>
       <CmsMediaImage
         src={src}
         alt={alt}

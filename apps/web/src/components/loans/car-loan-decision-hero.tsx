@@ -305,7 +305,7 @@ export function CarLoanDecisionHero({
                       key={key}
                       type="button"
                       onClick={() => setDpMode(key)}
-                      className={`min-h-8 rounded-full px-3 text-[11px] font-semibold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)] ${
+                      className={`min-h-8 rounded-full px-3 text-xs font-semibold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)] ${
                         dpMode === key ? 'bg-[var(--cl-navy)] text-white' : 'text-[var(--cl-navy)]'
                       }`}
                     >
@@ -319,7 +319,7 @@ export function CarLoanDecisionHero({
                 <div>
                   <label
                     htmlFor="cl-down-payment-percent"
-                    className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]"
+                    className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]"
                   >
                     Percent
                   </label>
@@ -362,7 +362,7 @@ export function CarLoanDecisionHero({
                 <div>
                   <label
                     htmlFor="cl-down-payment"
-                    className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]"
+                    className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]"
                   >
                     Amount
                   </label>
@@ -430,7 +430,7 @@ export function CarLoanDecisionHero({
               className="rounded-[var(--cl-radius-md)] bg-[var(--cl-surface-4)] px-4 py-4"
               aria-live="polite"
             >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--cl-muted)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--cl-muted)]">
                 Loan Required
               </p>
               <p className="mt-1.5 text-[1.75rem] font-extrabold tabular-nums tracking-tight text-[var(--cl-navy)] sm:text-[2rem]">
@@ -536,7 +536,7 @@ export function CarLoanDecisionHero({
             </p>
           </form>
 
-          <div className="relative mx-auto mt-6 w-full max-w-sm lg:hidden">
+          <div className="relative mx-auto mt-6 w-full max-w-sm lg:hidden" aria-hidden>
             <div className="relative mx-auto aspect-[16/10] w-[72%] max-h-[140px]">
               <CmsMediaImage
                 src={illustrationSrc}

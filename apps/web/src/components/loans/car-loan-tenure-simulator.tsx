@@ -10,9 +10,6 @@ import { CAR_LOAN_TENURE_YEARS } from '@/lib/car-loan-page';
 
 export function CarLoanTenureSimulator() {
   const { loanRequirement, ratePercent, tenureYears } = useCarLoanDecision();
-  const [mobileTenure, setMobileTenure] = useState<(typeof CAR_LOAN_TENURE_YEARS)[number]>(
-    tenureYears as (typeof CAR_LOAN_TENURE_YEARS)[number],
-  );
   const [hovered, setHovered] = useState<number | null>(null);
 
   const comparisons = useMemo(
@@ -46,44 +43,19 @@ export function CarLoanTenureSimulator() {
           current loan requirement and illustrative rate.
         </p>
 
-        <div
-          className="mt-5 flex gap-2 overflow-x-auto pb-1 md:hidden"
-          role="tablist"
-          aria-label="Compare tenure"
-        >
-          {CAR_LOAN_TENURE_YEARS.map((years) => (
-            <button
-              key={years}
-              type="button"
-              role="tab"
-              aria-selected={mobileTenure === years}
-              onClick={() => setMobileTenure(years)}
-              className={`min-h-10 shrink-0 rounded-full px-3.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cl-orange)] ${
-                mobileTenure === years
-                  ? 'bg-[var(--cl-navy)] text-white'
-                  : 'bg-[var(--cl-surface-2)] text-[var(--cl-navy)]'
-              }`}
-            >
-              {years} {years === 1 ? 'year' : 'years'}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           {comparisons.map(({ years, result }) => {
-            const showOnMobile = years === mobileTenure;
             const emphasize = hovered === years || (hovered == null && years === defaultEmphasis);
             return (
               <div
                 key={years}
-                role="tabpanel"
                 onMouseEnter={() => setHovered(years)}
                 onMouseLeave={() => setHovered(null)}
-                className={`min-w-[11.5rem] shrink-0 p-5 transition duration-150 motion-reduce:transition-none md:min-w-0 ${
-                  showOnMobile ? 'block' : 'hidden md:block'
-                } ${emphasize ? 'bg-[var(--cl-surface-4)]' : 'bg-[var(--cl-surface-2)]'}`}
+                className={`p-5 transition duration-150 motion-reduce:transition-none ${
+                  emphasize ? 'bg-[var(--cl-surface-4)]' : 'bg-[var(--cl-surface-2)]'
+                }`}
               >
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
                   {emphasize ? (
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--cl-orange)]" aria-hidden />
                   ) : null}
@@ -93,17 +65,17 @@ export function CarLoanTenureSimulator() {
                   <span className="cl-metric-value text-[2rem] leading-none sm:text-[2.125rem]">
                     {result ? formatInr(Math.round(result.monthlyEmi)) : '—'}
                   </span>
-                  <span className="text-xs font-medium text-[var(--cl-muted)]">/month</span>
+                  <span className="text-sm font-medium text-[var(--cl-muted)]">/month</span>
                 </p>
                 <dl className="mt-4 space-y-2 border-t border-[var(--cl-border)] pt-3">
                   <div className="flex items-baseline justify-between gap-2">
-                    <dt className="text-xs text-[var(--cl-muted)]">Total interest</dt>
+                    <dt className="text-sm text-[var(--cl-muted)]">Total interest</dt>
                     <dd className="text-sm font-semibold tabular-nums text-slate-700">
                       {result ? formatInr(Math.round(result.totalInterest)) : '—'}
                     </dd>
                   </div>
                   <div className="flex items-baseline justify-between gap-2">
-                    <dt className="text-xs text-[var(--cl-muted)]">Total repayment</dt>
+                    <dt className="text-sm text-[var(--cl-muted)]">Total repayment</dt>
                     <dd className="text-sm font-semibold tabular-nums text-slate-700">
                       {result ? formatInr(Math.round(result.totalRepayment)) : '—'}
                     </dd>
@@ -119,7 +91,7 @@ export function CarLoanTenureSimulator() {
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="shrink-0 text-sm">
               <p className="font-bold text-[var(--cl-navy)]">Shorter tenure</p>
-              <p className="text-xs text-[var(--cl-muted)]">Higher EMI · Lower total interest</p>
+              <p className="text-sm text-[var(--cl-muted)]">Higher EMI · Lower total interest</p>
             </div>
             <div className="relative h-2 w-full flex-1" aria-hidden>
               <div className="absolute inset-y-0 left-0 right-0 rounded-full bg-[var(--cl-border)]" />
@@ -129,7 +101,7 @@ export function CarLoanTenureSimulator() {
             </div>
             <div className="shrink-0 text-sm sm:text-right">
               <p className="font-bold text-[var(--cl-navy)]">Longer tenure</p>
-              <p className="text-xs text-[var(--cl-muted)]">Lower EMI · Higher total interest</p>
+              <p className="text-sm text-[var(--cl-muted)]">Lower EMI · Higher total interest</p>
             </div>
           </div>
         </div>

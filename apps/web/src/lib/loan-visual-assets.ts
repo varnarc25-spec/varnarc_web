@@ -74,9 +74,48 @@ export function resolveLoanCategoryHeroImage(input: {
   });
 }
 
+/** Car Loan editorial guide family — topic art instead of empty/gray placeholders. */
+export const CAR_LOAN_GUIDE_ASSETS = {
+  affordability: '/hub/finance/car-loan-guides/affordability.svg',
+  downPayment: '/hub/finance/car-loan-guides/down-payment.svg',
+  emi: '/hub/finance/car-loan-guides/emi.svg',
+  newVsUsed: '/hub/finance/car-loan-guides/new-vs-used.svg',
+  bankVsDealer: '/hub/finance/car-loan-guides/bank-vs-dealer.svg',
+  prepayment: '/hub/finance/car-loan-guides/prepayment.svg',
+  hypothecation: '/hub/finance/car-loan-guides/hypothecation.svg',
+  closure: '/hub/finance/car-loan-guides/loan-closure.svg',
+  fallback: '/hub/finance/car-loan-guides/affordability.svg',
+} as const;
+
+/**
+ * Map a Car Loan guide title/slug to the matching editorial illustration.
+ * Always returns a first-party asset — never an empty gray block.
+ */
+export function resolveCarLoanGuideTopicImage(input: {
+  slug?: string | null;
+  title?: string | null;
+  excerpt?: string | null;
+}): string {
+  const text = [input.title, input.excerpt, input.slug].filter(Boolean).join(' ').toLowerCase();
+
+  if (/afford|budget|how much car/.test(text)) return CAR_LOAN_GUIDE_ASSETS.affordability;
+  if (/down\s*payment|downpayment/.test(text)) return CAR_LOAN_GUIDE_ASSETS.downPayment;
+  if (/prepay|foreclos/.test(text)) return CAR_LOAN_GUIDE_ASSETS.prepayment;
+  if (/hypothec/.test(text)) return CAR_LOAN_GUIDE_ASSETS.hypothecation;
+  if (/clos(e|ure|ing)|noc\b|fully repaid/.test(text)) return CAR_LOAN_GUIDE_ASSETS.closure;
+  if (/new\s*vs\s*used|used\s*car|new\s*car/.test(text)) return CAR_LOAN_GUIDE_ASSETS.newVsUsed;
+  if (/bank\s*vs\s*dealer|dealer\s*finance|bank\s*finance/.test(text)) {
+    return CAR_LOAN_GUIDE_ASSETS.bankVsDealer;
+  }
+  if (/\bemi\b|tenure|\brepayment\b/.test(text)) return CAR_LOAN_GUIDE_ASSETS.emi;
+
+  return CAR_LOAN_GUIDE_ASSETS.fallback;
+}
+
 /**
  * Guide / article card cover on the loans hub.
  * Prefer category SVG (or hub asset) over photorealistic CMS covers.
+ * Car Loan cards use the topic editorial family when no first-party featured image exists.
  */
 export function resolveLoanGuideCoverImage(input: {
   featuredUrl?: string | null;
@@ -84,13 +123,27 @@ export function resolveLoanGuideCoverImage(input: {
   title?: string | null;
   excerpt?: string | null;
   categoryLabel?: string | null;
+  categorySlug?: string | null;
 }): string {
-  const relatedSlug = inferRelatedLoanCategorySlug(
-    input.title,
-    input.excerpt,
-    input.categoryLabel,
-    input.slug,
-  );
+  if (isVarnarcHubAsset(input.featuredUrl) && input.featuredUrl!.includes('/car-loan-guides/')) {
+    return input.featuredUrl!.trim();
+  }
+
+  const relatedSlug =
+    input.categorySlug?.trim() ||
+    inferRelatedLoanCategorySlug(input.title, input.excerpt, input.categoryLabel, input.slug);
+
+  if (relatedSlug === 'car-loan') {
+    if (isVarnarcHubAsset(input.featuredUrl) && input.featuredUrl!.includes('/car-loan')) {
+      return input.featuredUrl!.trim();
+    }
+    return resolveCarLoanGuideTopicImage({
+      slug: input.slug,
+      title: input.title,
+      excerpt: input.excerpt,
+    });
+  }
+
   const categoryArt = relatedSlug ? loanCategoryIllustration(relatedSlug) : null;
   if (categoryArt) return categoryArt;
 

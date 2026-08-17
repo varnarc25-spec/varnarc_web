@@ -92,6 +92,7 @@ function resolveLoanGuideImageUrl(input: {
   title?: string | null;
   excerpt?: string | null;
   categoryLabel?: string | null;
+  categorySlug?: string | null;
 }): string {
   return resolveLoanGuideCoverImage(input);
 }
@@ -257,31 +258,48 @@ export function buildLoanCategoryGuideCards(input: {
     if (!card || seen.has(card.id)) continue;
     seen.add(card.id);
     cards.push(card);
-    if (cards.length >= limit) return cards;
+    if (cards.length >= limit) break;
   }
 
-  const inferredArticles =
-    input.categorySlug === 'personal-loan'
-      ? input.articles.filter((a) =>
-          matchesPersonalLoanCategoryGuide(
-            haystack(a.title, a.excerpt, a.category?.name, a.category?.slug, a.slug),
-          ),
-        )
-      : input.articles;
-  const inferredGuides =
-    input.categorySlug === 'personal-loan'
-      ? input.guides.filter((g) =>
-          matchesPersonalLoanCategoryGuide(
-            haystack(g.title, g.summary, g.content, categoryNameFromGuide(g), g.slug),
-          ),
-        )
-      : input.guides;
+  if (cards.length < limit) {
+    const inferredArticles =
+      input.categorySlug === 'personal-loan'
+        ? input.articles.filter((a) =>
+            matchesPersonalLoanCategoryGuide(
+              haystack(a.title, a.excerpt, a.category?.name, a.category?.slug, a.slug),
+            ),
+          )
+        : input.articles;
+    const inferredGuides =
+      input.categorySlug === 'personal-loan'
+        ? input.guides.filter((g) =>
+            matchesPersonalLoanCategoryGuide(
+              haystack(g.title, g.summary, g.content, categoryNameFromGuide(g), g.slug),
+            ),
+          )
+        : input.guides;
 
-  for (const card of buildLoanGuideCards(inferredArticles, inferredGuides, limit)) {
-    if (seen.has(card.id)) continue;
-    seen.add(card.id);
-    cards.push(card);
-    if (cards.length >= limit) break;
+    for (const card of buildLoanGuideCards(inferredArticles, inferredGuides, limit)) {
+      if (seen.has(card.id)) continue;
+      seen.add(card.id);
+      cards.push(card);
+      if (cards.length >= limit) break;
+    }
+  }
+
+  if (input.categorySlug === 'car-loan') {
+    return cards.map((card) => ({
+      ...card,
+      imageUrl: resolveLoanGuideCoverImage({
+        featuredUrl: card.imageUrl.includes('/car-loan-guides/') ? card.imageUrl : null,
+        slug: card.href.split('/').pop() ?? card.id,
+        title: card.title,
+        excerpt: card.excerpt,
+        categoryLabel: card.categoryLabel,
+        categorySlug: 'car-loan',
+      }),
+      relatedCategorySlug: card.relatedCategorySlug ?? 'car-loan',
+    }));
   }
 
   return cards;

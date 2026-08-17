@@ -42,7 +42,7 @@ export function CarLoanNewVsUsed() {
 
         <div className="mt-8 grid items-stretch gap-5 lg:grid-cols-2">
           <article className="flex h-full flex-col bg-[var(--cl-surface-1)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               New Car
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--cl-navy)]">
@@ -54,7 +54,7 @@ export function CarLoanNewVsUsed() {
                   key={`new-${row.label}`}
                   className="border-t border-[var(--cl-border)] pt-3 first:border-0 first:pt-0"
                 >
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
                     {row.label}
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-600">{row.newCar}</p>
@@ -63,7 +63,7 @@ export function CarLoanNewVsUsed() {
             </ul>
           </article>
           <article className="flex h-full flex-col bg-[var(--cl-surface-2)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               Used Car
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--cl-navy)]">
@@ -75,7 +75,7 @@ export function CarLoanNewVsUsed() {
                   key={`used-${row.label}`}
                   className="border-t border-[var(--cl-border)] pt-3 first:border-0 first:pt-0"
                 >
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
                     {row.label}
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-600">{row.usedCar}</p>
@@ -116,7 +116,7 @@ export function CarLoanFinancingPercent() {
         </p>
 
         <div className="mt-8 max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
             Financing %
           </p>
           <p className="cl-metric-value mt-2 text-[3rem] leading-none sm:text-[3.75rem]">
@@ -128,7 +128,7 @@ export function CarLoanFinancingPercent() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--cl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--cl-muted)]">
                 Vehicle price
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--cl-navy)]">
@@ -136,7 +136,7 @@ export function CarLoanFinancingPercent() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--cl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--cl-muted)]">
                 Loan financed
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--cl-navy)]">
@@ -144,7 +144,7 @@ export function CarLoanFinancingPercent() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--cl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--cl-muted)]">
                 Down payment
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--cl-navy)]">
@@ -311,7 +311,7 @@ export function CarLoanBankVsDealer() {
 
         <div className="mt-8 grid items-stretch gap-5 lg:grid-cols-2">
           <article className="flex h-full flex-col bg-[var(--cl-surface-1)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               Bank / Lender Finance
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--cl-navy)]">Direct Bank Finance</h3>
@@ -328,7 +328,7 @@ export function CarLoanBankVsDealer() {
             </ul>
           </article>
           <article className="flex h-full flex-col bg-[var(--cl-surface-4)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               Dealer Finance
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--cl-navy)]">Dealer Finance</h3>
@@ -400,7 +400,7 @@ export function CarLoanEligibility() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               Applicant factors
             </p>
             <div
@@ -473,7 +473,7 @@ export function CarLoanEligibility() {
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
               Vehicle factors
             </p>
             <ul className="mt-3 space-y-3 bg-[var(--cl-surface-2)] p-5">
@@ -794,68 +794,101 @@ export function CarLoanHypothecation() {
           vehicle. The process varies by lender and local procedure.
         </p>
 
-        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-surface-2)]">
-            <svg
-              viewBox="0 0 48 48"
-              className="h-10 w-10 text-[var(--cl-navy)]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <div
+          className="mt-8 flex flex-col items-center gap-3"
+          role="img"
+          aria-label="Vehicle hypothecation relationship: owner, vehicle, and lender security interest are connected while the loan is active. After loan closure, NOC or closure documents support removal of the lender interest from vehicle records."
+        >
+          <div className="flex w-full max-w-md flex-col items-center gap-2 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-surface-2)]">
+                <svg
+                  viewBox="0 0 48 48"
+                  className="h-10 w-10 text-[var(--cl-navy)]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <circle cx="24" cy="20" r="8" />
+                  <path d="M12 40c0-6 5-10 12-10s12 4 12 10" />
+                </svg>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-navy)]">
+                Owner
+              </p>
+            </div>
+            <div
+              className="flex h-6 w-6 items-center justify-center text-lg font-bold text-[var(--cl-orange)] sm:h-8 sm:w-8"
+              aria-hidden
             >
-              <rect x="8" y="18" width="32" height="16" rx="3" />
-              <circle cx="14" cy="34" r="3" />
-              <circle cx="34" cy="34" r="3" />
-              <path d="M12 18l4-8h16l4 8" />
-            </svg>
-          </div>
-          <div
-            className="flex h-6 w-6 items-center justify-center text-lg font-bold text-[var(--cl-orange)] sm:h-8 sm:w-8"
-            aria-hidden
-          >
-            ↔
-          </div>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-surface-2)]">
-            <svg
-              viewBox="0 0 48 48"
-              className="h-10 w-10 text-[var(--cl-navy)]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              ↓
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-surface-2)]">
+                <svg
+                  viewBox="0 0 48 48"
+                  className="h-10 w-10 text-[var(--cl-navy)]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <rect x="8" y="18" width="32" height="16" rx="3" />
+                  <circle cx="14" cy="34" r="3" />
+                  <circle cx="34" cy="34" r="3" />
+                  <path d="M12 18l4-8h16l4 8" />
+                </svg>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-navy)]">
+                Vehicle
+              </p>
+            </div>
+            <div
+              className="flex h-6 w-6 items-center justify-center text-lg font-bold text-[var(--cl-orange)] sm:h-8 sm:w-8"
+              aria-hidden
             >
-              <circle cx="24" cy="20" r="8" />
-              <path d="M12 40c0-6 5-10 12-10s12 4 12 10" />
-            </svg>
+              ↓
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-navy)]">
+                <svg
+                  viewBox="0 0 48 48"
+                  className="h-10 w-10 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <rect x="10" y="6" width="28" height="36" rx="3" />
+                  <path d="M18 16h12M18 24h12M18 32h8" />
+                </svg>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-navy)]">
+                Lender Interest
+              </p>
+            </div>
           </div>
-          <div
-            className="flex h-6 w-6 items-center justify-center text-lg font-bold text-[var(--cl-orange)] sm:h-8 sm:w-8"
-            aria-hidden
-          >
-            ↔
+
+          <div className="mt-4 w-full max-w-md border-t border-[var(--cl-border)] pt-4 sm:mt-6">
+            <ol className="space-y-2 text-sm font-semibold text-[var(--cl-navy)]">
+              <li>Loan Closed</li>
+              <li className="text-[var(--cl-muted)]" aria-hidden>
+                ↓
+              </li>
+              <li>NOC / Closure Documents</li>
+              <li className="text-[var(--cl-muted)]" aria-hidden>
+                ↓
+              </li>
+              <li>Hypothecation Removed</li>
+            </ol>
           </div>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cl-navy)]">
-            <svg
-              viewBox="0 0 48 48"
-              className="h-10 w-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="10" y="6" width="28" height="36" rx="3" />
-              <path d="M18 16h12M18 24h12M18 32h8" />
-            </svg>
-          </div>
-        </div>
-        <div className="mt-4 flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-12">
-          <p className="text-xs font-semibold text-[var(--cl-navy)]">CAR</p>
-          <p className="text-xs font-semibold text-[var(--cl-navy)]">OWNER</p>
-          <p className="text-xs font-semibold text-[var(--cl-navy)]">LENDER INTEREST</p>
         </div>
 
         <p className="mt-6 max-w-2xl text-sm leading-relaxed text-slate-600">
@@ -937,7 +970,7 @@ export function CarLoanApplicationJourney() {
                   {index + 1}
                 </span>
                 <div className="min-w-0 pt-0.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
                     Step {index + 1}
                   </p>
                   <p className="mt-0.5 text-sm font-bold text-[var(--cl-navy)]">{step}</p>
@@ -970,7 +1003,7 @@ export function CarLoanApplicationJourney() {
                       <span className="relative z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--cl-navy)]/20 bg-white text-xs font-bold text-[var(--cl-navy)]">
                         {index + 1}
                       </span>
-                      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--cl-muted)]">
                         Step {index + 1}
                       </p>
                       <p className="mt-0.5 text-sm font-bold leading-snug text-[var(--cl-navy)]">

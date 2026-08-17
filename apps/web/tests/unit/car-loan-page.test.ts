@@ -17,7 +17,7 @@ import {
   formatCarVehicleConditionLabel,
   resolveCarLoanProductFields,
 } from '@/lib/car-loan-product';
-
+import { resolveCarLoanGuideTopicImage } from '@/lib/loan-visual-assets';
 describe('car loan decision page helpers', () => {
   it('computes loan requirement from vehicle price and down payment', () => {
     expect(carLoanRequirement(12_00_000, 2_40_000)).toBe(9_60_000);
@@ -253,5 +253,193 @@ describe('car loan decision page helpers', () => {
     expect(
       CAR_LOAN_DEFAULT_GUIDES.every((g) => g.imageUrl.includes('/hub/finance/car-loan-guides/')),
     ).toBe(true);
+  });
+});
+
+describe('car loan calculator regression', () => {
+  it('Test A: loan required from 20% and amount-based down payment', () => {
+    const vehicle = 12_00_000;
+    const down20 = Math.round(vehicle * 0.2);
+    expect(down20).toBe(2_40_000);
+    expect(carLoanRequirement(vehicle, down20)).toBe(9_60_000);
+    expect(carLoanRequirement(vehicle, 2_40_000)).toBe(9_60_000);
+  });
+
+  it('Test B: financing % edges never go negative', () => {
+    expect(carLoanFinancingPercent(12_00_000, 9_60_000)).toBeCloseTo(80, 4);
+    expect(carLoanFinancingPercent(0, 1)).toBeNull();
+    expect(carLoanFinancingPercent(10_00_000, -100)).toBeNull();
+    expect(carLoanFinancingPercent(10_00_000, 10_00_000)).toBeCloseTo(100, 4);
+    expect(carLoanFinancingPercent(10_00_000, 0)).toBeCloseTo(0, 4);
+    expect(carLoanRequirement(10_00_000, 15_00_000)).toBe(0);
+  });
+
+  it('Test C: EMI matrix across rates and tenures uses shared calculateEmi', () => {
+    const principal = 9_60_000;
+    const rates = [0, 5, 8, 10, 12.5];
+    const tenures = [12, 36, 60, 84];
+    for (const rate of rates) {
+      for (const months of tenures) {
+        const result = calculateEmi({
+          principal,
+          annualRatePercent: rate,
+          tenureMonths: months,
+        });
+        expect(result).not.toBeNull();
+        expect(Number.isFinite(result!.monthlyEmi)).toBe(true);
+        expect(Number.isFinite(result!.totalInterest)).toBe(true);
+        expect(Number.isFinite(result!.totalRepayment)).toBe(true);
+        expect(result!.totalRepayment).toBeCloseTo(result!.monthlyEmi * months, 4);
+        expect(result!.totalInterest).toBeCloseTo(result!.totalRepayment - principal, 4);
+        if (rate === 0) {
+          expect(result!.monthlyEmi).toBeCloseTo(principal / months, 6);
+          expect(result!.totalInterest).toBeCloseTo(0, 6);
+        }
+      }
+    }
+  });
+
+  it('Test D: down payment scenarios update loan, financing, EMI and interest', () => {
+    const vehicle = 12_00_000;
+    const rate = 9.5;
+    const tenureMonths = 60;
+    for (const percent of [10, 20, 30, 50]) {
+      const down = Math.round((vehicle * percent) / 100);
+      const loan = carLoanRequirement(vehicle, down);
+      const financing = carLoanFinancingPercent(vehicle, loan);
+      const emi = calculateEmi({
+        principal: loan,
+        annualRatePercent: rate,
+        tenureMonths,
+      });
+      expect(loan).toBe(vehicle - down);
+      expect(financing).toBeCloseTo(100 - percent, 4);
+      if (loan === 0) {
+        expect(emi === null || emi.monthlyEmi === 0).toBe(true);
+      } else {
+        expect(emi).not.toBeNull();
+        expect(emi!.monthlyEmi).toBeGreaterThan(0);
+        expect(emi!.totalInterest).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('Test E: affordability outputs remain indicative capacity metrics', () => {
+    const estimate = estimateCarAffordability({
+      monthlyIncome: 1_00_000,
+      existingEmis: 15_000,
+      availableDownPayment: 3_00_000,
+      annualRatePercent: 9.5,
+      tenureYears: 5,
+      foirRatio: 0.4,
+    });
+    expect(estimate).not.toBeNull();
+    expect(estimate!.comfortableEmi).toBeGreaterThan(0);
+    expect(estimate!.loanCapacity).toBeGreaterThan(0);
+    expect(estimate!.vehicleBudget).toBe(estimate!.loanCapacity + 3_00_000);
+    expect(
+      estimateCarAffordability({
+        monthlyIncome: 0,
+        existingEmis: 0,
+        availableDownPayment: 0,
+        annualRatePercent: 9.5,
+        tenureYears: 5,
+      }),
+    ).toBeNull();
+  });
+
+  it('Test F: prepayment edges avoid negative balance or months', () => {
+    expect(
+      estimateCarLoanPrepaymentImpact({
+        outstanding: 5_00_000,
+        annualRatePercent: 9.5,
+        remainingMonths: 36,
+        prepaymentAmount: 0,
+        mode: 'reduce-tenure',
+      }),
+    ).toBeNull();
+
+    const small = estimateCarLoanPrepaymentImpact({
+      outstanding: 5_00_000,
+      annualRatePercent: 9.5,
+      remainingMonths: 36,
+      prepaymentAmount: 25_000,
+      mode: 'reduce-tenure',
+    });
+    expect(small).not.toBeNull();
+    expect(small!.interestSaved).toBeGreaterThanOrEqual(0);
+    expect(small!.monthsSaved).toBeGreaterThanOrEqual(0);
+
+    const zeroRate = estimateCarLoanPrepaymentImpact({
+      outstanding: 5_00_000,
+      annualRatePercent: 0,
+      remainingMonths: 36,
+      prepaymentAmount: 50_000,
+      mode: 'reduce-emi',
+    });
+    expect(zeroRate).not.toBeNull();
+    expect(zeroRate!.interestSaved).toBeGreaterThanOrEqual(0);
+    expect(zeroRate!.revised.monthlyEmi).toBeLessThan(zeroRate!.original.monthlyEmi);
+
+    const oneMonth = estimateCarLoanPrepaymentImpact({
+      outstanding: 1_00_000,
+      annualRatePercent: 10,
+      remainingMonths: 1,
+      prepaymentAmount: 10_000,
+      mode: 'reduce-tenure',
+    });
+    if (oneMonth) {
+      expect(oneMonth.monthsSaved).toBeGreaterThanOrEqual(0);
+      expect(oneMonth.interestSaved).toBeGreaterThanOrEqual(0);
+    }
+
+    expect(
+      estimateCarLoanPrepaymentImpact({
+        outstanding: 2_00_000,
+        annualRatePercent: 9.5,
+        remainingMonths: 24,
+        prepaymentAmount: 2_00_000,
+        mode: 'reduce-tenure',
+      }),
+    ).toBeNull();
+    expect(
+      estimateCarLoanPrepaymentImpact({
+        outstanding: 2_00_000,
+        annualRatePercent: 9.5,
+        remainingMonths: 24,
+        prepaymentAmount: 2_50_000,
+        mode: 'reduce-emi',
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('car loan guide imagery', () => {
+  it('resolves topic-specific editorial assets and never returns empty', () => {
+    expect(resolveCarLoanGuideTopicImage({ title: 'How Much Car Can I Afford?' })).toContain(
+      'affordability.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Car Loan Down Payment' })).toContain(
+      'down-payment.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Car Loan EMI Guide' })).toContain('emi.svg');
+    expect(resolveCarLoanGuideTopicImage({ title: 'New vs Used Car Financing' })).toContain(
+      'new-vs-used.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Bank vs Dealer Finance' })).toContain(
+      'bank-vs-dealer.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Car Loan Prepayment' })).toContain(
+      'prepayment.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Vehicle Hypothecation' })).toContain(
+      'hypothecation.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'How to Close a Car Loan' })).toContain(
+      'loan-closure.svg',
+    );
+    expect(resolveCarLoanGuideTopicImage({ title: 'Unknown topic' })).toContain(
+      'affordability.svg',
+    );
   });
 });

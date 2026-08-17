@@ -1,12 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-hidden="true">
   <rect width="480" height="300" fill="#faf7f2"/>
-  <rect x="24" y="24" width="432" height="252" rx="16" fill="#ffffff" stroke="#e8edf3"/>
-  <rect x="70" y="120" width="140" height="70" rx="12" fill="#0b1f3a"/>
-  <circle cx="100" cy="195" r="14" fill="#eef2f7" stroke="#0b1f3a" stroke-width="4"/>
-  <circle cx="180" cy="195" r="14" fill="#eef2f7" stroke="#0b1f3a" stroke-width="4"/>
-  <path d="M85 120l18-28h64l18 28" fill="#122b4a"/>
-  <rect x="260" y="90" width="140" height="120" rx="12" fill="#eef2f7"/>
-  <rect x="280" y="120" width="100" height="14" rx="7" fill="#f97316"/>
-  <rect x="280" y="150" width="72" height="10" rx="5" fill="#0b1f3a" opacity=".35"/>
-  <rect x="280" y="172" width="88" height="10" rx="5" fill="#0b1f3a" opacity=".2"/>
+  <rect x="20" y="20" width="440" height="260" rx="18" fill="#ffffff" stroke="#e8edf3"/>
+  <!-- unbranded car -->
+  <rect x="48" y="148" width="168" height="58" rx="14" fill="#0b1f3a"/>
+  <path d="M68 148l22-34h78l24 34" fill="#122b4a"/>
+  <rect x="78" y="128" width="44" height="20" rx="4" fill="#eef2f7" opacity=".9"/>
+  <rect x="132" y="128" width="44" height="20" rx="4" fill="#eef2f7" opacity=".7"/>
+  <circle cx="84" cy="210" r="15" fill="#faf7f2" stroke="#0b1f3a" stroke-width="5"/>
+  <circle cx="178" cy="210" r="15" fill="#faf7f2" stroke="#0b1f3a" stroke-width="5"/>
+  <!-- planning panel -->
+  <rect x="250" y="56" width="176" height="188" rx="14" fill="#eef2f7"/>
+  <rect x="268" y="76" width="88" height="10" rx="5" fill="#0b1f3a" opacity=".35"/>
+  <rect x="268" y="100" width="140" height="22" rx="8" fill="#ffffff"/>
+  <rect x="276" y="106" width="72" height="10" rx="5" fill="#f97316"/>
+  <rect x="268" y="136" width="140" height="22" rx="8" fill="#ffffff"/>
+  <rect x="276" y="142" width="96" height="10" rx="5" fill="#0b1f3a" opacity=".45"/>
+  <rect x="268" y="172" width="140" height="22" rx="8" fill="#ffffff"/>
+  <rect x="276" y="178" width="54" height="10" rx="5" fill="#0b1f3a" opacity=".28"/>
+  <rect x="268" y="208" width="140" height="22" rx="8" fill="#ffffff"/>
+  <rect x="276" y="214" width="110" height="10" rx="5" fill="#0b1f3a"/>
+  <!-- connector -->
+  <path d="M216 178h28" stroke="#f97316" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="248" cy="178" r="4" fill="#f97316"/>
 </svg>

@@ -427,7 +427,7 @@ select:focus-visible {
 }
 
 .cl-page .cl-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -458,8 +458,8 @@ select:focus-visible {
 }
 
 .cl-page .cl-metric-label {
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--cl-muted);
