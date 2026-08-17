@@ -692,6 +692,9 @@ export function FinanceLoanEditForm({
     affiliateUrl?: string | null;
     seoTitle?: string | null;
     seoDescription?: string | null;
+    prepaymentChargeText?: string | null;
+    foreclosureChargeText?: string | null;
+    metadata?: Record<string, unknown> | null;
   };
 }) {
   const router = useRouter();
@@ -705,13 +708,54 @@ export function FinanceLoanEditForm({
   const [affiliateUrl, setAffiliateUrl] = useState(initial.affiliateUrl ?? '');
   const [seoTitle, setSeoTitle] = useState(initial.seoTitle ?? '');
   const [seoDescription, setSeoDescription] = useState(initial.seoDescription ?? '');
+  const [prepaymentChargeText, setPrepaymentChargeText] = useState(
+    initial.prepaymentChargeText ?? '',
+  );
+  const [foreclosureChargeText, setForeclosureChargeText] = useState(
+    initial.foreclosureChargeText ?? '',
+  );
+  const meta = (
+    initial.metadata && typeof initial.metadata === 'object' ? initial.metadata : {}
+  ) as Record<string, unknown>;
+  const [vehicleCondition, setVehicleCondition] = useState(
+    typeof meta.vehicleCondition === 'string' ? meta.vehicleCondition : '',
+  );
+  const [vehicleAgeMax, setVehicleAgeMax] = useState(
+    meta.vehicleAgeMax != null ? String(meta.vehicleAgeMax) : '',
+  );
+  const [financingPercentageMin, setFinancingPercentageMin] = useState(
+    meta.financingPercentageMin != null ? String(meta.financingPercentageMin) : '',
+  );
+  const [financingPercentageMax, setFinancingPercentageMax] = useState(
+    meta.financingPercentageMax != null ? String(meta.financingPercentageMax) : '',
+  );
+  const [vehicleValuationRequired, setVehicleValuationRequired] = useState(
+    meta.vehicleValuationRequired === true,
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isCarLoan = /car|auto|vehicle/i.test(loanType);
 
   async function save() {
     setLoading(true);
     setMessage(null);
     try {
+      const nextMeta: Record<string, unknown> = { ...meta };
+      if (isCarLoan) {
+        if (vehicleCondition) nextMeta.vehicleCondition = vehicleCondition;
+        else delete nextMeta.vehicleCondition;
+        if (vehicleAgeMax) nextMeta.vehicleAgeMax = Number(vehicleAgeMax);
+        else delete nextMeta.vehicleAgeMax;
+        if (financingPercentageMin)
+          nextMeta.financingPercentageMin = Number(financingPercentageMin);
+        else delete nextMeta.financingPercentageMin;
+        if (financingPercentageMax)
+          nextMeta.financingPercentageMax = Number(financingPercentageMax);
+        else delete nextMeta.financingPercentageMax;
+        nextMeta.vehicleValuationRequired = vehicleValuationRequired;
+      }
+
       const res = await fetch(`/api/admin/finance/loans/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -724,6 +768,9 @@ export function FinanceLoanEditForm({
           affiliateUrl: affiliateUrl || undefined,
           seoTitle: seoTitle || null,
           seoDescription: seoDescription || null,
+          prepaymentChargeText: prepaymentChargeText || null,
+          foreclosureChargeText: foreclosureChargeText || null,
+          metadata: nextMeta,
         }),
       });
       const json = (await res.json()) as { error?: { message?: string } };
@@ -778,6 +825,66 @@ export function FinanceLoanEditForm({
           onChange={(e) => setAffiliateUrl(e.target.value)}
         />
       </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <textarea
+          className={`${inputClass} min-h-24 py-2`}
+          placeholder="Prepayment charge text"
+          value={prepaymentChargeText}
+          onChange={(e) => setPrepaymentChargeText(e.target.value)}
+        />
+        <textarea
+          className={`${inputClass} min-h-24 py-2`}
+          placeholder="Foreclosure charge text"
+          value={foreclosureChargeText}
+          onChange={(e) => setForeclosureChargeText(e.target.value)}
+        />
+      </div>
+
+      {isCarLoan ? (
+        <div className="mt-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-800">Car loan product fields</p>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <select
+              className={inputClass}
+              value={vehicleCondition}
+              onChange={(e) => setVehicleCondition(e.target.value)}
+            >
+              <option value="">Vehicle condition (unset)</option>
+              <option value="new">New</option>
+              <option value="used">Used</option>
+              <option value="both">New & Used</option>
+            </select>
+            <input
+              className={inputClass}
+              placeholder="Max vehicle age (years)"
+              value={vehicleAgeMax}
+              onChange={(e) => setVehicleAgeMax(e.target.value)}
+            />
+            <input
+              className={inputClass}
+              placeholder="Financing % min"
+              value={financingPercentageMin}
+              onChange={(e) => setFinancingPercentageMin(e.target.value)}
+            />
+            <input
+              className={inputClass}
+              placeholder="Financing % max"
+              value={financingPercentageMax}
+              onChange={(e) => setFinancingPercentageMax(e.target.value)}
+            />
+            <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={vehicleValuationRequired}
+                onChange={(e) => setVehicleValuationRequired(e.target.checked)}
+              />
+              Vehicle valuation required
+            </label>
+          </div>
+        </div>
+      ) : null}
+
       <FinanceSeoFields
         seoTitle={seoTitle}
         seoDescription={seoDescription}

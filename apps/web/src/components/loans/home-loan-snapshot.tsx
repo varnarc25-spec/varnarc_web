@@ -116,7 +116,7 @@ export function HomeLoanSnapshot() {
         <div className="mt-6 border-t border-[var(--hl-border)] pt-5">
           <a
             href="#home-loan-offers"
-            className="inline-flex min-h-11 items-center justify-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-5 text-sm font-semibold text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)] focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 items-center justify-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-5 text-sm font-semibold !text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)] focus-visible:ring-offset-2"
           >
             See Matching Home Loans →
           </a>

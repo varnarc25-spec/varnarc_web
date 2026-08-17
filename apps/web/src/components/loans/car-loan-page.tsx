@@ -8,26 +8,26 @@ import {
   LoanActiveFilterChips,
   type LoanFilterState,
 } from '@/components/loans/loan-filters';
-import { HomeLoanDecisionProvider } from '@/components/loans/home-loan-decision-context';
-import { HomeLoanDecisionHero } from '@/components/loans/home-loan-decision-hero';
-import { HomeLoanSnapshot } from '@/components/loans/home-loan-snapshot';
-import { HomeLoanDownPayment } from '@/components/loans/home-loan-down-payment';
-import { HomeLoanAffordability } from '@/components/loans/home-loan-affordability';
-import { HomeLoanOfferResults } from '@/components/loans/home-loan-offer-results';
-import { HomeLoanTenureSimulator } from '@/components/loans/home-loan-tenure-simulator';
+import { CarLoanDecisionProvider } from '@/components/loans/car-loan-decision-context';
+import { CarLoanDecisionHero } from '@/components/loans/car-loan-decision-hero';
+import { CarLoanSnapshot } from '@/components/loans/car-loan-snapshot';
+import { CarLoanDownPayment } from '@/components/loans/car-loan-down-payment';
+import { CarLoanOfferResults } from '@/components/loans/car-loan-offer-results';
+import { CarLoanTenureSimulator } from '@/components/loans/car-loan-tenure-simulator';
 import {
-  HomeLoanApplicationJourney,
-  HomeLoanBalanceTransfer,
-  HomeLoanDocuments,
-  HomeLoanEligibilityProfile,
-  HomeLoanFeesAndCharges,
-  HomeLoanFixedVsFloating,
-  HomeLoanInterestOverTime,
-  HomeLoanLtvSection,
-  HomeLoanPrepaymentImpact,
-} from '@/components/loans/home-loan-decision-sections';
+  CarLoanApplicationJourney,
+  CarLoanBankVsDealer,
+  CarLoanClosure,
+  CarLoanEligibility,
+  CarLoanFeesAndCharges,
+  CarLoanFinancingPercent,
+  CarLoanHypothecation,
+  CarLoanInterestOverTime,
+  CarLoanNewVsUsed,
+  CarLoanPrepayment,
+} from '@/components/loans/car-loan-decision-sections';
 import { LoanGuidesSection } from '@/components/loans/loan-guides-section';
-import { HomeLoanRelatedCalculators } from '@/components/loans/home-loan-related-calculators';
+import { CarLoanRelatedCalculators } from '@/components/loans/car-loan-related-calculators';
 import { LoanSectionHeader } from '@/components/loans/loan-section-header';
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from '@/components/seo/json-ld';
 import type {
@@ -44,16 +44,18 @@ import { loanCategoryCanonicalPath } from '@/lib/loan-path';
 import type { CategoryContentSections } from '@/lib/loan-category-page';
 import { pickLoanCategoryFaqs } from '@/lib/loan-category-faqs';
 import { buildLoanCategoryGuideCards } from '@/lib/loan-guides';
+import { CarLoanAffordability } from '@/components/loans/car-loan-affordability';
 import {
-  HOME_LOAN_DEFAULT_DOWN_PAYMENT,
-  HOME_LOAN_DEFAULT_FAQS,
-  HOME_LOAN_DECISION_HERO_ASSET,
-  HOME_LOAN_ILLUSTRATIVE_RATE,
-  HOME_LOAN_INTRO,
-  HOME_LOAN_RELATED_CALCULATORS,
-} from '@/lib/home-loan-page';
+  CAR_LOAN_DEFAULT_DOWN_PAYMENT,
+  CAR_LOAN_DEFAULT_FAQS,
+  CAR_LOAN_DEFAULT_GUIDES,
+  CAR_LOAN_DECISION_HERO_ASSET,
+  CAR_LOAN_ILLUSTRATIVE_RATE,
+  CAR_LOAN_INTRO,
+  CAR_LOAN_RELATED_CALCULATORS,
+} from '@/lib/car-loan-page';
 
-export type HomeLoanPageProps = {
+export type CarLoanPageProps = {
   category: FinanceCategory;
   categories: FinanceCategory[];
   banks: FinanceBank[];
@@ -80,22 +82,19 @@ function parseContentSections(
   return raw as CategoryContentSections;
 }
 
-function resolveHomeLoanHeroImage(category: FinanceCategory): string {
+function resolveCarLoanHeroImage(category: FinanceCategory): string {
   const cms = category.heroImage?.trim() || category.featuredImage?.trim();
-  if (cms && cms.includes('home-loan-decision')) return cms;
-  return HOME_LOAN_DECISION_HERO_ASSET;
+  if (cms && cms.includes('car-loan-decision')) return cms;
+  return CAR_LOAN_DECISION_HERO_ASSET;
 }
 
-function shouldUseDefaultHomeLoanFaqs(cmsFaqs: HubFaqItem[]): boolean {
+function shouldUseDefaultCarLoanFaqs(cmsFaqs: HubFaqItem[]): boolean {
   if (cmsFaqs.length < 4) return true;
   if (cmsFaqs.some((f) => f.id.startsWith('default-'))) return true;
   return false;
 }
 
-/**
- * Home Loan planning page — property / LTV / long-tenure journey (distinct from Personal Loan).
- */
-export function HomeLoanPage({
+export function CarLoanPage({
   category,
   categories,
   banks,
@@ -113,23 +112,23 @@ export function HomeLoanPage({
   emiInitialRate,
   emiInitialTenure,
   emiInitialTenureUnit,
-}: HomeLoanPageProps) {
+}: CarLoanPageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
-  const pathname = loanCategoryCanonicalPath('home-loan');
+  const pathname = loanCategoryCanonicalPath('car-loan');
   const cmsSections = parseContentSections(category.contentSections);
 
-  const h1 = 'Plan and Compare Home Loans';
-  const intro = category.introduction?.trim() || HOME_LOAN_INTRO;
-  const heroImageUrl = resolveHomeLoanHeroImage(category);
+  const h1 = 'Plan and Compare Car Loans';
+  const intro = category.introduction?.trim() || CAR_LOAN_INTRO;
+  const heroImageUrl = resolveCarLoanHeroImage(category);
   const heroImageAlt =
     category.heroImageAlt?.trim() ||
     category.featuredImageAlt?.trim() ||
-    'Home loan planning illustration showing property value, down payment and EMI';
+    'Car loan planning illustration showing vehicle price, down payment and EMI';
 
-  const cmsFaqs = pickLoanCategoryFaqs(faqs, 'home-loan', category.id, 8);
-  const categoryFaqs: HubFaqItem[] = shouldUseDefaultHomeLoanFaqs(cmsFaqs)
-    ? HOME_LOAN_DEFAULT_FAQS.map((f, index) => ({
-        id: `hl-faq-${index}`,
+  const cmsFaqs = pickLoanCategoryFaqs(faqs, 'car-loan', category.id, 8);
+  const categoryFaqs: HubFaqItem[] = shouldUseDefaultCarLoanFaqs(cmsFaqs)
+    ? CAR_LOAN_DEFAULT_FAQS.map((f, index) => ({
+        id: `cl-faq-${index}`,
         question: f.question,
         answer: f.answer,
       }))
@@ -138,18 +137,21 @@ export function HomeLoanPage({
   const relatedGuideSlugs = Array.isArray(cmsSections?.relatedGuideSlugs)
     ? cmsSections.relatedGuideSlugs.filter((s): s is string => typeof s === 'string')
     : null;
-  const guideCards = buildLoanCategoryGuideCards({
-    categorySlug: 'home-loan',
-    relatedGuideSlugs,
-    articles,
-    guides,
-    limit: 4,
-  });
+  const guideCards = (() => {
+    const built = buildLoanCategoryGuideCards({
+      categorySlug: 'car-loan',
+      relatedGuideSlugs,
+      articles,
+      guides,
+      limit: 6,
+    });
+    return built.length ? built : CAR_LOAN_DEFAULT_GUIDES.slice(0, 6);
+  })();
 
   const relatedCalculators =
     Array.isArray(cmsSections?.relatedCalculatorSlugs) && cmsSections.relatedCalculatorSlugs.length
       ? (() => {
-          const filtered = HOME_LOAN_RELATED_CALCULATORS.filter((link) =>
+          const filtered = CAR_LOAN_RELATED_CALCULATORS.filter((link) =>
             cmsSections.relatedCalculatorSlugs!.some((slug) => {
               if (typeof slug !== 'string') return false;
               const haystack = `${link.href} ${link.label}`.toLowerCase();
@@ -160,28 +162,28 @@ export function HomeLoanPage({
               );
             }),
           );
-          return filtered.length >= 2 ? filtered : HOME_LOAN_RELATED_CALCULATORS;
+          return filtered.length >= 2 ? filtered : CAR_LOAN_RELATED_CALCULATORS;
         })()
-      : HOME_LOAN_RELATED_CALCULATORS;
+      : CAR_LOAN_RELATED_CALCULATORS;
   const calculatorLinks = relatedCalculators.length
     ? relatedCalculators
-    : HOME_LOAN_RELATED_CALCULATORS;
+    : CAR_LOAN_RELATED_CALCULATORS;
 
   const initialTenureYears =
     emiInitialTenure != null
       ? emiInitialTenureUnit === 'months'
         ? Math.max(1, Math.round(emiInitialTenure / 12))
         : emiInitialTenure
-      : 20;
+      : 5;
 
-  const initialPropertyValue =
-    emiInitialAmount != null ? emiInitialAmount + HOME_LOAN_DEFAULT_DOWN_PAYMENT : undefined;
+  const initialVehiclePrice =
+    emiInitialAmount != null ? emiInitialAmount + CAR_LOAN_DEFAULT_DOWN_PAYMENT : undefined;
 
   const breadcrumbLd = breadcrumbJsonLd([
     { name: 'Home', url: `${siteUrl}/` },
     { name: 'Finance', url: `${siteUrl}/finance` },
     { name: 'Loans', url: `${siteUrl}/finance/loans` },
-    { name: 'Home Loans', url: `${siteUrl}${pathname}` },
+    { name: 'Car Loans', url: `${siteUrl}${pathname}` },
   ]);
 
   const webPageLd = {
@@ -198,7 +200,7 @@ export function HomeLoanPage({
   };
 
   return (
-    <main className="hl-page w-full bg-[var(--hl-surface-1,#fff)]">
+    <main className="cl-page w-full bg-[var(--cl-surface-1,#fff)]">
       <JsonLd data={breadcrumbLd} />
       <JsonLd data={webPageLd} />
       {categoryFaqs.length ? (
@@ -212,44 +214,47 @@ export function HomeLoanPage({
         />
       ) : null}
 
-      <HomeLoanDecisionProvider
-        initialPropertyValue={initialPropertyValue}
-        initialDownPayment={HOME_LOAN_DEFAULT_DOWN_PAYMENT}
+      <CarLoanDecisionProvider
+        initialVehiclePrice={initialVehiclePrice}
+        initialDownPayment={CAR_LOAN_DEFAULT_DOWN_PAYMENT}
         initialTenureYears={initialTenureYears}
-        initialRate={emiInitialRate ?? HOME_LOAN_ILLUSTRATIVE_RATE}
+        initialRate={emiInitialRate ?? CAR_LOAN_ILLUSTRATIVE_RATE}
       >
         {/* 1. Hero (white) */}
-        <div className="full-bleed bg-[var(--hl-surface-1)]">
+        <div className="full-bleed bg-[var(--cl-surface-1)]">
           <div className="site-container px-4 pt-6 pb-8 sm:pt-8 sm:pb-10">
             <Breadcrumbs
               items={[
                 { label: 'Home', href: '/' },
                 { label: 'Finance', href: '/finance' },
                 { label: 'Loans', href: '/finance/loans' },
-                { label: 'Home Loans' },
+                { label: 'Car Loans' },
               ]}
             />
 
             <div className="mt-3">
-              <HomeLoanDecisionHero illustrationSrc={heroImageUrl} illustrationAlt={heroImageAlt} />
+              <CarLoanDecisionHero illustrationSrc={heroImageUrl} illustrationAlt={heroImageAlt} />
             </div>
           </div>
         </div>
 
         {/* 2. Snapshot (cream) */}
-        <HomeLoanSnapshot />
+        <CarLoanSnapshot />
+
+        {/* 2b. Affordability (cream) */}
+        <CarLoanAffordability />
 
         {/* 3. Down Payment (white) */}
-        <HomeLoanDownPayment />
+        <CarLoanDownPayment />
 
         {/* 4. Compare Offers (blue-gray) */}
-        <div id="home-loan-offers" className="full-bleed bg-[var(--hl-surface-2,#f4f6f9)]">
-          <div className="site-container hl-section px-4">
+        <div id="car-loan-offers" className="full-bleed bg-[var(--cl-surface-2,#f4f6f9)]">
+          <div className="site-container cl-section px-4">
             <LoanSectionHeader
-              id="home-loan-offers-section-heading"
+              id="car-loan-offers-section-heading"
               eyebrow="Product comparison"
-              title="Compare Home Loan Offers"
-              description="Analytical comparison of listed home loans. Select up to 4 to compare side by side."
+              title="Compare Car Loan Offers"
+              description="Analytical comparison of listed car loans. Select up to 4 to compare side by side."
             />
             <div className="mb-5">
               <AdBanner slot="content-top" />
@@ -258,7 +263,7 @@ export function HomeLoanPage({
             <div className="grid items-start gap-5 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-6">
               <Suspense
                 fallback={
-                  <div className="rounded-[var(--hl-radius-lg)] bg-white/70 p-4 text-sm text-slate-500">
+                  <div className="rounded-[var(--cl-radius-lg)] bg-white/70 p-4 text-sm text-slate-500">
                     Loading filters…
                   </div>
                 }
@@ -268,7 +273,7 @@ export function HomeLoanPage({
                   banks={banks}
                   current={filterState}
                   hideLoanType
-                  lockCategorySlug="home-loan"
+                  lockCategorySlug="car-loan"
                   quiet
                 />
               </Suspense>
@@ -280,10 +285,10 @@ export function HomeLoanPage({
                     categories={categories}
                     banks={banks}
                     hideCategoryChip
-                    lockCategorySlug="home-loan"
+                    lockCategorySlug="car-loan"
                   />
                 </Suspense>
-                <HomeLoanOfferResults
+                <CarLoanOfferResults
                   loans={loans}
                   featuredLoans={featuredLoans}
                   currentSort={sort}
@@ -299,73 +304,71 @@ export function HomeLoanPage({
         </div>
 
         {/* 5. Tenure simulator (white) */}
-        <HomeLoanTenureSimulator />
+        <CarLoanTenureSimulator />
 
-        {/* 6. LTV (navy-tint) */}
-        <HomeLoanLtvSection />
+        {/* 6. NewVsUsed (surface-4) */}
+        <CarLoanNewVsUsed />
 
-        {/* 7. Fixed vs Floating (white) */}
-        <HomeLoanFixedVsFloating />
+        {/* 7. Financing % (white) */}
+        <CarLoanFinancingPercent />
 
-        {/* 8. Interest over time (blue-gray) */}
-        <HomeLoanInterestOverTime />
+        {/* 8. Interest over time (surface-2) */}
+        <CarLoanInterestOverTime />
 
-        {/* 9. Affordability (cream) */}
-        <HomeLoanAffordability />
+        {/* 9. BankVsDealer (cream) */}
+        <CarLoanBankVsDealer />
 
-        {/* 10. Prepayment (white) */}
-        <HomeLoanPrepaymentImpact />
+        {/* 10. Eligibility (white) */}
+        <CarLoanEligibility />
 
-        {/* 11. Balance Transfer (blue-gray) */}
-        <HomeLoanBalanceTransfer />
+        {/* 11. Prepayment (surface-2) */}
+        <CarLoanPrepayment />
 
-        {/* 12. Eligibility (white) */}
-        <HomeLoanEligibilityProfile />
+        {/* 12. Fees (white) */}
+        <CarLoanFeesAndCharges />
 
-        {/* 13. Fees (cream) */}
-        <HomeLoanFeesAndCharges loans={loans} />
+        {/* 13. Hypothecation (surface-4) */}
+        <CarLoanHypothecation />
 
-        {/* 14. Documents (light gray) */}
-        <HomeLoanDocuments />
+        {/* 14. Closure (white) */}
+        <CarLoanClosure />
 
-        {/* 15. Application journey (navy-tint) */}
-        <HomeLoanApplicationJourney />
+        {/* 15. Journey (surface-2) */}
+        <CarLoanApplicationJourney />
 
-        {/* 16. Disclaimer */}
-        <div className="full-bleed bg-[var(--hl-surface-3)]">
+        {/* Disclaimer */}
+        <div className="full-bleed bg-[var(--cl-surface-3)]">
           <div className="site-container px-4 py-6">
             <LoanDisclaimer />
           </div>
         </div>
 
-        {/* 17. Guides + 18. Related calculators (white) */}
-        <section className="full-bleed bg-[var(--hl-surface-1)]">
-          <div className="site-container space-y-12 hl-section px-4">
-            {guideCards.length ? (
-              <LoanGuidesSection
-                guides={guideCards}
-                title="Home Loan Guides"
-                description="Focused explainers on choosing a home loan, eligibility, EMI and repayment."
-                actionLabel="View all loan guides →"
-              />
-            ) : null}
+        {/* 16. Guides + 17. Related calculators (white) */}
+        <section className="full-bleed bg-[var(--cl-surface-1)]">
+          <div className="site-container space-y-12 cl-section px-4">
+            <LoanGuidesSection
+              guides={guideCards}
+              title="Car Loan Guides"
+              description="Focused explainers on choosing a car loan, eligibility, EMI and repayment."
+              actionLabel="View all loan guides →"
+            />
 
-            <HomeLoanRelatedCalculators links={calculatorLinks} />
+            <CarLoanRelatedCalculators links={calculatorLinks} />
           </div>
         </section>
 
-        {/* 19. FAQs (surface-2) */}
-        <section className="full-bleed bg-[var(--hl-surface-2,#f4f6f9)]">
-          <div className="site-container hl-section px-4">
+        {/* 18. FAQs (surface-2) */}
+        <section className="full-bleed bg-[var(--cl-surface-2,#f4f6f9)]">
+          <div className="site-container cl-section px-4">
             <HubFaqSection
               faqs={categoryFaqs}
               viewAllHref="/finance/faqs"
-              viewAllLabel="View All Home Loan FAQs →"
-              title="Home Loan FAQs"
+              viewAllLabel="View All Car Loan FAQs →"
+              title="Car Loan FAQs"
             />
           </div>
         </section>
-      </HomeLoanDecisionProvider>
+      </CarLoanDecisionProvider>
     </main>
   );
 }

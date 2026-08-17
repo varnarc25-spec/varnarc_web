@@ -20,15 +20,12 @@ import { formatInr } from '@/components/loans/loan-format';
 import { useHomeLoanDecision } from '@/components/loans/home-loan-decision-context';
 import { calculateEmi } from '@/lib/emi';
 import { processingFeeDisplay } from '@/lib/loan-catalog';
-import {
-  articlePath,
-  calculatorHref,
-  comparePath,
-  financeEligibilityPath,
-} from '@/lib/finance-routes';
+import { calculatorHref, comparePath, financeEligibilityPath } from '@/lib/finance-routes';
 import {
   HOME_LOAN_APPLICANT_DOCS,
   HOME_LOAN_FEE_TYPES,
+  HOME_LOAN_FIXED_POINTS,
+  HOME_LOAN_FLOATING_POINTS,
   HOME_LOAN_JOINT_NOTES,
   HOME_LOAN_PROPERTY_DOCS,
   HOME_LOAN_RATE_COMPARE_ITEMS,
@@ -220,15 +217,11 @@ export function HomeLoanFixedVsFloating() {
             <h3 className="mt-1 text-lg font-bold text-[var(--hl-navy)]">More predictable path</h3>
             <FixedRateVisual />
             <ul className="mt-4 flex-1 space-y-2.5">
-              <li className="text-sm leading-relaxed text-slate-600">
-                More predictable rate structure for the fixed period
-              </li>
-              <li className="text-sm leading-relaxed text-slate-600">
-                Payment behaviour depends on product terms
-              </li>
-              <li className="text-sm leading-relaxed text-slate-600">
-                May offer certainty during the fixed period
-              </li>
+              {HOME_LOAN_FIXED_POINTS.map((point) => (
+                <li key={point} className="text-sm leading-relaxed text-slate-600">
+                  {point}
+                </li>
+              ))}
             </ul>
             <Link
               href={comparePath('fixed-vs-floating-home-loan')}
@@ -244,13 +237,11 @@ export function HomeLoanFixedVsFloating() {
             <h3 className="mt-1 text-lg font-bold text-[var(--hl-navy)]">May move with terms</h3>
             <FloatingRateVisual />
             <ul className="mt-4 flex-1 space-y-2.5">
-              <li className="text-sm leading-relaxed text-slate-600">Rate may change</li>
-              <li className="text-sm leading-relaxed text-slate-600">
-                EMI and/or tenure may change
-              </li>
-              <li className="text-sm leading-relaxed text-slate-600">
-                Often linked to lender/benchmark conditions
-              </li>
+              {HOME_LOAN_FLOATING_POINTS.map((point) => (
+                <li key={point} className="text-sm leading-relaxed text-slate-600">
+                  {point}
+                </li>
+              ))}
             </ul>
             <Link
               href={comparePath('fixed-vs-floating-home-loan')}
@@ -436,7 +427,7 @@ export function HomeLoanEligibilityProfile() {
                 Applicant Profile
               </p>
               <div
-                className="relative mx-auto aspect-square w-full max-w-[300px]"
+                className="relative mx-auto aspect-square w-full max-w-[360px]"
                 role="img"
                 aria-label="Applicant profile factors: income, credit profile, existing EMIs, and employment or business stability"
               >
@@ -659,7 +650,7 @@ export function HomeLoanEligibilityProfile() {
 
         <Link
           href={financeEligibilityPath({ loanType: 'home-loan' })}
-          className="mt-8 inline-flex min-h-11 items-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold text-white hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+          className="mt-8 inline-flex min-h-11 items-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold !text-white hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
         >
           Check Home Loan Eligibility →
         </Link>
@@ -835,6 +826,15 @@ export function HomeLoanPrepaymentImpact() {
             label="With Prepayment"
             variant="prepay"
             shortened={impact != null && impact.monthsSaved > 0}
+            remainingRatio={
+              impact && remainingYears * 12 > 0
+                ? Math.max(
+                    0.22,
+                    Math.min(1, (remainingYears * 12 - impact.monthsSaved) / (remainingYears * 12)),
+                  )
+                : 1
+            }
+            prepayAtRatio={0.45}
           />
         </div>
 
@@ -1070,10 +1070,10 @@ export function HomeLoanBalanceTransfer() {
             Open Prepayment Calculator →
           </Link>
           <Link
-            href={articlePath('home-loan-prepayment')}
+            href="/finance/loans/methodology"
             className="inline-flex min-h-11 items-center text-sm font-semibold text-slate-600 hover:text-[var(--hl-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
           >
-            Balance transfer guide →
+            Loan comparison methodology →
           </Link>
         </div>
       </div>
@@ -1395,11 +1395,19 @@ function TimelineBar({
   label,
   variant,
   shortened,
+  remainingRatio = 0.68,
+  prepayAtRatio = 0.48,
 }: {
   label: string;
   variant: 'standard' | 'prepay';
   shortened?: boolean;
+  remainingRatio?: number;
+  prepayAtRatio?: number;
 }) {
+  const widthPct =
+    variant === 'standard' ? 100 : shortened ? Math.round(remainingRatio * 100) : 100;
+  const markerPct = Math.round(Math.min(prepayAtRatio, remainingRatio) * 100);
+
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
@@ -1408,22 +1416,23 @@ function TimelineBar({
       <div className="mt-3" aria-hidden>
         <div className="relative h-2 rounded-full bg-slate-200/80">
           <div
-            className={`absolute inset-y-0 left-0 rounded-full transition-[width] duration-200 motion-reduce:transition-none ${
-              variant === 'standard'
-                ? 'w-full bg-[var(--hl-navy)]/70'
-                : shortened
-                  ? 'w-[68%] bg-[var(--hl-navy)]/55'
-                  : 'w-full bg-[var(--hl-navy)]/55'
-            }`}
+            className={`absolute inset-y-0 left-0 rounded-full bg-[var(--hl-navy)]/70 transition-[width] duration-200 motion-reduce:transition-none`}
+            style={{ width: `${widthPct}%` }}
           />
           {variant === 'prepay' ? (
-            <span className="absolute left-[48%] top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--hl-orange)] ring-[3px] ring-white" />
+            <span
+              className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--hl-orange)] ring-[3px] ring-white"
+              style={{ left: `${markerPct}%` }}
+            />
           ) : null}
         </div>
         <div className="relative mt-2 flex justify-between text-[11px] text-[var(--hl-muted)]">
           <span>Start</span>
           {variant === 'prepay' ? (
-            <span className="absolute left-[48%] -translate-x-1/2 font-semibold text-[var(--hl-orange)]">
+            <span
+              className="absolute -translate-x-1/2 font-semibold text-[var(--hl-orange)]"
+              style={{ left: `${markerPct}%` }}
+            >
               ↑ Prepayment
             </span>
           ) : null}

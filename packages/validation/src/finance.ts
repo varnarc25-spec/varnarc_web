@@ -223,6 +223,8 @@ export const financeListQuerySchema = cursorPaginationQuerySchema.extend({
   processingFeeMax: z.coerce.number().min(0).optional(),
   creditScoreMaxRequired: z.coerce.number().int().min(300).max(900).optional(),
   employmentType: z.string().max(80).optional(),
+  vehicleCondition: z.enum(['new', 'used']).optional(),
+  financingPercentMin: z.coerce.number().min(0).max(100).optional(),
   sort: z
     .enum([
       'recommended',

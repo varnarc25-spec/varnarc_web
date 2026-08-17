@@ -27,6 +27,10 @@ export type LoanFilterState = {
   processingFeeMax?: string;
   creditScoreMaxRequired?: string;
   employmentType?: string;
+  /** Car loan only: new | used */
+  vehicleCondition?: string;
+  /** Car loan only: min financing % product should support */
+  financingPercentMin?: string;
   sort?: string;
 };
 
@@ -39,6 +43,8 @@ const FILTER_KEYS = [
   'processingFeeMax',
   'creditScoreMaxRequired',
   'employmentType',
+  'vehicleCondition',
+  'financingPercentMin',
 ] as const;
 
 type FilterKey = (typeof FILTER_KEYS)[number];
@@ -48,6 +54,8 @@ const MORE_FILTER_KEYS: FilterKey[] = [
   'processingFeeMax',
   'creditScoreMaxRequired',
   'employmentType',
+  'vehicleCondition',
+  'financingPercentMin',
 ];
 
 /** Build catalog URL — category lives in the path, never as ?categorySlug=. */
@@ -66,6 +74,8 @@ export function buildLoanFilterHref(next: LoanFilterState): string {
       processingFeeMax: next.processingFeeMax,
       creditScoreMaxRequired: next.creditScoreMaxRequired,
       employmentType: next.employmentType,
+      vehicleCondition: next.vehicleCondition,
+      financingPercentMin: next.financingPercentMin,
     },
   });
 }
@@ -156,6 +166,23 @@ export function getLoanFilterChips(
       label: employmentLabel(current.employmentType),
     });
   }
+  if (current.vehicleCondition) {
+    chips.push({
+      key: 'vehicleCondition',
+      label:
+        current.vehicleCondition === 'used'
+          ? 'Used car'
+          : current.vehicleCondition === 'new'
+            ? 'New car'
+            : current.vehicleCondition,
+    });
+  }
+  if (current.financingPercentMin) {
+    chips.push({
+      key: 'financingPercentMin',
+      label: `Financing ≥ ${current.financingPercentMin}%`,
+    });
+  }
 
   return chips;
 }
@@ -179,6 +206,7 @@ function FilterFields({
   moreOpen,
   setMoreOpen,
   hideLoanType = false,
+  showCarLoanFilters = false,
 }: {
   draft: LoanFilterState;
   setDraft: Dispatch<SetStateAction<LoanFilterState>>;
@@ -187,6 +215,7 @@ function FilterFields({
   moreOpen: boolean;
   setMoreOpen: (open: boolean) => void;
   hideLoanType?: boolean;
+  showCarLoanFilters?: boolean;
 }) {
   return (
     <div className="space-y-3.5">
@@ -332,6 +361,47 @@ function FilterFields({
                 <option value="professional">Professional</option>
               </select>
             </div>
+            {showCarLoanFilters ? (
+              <>
+                <div>
+                  <FieldLabel htmlFor="loan-filter-vehicle">New / Used Vehicle</FieldLabel>
+                  <select
+                    id="loan-filter-vehicle"
+                    value={draft.vehicleCondition ?? ''}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        vehicleCondition: e.target.value || undefined,
+                      }))
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Any</option>
+                    <option value="new">New car</option>
+                    <option value="used">Used car</option>
+                  </select>
+                </div>
+                <div>
+                  <FieldLabel htmlFor="loan-filter-financing">Financing %</FieldLabel>
+                  <input
+                    id="loan-filter-financing"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="1"
+                    placeholder="Min financing %"
+                    value={draft.financingPercentMin ?? ''}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        financingPercentMin: e.target.value || undefined,
+                      }))
+                    }
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -469,6 +539,7 @@ export function LoanFilters({
       moreOpen={moreOpen}
       setMoreOpen={setMoreOpen}
       hideLoanType={hideLoanType}
+      showCarLoanFilters={lockCategorySlug === 'car-loan'}
     />
   );
 

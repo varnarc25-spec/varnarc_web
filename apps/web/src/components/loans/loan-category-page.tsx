@@ -45,6 +45,7 @@ import { buildLoanCategoryGuideCards } from '@/lib/loan-guides';
 import { resolveLoanCategoryHeroImage } from '@/lib/loan-visual-assets';
 import { LOAN_CATEGORY_HERO_BENEFITS } from '@/components/loans/loan-hub-hero';
 import { HomeLoanPage } from '@/components/loans/home-loan-page';
+import { CarLoanPage } from '@/components/loans/car-loan-page';
 import { PersonalLoanPage } from '@/components/loans/personal-loan-page';
 
 export type LoanCategoryPageProps = {
@@ -83,6 +84,30 @@ export function LoanCategoryPage(props: LoanCategoryPageProps) {
   if (props.slug === 'home-loan') {
     return (
       <HomeLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  if (props.slug === 'car-loan') {
+    return (
+      <CarLoanPage
         category={props.category}
         categories={props.categories}
         banks={props.banks}

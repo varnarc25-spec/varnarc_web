@@ -110,6 +110,8 @@ async function renderCategoryPage(
     processingFeeMax: parseNum(params.processingFeeMax),
     creditScoreMaxRequired: parseNum(params.creditScoreMaxRequired),
     employmentType: params.employmentType,
+    vehicleCondition: params.vehicleCondition,
+    financingPercentMin: parseNum(params.financingPercentMin),
     sort,
   };
 
@@ -157,6 +159,8 @@ async function renderCategoryPage(
     processingFeeMax: params.processingFeeMax,
     creditScoreMaxRequired: params.creditScoreMaxRequired,
     employmentType: params.employmentType,
+    vehicleCondition: params.vehicleCondition,
+    financingPercentMin: params.financingPercentMin,
     sort,
   };
 

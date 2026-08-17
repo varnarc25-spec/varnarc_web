@@ -41,6 +41,8 @@ export const LOAN_CATALOG_FILTER_KEYS = [
   'processingFeeMax',
   'creditScoreMaxRequired',
   'employmentType',
+  'vehicleCondition',
+  'financingPercentMin',
   'cursor',
 ] as const;
 

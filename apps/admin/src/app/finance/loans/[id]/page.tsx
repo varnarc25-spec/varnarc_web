@@ -12,6 +12,9 @@ type LoanDetail = {
   affiliateUrl?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  prepaymentChargeText?: string | null;
+  foreclosureChargeText?: string | null;
+  metadata?: Record<string, unknown> | null;
   status: string;
   bank?: { id: string; name: string } | null;
   bankId?: string;
@@ -66,6 +69,9 @@ export default async function FinanceLoanEditPage({ params }: { params: Promise<
                 affiliateUrl: loan.affiliateUrl,
                 seoTitle: loan.seoTitle,
                 seoDescription: loan.seoDescription,
+                prepaymentChargeText: loan.prepaymentChargeText,
+                foreclosureChargeText: loan.foreclosureChargeText,
+                metadata: loan.metadata ?? null,
               }}
             />
           ) : (

@@ -240,4 +240,51 @@ describe('home loan decision page helpers', () => {
     expect(homeLoanRequirement(property, down)).toBe(90_00_000);
     expect(homeLoanRequirement(property, 1_20_00_000)).toBe(0);
   });
+
+  it('reduces EMI when prepayment mode is reduce-emi', () => {
+    const impact = estimateHomeLoanPrepaymentImpact({
+      outstanding: 50_00_000,
+      annualRatePercent: 8.5,
+      remainingMonths: 240,
+      prepaymentAmount: 5_00_000,
+      mode: 'reduce-emi',
+    });
+    expect(impact).not.toBeNull();
+    expect(impact!.mode).toBe('reduce-emi');
+    expect(impact!.monthsSaved).toBe(0);
+    expect(impact!.revised.monthlyEmi).toBeLessThan(impact!.original.monthlyEmi);
+    expect(impact!.interestSaved).toBeGreaterThanOrEqual(0);
+  });
+
+  it('does not invent offer EMI when rate is missing', () => {
+    const result = illustrativeHomeLoanOfferEmi(
+      {
+        id: '1',
+        name: 'Test HL',
+        slug: 'test-hl',
+        loanType: 'home',
+        loanAmountMin: 10_00_000,
+        loanAmountMax: 1_00_00_000,
+        tenureMin: 60,
+        tenureMax: 360,
+      },
+      60_00_000,
+      240,
+    );
+    expect(result.status).toBe('unavailable');
+  });
+
+  it('marks break-even null when EMI does not decrease', () => {
+    const impact = estimateHomeLoanBalanceTransfer({
+      outstanding: 50_00_000,
+      currentRatePercent: 8,
+      newRatePercent: 8,
+      remainingMonths: 240,
+      transferCost: 25_000,
+    });
+    expect(impact).not.toBeNull();
+    expect(impact!.monthlyEmiDifference).toBeCloseTo(0, 4);
+    expect(impact!.breakEvenMonths).toBeNull();
+    expect(impact!.netSavings).toBeLessThan(0);
+  });
 });

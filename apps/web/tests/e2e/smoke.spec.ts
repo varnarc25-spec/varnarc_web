@@ -24,3 +24,21 @@ test('compare slug route responds', async ({ page }) => {
   await page.goto('/compare/products');
   await expect(page.locator('body')).toBeVisible();
 });
+
+test('car loan decision page loads', async ({ page }) => {
+  await page.goto('/finance/loans/car-loan');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Plan and Compare Car Loans' }),
+  ).toBeVisible();
+  await expect(page.locator('#car-loan-offers')).toBeVisible();
+  await expect(page.locator('#car-loan-affordability')).toBeVisible();
+  await expect(page.locator('#car-loan-new-vs-used')).toBeVisible();
+  await expect(page.locator('#car-loan-hypothecation')).toBeVisible();
+});
+
+test('car loan affordability calculator loads', async ({ page }) => {
+  await page.goto('/calculators/car-loan-affordability');
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'How Much Car Can You Afford?' }),
+  ).toBeVisible();
+});

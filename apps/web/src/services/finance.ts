@@ -68,6 +68,15 @@ export type FinanceLoan = {
   officialApplicationUrl?: string | null;
   sourceUrl?: string | null;
   rateLastVerifiedAt?: string | null;
+  prepaymentChargeText?: string | null;
+  foreclosureChargeText?: string | null;
+  /** Optional car-loan fields (may also live under metadata). */
+  vehicleCondition?: 'new' | 'used' | 'both' | string | null;
+  vehicleAgeMax?: number | null;
+  financingPercentageMin?: number | null;
+  financingPercentageMax?: number | null;
+  vehicleValuationRequired?: boolean | null;
+  metadata?: Record<string, unknown> | null;
   pros?: string | null;
   cons?: string | null;
   featured?: boolean;
@@ -174,6 +183,10 @@ export type LoanListOptions = {
   processingFeeMax?: number;
   creditScoreMaxRequired?: number;
   employmentType?: string;
+  /** Car loan — new | used (API may filter via metadata). */
+  vehicleCondition?: string;
+  /** Car loan — minimum financing % the product should support. */
+  financingPercentMin?: number;
   sort?:
     | 'recommended'
     | 'lowest_interest'
@@ -212,6 +225,10 @@ function buildLoanQs(options?: LoanListOptions) {
     qs.set('creditScoreMaxRequired', String(options.creditScoreMaxRequired));
   }
   if (options?.employmentType) qs.set('employmentType', options.employmentType);
+  if (options?.vehicleCondition) qs.set('vehicleCondition', options.vehicleCondition);
+  if (options?.financingPercentMin != null) {
+    qs.set('financingPercentMin', String(options.financingPercentMin));
+  }
   if (options?.sort) qs.set('sort', options.sort);
   return qs.toString();
 }

@@ -22,6 +22,8 @@ type ListParams = CursorPageParams & {
   processingFeeMax?: number;
   creditScoreMaxRequired?: number;
   employmentType?: string;
+  vehicleCondition?: string;
+  financingPercentMin?: number;
   sort?:
     | 'recommended'
     | 'lowest_interest'
@@ -289,6 +291,42 @@ export class LoanRepository extends BaseRepository {
     if (params.employmentType) {
       and.push({
         employmentTypes: { array_contains: [params.employmentType] },
+      });
+    }
+    if (params.vehicleCondition === 'new' || params.vehicleCondition === 'used') {
+      and.push({
+        OR: [
+          {
+            metadata: {
+              path: ['vehicleCondition'],
+              equals: params.vehicleCondition,
+            },
+          },
+          {
+            metadata: {
+              path: ['vehicleCondition'],
+              equals: 'both',
+            },
+          },
+        ],
+      });
+    }
+    if (params.financingPercentMin != null) {
+      and.push({
+        OR: [
+          {
+            metadata: {
+              path: ['financingPercentageMax'],
+              gte: params.financingPercentMin,
+            },
+          },
+          {
+            metadata: {
+              path: ['financingPercentageMin'],
+              gte: params.financingPercentMin,
+            },
+          },
+        ],
       });
     }
     if (params.search) {

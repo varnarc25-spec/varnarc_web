@@ -412,6 +412,12 @@ export class FinanceService {
       ...(input.pros !== undefined ? { pros: input.pros } : {}),
       ...(input.cons !== undefined ? { cons: input.cons } : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
+      ...(input.prepaymentChargeText !== undefined
+        ? { prepaymentChargeText: input.prepaymentChargeText }
+        : {}),
+      ...(input.foreclosureChargeText !== undefined
+        ? { foreclosureChargeText: input.foreclosureChargeText }
+        : {}),
       ...(input.status != null
         ? {
             status: input.status,

@@ -143,7 +143,7 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={href}
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[var(--hl-navy)] px-3 text-xs font-semibold text-white hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[var(--hl-navy)] px-3 text-xs font-semibold !text-white hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
           >
             View Details
           </Link>
@@ -190,7 +190,11 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
                 Rates verified: {freshness.verifiedLabel}
                 {freshness.publicNotice ? ` · ${freshness.publicNotice}` : ''}
               </p>
-            ) : null}
+            ) : (
+              <p className="mt-0.5 truncate text-[11px] text-[var(--hl-muted)]">
+                Verified date: Not currently available
+              </p>
+            )}
           </div>
         </div>
         <p className="text-sm font-bold tabular-nums text-[var(--hl-navy)]">{rate.label}</p>
@@ -211,7 +215,7 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
             href={href}
-            className="inline-flex min-h-9 items-center rounded-lg bg-[var(--hl-navy)] px-3 text-xs font-semibold text-white hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+            className="inline-flex min-h-9 items-center rounded-lg bg-[var(--hl-navy)] px-3 text-xs font-semibold !text-white hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
           >
             View Details
           </Link>
@@ -310,7 +314,7 @@ export function HomeLoanOfferResults({
             <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href={pathname}
-                className="inline-flex min-h-10 items-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+                className="inline-flex min-h-10 items-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold !text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
               >
                 Try again
               </Link>
@@ -338,14 +342,14 @@ export function HomeLoanOfferResults({
             </div>
           </div>
         ) : (
-          <div className="rounded-[var(--hl-radius-md)] bg-white px-4 py-4 text-center sm:px-5">
+          <div className="rounded-[var(--hl-radius-md)] bg-white px-4 py-3 text-center sm:px-5">
             <div
-              className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--hl-surface-4)]"
+              className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--hl-surface-4)]"
               aria-hidden
             >
               <svg
                 viewBox="0 0 24 24"
-                className="h-4 w-4 text-[var(--hl-navy)]"
+                className="h-3.5 w-3.5 text-[var(--hl-navy)]"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.75"
@@ -360,21 +364,21 @@ export function HomeLoanOfferResults({
             </h3>
             <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-[var(--hl-muted)]">
               {filtersActive
-                ? 'Try adjusting your filters, loan amount or tenure to explore more available options.'
+                ? 'Try changing your loan amount, tenure or filters to explore available options.'
                 : 'Check back soon, or continue with the planning tools above while products are being updated.'}
             </p>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-2.5 flex flex-wrap items-center justify-center gap-3">
               {filtersActive ? (
                 <Link
                   href={pathname}
-                  className="inline-flex min-h-10 items-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+                  className="inline-flex min-h-10 items-center justify-center rounded-[var(--hl-radius-md)] bg-[var(--hl-navy)] px-4 text-sm font-semibold !text-white transition duration-150 hover:bg-[var(--hl-navy-soft)] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
                 >
                   Clear Filters
                 </Link>
               ) : null}
               <a
                 href="#home-loan-snapshot"
-                className="inline-flex min-h-10 items-center text-sm font-semibold text-slate-600 transition duration-150 hover:text-[var(--hl-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
+                className="inline-flex min-h-10 items-center justify-center rounded-[var(--hl-radius-md)] border border-[var(--hl-border)] bg-white px-4 text-sm font-semibold text-[var(--hl-navy)] transition duration-150 hover:border-[var(--hl-navy)]/30 hover:text-[var(--hl-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)]"
               >
                 Adjust Loan Amount
               </a>

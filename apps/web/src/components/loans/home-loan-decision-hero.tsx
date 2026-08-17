@@ -8,6 +8,7 @@ import {
   useHomeLoanDecision,
 } from '@/components/loans/home-loan-decision-context';
 import { financeEligibilityPath } from '@/lib/finance-routes';
+import { trackAnalyticsEvent } from '@/lib/analytics-client';
 import { HOME_LOAN_PROPERTY_PRESETS, HOME_LOAN_TENURE_YEARS } from '@/lib/home-loan-page';
 import { formatInr } from '@/components/loans/loan-format';
 
@@ -51,6 +52,7 @@ export function HomeLoanDecisionHero({
     String(Math.round(downPaymentPercent * 10) / 10),
   );
   const [customProperty, setCustomProperty] = useState(false);
+  const [dpHint, setDpHint] = useState<string | null>(null);
 
   const propertyDisplay = useMemo(() => formatAmountDisplay(propertyDigits), [propertyDigits]);
   const downDisplay = useMemo(() => formatAmountDisplay(downDigits), [downDigits]);
@@ -64,20 +66,35 @@ export function HomeLoanDecisionHero({
   function syncProperty(next: number) {
     setPropertyValue(next);
     setPropertyDigits(String(next));
+    const nextDown = Math.round((next * Math.min(100, Math.max(0, downPaymentPercent))) / 100);
+    setDownDigits(String(nextDown));
+    setDpHint(null);
   }
 
   function syncDown(next: number) {
+    if (next > propertyValue) {
+      setDpHint('Down payment cannot exceed property value.');
+    } else {
+      setDpHint(null);
+    }
     setDownPayment(next);
-    setDownDigits(String(next));
+    setDownDigits(String(Math.min(Math.max(0, next), propertyValue)));
     if (propertyValue > 0) {
-      setPercentInput(String(Math.round((next / propertyValue) * 1000) / 10));
+      const clamped = Math.min(Math.max(0, next), propertyValue);
+      setPercentInput(String(Math.round((clamped / propertyValue) * 1000) / 10));
     }
   }
 
   function applyPercent(pct: number) {
-    setDownPaymentFromPercent(pct);
-    setPercentInput(String(pct));
-    setDownDigits(String(Math.round((propertyValue * pct) / 100)));
+    const safe = Math.min(100, Math.max(0, pct));
+    if (pct > 100) {
+      setDpHint('Down payment cannot exceed 100% of property value.');
+    } else {
+      setDpHint(null);
+    }
+    setDownPaymentFromPercent(safe);
+    setPercentInput(String(safe));
+    setDownDigits(String(Math.round((propertyValue * safe) / 100)));
     setDpMode('percent');
   }
 
@@ -87,6 +104,16 @@ export function HomeLoanDecisionHero({
     const d = Number(downDigits.replace(/\D/g, ''));
     if (Number.isFinite(p) && p > 0) setPropertyValue(p);
     if (Number.isFinite(d) && d >= 0) setDownPayment(d);
+    try {
+      trackAnalyticsEvent({
+        eventType: 'custom',
+        entityType: 'home_loan',
+        entityId: 'plan_cta',
+        metadata: { action: 'home_loan_plan_started' },
+      });
+    } catch {
+      /* analytics optional */
+    }
     document.getElementById('home-loan-offers')?.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -249,6 +276,11 @@ export function HomeLoanDecisionHero({
                         setDpMode('percent');
                         const n = Number(e.target.value);
                         if (Number.isFinite(n) && n >= 0) {
+                          if (n > 100) {
+                            setDpHint('Down payment cannot exceed 100% of property value.');
+                          } else {
+                            setDpHint(null);
+                          }
                           setDownPaymentFromPercent(n);
                           setDownDigits(
                             String(Math.round((propertyValue * Math.min(100, n)) / 100)),
@@ -339,9 +371,27 @@ export function HomeLoanDecisionHero({
               <p className="mt-1.5 text-[1.75rem] font-extrabold tabular-nums tracking-tight text-[var(--hl-navy)] sm:text-[2rem]">
                 {formatInr(loanRequirement)}
               </p>
-              <p className="mt-1 text-[11px] text-[var(--hl-muted)]">
-                Property value − down payment · calculated
+              <p
+                className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-[var(--hl-muted)]"
+                aria-label={`${formatInr(propertyValue)} property minus ${formatInr(downPayment)} down payment equals ${formatInr(loanRequirement)} loan required`}
+              >
+                <span className="font-semibold tabular-nums text-[var(--hl-navy)]">
+                  {formatInr(propertyValue)}
+                </span>
+                <span aria-hidden>−</span>
+                <span className="font-semibold tabular-nums text-[var(--hl-navy)]">
+                  {formatInr(downPayment)}
+                </span>
+                <span aria-hidden>=</span>
+                <span className="font-bold tabular-nums text-[var(--hl-navy)]">
+                  {formatInr(loanRequirement)}
+                </span>
               </p>
+              {dpHint ? (
+                <p className="mt-2 text-xs font-medium text-[var(--hl-orange)]" role="status">
+                  {dpHint}
+                </p>
+              ) : null}
             </div>
 
             <fieldset>

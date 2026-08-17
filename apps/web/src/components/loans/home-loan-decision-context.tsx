@@ -58,8 +58,14 @@ export function HomeLoanDecisionProvider({
 
   const setPropertyValue = useCallback((n: number) => {
     if (!Number.isFinite(n) || n <= 0) return;
-    setPropertyValueState(n);
-    setDownPaymentState((prev) => clampHomeLoanDownPayment(n, prev));
+    setPropertyValueState((prevProperty) => {
+      setDownPaymentState((prevDp) => {
+        const pct =
+          prevProperty > 0 ? Math.min(100, Math.max(0, (prevDp / prevProperty) * 100)) : 20;
+        return clampHomeLoanDownPayment(n, Math.round((n * pct) / 100));
+      });
+      return n;
+    });
   }, []);
 
   const setDownPayment = useCallback(
