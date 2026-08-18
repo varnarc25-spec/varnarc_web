@@ -48,6 +48,10 @@ import { LOAN_CATEGORY_HERO_BENEFITS } from '@/components/loans/loan-hub-hero';
 import { HomeLoanPage } from '@/components/loans/home-loan-page';
 import { CarLoanPage } from '@/components/loans/car-loan-page';
 import { PersonalLoanPage } from '@/components/loans/personal-loan-page';
+import { EducationLoanPage } from '@/components/loans/education-loan-page';
+import { BusinessLoanPage } from '@/components/loans/business-loan-page';
+import { GoldLoanPage } from '@/components/loans/gold-loan-page';
+import { LoanAgainstPropertyPage } from '@/components/loans/loan-against-property-page';
 
 export type LoanCategoryPageProps = {
   slug: LoanCategorySlug;
@@ -109,6 +113,102 @@ export function LoanCategoryPage(props: LoanCategoryPageProps) {
   if (props.slug === 'car-loan') {
     return (
       <CarLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  if (props.slug === 'education-loan') {
+    return (
+      <EducationLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  if (props.slug === 'business-loan') {
+    return (
+      <BusinessLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  if (props.slug === 'gold-loan') {
+    return (
+      <GoldLoanPage
+        category={props.category}
+        categories={props.categories}
+        banks={props.banks}
+        loans={props.loans}
+        featuredLoans={props.featuredLoans}
+        filterState={props.filterState}
+        sort={props.sort}
+        cursorMeta={props.cursorMeta}
+        nextPageHref={props.nextPageHref}
+        loansFetchFailed={props.loansFetchFailed}
+        faqs={props.faqs}
+        guides={props.guides}
+        articles={props.articles}
+        emiInitialAmount={props.emiInitialAmount}
+        emiInitialRate={props.emiInitialRate}
+        emiInitialTenure={props.emiInitialTenure}
+        emiInitialTenureUnit={props.emiInitialTenureUnit}
+      />
+    );
+  }
+
+  if (props.slug === 'loan-against-property') {
+    return (
+      <LoanAgainstPropertyPage
         category={props.category}
         categories={props.categories}
         banks={props.banks}

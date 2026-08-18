@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="24" fill="#faf7f2"/>
+  <circle cx="560" cy="56" r="44" fill="#ffedd5" opacity="0.55"/>
+  <rect x="56" y="88" width="220" height="184" rx="18" fill="#0b1f3a"/>
+  <text x="78" y="128" fill="#fff" font-family="system-ui,sans-serif" font-size="16" font-weight="700">Working Capital</text>
+  <rect x="78" y="148" width="36" height="28" rx="4" fill="#122b4a"/>
+  <rect x="122" y="140" width="36" height="36" rx="4" fill="#f97316"/>
+  <rect x="166" y="152" width="36" height="24" rx="4" fill="#122b4a"/>
+  <path d="M88 220h140" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M210 212l10 8-10 8" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+  <rect x="88" y="236" width="120" height="14" rx="7" fill="#fff" opacity="0.2"/>
+  <rect x="340" y="88" width="244" height="184" rx="18" fill="#eef2f7" stroke="#e2e8f0"/>
+  <text x="362" y="128" fill="#0b1f3a" font-family="system-ui,sans-serif" font-size="16" font-weight="700">Term Loan</text>
+  <rect x="362" y="150" width="56" height="40" rx="6" fill="#0b1f3a"/>
+  <rect x="430" y="142" width="20" height="48" rx="3" fill="#122b4a"/>
+  <circle cx="376" cy="210" r="8" fill="#94a3b8"/>
+  <circle cx="404" cy="210" r="8" fill="#94a3b8"/>
+  <circle cx="470" cy="196" r="7" fill="#f97316"/>
+  <circle cx="510" cy="196" r="7" fill="#0b1f3a"/>
+  <circle cx="550" cy="196" r="7" fill="#0b1f3a"/>
+  <path d="M470 196h80" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="362" y="236" width="160" height="12" rx="6" fill="#cbd5e1"/>
+</svg>

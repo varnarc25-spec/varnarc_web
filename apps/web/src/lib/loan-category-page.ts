@@ -444,10 +444,10 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     h1: 'Compare Education Loans',
     breadcrumbLabel: 'Education Loans',
     intro:
-      'Compare education loan options for domestic study and study abroad, including tenure, moratorium concepts, collateral and eligibility.',
-    metaTitle: 'Compare Education Loans | India & Abroad',
+      'Plan education financing for domestic study and study abroad — education cost, funding gap, study-period interest, moratorium, government support and co-applicant considerations.',
+    metaTitle: 'Education Loan Planner | Cost, Moratorium & Government Support',
     metaDescription:
-      'Compare education loan rates, amounts, repayment, moratorium concepts, collateral requirements and eligibility for studies in India and abroad.',
+      'Plan education loan funding for India and abroad: estimate education cost and funding gap, compare study-period interest options, understand moratorium and EMI after study, and explore PM-Vidyalaxmi and PM-USP CSIS with official sources.',
     relatedCalculators: [
       calc('education-loan-emi', 'Education Loan EMI Calculator'),
       calc('loan-eligibility', 'Loan Eligibility Calculator'),
@@ -508,13 +508,13 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     ],
   },
   'business-loan': {
-    h1: 'Compare Business Loans',
+    h1: 'Plan and Compare Business Loans',
     breadcrumbLabel: 'Business Loans',
     intro:
-      'Compare business loan options for working capital and term needs, including eligibility, documentation and repayment structures.',
-    metaTitle: 'Compare Business Loans | Working Capital & Term Loans',
+      'Estimate your business funding requirement, understand repayment capacity and compare financing options based on your business needs.',
+    metaTitle: 'Business Loan Calculator, Eligibility & Comparison | Varnarc',
     metaDescription:
-      'Compare business loan rates, amounts, tenure and eligibility for working capital and term financing from banks and NBFCs.',
+      'Plan business borrowing with EMI, cash-flow impact, DSCR, working capital vs term loan guidance, MSME support exploration and Business Loan comparison.',
     relatedCalculators: [
       calc('business-loan-emi', 'Business Loan EMI Calculator'),
       calc('loan-eligibility', 'Loan Eligibility Calculator'),
@@ -580,13 +580,13 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     ],
   },
   'gold-loan': {
-    h1: 'Compare Gold Loans',
+    h1: 'Plan & Compare Gold Loans',
     breadcrumbLabel: 'Gold Loans',
     intro:
-      'Compare gold loan options secured against jewellery, including tenure, repayment styles and eligibility basics.',
-    metaTitle: 'Compare Gold Loans | LTV, Tenure & Repayment',
+      'Estimate borrowing capacity using gold weight, purity and indicative valuation, then explore repayment costs, eligibility and available lender offers.',
+    metaTitle: 'Gold Loan Calculator, Eligibility & Comparison',
     metaDescription:
-      'Compare gold loan interest rates, tenure, repayment options and eligibility. Understand valuation and LTV concepts before you pledge gold.',
+      'Estimate Gold Loan value using weight, purity and indicative LTV, calculate repayment costs, understand eligibility, risks and compare available Gold Loan offers.',
     relatedCalculators: [
       calc('gold-loan-emi', 'Gold Loan EMI Calculator'),
       calc('loan-eligibility', 'Loan Eligibility Calculator'),
@@ -600,7 +600,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
       {
         key: 'ltv',
         title: 'LTV',
-        body: 'Loan-to-value for gold loans is capped by regulation and lender policy. Higher LTV increases borrowing against the same gold but can raise risk if gold prices move.',
+        body: 'Loan-to-value for gold loans depends on applicable requirements and lender policy. Higher LTV increases borrowing against the same gold but can raise risk if collateral value moves. Confirm current rules with official sources and the lender.',
       },
       {
         key: 'eligibleGold',
@@ -709,13 +709,13 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     ],
   },
   'loan-against-property': {
-    h1: 'Compare Loan Against Property',
+    h1: 'Plan and Compare Loans Against Property',
     breadcrumbLabel: 'Loan Against Property',
     intro:
-      'Compare loan against property options secured by residential or commercial property, including tenure, eligibility and fee considerations.',
-    metaTitle: 'Compare Loan Against Property | Rates & Eligibility',
+      'Estimate how much you may be able to borrow against an owned property, understand LTV and repayment capacity, then compare available LAP options.',
+    metaTitle: 'Loan Against Property Calculator, LTV & Eligibility | Varnarc',
     metaDescription:
-      'Compare loan against property interest rates, amounts, tenure and eligibility for credit secured by residential or commercial property.',
+      'Plan a loan against property with illustrative LTV and EMI tools, estimate borrowing capacity from property value, review eligibility and valuation considerations, then compare verified LAP products.',
     relatedCalculators: [
       calc('loan-against-property-emi', 'LAP EMI Calculator'),
       calc('loan-eligibility', 'Loan Eligibility Calculator'),

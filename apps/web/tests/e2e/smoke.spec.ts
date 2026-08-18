@@ -42,3 +42,55 @@ test('car loan affordability calculator loads', async ({ page }) => {
     page.getByRole('heading', { level: 2, name: 'How Much Car Can You Afford?' }),
   ).toBeVisible();
 });
+
+test('education loan decision page loads', async ({ page }) => {
+  await page.goto('/finance/loans/education-loan');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Plan and Compare Education Loans' }),
+  ).toBeVisible();
+  await expect(page.locator('#el-offers')).toBeVisible();
+  await expect(page.locator('#el-government-support')).toBeVisible();
+  await expect(page.locator('#el-pm-vidyalaxmi')).toBeVisible();
+  await expect(page.locator('#el-study-interest')).toBeVisible();
+});
+
+test('business loan decision page loads', async ({ page }) => {
+  await page.goto('/finance/loans/business-loan');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Plan and Compare Business Loans' }),
+  ).toBeVisible();
+  await expect(page.locator('#bl-offers')).toBeVisible();
+  await expect(page.locator('#bl-cash-flow')).toBeVisible();
+  await expect(page.locator('#bl-stress')).toBeVisible();
+  await expect(page.locator('#bl-dscr')).toBeVisible();
+  await expect(page.locator('#bl-break-even')).toBeVisible();
+  await expect(page.locator('#bl-wc-vs-term')).toBeVisible();
+  await expect(page.locator('#bl-government-support')).toBeVisible();
+  await expect(page.locator('#bl-eligibility')).toBeVisible();
+});
+
+test('gold loan decision page loads', async ({ page }) => {
+  await page.goto('/finance/loans/gold-loan');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Plan & Compare Gold Loans' }),
+  ).toBeVisible();
+  await expect(page.locator('#gl-offers')).toBeVisible();
+  await expect(page.locator('#gl-valuation')).toBeVisible();
+  await expect(page.locator('#gl-capacity')).toBeVisible();
+  await expect(page.locator('#gl-gold-required')).toBeVisible();
+  await expect(page.locator('#gl-risk')).toBeVisible();
+  await expect(page.locator('#gl-regulatory')).toBeVisible();
+});
+
+test('loan against property decision page loads', async ({ page }) => {
+  await page.goto('/finance/loans/loan-against-property');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Plan and Compare Loans Against Property' }),
+  ).toBeVisible();
+  await expect(page.locator('#lap-snapshot')).toBeVisible();
+  await expect(page.locator('#lap-capacity')).toBeVisible();
+  await expect(page.locator('#lap-offers')).toBeVisible();
+  await expect(page.locator('#lap-ltv')).toBeVisible();
+  await expect(page.locator('#lap-foir')).toBeVisible();
+  await expect(page.locator('#lap-regulatory')).toBeVisible();
+});

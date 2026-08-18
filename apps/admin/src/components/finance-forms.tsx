@@ -1669,7 +1669,13 @@ export function FinanceCategoryEditForm({
   const [sectionDrafts, setSectionDrafts] = useState<Record<string, string>>(() => {
     const next: Record<string, string> = {};
     for (const [key, value] of Object.entries(existingSections)) {
-      if (key === 'relatedCalculatorSlugs' || key === 'relatedGuideSlugs') continue;
+      if (
+        key === 'relatedCalculatorSlugs' ||
+        key === 'relatedGuideSlugs' ||
+        key === 'governmentSchemes'
+      ) {
+        continue;
+      }
       if (typeof value === 'string') next[key] = value;
     }
     return next;
@@ -1686,6 +1692,21 @@ export function FinanceCategoryEditForm({
         ? (existingSections.relatedGuideSlugs as string[]).join(', ')
         : ''),
   );
+  const [governmentSchemesJson, setGovernmentSchemesJson] = useState(() => {
+    const raw = existingSections.governmentSchemes;
+    if (!raw) return '';
+    try {
+      return JSON.stringify(raw, null, 2);
+    } catch {
+      return '';
+    }
+  });
+  const isEducationLoanCategory = initial.slug === 'education-loan';
+  const isBusinessLoanCategory = initial.slug === 'business-loan';
+  const isGoldLoanCategory = initial.slug === 'gold-loan';
+  const isLapCategory = initial.slug === 'loan-against-property';
+  const supportsGovernmentSchemes =
+    isEducationLoanCategory || isBusinessLoanCategory || isGoldLoanCategory || isLapCategory;
   const [icon, setIcon] = useState<EntityMediaValue>({
     mediaId: initial.iconMediaId ?? null,
     url: initial.icon ?? null,
@@ -1741,6 +1762,46 @@ export function FinanceCategoryEditForm({
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
+
+      if (supportsGovernmentSchemes) {
+        const trimmed = governmentSchemesJson.trim();
+        if (!trimmed) {
+          contentSections.governmentSchemes = null;
+        } else {
+          const parsed = JSON.parse(trimmed) as unknown;
+          if (!Array.isArray(parsed)) {
+            throw new Error('governmentSchemes must be a JSON array');
+          }
+          const reviewSoonMs = 180 * 24 * 60 * 60 * 1000;
+          const now = Date.now();
+          const staleNames: string[] = [];
+          for (const item of parsed) {
+            if (!item || typeof item !== 'object') {
+              throw new Error('Each government scheme must be an object');
+            }
+            const row = item as Record<string, unknown>;
+            if (typeof row.officialSourceUrl !== 'string' || !row.officialSourceUrl.trim()) {
+              throw new Error('Each government scheme requires officialSourceUrl');
+            }
+            if (typeof row.lastVerifiedAt !== 'string' || !row.lastVerifiedAt.trim()) {
+              throw new Error('Each government scheme requires lastVerifiedAt');
+            }
+            const verified = new Date(row.lastVerifiedAt).getTime();
+            if (Number.isFinite(verified) && now - verified > reviewSoonMs) {
+              staleNames.push(
+                typeof row.name === 'string' ? row.name : String(row.slug ?? 'scheme'),
+              );
+            }
+          }
+          if (staleNames.length) {
+            const proceed = window.confirm(
+              `Needs Review: lastVerifiedAt is older than 180 days for: ${staleNames.join(', ')}. Save anyway? Re-verify official sources before relying on public thresholds.`,
+            );
+            if (!proceed) return;
+          }
+          contentSections.governmentSchemes = parsed;
+        }
+      }
 
       const [catRes, seoRes] = await Promise.all([
         fetch(`/api/admin/finance/categories/${id}`, {
@@ -1926,6 +1987,32 @@ export function FinanceCategoryEditForm({
           />
         </label>
       </div>
+      {supportsGovernmentSchemes ? (
+        <label className="block text-sm">
+          <span className="mb-1 block text-[var(--varnarc-subtle)]">
+            {isBusinessLoanCategory
+              ? 'Business Loans → Government / MSME Schemes (JSON). Requires officialSourceUrl + lastVerifiedAt per scheme before publish.'
+              : isGoldLoanCategory
+                ? 'Gold Loans → Regulatory / RBI Information (JSON). Requires officialSourceUrl + lastVerifiedAt. Do not invent numerical LTV caps without verified sources.'
+                : isLapCategory
+                  ? 'Loan Against Property → Regulatory / RBI Information (JSON). Requires officialSourceUrl + lastVerifiedAt. Do not invent LTV caps, valuation rules or recovery timelines without verified sources.'
+                  : 'Education Loans → Government Schemes (JSON). Requires officialSourceUrl + lastVerifiedAt per scheme before publish.'}
+          </span>
+          <textarea
+            className={`${inputClass} min-h-48 py-2 font-mono text-xs`}
+            value={governmentSchemesJson}
+            onChange={(e) => setGovernmentSchemesJson(e.target.value)}
+            placeholder='[{"id":"…","name":"PM-Vidyalaxmi","slug":"pm-vidyalaxmi","officialSourceUrl":"https://…","lastVerifiedAt":"2026-08-17","schemeType":"loan_portal",…}]'
+          />
+          <span className="mt-1 block text-xs text-[var(--varnarc-subtle)]">
+            Leave empty to use published defaults. Prefer overview, eligibility, benefit,
+            income/loan limits, institution/admission/course rules, subvention, moratorium,
+            collateral/guarantee, official links, and verification fields. Do not publish without
+            official source URLs. Re-set lastVerifiedAt on every material update. Saving with
+            lastVerifiedAt older than 180 days prompts a Needs Review confirmation.
+          </span>
+        </label>
+      ) : null}
       <FormActions
         loading={loading}
         disabled={!name}

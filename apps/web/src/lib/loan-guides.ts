@@ -302,5 +302,20 @@ export function buildLoanCategoryGuideCards(input: {
     }));
   }
 
+  if (input.categorySlug === 'education-loan') {
+    return cards.map((card) => ({
+      ...card,
+      imageUrl: resolveLoanGuideCoverImage({
+        featuredUrl: card.imageUrl.includes('/education-loan-guides/') ? card.imageUrl : null,
+        slug: card.href.split('/').pop() ?? card.id,
+        title: card.title,
+        excerpt: card.excerpt,
+        categoryLabel: card.categoryLabel,
+        categorySlug: 'education-loan',
+      }),
+      relatedCategorySlug: card.relatedCategorySlug ?? 'education-loan',
+    }));
+  }
+
   return cards;
 }

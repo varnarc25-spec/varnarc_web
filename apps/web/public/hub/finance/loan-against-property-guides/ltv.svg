@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#eef2f7"/>
+  <circle cx="88" cy="72" r="40" fill="#faf7f2"/>
+  <!-- house -->
+  <path d="M120 210l78-58 78 58v92H120V210z" fill="#fff" stroke="#0b1f3a" stroke-width="3"/>
+  <path d="M120 210l78-58 78 58" fill="none" stroke="#0b1f3a" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="166" y="236" width="36" height="48" rx="6" fill="#0b1f3a"/>
+  <rect x="220" y="232" width="28" height="24" rx="4" fill="#ffedd5"/>
+  <!-- segmented bar card -->
+  <rect x="310" y="118" width="270" height="160" rx="18" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="336" y="148" width="120" height="10" rx="5" fill="#0b1f3a"/>
+  <rect x="336" y="184" width="218" height="28" rx="10" fill="#eef2f7"/>
+  <rect x="336" y="184" width="92" height="28" rx="10" fill="#f97316"/>
+  <rect x="336" y="232" width="70" height="10" rx="5" fill="#f97316"/>
+  <rect x="420" y="232" width="110" height="10" rx="5" fill="#0b1f3a" opacity="0.45"/>
+</svg>

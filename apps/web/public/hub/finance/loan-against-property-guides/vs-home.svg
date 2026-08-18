@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#eef2f7"/>
+  <rect x="316" y="90" width="2" height="190" fill="#cbd5e1"/>
+  <!-- owned property as security -->
+  <path d="M78 200l66-50 66 50v86H78v-86z" fill="#fff" stroke="#0b1f3a" stroke-width="2.5"/>
+  <rect x="118" y="226" width="28" height="40" rx="5" fill="#0b1f3a"/>
+  <rect x="210" y="188" width="64" height="80" rx="12" fill="#0b1f3a"/>
+  <path d="M230 216h24M230 236h16" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="254" cy="204" r="8" fill="#f97316"/>
+  <rect x="96" y="300" width="150" height="12" rx="6" fill="#faf7f2"/>
+  <!-- home purchase -->
+  <path d="M380 200l66-50 66 50v86H380v-86z" fill="#fff" stroke="#0b1f3a" stroke-width="2.5"/>
+  <rect x="420" y="226" width="28" height="40" rx="5" fill="#0b1f3a"/>
+  <rect x="510" y="200" width="70" height="52" rx="10" fill="#ffedd5"/>
+  <rect x="524" y="218" width="42" height="8" rx="4" fill="#f97316"/>
+  <rect x="404" y="300" width="150" height="12" rx="6" fill="#faf7f2"/>
+</svg>

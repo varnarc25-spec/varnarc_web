@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#faf7f2"/>
+  <circle cx="78" cy="68" r="52" fill="#e8eef5" opacity="0.85"/>
+  <circle cx="560" cy="290" r="72" fill="#ffedd5" opacity="0.4"/>
+  <circle cx="520" cy="58" r="30" fill="#fff7ed" opacity="0.85"/>
+
+  <!-- subtle globe -->
+  <circle cx="540" cy="118" r="36" fill="none" stroke="#e8edf3" stroke-width="2"/>
+  <ellipse cx="540" cy="118" rx="18" ry="36" fill="none" stroke="#e8edf3" stroke-width="1.5"/>
+  <path d="M504 118h72M510 100h60M510 136h60" stroke="#e8edf3" stroke-width="1.2"/>
+
+  <!-- student silhouette -->
+  <circle cx="148" cy="148" r="28" fill="#0b1f3a"/>
+  <path d="M108 248 C108 200, 188 200, 188 248 V268 H108 Z" fill="#122b4a"/>
+  <!-- graduation cap -->
+  <path d="M118 132 L148 118 L178 132 L148 146 Z" fill="#0b1f3a"/>
+  <rect x="140" y="132" width="16" height="10" rx="2" fill="#122b4a"/>
+  <path d="M178 132 L188 128 L186 148" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="186" cy="152" r="3" fill="#f97316"/>
+
+  <!-- cost breakdown bars -->
+  <rect x="230" y="120" width="140" height="120" rx="14" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="248" y="140" width="104" height="14" rx="7" fill="#eef2f7"/>
+  <rect x="248" y="140" width="40" height="14" rx="7" fill="#f97316"/>
+  <rect x="248" y="168" width="104" height="14" rx="7" fill="#eef2f7"/>
+  <rect x="248" y="168" width="68" height="14" rx="7" fill="#0b1f3a" opacity="0.45"/>
+  <rect x="248" y="196" width="104" height="14" rx="7" fill="#eef2f7"/>
+  <rect x="248" y="196" width="88" height="14" rx="7" fill="#0b1f3a"/>
+
+  <!-- loan document -->
+  <rect x="400" y="100" width="108" height="136" rx="14" fill="#0b1f3a"/>
+  <rect x="416" y="124" width="76" height="8" rx="4" fill="#fff" opacity="0.28"/>
+  <rect x="416" y="142" width="60" height="8" rx="4" fill="#fff" opacity="0.2"/>
+  <rect x="416" y="168" width="76" height="32" rx="8" fill="#122b4a"/>
+  <circle cx="436" cy="184" r="5" fill="#f97316"/>
+  <rect x="448" y="179" width="32" height="10" rx="4" fill="#fff" opacity="0.35"/>
+  <rect x="416" y="210" width="52" height="6" rx="3" fill="#fff" opacity="0.18"/>
+
+  <!-- repayment timeline -->
+  <rect x="100" y="310" width="420" height="10" rx="5" fill="#e8edf3"/>
+  <rect x="100" y="310" width="260" height="10" rx="5" fill="#0b1f3a" opacity="0.78"/>
+  <circle cx="100" cy="315" r="7" fill="#0b1f3a"/>
+  <circle cx="210" cy="315" r="5" fill="#64748b"/>
+  <circle cx="320" cy="315" r="5" fill="#64748b"/>
+  <circle cx="360" cy="315" r="8" fill="#f97316"/>
+  <circle cx="520" cy="315" r="6" fill="#94a3b8"/>
+</svg>

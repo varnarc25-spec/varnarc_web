@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#faf7f2"/>
+  <circle cx="560" cy="290" r="44" fill="#eef2f7"/>
+  <!-- three profile cards -->
+  <rect x="56" y="96" width="120" height="140" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <circle cx="116" cy="140" r="22" fill="#eef2f7"/>
+  <rect x="80" y="178" width="72" height="8" rx="4" fill="#0b1f3a"/>
+  <rect x="88" y="198" width="56" height="8" rx="4" fill="#94a3b8" opacity="0.4"/>
+  <rect x="196" y="96" width="120" height="140" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="220" y="124" width="72" height="52" rx="8" fill="#eef2f7"/>
+  <rect x="236" y="136" width="40" height="28" rx="4" fill="#0b1f3a"/>
+  <rect x="220" y="192" width="72" height="8" rx="4" fill="#0b1f3a"/>
+  <rect x="336" y="96" width="120" height="140" rx="14" fill="#fff" stroke="#e2e8f0"/>
+  <rect x="360" y="132" width="72" height="12" rx="6" fill="#f97316"/>
+  <rect x="360" y="160" width="56" height="8" rx="4" fill="#94a3b8" opacity="0.4"/>
+  <rect x="360" y="182" width="64" height="8" rx="4" fill="#94a3b8" opacity="0.35"/>
+  <!-- arrows -->
+  <path d="M170 166h18M310 166h18" stroke="#0b1f3a" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+  <!-- assessment doc -->
+  <rect x="490" y="108" width="110" height="150" rx="14" fill="#0b1f3a"/>
+  <rect x="510" y="136" width="70" height="8" rx="4" fill="#fff" opacity="0.9"/>
+  <rect x="510" y="160" width="54" height="8" rx="4" fill="#f97316"/>
+  <rect x="510" y="184" width="62" height="8" rx="4" fill="#fff" opacity="0.35"/>
+  <circle cx="545" cy="226" r="14" fill="#f97316"/>
+</svg>

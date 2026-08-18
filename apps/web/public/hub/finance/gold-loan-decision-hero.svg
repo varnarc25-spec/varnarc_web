@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#f4f6f9"/>
+  <circle cx="72" cy="72" r="48" fill="#e8eef5" opacity="0.9"/>
+  <circle cx="560" cy="300" r="64" fill="#ffedd5" opacity="0.45"/>
+  <!-- jewellery (restrained gold only here) -->
+  <circle cx="145" cy="165" r="50" fill="none" stroke="#c9a227" stroke-width="10"/>
+  <circle cx="145" cy="165" r="32" fill="none" stroke="#0b1f3a" stroke-width="2.5"/>
+  <rect x="133" y="108" width="24" height="16" rx="4" fill="#0b1f3a"/>
+  <circle cx="145" cy="165" r="8" fill="#f97316"/>
+  <!-- small bangle accents -->
+  <circle cx="210" cy="230" r="18" fill="none" stroke="#c9a227" stroke-width="5" opacity="0.7"/>
+  <circle cx="95" cy="230" r="14" fill="none" stroke="#c9a227" stroke-width="4" opacity="0.55"/>
+  <!-- appraisal / valuation interface -->
+  <rect x="250" y="95" width="160" height="190" rx="14" fill="#0b1f3a"/>
+  <rect x="270" y="118" width="96" height="10" rx="5" fill="#fff" opacity="0.9"/>
+  <rect x="270" y="140" width="72" height="8" rx="4" fill="#fff" opacity="0.3"/>
+  <rect x="270" y="168" width="120" height="52" rx="10" fill="#122b4a"/>
+  <rect x="286" y="184" width="52" height="8" rx="4" fill="#f97316"/>
+  <rect x="286" y="202" width="80" height="6" rx="3" fill="#fff" opacity="0.22"/>
+  <!-- scale motif -->
+  <line x1="330" y1="240" x2="330" y2="258" stroke="#fff" stroke-width="2" opacity="0.35"/>
+  <rect x="300" y="258" width="60" height="8" rx="3" fill="#fff" opacity="0.2"/>
+  <!-- secured loan document / UI -->
+  <rect x="440" y="90" width="150" height="200" rx="18" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="458" y="112" width="114" height="10" rx="5" fill="#0b1f3a" opacity="0.85"/>
+  <rect x="458" y="138" width="80" height="8" rx="4" fill="#94a3b8" opacity="0.4"/>
+  <rect x="458" y="156" width="100" height="8" rx="4" fill="#94a3b8" opacity="0.28"/>
+  <!-- collateral / LTV bar -->
+  <rect x="458" y="188" width="114" height="14" rx="7" fill="#eef2f7"/>
+  <rect x="458" y="188" width="76" height="14" rx="7" fill="#f97316"/>
+  <rect x="458" y="220" width="114" height="40" rx="10" fill="#fff7ed"/>
+  <rect x="474" y="234" width="70" height="10" rx="5" fill="#f97316"/>
+</svg>

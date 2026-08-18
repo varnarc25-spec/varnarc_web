@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img" aria-hidden="true">
+  <rect width="640" height="360" rx="28" fill="#faf7f2"/>
+  <circle cx="560" cy="64" r="48" fill="#ffedd5" opacity="0.5"/>
+  <circle cx="72" cy="300" r="36" fill="#eef2f7"/>
+  <!-- building -->
+  <rect x="70" y="118" width="168" height="176" rx="14" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="70" y="96" width="168" height="34" rx="10" fill="#0b1f3a"/>
+  <rect x="94" y="148" width="44" height="32" rx="5" fill="#eef2f7"/>
+  <rect x="152" y="148" width="44" height="32" rx="5" fill="#eef2f7"/>
+  <rect x="94" y="194" width="44" height="32" rx="5" fill="#ffedd5"/>
+  <rect x="152" y="194" width="44" height="32" rx="5" fill="#eef2f7"/>
+  <rect x="128" y="248" width="52" height="46" rx="8" fill="#0b1f3a"/>
+  <!-- valuation doc -->
+  <rect x="280" y="88" width="168" height="210" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="304" y="114" width="120" height="12" rx="6" fill="#0b1f3a"/>
+  <rect x="304" y="142" width="88" height="8" rx="4" fill="#94a3b8" opacity="0.45"/>
+  <rect x="304" y="162" width="104" height="8" rx="4" fill="#94a3b8" opacity="0.35"/>
+  <rect x="304" y="198" width="120" height="44" rx="10" fill="#eef2f7"/>
+  <rect x="320" y="214" width="54" height="10" rx="5" fill="#f97316"/>
+  <!-- measure / assessment -->
+  <rect x="486" y="150" width="96" height="96" rx="16" fill="#0b1f3a"/>
+  <path d="M512 186h44M512 210h32" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="558" cy="168" r="10" fill="#f97316"/>
+  <path d="M250 200h24" stroke="#0b1f3a" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+</svg>
