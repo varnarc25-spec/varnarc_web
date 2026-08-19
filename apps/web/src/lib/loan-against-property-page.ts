@@ -10,6 +10,7 @@ import {
   calculateEmi,
   calculatePrincipalFromEmi,
   estimateAffordableEmi,
+  EMI_LIMITS,
   ILLUSTRATIVE_FOIR_RATIO,
   type EmiResult,
 } from '@/lib/emi';
@@ -34,6 +35,22 @@ export const LAP_DEFAULT_REQUIRED = 40_00_000;
 export const LAP_DEFAULT_TENURE_YEARS = 10;
 export const LAP_DEFAULT_MONTHLY_INCOME = 1_50_000;
 export const LAP_DEFAULT_EXISTING_EMIS = 25_000;
+/** Keep planner loan amounts within the shared EMI engine range. */
+export const LAP_MAX_REQUIRED_LOAN = EMI_LIMITS.amountMax;
+export const LAP_MAX_PROPERTY_VALUE = 100_00_00_000;
+
+/**
+ * Normalize typed/pasted money strings (₹, commas, spaces) to a finite number.
+ * Returns 0 for empty / non-numeric input so clamps can apply consistently.
+ */
+export function parseLapMoneyInput(raw: string | number | null | undefined): number {
+  if (raw == null) return 0;
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : 0;
+  const cleaned = raw.replace(/[₹,\s]/g, '').trim();
+  if (!cleaned) return 0;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
 
 export type LapPropertyType = 'residential' | 'commercial' | 'industrial' | 'other';
 export type LapApplicantType = 'salaried' | 'self_employed' | 'business_owner';

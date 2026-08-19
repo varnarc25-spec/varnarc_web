@@ -10,6 +10,8 @@ import {
   LAP_DEFAULT_REQUIRED,
   LAP_DEFAULT_TENURE_YEARS,
   LAP_ILLUSTRATIVE_RATE,
+  LAP_MAX_PROPERTY_VALUE,
+  LAP_MAX_REQUIRED_LOAN,
   clampNonNegative,
   clampPercent,
   estimateLapBorrowingCapacity,
@@ -60,16 +62,26 @@ const LapDecisionContext = createContext<LapDecisionContextValue | null>(null);
 export function LapDecisionProvider({
   children,
   initialRate = LAP_ILLUSTRATIVE_RATE,
+  initialAmount,
+  initialTenureYears,
 }: {
   children: ReactNode;
   initialRate?: number;
+  initialAmount?: number;
+  initialTenureYears?: number;
 }) {
   const [propertyValue, setPropertyValueState] = useState(LAP_DEFAULT_PROPERTY_VALUE);
-  const [requiredLoan, setRequiredLoanState] = useState(LAP_DEFAULT_REQUIRED);
+  const [requiredLoan, setRequiredLoanState] = useState(() => {
+    const seed = initialAmount ?? LAP_DEFAULT_REQUIRED;
+    return Math.min(LAP_MAX_REQUIRED_LOAN, clampNonNegative(seed));
+  });
   const [illustrativeLtvPercent, setIllustrativeLtvPercentState] = useState(
     LAP_DEFAULT_ILLUSTRATIVE_LTV,
   );
-  const [tenureYears, setTenureYearsState] = useState(LAP_DEFAULT_TENURE_YEARS);
+  const [tenureYears, setTenureYearsState] = useState(() => {
+    const y = Math.floor(initialTenureYears ?? LAP_DEFAULT_TENURE_YEARS);
+    return Math.max(1, Math.min(25, Number.isFinite(y) ? y : LAP_DEFAULT_TENURE_YEARS));
+  });
   const [ratePercent, setRatePercentState] = useState(initialRate);
   const [propertyType, setPropertyType] = useState<LapPropertyType>('residential');
   const [applicantType, setApplicantType] = useState<LapApplicantType>('salaried');
@@ -79,11 +91,11 @@ export function LapDecisionProvider({
   const [otherObligations, setOtherObligationsState] = useState(0);
 
   const setPropertyValue = useCallback(
-    (n: number) => setPropertyValueState(Math.min(100_00_00_000, clampNonNegative(n))),
+    (n: number) => setPropertyValueState(Math.min(LAP_MAX_PROPERTY_VALUE, clampNonNegative(n))),
     [],
   );
   const setRequiredLoan = useCallback(
-    (n: number) => setRequiredLoanState(Math.min(50_00_00_000, clampNonNegative(n))),
+    (n: number) => setRequiredLoanState(Math.min(LAP_MAX_REQUIRED_LOAN, clampNonNegative(n))),
     [],
   );
   const setIllustrativeLtvPercent = useCallback(

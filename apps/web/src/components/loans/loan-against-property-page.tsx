@@ -118,7 +118,10 @@ export function LoanAgainstPropertyPage({
   faqs,
   guides,
   articles,
+  emiInitialAmount,
   emiInitialRate,
+  emiInitialTenure,
+  emiInitialTenureUnit,
 }: LoanAgainstPropertyPageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
   const pathname = loanCategoryCanonicalPath('loan-against-property');
@@ -129,6 +132,12 @@ export function LoanAgainstPropertyPage({
   const heroImageAlt =
     category.heroImageAlt?.trim() ||
     'Loan against property capacity and secured borrowing planner illustration';
+
+  const initialTenureYears = (() => {
+    if (emiInitialTenure == null || !Number.isFinite(emiInitialTenure)) return undefined;
+    if (emiInitialTenureUnit === 'months') return Math.max(1, Math.round(emiInitialTenure / 12));
+    return Math.max(1, Math.round(emiInitialTenure));
+  })();
 
   const cmsFaqs = pickLoanCategoryFaqs(faqs, 'loan-against-property');
   const categoryFaqs: HubFaqItem[] = (() => {
@@ -195,7 +204,11 @@ export function LoanAgainstPropertyPage({
         />
       ) : null}
 
-      <LapDecisionProvider initialRate={emiInitialRate ?? LAP_ILLUSTRATIVE_RATE}>
+      <LapDecisionProvider
+        initialRate={emiInitialRate ?? LAP_ILLUSTRATIVE_RATE}
+        initialAmount={emiInitialAmount}
+        initialTenureYears={initialTenureYears}
+      >
         <div className="full-bleed bg-[var(--lap-surface-1)]">
           <div className="site-container px-4 pt-6 pb-8 sm:pt-8 sm:pb-10">
             <Breadcrumbs

@@ -651,7 +651,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     breadcrumbLabel: 'Two-Wheeler Loans',
     intro:
       'Compare two-wheeler loan rates, tenure, down payment expectations, processing fees and eligibility for scooters and motorcycles.',
-    metaTitle: 'Compare Two-Wheeler Loans | EMI & Eligibility',
+    metaTitle: 'Two-Wheeler Loan Calculator, EMI & Eligibility',
     metaDescription:
       'Compare two-wheeler loan interest rates, EMI, tenure and eligibility for scooters and motorcycles.',
     relatedCalculators: [
@@ -713,7 +713,7 @@ export const LOAN_CATEGORY_PAGE_DEFAULTS: Record<LoanCategorySlug, LoanCategoryP
     breadcrumbLabel: 'Loan Against Property',
     intro:
       'Estimate how much you may be able to borrow against an owned property, understand LTV and repayment capacity, then compare available LAP options.',
-    metaTitle: 'Loan Against Property Calculator, LTV & Eligibility | Varnarc',
+    metaTitle: 'Loan Against Property Calculator, LTV & Eligibility',
     metaDescription:
       'Plan a loan against property with illustrative LTV and EMI tools, estimate borrowing capacity from property value, review eligibility and valuation considerations, then compare verified LAP products.',
     relatedCalculators: [

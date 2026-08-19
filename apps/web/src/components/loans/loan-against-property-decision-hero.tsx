@@ -8,6 +8,7 @@ import {
   LAP_ILLUSTRATIVE_RATE,
   LAP_OWNERSHIP_OPTIONS,
   LAP_PROPERTY_TYPES,
+  parseLapMoneyInput,
 } from '@/lib/loan-against-property-page';
 
 const chip =
@@ -101,11 +102,11 @@ export function LoanAgainstPropertyDecisionHero({
             <label className="block text-sm font-semibold text-slate-700">
               Property value (₹)
               <input
-                type="number"
-                min={0}
-                inputMode="numeric"
-                value={propertyValue}
-                onChange={(e) => setPropertyValue(Number(e.target.value))}
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={Number.isFinite(propertyValue) ? String(propertyValue) : '0'}
+                onChange={(e) => setPropertyValue(parseLapMoneyInput(e.target.value))}
                 className="mt-1.5 min-h-11 w-full rounded-[var(--lap-radius-md)] border border-[var(--lap-border)] bg-white px-3 text-lg font-semibold tabular-nums text-[var(--lap-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--lap-orange)]/30"
               />
             </label>
@@ -135,11 +136,11 @@ export function LoanAgainstPropertyDecisionHero({
               <label className="block text-sm font-semibold text-slate-700">
                 Loan required (₹)
                 <input
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
-                  value={requiredLoan}
-                  onChange={(e) => setRequiredLoan(Number(e.target.value))}
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={Number.isFinite(requiredLoan) ? String(requiredLoan) : '0'}
+                  onChange={(e) => setRequiredLoan(parseLapMoneyInput(e.target.value))}
                   className="mt-1.5 min-h-11 w-full rounded-[var(--lap-radius-md)] border border-[var(--lap-border)] bg-white px-3 text-sm font-semibold tabular-nums text-[var(--lap-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--lap-orange)]/30"
                 />
               </label>

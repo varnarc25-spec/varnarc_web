@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatInr } from '@/components/loans/loan-format';
 import { useLapDecision } from '@/components/loans/loan-against-property-decision-context';
 import { calculatorHref } from '@/lib/finance-routes';
@@ -13,6 +13,7 @@ import {
   compareLapTenures,
   estimateLapPrepaymentImpact,
   estimateLapTotalCost,
+  parseLapMoneyInput,
   type PrepaymentMode,
 } from '@/lib/loan-against-property-page';
 
@@ -31,11 +32,11 @@ function MoneyField({
     <label className="block text-sm font-semibold text-slate-700">
       {label}
       <input
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={Number.isFinite(value) ? value : 0}
-        onChange={(e) => onChange(Number(e.target.value))}
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        value={Number.isFinite(value) ? String(value) : '0'}
+        onChange={(e) => onChange(parseLapMoneyInput(e.target.value))}
         className="mt-1.5 min-h-11 w-full rounded-[var(--lap-radius-md)] border border-[var(--lap-border)] bg-white px-3 text-[0.9375rem] font-semibold tabular-nums text-[var(--lap-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--lap-orange)]/30"
       />
       {hint ? (
@@ -130,7 +131,7 @@ export function LapCapacity() {
             </dd>
           </div>
           <div>
-            <dt className="lap-metric-label">Illustrative LTV</dt>
+            <dt className="lap-metric-label">Illustrative LTV assumption</dt>
             <dd className="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-[var(--lap-navy)] sm:text-[1.75rem]">
               {illustrativeLtvPercent}%
             </dd>
@@ -146,7 +147,7 @@ export function LapCapacity() {
           <div
             className="mt-1.5 h-6 overflow-hidden rounded-[var(--lap-radius-sm)] bg-[var(--lap-surface-4)]"
             role="img"
-            aria-label={`Property value ${formatInr(Math.round(propertyValue))}. Loan portion ${formatInr(Math.round(capacity.indicativeMaxLoan))} at ${borrowPct}% illustrative LTV. Remaining property value ${formatInr(Math.round(remaining))}.`}
+            aria-label={`Property value ${formatInr(Math.round(propertyValue))}. Indicative loan capacity ${formatInr(Math.round(capacity.indicativeMaxLoan))} at ${borrowPct}% illustrative LTV assumption. Value outside indicative LTV capacity ${formatInr(Math.round(remaining))}.`}
           >
             <div className="flex h-full w-full">
               <div className="h-full bg-[var(--lap-orange)]" style={{ width: `${borrowPct}%` }} />
@@ -162,7 +163,9 @@ export function LapCapacity() {
             <span className="mx-2 text-[var(--lap-border)]" aria-hidden>
               |
             </span>
-            <span className="font-semibold text-[var(--lap-navy)]">Remaining property value</span>{' '}
+            <span className="font-semibold text-[var(--lap-navy)]">
+              Value outside indicative LTV capacity
+            </span>{' '}
             {formatInr(Math.round(remaining))}
           </p>
         </div>
@@ -267,7 +270,7 @@ export function LapLtv() {
               </dd>
             </div>
             <div>
-              <dt className="lap-metric-label">Remaining Property Value</dt>
+              <dt className="lap-metric-label">Equity after requested loan</dt>
               <dd className="mt-1 text-xl font-bold tabular-nums text-[var(--lap-navy)]">
                 {formatInr(Math.round(remainingValue))}
               </dd>
@@ -282,7 +285,7 @@ export function LapLtv() {
             <div
               className="mt-1.5 flex h-10 w-full overflow-hidden rounded-[var(--lap-radius-md)]"
               role="img"
-              aria-label={`Loan portion ${loanPct.toFixed(1)} percent (${formatInr(Math.round(requiredLoan))}), remaining property value ${remainingPct.toFixed(1)} percent (${formatInr(Math.round(remainingValue))}).`}
+              aria-label={`Loan portion ${loanPct.toFixed(1)} percent (${formatInr(Math.round(requiredLoan))}), equity after requested loan ${remainingPct.toFixed(1)} percent (${formatInr(Math.round(remainingValue))}).`}
             >
               <div
                 className="bg-[var(--lap-orange)]"
@@ -299,7 +302,7 @@ export function LapLtv() {
               <span className="mx-2 text-[var(--lap-border)]" aria-hidden>
                 |
               </span>
-              <span className="font-semibold text-[var(--lap-navy)]">Property value remaining</span>{' '}
+              <span className="font-semibold text-[var(--lap-navy)]">Equity after requested loan</span>{' '}
               {remainingPct.toFixed(1)}%. Planning visual only — not an approval meter.
             </p>
           </div>
@@ -460,8 +463,10 @@ export function LapFoir() {
             onChange={setOtherObligations}
             hint="Optional recurring commitments"
           />
-          <div>
-            <p className="block text-sm font-semibold text-slate-700">Proposed LAP EMI</p>
+          <div role="group" aria-labelledby="lap-proposed-emi-label">
+            <p id="lap-proposed-emi-label" className="block text-sm font-semibold text-slate-700">
+              Proposed LAP EMI
+            </p>
             <p className="mt-1.5 flex min-h-11 items-center rounded-[var(--lap-radius-md)] border border-[var(--lap-border)] bg-[var(--lap-surface-2)] px-3 text-[0.9375rem] font-semibold tabular-nums text-[var(--lap-navy)]">
               {emi ? formatInr(Math.round(emi.monthlyEmi)) : '—'}
             </p>
@@ -714,7 +719,11 @@ export function LapPrepayment() {
   const [mode, setMode] = useState<PrepaymentMode>('reduce-tenure');
   const [knownChargeInput, setKnownChargeInput] = useState('');
   const knownCharge =
-    knownChargeInput.trim() === '' ? null : clampNonNegative(Number(knownChargeInput));
+    knownChargeInput.trim() === '' ? null : clampNonNegative(parseLapMoneyInput(knownChargeInput));
+
+  useEffect(() => {
+    setPrepay(Math.round(outstanding * 0.1));
+  }, [outstanding]);
 
   const impact = useMemo(
     () =>
@@ -748,18 +757,20 @@ export function LapPrepayment() {
           <label className="block text-sm font-semibold text-slate-700">
             Prepayment amount (₹)
             <input
-              type="number"
-              min={0}
-              value={prepay}
-              onChange={(e) => setPrepay(Number(e.target.value) || 0)}
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={Number.isFinite(prepay) ? String(prepay) : '0'}
+              onChange={(e) => setPrepay(parseLapMoneyInput(e.target.value))}
               className="mt-1.5 min-h-11 w-full rounded-[var(--lap-radius-md)] border border-[var(--lap-border)] bg-white px-3 text-sm font-semibold tabular-nums text-[var(--lap-navy)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--lap-orange)]/30"
             />
           </label>
           <label className="block text-sm font-semibold text-slate-700">
             Known charge (₹) — optional
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
               value={knownChargeInput}
               placeholder="Blank if unknown"
               onChange={(e) => setKnownChargeInput(e.target.value)}
@@ -767,8 +778,14 @@ export function LapPrepayment() {
             />
           </label>
           <div>
-            <p className="text-sm font-semibold text-slate-700">Strategy</p>
-            <div className="mt-1.5 flex gap-2">
+            <p className="text-sm font-semibold text-slate-700" id="lap-prepay-strategy-label">
+              Strategy
+            </p>
+            <div
+              className="mt-1.5 flex gap-2"
+              role="group"
+              aria-labelledby="lap-prepay-strategy-label"
+            >
               {(
                 [
                   ['reduce-tenure', 'Reduce Tenure'],

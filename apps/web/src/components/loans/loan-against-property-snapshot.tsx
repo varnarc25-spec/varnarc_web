@@ -33,20 +33,35 @@ export function LoanAgainstPropertySnapshot() {
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <p className="lap-metric-label">Property Value</p>
-            <p className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]">
+            <p className="lap-metric-label" id="lap-snap-property-label">
+              Property Value
+            </p>
+            <p
+              className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]"
+              aria-labelledby="lap-snap-property-label"
+            >
               {formatInr(propertyValue)}
             </p>
           </div>
           <div>
-            <p className="lap-metric-label">Indicative Capacity</p>
-            <p className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]">
+            <p className="lap-metric-label" id="lap-snap-capacity-label">
+              Indicative Capacity
+            </p>
+            <p
+              className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]"
+              aria-labelledby="lap-snap-capacity-label"
+            >
               {capacity ? formatInr(Math.round(capacity.indicativeMaxLoan)) : '—'}
             </p>
           </div>
           <div>
-            <p className="lap-metric-label">Requested Loan</p>
-            <p className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]">
+            <p className="lap-metric-label" id="lap-snap-requested-label">
+              Requested Loan
+            </p>
+            <p
+              className="lap-metric-value mt-2 text-[2rem] leading-none sm:text-[2.5rem]"
+              aria-labelledby="lap-snap-requested-label"
+            >
               {formatInr(requiredLoan)}
             </p>
           </div>
@@ -55,7 +70,7 @@ export function LoanAgainstPropertySnapshot() {
         <dl className="mt-8 grid grid-cols-2 gap-x-5 gap-y-5 border-t border-[var(--lap-border)] pt-6 sm:grid-cols-3 lg:grid-cols-4">
           {[
             {
-              label: 'Illustrative LTV',
+              label: 'Requested LTV',
               value: ltv != null ? `${ltv.toFixed(1)}%` : '—',
             },
             {
@@ -70,7 +85,7 @@ export function LoanAgainstPropertySnapshot() {
             ...(incomeCapacity
               ? [
                   {
-                    label: 'Income-based Capacity',
+                    label: `Income-based Capacity (@ ${Math.round(incomeCapacity.foirRatioUsed * 100)}% illustrative FOIR)`,
                     value:
                       incomeCapacity.illustrativeLoanFromIncome != null
                         ? formatInr(Math.round(incomeCapacity.illustrativeLoanFromIncome))

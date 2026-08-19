@@ -183,18 +183,25 @@ export function LoanAgainstPropertyOfferResults({
             </p>
             {!filtersActive ? (
               <ul className="mx-auto mt-3 max-w-sm space-y-1 text-left text-[0.9375rem] text-slate-600">
-                {[
-                  'Estimate Loan Capacity',
-                  'Calculate EMI',
-                  'Check LTV',
-                  'Evaluate Repayment Capacity',
-                  'Check Eligibility',
-                ].map((item) => (
+                {(
+                  [
+                    ['Estimate Loan Capacity', '#lap-capacity'],
+                    ['Calculate EMI', '#lap-tenure'],
+                    ['Check LTV', '#lap-ltv'],
+                    ['Evaluate Repayment Capacity', '#lap-foir'],
+                    ['Check Eligibility', '/finance/eligibility'],
+                  ] as const
+                ).map(([item, href]) => (
                   <li key={item} className="flex gap-2">
                     <span className="text-[var(--lap-orange)]" aria-hidden>
                       ·
                     </span>
-                    {item}
+                    <a
+                      href={href}
+                      className="font-medium text-[var(--lap-navy)] underline-offset-2 hover:underline"
+                    >
+                      {item}
+                    </a>
                   </li>
                 ))}
               </ul>

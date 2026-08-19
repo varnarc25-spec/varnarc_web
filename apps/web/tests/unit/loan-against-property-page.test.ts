@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { calculateEmi } from '@/lib/emi';
+import { calculateEmi, EMI_LIMITS } from '@/lib/emi';
 import {
   LAP_DECISION_HERO_ASSET,
   LAP_DEFAULT_GUIDES,
   LAP_DEFAULT_ILLUSTRATIVE_LTV,
+  LAP_MAX_REQUIRED_LOAN,
   compareLapTenures,
   estimateLapBorrowingCapacity,
   estimateLapEmi,
@@ -12,6 +13,7 @@ import {
   estimateLapPrepaymentImpact,
   estimateLapTotalCost,
   lapLtvPercent,
+  parseLapMoneyInput,
 } from '@/lib/loan-against-property-page';
 import {
   LAP_DEFAULT_SCHEMES,
@@ -24,6 +26,11 @@ describe('LAP LTV', () => {
     expect(lapLtvPercent(1_00_00_000, 40_00_000)).toBeCloseTo(40, 6);
   });
 
+  it('matches additional 40% scenarios', () => {
+    expect(lapLtvPercent(75_00_000, 30_00_000)).toBeCloseTo(40, 6);
+    expect(lapLtvPercent(2_00_00_000, 80_00_000)).toBeCloseTo(40, 6);
+  });
+
   it('returns null for zero / invalid property value', () => {
     expect(lapLtvPercent(0, 40_00_000)).toBeNull();
     expect(lapLtvPercent(-1, 40_00_000)).toBeNull();
@@ -31,6 +38,23 @@ describe('LAP LTV', () => {
 
   it('clamps negative loan to zero LTV', () => {
     expect(lapLtvPercent(1_00_00_000, -5)).toBeCloseTo(0, 6);
+  });
+
+  it('handles loan greater than property value and decimals without NaN', () => {
+    const over = lapLtvPercent(50_00_000, 80_00_000);
+    expect(over).toBeCloseTo(160, 6);
+    expect(Number.isFinite(over!)).toBe(true);
+    expect(lapLtvPercent(1_00_00_000.5, 40_00_000.25)).toBeCloseTo(40.0000025, 4);
+  });
+});
+
+describe('parseLapMoneyInput', () => {
+  it('normalizes Indian currency formatting', () => {
+    expect(parseLapMoneyInput('10000000')).toBe(1_00_00_000);
+    expect(parseLapMoneyInput('1,00,00,000')).toBe(1_00_00_000);
+    expect(parseLapMoneyInput('₹1,00,00,000')).toBe(1_00_00_000);
+    expect(parseLapMoneyInput('')).toBe(0);
+    expect(parseLapMoneyInput('abc')).toBe(0);
   });
 });
 
@@ -82,6 +106,10 @@ describe('LAP borrowing capacity', () => {
       requestedLoan: 10_00_00_000,
     });
     expect(cap!.indicativeMaxLoan).toBeCloseTo(30_00_00_000, 2);
+  });
+
+  it('keeps required loan max aligned with EMI engine', () => {
+    expect(LAP_MAX_REQUIRED_LOAN).toBe(EMI_LIMITS.amountMax);
   });
 });
 
@@ -161,6 +189,42 @@ describe('LAP EMI / tenure / total cost', () => {
     expect(emi!.monthlyEmi).toBeCloseTo(expected!.monthlyEmi, 4);
     expect(emi!.totalInterest).toBeCloseTo(expected!.totalInterest, 4);
     expect(emi!.totalRepayment).toBeCloseTo(expected!.totalRepayment, 4);
+  });
+
+  it('handles 0% rate as principal / n', () => {
+    const emi = estimateLapEmi({
+      loanAmount: 12_00_000,
+      annualRatePercent: 0,
+      tenureMonths: 120,
+    });
+    expect(emi).not.toBeNull();
+    expect(emi!.monthlyEmi).toBeCloseTo(10_000, 6);
+    expect(emi!.totalInterest).toBeCloseTo(0, 6);
+    expect(emi!.totalRepayment).toBeCloseTo(12_00_000, 6);
+  });
+
+  it.each([
+    [5_00_000, 8, 60],
+    [10_00_000, 10.5, 120],
+    [25_00_000, 12, 180],
+    [40_00_000, 5, 240],
+    [1_00_00_000, 15, 120],
+  ] as const)('EMI matrix amount=%i rate=%f tenureMonths=%i', (amount, rate, months) => {
+    const emi = estimateLapEmi({
+      loanAmount: amount,
+      annualRatePercent: rate,
+      tenureMonths: months,
+    });
+    const expected = calculateEmi({
+      principal: amount,
+      annualRatePercent: rate,
+      tenureMonths: months,
+    });
+    expect(emi).not.toBeNull();
+    expect(emi!.monthlyEmi).toBeCloseTo(expected!.monthlyEmi, 4);
+    expect(emi!.totalInterest).toBeCloseTo(expected!.totalInterest, 4);
+    expect(emi!.totalRepayment).toBeCloseTo(expected!.totalRepayment, 4);
+    expect(Number.isFinite(emi!.monthlyEmi)).toBe(true);
   });
 
   it('compares tenure options', () => {
@@ -245,6 +309,32 @@ describe('LAP prepayment', () => {
     });
     expect(impact!.knownCharge).toBeNull();
     expect(impact!.netSavings).toBeNull();
+  });
+
+  it('returns null for zero / full / over-outstanding prepayment', () => {
+    const base = {
+      outstanding: 30_00_000,
+      annualRatePercent: 10.5,
+      remainingMonths: 96,
+      mode: 'reduce-tenure' as const,
+      knownCharge: null,
+    };
+    expect(estimateLapPrepaymentImpact({ ...base, prepaymentAmount: 0 })).toBeNull();
+    expect(estimateLapPrepaymentImpact({ ...base, prepaymentAmount: 30_00_000 })).toBeNull();
+    expect(estimateLapPrepaymentImpact({ ...base, prepaymentAmount: 35_00_000 })).toBeNull();
+  });
+
+  it('never reports negative net savings when charge exceeds interest saved', () => {
+    const impact = estimateLapPrepaymentImpact({
+      outstanding: 30_00_000,
+      annualRatePercent: 10.5,
+      remainingMonths: 96,
+      prepaymentAmount: 50_000,
+      mode: 'reduce-emi',
+      knownCharge: 50_00_000,
+    });
+    expect(impact).not.toBeNull();
+    expect(impact!.netSavings).toBe(0);
   });
 });
 
