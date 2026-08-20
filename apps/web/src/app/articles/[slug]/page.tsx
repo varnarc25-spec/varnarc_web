@@ -81,7 +81,7 @@ export default async function ArticleDetailPage({ params }: Props) {
               description: data.excerpt,
               url,
               datePublished: data.publishedAt,
-              dateModified: data.updatedAt,
+              dateModified: data.publishedAt,
               authorName: data.author?.displayName || data.author?.username || null,
               image: data.featuredImage?.secureUrl || data.featuredImage?.url || null,
             }),
