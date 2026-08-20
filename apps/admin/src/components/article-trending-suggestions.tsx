@@ -186,7 +186,8 @@ export function ArticleTrendingSuggestions({
         <p className="text-sm text-[var(--varnarc-subtle)]">Loading suggestions…</p>
       ) : !suggestions.length ? (
         <p className="text-sm text-[var(--varnarc-subtle)]">
-          No suggestions for this filter yet. Try another category or switch to &quot;All sources&quot;.
+          No suggestions for this filter yet. Try another category or switch to &quot;All
+          sources&quot;.
         </p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -204,18 +205,18 @@ export function ArticleTrendingSuggestions({
                 }`}
               >
                 <div className="mb-2 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-[var(--varnarc-muted)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--varnarc-brand)]">
+                  <span className="rounded-full bg-[var(--varnarc-muted)] px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-[var(--varnarc-brand)]">
                     {SOURCE_LABEL[item.source]}
                   </span>
-                  <span className="rounded-full bg-[var(--varnarc-muted)] px-2 py-0.5 text-[10px] text-[var(--varnarc-subtle)]">
+                  <span className="rounded-full bg-[var(--varnarc-muted)] px-2 py-0.5 text-xs text-[var(--varnarc-subtle)]">
                     {item.categoryName}
                   </span>
                   {item.covered ? (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                       Covered
                     </span>
                   ) : (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] text-amber-800">
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800">
                       Needs article
                     </span>
                   )}
@@ -223,7 +224,7 @@ export function ArticleTrendingSuggestions({
                 <p className="text-sm font-medium text-[var(--varnarc-ink)]">{item.topic}</p>
                 <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">{item.reason}</p>
                 {item.searchCount ? (
-                  <p className="mt-2 text-[10px] font-medium text-[var(--varnarc-brand)]">
+                  <p className="mt-2 text-xs font-medium text-[var(--varnarc-brand)]">
                     {item.searchCount} searches
                   </p>
                 ) : null}
@@ -242,7 +243,9 @@ export function ArticleTrendingSuggestions({
             type="button"
             size="sm"
             onClick={() => {
-              document.getElementById('article-create-form')?.scrollIntoView({ behavior: 'smooth' });
+              document
+                .getElementById('article-create-form')
+                ?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
             Jump to writer

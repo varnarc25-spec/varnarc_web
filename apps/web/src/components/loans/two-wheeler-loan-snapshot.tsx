@@ -25,7 +25,7 @@ export function TwoWheelerLoanSnapshot() {
       className="full-bleed bg-[var(--tw-surface-3)]"
     >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
           Financing Snapshot
         </p>
         <h2 id="tw-snapshot-heading" className="cl-h2 text-[var(--tw-navy)]">

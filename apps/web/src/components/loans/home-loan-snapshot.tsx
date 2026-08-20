@@ -103,7 +103,7 @@ export function HomeLoanSnapshot() {
             },
           ].map((item) => (
             <div key={item.label} className="min-w-0">
-              <dt className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+              <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                 {item.label}
               </dt>
               <dd className="mt-1 text-base font-semibold tabular-nums text-slate-700 sm:text-lg">

@@ -12,6 +12,7 @@
 - A module spec gains or changes its Future Features section → sync items into config
 - An item moves from backlog to active development → update `roadmap.ts`, set status to `planned` or remove from backlog
 - Platform-wide initiative identified → add under `moduleId: 'platform'`
+- Public chrome changes (header/footer product links) that defer a module → add a `deferred` Launch item and note it in `docs/FUTURE-FEATURES.md`
 
 ## Checklist (per module release)
 

@@ -24,6 +24,7 @@ export * from './notifications';
 export * from './newsletter';
 export * from './users';
 export * from './settings';
+export * from './contact';
 export * from './api';
 export * from './catalog';
 export * from './premium';

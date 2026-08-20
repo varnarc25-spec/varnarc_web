@@ -163,7 +163,7 @@ function DonutChart({ outputs, chart }: { outputs: Record<string, number>; chart
           aria-label={chart.title || 'Breakdown chart'}
         >
           <div className="absolute inset-7 flex flex-col items-center justify-center rounded-full bg-white px-2 text-center">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Total</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</p>
             <p className="text-sm font-bold leading-tight text-[#0b1f3a]">
               {formatValue(total, 'currency')}
             </p>
@@ -231,7 +231,7 @@ function BarChart({ outputs, chart }: { outputs: Record<string, number>; chart: 
           const label = chart.labels?.[key] || key;
           return (
             <div key={key} className="flex flex-col items-center text-center">
-              <p className="mb-2 min-h-[2rem] text-[11px] font-semibold leading-tight text-slate-700">
+              <p className="mb-2 min-h-[2rem] text-xs font-semibold leading-tight text-slate-700">
                 {formatValue(v)}
               </p>
               <div className="flex w-full items-end justify-center" style={{ height: trackHeight }}>
@@ -247,7 +247,7 @@ function BarChart({ outputs, chart }: { outputs: Record<string, number>; chart: 
                   aria-label={`${label}: ${formatValue(v)}`}
                 />
               </div>
-              <p className="mt-2 text-[11px] font-medium text-slate-600">{label}</p>
+              <p className="mt-2 text-xs font-medium text-slate-600">{label}</p>
             </div>
           );
         })}

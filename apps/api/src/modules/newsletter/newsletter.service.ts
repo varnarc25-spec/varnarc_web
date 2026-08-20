@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Repositories } from '@varnarc/database';
 import type {
   CreateNewsletterCampaignInput,
@@ -15,6 +10,7 @@ import type {
   NewsletterUnsubscribeInput,
   SendNewsletterCampaignInput,
   UpdateNewsletterCampaignInput,
+  UpdateNewsletterSubscriberStatusInput,
   UpdateNewsletterTemplateInput,
 } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
@@ -48,6 +44,28 @@ export class NewsletterService {
       .catch(() => undefined);
   }
 
+  private async notifyStatus(
+    email: string,
+    status: 'subscribed' | 'unsubscribed',
+    opts?: {
+      source?: string | null;
+      reason?: string | null;
+      triggeredBy?: 'user' | 'admin';
+    },
+  ) {
+    try {
+      return await this.email.notifyStatusChange({
+        email,
+        status,
+        source: opts?.source,
+        reason: opts?.reason,
+        triggeredBy: opts?.triggeredBy ?? 'user',
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async status() {
     const [summary, templateCount, campaignStats] = await Promise.all([
       this.repos.newsletterSubscribers.summary(),
@@ -68,6 +86,8 @@ export class NewsletterService {
     const email = normalizeEmail(input.email);
     const existing = await this.repos.newsletterSubscribers.findByEmailIncludingDeleted(email);
     const now = new Date();
+    const alreadySubscribed = existing?.status === 'subscribed' && !existing.deletedAt;
+    const source = input.source?.trim() || null;
 
     let subscriber;
     if (existing) {
@@ -76,12 +96,14 @@ export class NewsletterService {
         subscribedAt: now,
         unsubscribedAt: null,
         deletedAt: null,
+        ...(source ? { source } : {}),
       });
     } else {
       subscriber = await this.repos.newsletterSubscribers.create({
         email,
         status: 'subscribed',
         subscribedAt: now,
+        ...(source ? { source } : {}),
       });
     }
 
@@ -91,13 +113,24 @@ export class NewsletterService {
         .catch(() => undefined);
     }
 
+    if (!alreadySubscribed) {
+      await this.notifyStatus(subscriber.email, 'subscribed', {
+        source: subscriber.source ?? source,
+        triggeredBy: 'user',
+      });
+      await this.audit('newsletter.subscribe', subscriber.id, userId, {
+        email: subscriber.email,
+        source: subscriber.source ?? source,
+      });
+    }
+
     return {
       id: subscriber.id,
       email: subscriber.email,
       status: subscriber.status,
       subscribedAt: subscriber.subscribedAt,
-      alreadySubscribed: existing?.status === 'subscribed' && !existing.deletedAt,
-      source: input.source ?? null,
+      source: subscriber.source ?? source,
+      alreadySubscribed,
     };
   }
 
@@ -113,6 +146,7 @@ export class NewsletterService {
       };
     }
 
+    const wasSubscribed = existing.status === 'subscribed';
     const subscriber = await this.repos.newsletterSubscribers.update(existing.id, {
       status: 'unsubscribed',
       unsubscribedAt: new Date(),
@@ -124,12 +158,77 @@ export class NewsletterService {
         .catch(() => undefined);
     }
 
+    if (wasSubscribed) {
+      await this.notifyStatus(subscriber.email, 'unsubscribed', {
+        source: subscriber.source,
+        triggeredBy: 'user',
+      });
+      await this.audit('newsletter.unsubscribe', subscriber.id, userId, {
+        email: subscriber.email,
+      });
+    }
+
     return {
       id: subscriber.id,
       email: subscriber.email,
       status: subscriber.status,
       unsubscribedAt: subscriber.unsubscribedAt,
       found: true,
+    };
+  }
+
+  async updateSubscriberStatus(
+    id: string,
+    input: UpdateNewsletterSubscriberStatusInput,
+    actorId?: string | null,
+  ) {
+    const existing = await this.repos.newsletterSubscribers.findById(id);
+    if (!existing) throw new NotFoundException('Subscriber not found');
+
+    if (existing.status === input.status) {
+      return {
+        id: existing.id,
+        email: existing.email,
+        status: existing.status,
+        subscribedAt: existing.subscribedAt,
+        unsubscribedAt: existing.unsubscribedAt,
+        source: existing.source,
+        unchanged: true,
+      };
+    }
+
+    const now = new Date();
+    const subscriber = await this.repos.newsletterSubscribers.update(id, {
+      status: input.status,
+      ...(input.status === 'subscribed'
+        ? { subscribedAt: now, unsubscribedAt: null, deletedAt: null }
+        : { unsubscribedAt: now }),
+    });
+
+    if (input.notify !== false) {
+      await this.notifyStatus(subscriber.email, input.status, {
+        source: subscriber.source,
+        reason:
+          input.reason ??
+          (input.status === 'unsubscribed' ? 'Admin opt-out' : 'Admin re-subscribe'),
+        triggeredBy: 'admin',
+      });
+    }
+
+    await this.audit('newsletter.subscriber.status', id, actorId, {
+      status: input.status,
+      reason: input.reason ?? null,
+      email: subscriber.email,
+    });
+
+    return {
+      id: subscriber.id,
+      email: subscriber.email,
+      status: subscriber.status,
+      subscribedAt: subscriber.subscribedAt,
+      unsubscribedAt: subscriber.unsubscribedAt,
+      source: subscriber.source,
+      unchanged: false,
     };
   }
 
@@ -156,8 +255,6 @@ export class NewsletterService {
       deliveryMode: this.email.deliveryMode,
     };
   }
-
-  // --- Templates ---
 
   listTemplates(query: NewsletterTemplateListQuery) {
     return this.repos.newsletterTemplates.list({
@@ -206,8 +303,6 @@ export class NewsletterService {
     await this.audit('newsletter.template.delete', id, actorId);
     return { ok: true };
   }
-
-  // --- Campaigns ---
 
   listCampaigns(query: NewsletterCampaignListQuery) {
     return this.repos.newsletterCampaigns.list({

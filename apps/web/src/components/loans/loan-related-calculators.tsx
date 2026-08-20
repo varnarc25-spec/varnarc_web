@@ -133,7 +133,7 @@ export function LoanRelatedCalculators() {
         aria-label="More loan calculators"
         className="border-t border-slate-100 px-5 py-4 sm:px-6"
       >
-        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">More tools</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">More tools</p>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {SECONDARY.map((calc) => (
             <li key={calc.id}>

@@ -4,6 +4,7 @@ import type { Cache } from 'cache-manager';
 import type { Repositories } from '@varnarc/database';
 import type {
   CmsDefaultsSettingsInput,
+  ContactSettingsInput,
   CreateThemeInput,
   CursorPaginationQuery,
   GeneralSettingsInput,
@@ -15,6 +16,7 @@ import type {
 } from '@varnarc/validation';
 import {
   cmsDefaultsSettingsSchema,
+  contactSettingsSchema,
   generalSettingsSchema,
   maintenanceSettingsSchema,
   securitySettingsSchema,
@@ -30,6 +32,7 @@ export const SETTINGS_KEYS = {
   security: 'settings.security',
   cms: 'settings.cms',
   seoDefaults: 'settings.seo-defaults',
+  contact: 'settings.contact',
 } as const;
 
 const DEFAULT_GENERAL: GeneralSettingsInput = {
@@ -81,6 +84,18 @@ const DEFAULT_SEO_DEFAULTS: SeoDefaultsSettingsInput = {
   robotsIndexDefault: true,
 };
 
+const DEFAULT_CONTACT: ContactSettingsInput = {
+  emailEnabled: true,
+  fromEmail: null,
+  toGeneral: null,
+  toEditorial: null,
+  toBusiness: null,
+  toSupport: null,
+  toPrivacy: null,
+  publicContactEmail: null,
+  resendApiKey: null,
+};
+
 @Injectable()
 export class SettingsService {
   constructor(
@@ -113,17 +128,16 @@ export class SettingsService {
     await this.cache.del(this.cacheKey(key)).catch(() => undefined);
   }
 
-  private async readJson<T extends Record<string, unknown>>(
-    key: string,
-    defaults: T,
-  ): Promise<T> {
+  private async readJson<T extends Record<string, unknown>>(key: string, defaults: T): Promise<T> {
     const cached = await this.cache.get<T>(this.cacheKey(key));
     if (cached) return cached;
 
     const row = await this.repos.settings.findByKey(key).catch(() => null);
     const merged = {
       ...defaults,
-      ...(row?.value && typeof row.value === 'object' ? (row.value as Record<string, unknown>) : {}),
+      ...(row?.value && typeof row.value === 'object'
+        ? (row.value as Record<string, unknown>)
+        : {}),
     } as T;
 
     await this.cache.set(this.cacheKey(key), merged, CACHE_TTL).catch(() => undefined);
@@ -167,7 +181,13 @@ export class SettingsService {
   async setGeneral(input: GeneralSettingsInput, actorId: string) {
     const parsed = generalSettingsSchema.parse(input);
     const merged = { ...(await this.getGeneral()), ...parsed };
-    await this.writeJson(SETTINGS_KEYS.general, merged, 'general', actorId, 'settings.general.update');
+    await this.writeJson(
+      SETTINGS_KEYS.general,
+      merged,
+      'general',
+      actorId,
+      'settings.general.update',
+    );
     return merged;
   }
 
@@ -223,7 +243,13 @@ export class SettingsService {
   async setSecurity(input: SecuritySettingsInput, actorId: string) {
     const parsed = securitySettingsSchema.parse(input);
     const merged = { ...(await this.getSecurity()), ...parsed };
-    await this.writeJson(SETTINGS_KEYS.security, merged, 'security', actorId, 'settings.security.update');
+    await this.writeJson(
+      SETTINGS_KEYS.security,
+      merged,
+      'security',
+      actorId,
+      'settings.security.update',
+    );
     return merged;
   }
 
@@ -253,6 +279,60 @@ export class SettingsService {
       'settings.seo-defaults.update',
     );
     return merged;
+  }
+
+  async getContactRaw(): Promise<ContactSettingsInput> {
+    return this.readJson(SETTINGS_KEYS.contact, DEFAULT_CONTACT);
+  }
+
+  async getContact() {
+    const raw = await this.getContactRaw();
+    const envApiKeyConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
+    const dbKey = raw.resendApiKey?.trim();
+    return {
+      emailEnabled: raw.emailEnabled,
+      fromEmail: raw.fromEmail ?? null,
+      toGeneral: raw.toGeneral ?? null,
+      toEditorial: raw.toEditorial ?? null,
+      toBusiness: raw.toBusiness ?? null,
+      toSupport: raw.toSupport ?? null,
+      toPrivacy: raw.toPrivacy ?? null,
+      publicContactEmail: raw.publicContactEmail ?? null,
+      resendApiKeyConfigured: Boolean(dbKey) || envApiKeyConfigured,
+      envApiKeyConfigured,
+    };
+  }
+
+  async setContact(input: ContactSettingsInput, actorId: string) {
+    const parsed = contactSettingsSchema.parse(input);
+    const current = await this.getContactRaw();
+    const nextKey =
+      parsed.resendApiKey === undefined || parsed.resendApiKey === null
+        ? current.resendApiKey
+        : parsed.resendApiKey.trim() === ''
+          ? null
+          : parsed.resendApiKey.trim();
+
+    const merged: ContactSettingsInput = {
+      emailEnabled: parsed.emailEnabled,
+      fromEmail: parsed.fromEmail?.trim() || null,
+      toGeneral: parsed.toGeneral?.trim() || null,
+      toEditorial: parsed.toEditorial?.trim() || null,
+      toBusiness: parsed.toBusiness?.trim() || null,
+      toSupport: parsed.toSupport?.trim() || null,
+      toPrivacy: parsed.toPrivacy?.trim() || null,
+      publicContactEmail: parsed.publicContactEmail?.trim() || null,
+      resendApiKey: nextKey,
+    };
+
+    await this.writeJson(
+      SETTINGS_KEYS.contact,
+      merged,
+      'contact',
+      actorId,
+      'settings.contact.update',
+    );
+    return this.getContact();
   }
 
   async isFeatureEnabled(key: string) {

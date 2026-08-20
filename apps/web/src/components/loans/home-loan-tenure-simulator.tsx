@@ -83,7 +83,7 @@ export function HomeLoanTenureSimulator() {
                   showOnMobile ? 'block' : 'hidden md:block'
                 } ${emphasize ? 'bg-[var(--hl-surface-4)]' : 'bg-[var(--hl-surface-2)]'}`}
               >
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                   {emphasize ? (
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--hl-orange)]" aria-hidden />
                   ) : null}

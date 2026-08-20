@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ArticlesController } from './articles.controller';
+import { ArticleAiController } from './article-ai.controller';
 import { ArticlesService } from './articles.service';
 import { ArticleAiService } from './article-ai.service';
 import { ArticleCommentsController } from './article-comments.controller';
@@ -10,7 +11,7 @@ import { MediaModule } from '../../media/media.module';
 
 @Module({
   imports: [SearchModule, AiModule, MediaModule],
-  controllers: [ArticlesController, ArticleCommentsController],
+  controllers: [ArticleAiController, ArticlesController, ArticleCommentsController],
   providers: [ArticlesService, ArticleAiService, ArticleCommentsService],
   exports: [ArticlesService, ArticleCommentsService],
 })

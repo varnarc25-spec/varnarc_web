@@ -26,7 +26,7 @@ export function LoanSectionHeader({
     >
       <div className="min-w-0 max-w-2xl">
         {eyebrow ? (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#f97316]">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#f97316]">
             {eyebrow}
           </p>
         ) : null}

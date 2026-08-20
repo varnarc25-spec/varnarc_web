@@ -69,7 +69,7 @@ export function HomeLoanAffordability() {
 
         <div className="mt-7 grid gap-8 lg:grid-cols-2">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               Your Finances
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -128,7 +128,7 @@ export function HomeLoanAffordability() {
                   onChange={(e) => setFoirPercent(e.target.value)}
                   className={fieldClass}
                 />
-                <span className="mt-1 block text-[11px] font-normal text-[var(--hl-muted)]">
+                <span className="mt-1 block text-xs font-normal text-[var(--hl-muted)]">
                   Illustrative assumption — lenders use their own FOIR rules.
                 </span>
               </label>
@@ -156,7 +156,7 @@ export function HomeLoanAffordability() {
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               Indicative Home Budget
             </p>
             {estimate ? (
@@ -169,7 +169,7 @@ export function HomeLoanAffordability() {
                 </div>
                 <dl className="grid gap-4 border-t border-[var(--hl-border)] pt-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                       Comfortable EMI
                     </dt>
                     <dd className="mt-1 text-xl font-bold tabular-nums text-[var(--hl-navy)]">
@@ -178,7 +178,7 @@ export function HomeLoanAffordability() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                       Loan Capacity
                     </dt>
                     <dd className="mt-1 text-xl font-bold tabular-nums text-[var(--hl-navy)]">
@@ -186,7 +186,7 @@ export function HomeLoanAffordability() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                       Down Payment
                     </dt>
                     <dd className="mt-1 text-xl font-bold tabular-nums text-[var(--hl-navy)]">
@@ -194,7 +194,7 @@ export function HomeLoanAffordability() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                       EMI Capacity
                     </dt>
                     <dd className="mt-1 text-xl font-bold tabular-nums text-[var(--hl-navy)]">

@@ -39,7 +39,7 @@ export function LoanCostExampleSection() {
           >
             What Does a Loan Actually Cost?
           </h2>
-          <span className="rounded-full bg-[#fff7ed] px-2.5 py-0.5 text-[11px] font-semibold text-[#ea580c] ring-1 ring-[#f97316]/25">
+          <span className="rounded-full bg-[#fff7ed] px-2.5 py-0.5 text-xs font-semibold text-[#ea580c] ring-1 ring-[#f97316]/25">
             Illustrative
           </span>
         </div>
@@ -84,13 +84,13 @@ export function LoanCostExampleSection() {
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="rounded-xl bg-[#f8fafc] px-3 py-2.5">
-                <dt className="text-[11px] font-medium text-slate-500">Total interest</dt>
+                <dt className="text-xs font-medium text-slate-500">Total interest</dt>
                 <dd className="mt-0.5 text-base font-bold tabular-nums text-[#0b1f3a]">
                   {formatInr(result.totalInterest)}
                 </dd>
               </div>
               <div className="rounded-xl bg-[#f8fafc] px-3 py-2.5">
-                <dt className="text-[11px] font-medium text-slate-500">Total repayment</dt>
+                <dt className="text-xs font-medium text-slate-500">Total repayment</dt>
                 <dd className="mt-0.5 text-base font-bold tabular-nums text-[#0b1f3a]">
                   {formatInr(result.totalRepayment)}
                 </dd>
@@ -116,7 +116,7 @@ export function LoanCostExampleSection() {
                 title={`Interest ${formatInr(result.totalInterest)}`}
               />
             </div>
-            <ul className="mt-2 flex flex-wrap gap-4 text-[11px] font-medium text-slate-600">
+            <ul className="mt-2 flex flex-wrap gap-4 text-xs font-medium text-slate-600">
               <li className="inline-flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#0b1f3a]" aria-hidden />
                 Principal {formatInr(result.principal)} ({principalPct.toFixed(0)}%)

@@ -214,7 +214,7 @@ export function LoanCategoryStatsBar({
     >
       {stats.map((stat) => (
         <div key={stat.key} className="rounded-xl bg-[#f8fafc] px-3.5 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             {stat.label}
           </p>
           <p className="mt-1 text-sm font-extrabold tabular-nums text-[#0b1f3a]">{stat.value}</p>

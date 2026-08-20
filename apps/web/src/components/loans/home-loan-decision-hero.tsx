@@ -240,7 +240,7 @@ export function HomeLoanDecisionHero({
                       key={key}
                       type="button"
                       onClick={() => setDpMode(key)}
-                      className={`min-h-8 rounded-full px-3 text-[11px] font-semibold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)] ${
+                      className={`min-h-8 rounded-full px-3 text-xs font-semibold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hl-orange)] ${
                         dpMode === key ? 'bg-[var(--hl-navy)] text-white' : 'text-[var(--hl-navy)]'
                       }`}
                     >
@@ -254,7 +254,7 @@ export function HomeLoanDecisionHero({
                 <div>
                   <label
                     htmlFor="hl-down-payment-percent"
-                    className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]"
+                    className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]"
                   >
                     Percent
                   </label>
@@ -297,7 +297,7 @@ export function HomeLoanDecisionHero({
                 <div>
                   <label
                     htmlFor="hl-down-payment"
-                    className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]"
+                    className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]"
                   >
                     Amount
                   </label>
@@ -365,7 +365,7 @@ export function HomeLoanDecisionHero({
               className="rounded-[var(--hl-radius-md)] bg-[var(--hl-surface-4)] px-4 py-4"
               aria-live="polite"
             >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--hl-muted)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--hl-muted)]">
                 Loan Required
               </p>
               <p className="mt-1.5 text-[1.75rem] font-extrabold tabular-nums tracking-tight text-[var(--hl-navy)] sm:text-[2rem]">

@@ -59,9 +59,7 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
   const linkedReviews =
     reviews.length > 0
       ? reviews
-      : (vehicle.reviewLinks ?? [])
-          .map((link) => link.review)
-          .filter(Boolean);
+      : (vehicle.reviewLinks ?? []).map((link) => link.review).filter(Boolean);
 
   const title = vehicle.seoTitle || vehicle.name;
   const description = vehicle.seoDescription || vehicle.description;
@@ -75,7 +73,12 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
           { '@type': 'ListItem', position: 2, name: 'Automobile', item: `${siteUrl}/automobile` },
-          { '@type': 'ListItem', position: 3, name: 'Vehicles', item: `${siteUrl}/automobile/vehicles` },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: 'Vehicles',
+            item: `${siteUrl}/automobile/vehicles`,
+          },
           {
             '@type': 'ListItem',
             position: 4,
@@ -129,18 +132,21 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         { label: vehicle.name },
       ]}
     >
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <VehicleGallery images={vehicle.images} fallbackUrl={vehicle.imageUrl} alt={vehicle.name} />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {vehicle.featured ? (
-          <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+          <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase text-white">
             Featured
           </span>
         ) : null}
         {vehicle.sponsored ? (
-          <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+          <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-xs font-semibold uppercase text-white">
             Sponsored
           </span>
         ) : null}
@@ -158,13 +164,17 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         {vehicle.exShowroomPrice != null ? (
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-xs uppercase tracking-wide text-slate-500">Ex-showroom</div>
-            <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">₹{vehicle.exShowroomPrice}</div>
+            <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">
+              ₹{vehicle.exShowroomPrice}
+            </div>
           </div>
         ) : null}
         {vehicle.estimatedOnRoadPrice != null ? (
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-xs uppercase tracking-wide text-slate-500">Est. on-road</div>
-            <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">₹{vehicle.estimatedOnRoadPrice}</div>
+            <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">
+              ₹{vehicle.estimatedOnRoadPrice}
+            </div>
           </div>
         ) : null}
       </div>
@@ -173,7 +183,10 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         <AutomobileDetailSection title="Specifications">
           <dl className="grid gap-3 sm:grid-cols-2">
             {specs.map((row) => (
-              <div key={row.label} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+              <div
+                key={row.label}
+                className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+              >
                 <dt className="text-xs uppercase tracking-wide text-slate-500">{row.label}</dt>
                 <dd className="mt-0.5 font-medium text-[#0b1f3a]">{String(row.value)}</dd>
               </div>

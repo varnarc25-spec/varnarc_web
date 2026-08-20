@@ -32,12 +32,12 @@ export function ConstructionMaterialCard({
             </div>
             <div className="flex flex-wrap justify-end gap-1">
               {sponsored ? (
-                <span className="rounded-full bg-[#f97316] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-[#f97316] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Sponsored
                 </span>
               ) : null}
               {featured ? (
-                <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
@@ -76,15 +76,13 @@ export function AffiliateCta({ url, label = 'Buy now' }: { url: string; label?: 
   );
 }
 
-export function RelatedCalculators({
-  links,
-}: {
-  links: Array<{ href: string; label: string }>;
-}) {
+export function RelatedCalculators({ links }: { links: Array<{ href: string; label: string }> }) {
   if (!links.length) return null;
   return (
     <section className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5">
-      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Related calculators</h2>
+      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+        Related calculators
+      </h2>
       <div className="mt-3 flex flex-wrap gap-2">
         {links.map((link) => (
           <Link
@@ -100,11 +98,19 @@ export function RelatedCalculators({
   );
 }
 
-export function ConstructionDetailSection({ title, children }: { title: string; children: ReactNode }) {
+export function ConstructionDetailSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <section className="mt-8">
       <h2 className="text-lg font-extrabold text-[#0b1f3a]">{title}</h2>
-      <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700">{children}</div>
+      <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700">
+        {children}
+      </div>
     </section>
   );
 }

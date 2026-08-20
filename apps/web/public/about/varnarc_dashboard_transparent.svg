@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#17345f" flood-opacity="0.16"/>
+    </filter>
+    <linearGradient id="blueCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eff6ff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="greenCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eefdf4"/>
+      <stop offset="1" stop-color="#dcfce7"/>
+    </linearGradient>
+    <linearGradient id="orangeCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#ffedd5"/>
+    </linearGradient>
+    <linearGradient id="yellowCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffceb"/>
+      <stop offset="1" stop-color="#fef3c7"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#86efac"/>
+      <stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+    <style>
+      .txt{font-family:Inter,Arial,sans-serif; fill:#0f2a57}
+      .muted{font-family:Inter,Arial,sans-serif; fill:#58709d}
+      .small{font-size:18px}
+      .med{font-size:22px}
+      .big{font-size:31px;font-weight:700}
+      .bold{font-weight:700}
+    </style>
+  </defs>
+
+  <!-- Transparent background: no full-canvas rect -->
+
+  <!-- Header -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="55" width="1416" height="88" rx="28" fill="#fff"/>
+  </g>
+  <!-- simple alpha-like logo -->
+  <g transform="translate(97 81)">
+    <path d="M0 26 C8 4, 31 4, 39 26 C47 48, 68 48, 77 26" fill="none" stroke="#0f2a57" stroke-width="8" stroke-linecap="round"/>
+    <path d="M45 41 L67 0" stroke="#ff7a16" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <text x="183" y="108" class="txt big">Varnarc</text>
+  <rect x="592" y="70" width="104" height="30" rx="10" fill="#eef4fb"/>
+  <rect x="731" y="70" width="104" height="30" rx="10" fill="#eef4fb"/>
+  <rect x="870" y="70" width="104" height="30" rx="10" fill="#eef4fb"/>
+  <circle cx="1330" cy="87" r="12" fill="none" stroke="#6f89b4" stroke-width="5"/>
+  <line x1="1339" y1="96" x2="1351" y2="108" stroke="#6f89b4" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="1380" cy="88" r="8" fill="#d7e4f6"/>
+  <circle cx="1408" cy="88" r="8" fill="#d7e4f6"/>
+  <circle cx="1436" cy="88" r="8" fill="#d7e4f6"/>
+
+  <!-- Sidebar -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="164" width="300" height="760" rx="28" fill="#fff"/>
+  </g>
+  <rect x="78" y="184" width="264" height="74" rx="18" fill="url(#blueCard)"/>
+  <g class="txt med">
+    <text x="120" y="229" class="bold">Finance</text>
+    <text x="120" y="317">Home &amp; Construction</text>
+    <text x="120" y="400">Automobile</text>
+    <text x="120" y="485">Solar</text>
+    <text x="120" y="575">Calculators</text>
+    <text x="120" y="665">AI Tools</text>
+    <text x="120" y="755">Directory</text>
+  </g>
+  <!-- sidebar icons -->
+  <g fill="none" stroke="#58709d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="87" y="204" width="22" height="25" rx="4" stroke="#2563eb"/>
+    <path d="M92 212h12M92 219h7M92 226h12" stroke="#2563eb"/>
+    <path d="M88 309l14-13 14 13v14h-9v-9h-10v9h-9z"/>
+    <rect x="88" y="381" width="28" height="14" rx="5"/><circle cx="95" cy="399" r="4"/><circle cx="109" cy="399" r="4"/>
+    <circle cx="102" cy="467" r="10"/><path d="M102 448v-7M102 493v-7M83 467h-7M128 467h-7M89 454l-5-5M120 485l-5-5M115 454l5-5M84 485l5-5"/>
+    <rect x="90" y="552" width="24" height="26" rx="4"/><path d="M94 559h16M95 566h4M104 566h4M95 573h4M104 573h4"/>
+    <path d="M89 647c7-10 20-10 27 0M92 640c0 13 7 22 11 22s11-9 11-22"/><circle cx="102" cy="647" r="2"/>
+    <path d="M89 734h22v28H89zM95 728h10l4 6H91z"/>
+  </g>
+  <line x1="86" y1="518" x2="330" y2="518" stroke="#e6eef8" stroke-width="2"/>
+  <line x1="86" y1="608" x2="330" y2="608" stroke="#e6eef8" stroke-width="2"/>
+  <line x1="86" y1="698" x2="330" y2="698" stroke="#e6eef8" stroke-width="2"/>
+
+  <!-- Metric cards -->
+  <g filter="url(#shadow)">
+    <rect x="382" y="164" width="464" height="176" rx="24" fill="#fff"/>
+    <rect x="382" y="356" width="464" height="176" rx="24" fill="#fff"/>
+    <rect x="382" y="548" width="464" height="176" rx="24" fill="#fff"/>
+    <rect x="382" y="740" width="464" height="176" rx="24" fill="#fff"/>
+  </g>
+
+  <!-- Card 1 -->
+  <rect x="404" y="185" width="100" height="98" rx="22" fill="url(#greenCard)"/>
+  <path d="M430 239v-26l24-21 24 21v26h-17v-15h-14v15z" fill="none" stroke="#16a34a" stroke-width="6" stroke-linejoin="round"/>
+  <text x="532" y="210" class="txt med bold">Home Loan EMI</text>
+  <text x="532" y="252" class="txt big">₹32,650</text><text x="666" y="252" class="muted med">/month</text>
+  <polyline points="532,317 577,300 619,310 665,288 705,298 748,278 786,285 826,266" fill="none" stroke="#16a34a" stroke-width="4"/>
+  <path d="M532 317L577 300L619 310L665 288L705 298L748 278L786 285L826 266L826 325L532 325Z" fill="#dcfce7" opacity=".7"/>
+
+  <!-- Card 2 -->
+  <rect x="404" y="377" width="100" height="98" rx="22" fill="url(#orangeCard)"/>
+  <path d="M438 452v-47m32 47v-39m-39 10h18m-8-18h10m17 21h16m-8-18h8" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+  <text x="532" y="402" class="txt med bold">Construction Estimate</text>
+  <text x="532" y="444" class="txt big">₹28.4</text><text x="638" y="444" class="txt med bold">Lakh</text>
+  <text x="532" y="478" class="muted med">Estimated Cost</text>
+  <polyline points="532,509 577,496 619,506 664,489 705,496 748,474 785,483 826,465" fill="none" stroke="#f97316" stroke-width="4"/>
+
+  <!-- Card 3 -->
+  <rect x="404" y="569" width="100" height="98" rx="22" fill="url(#blueCard)"/>
+  <path d="M423 628h61l-8-21h-45zM427 628v13h53v-13M434 641v8M472 641v8" fill="none" stroke="#2563eb" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="437" cy="637" r="5" fill="#2563eb"/><circle cx="469" cy="637" r="5" fill="#2563eb"/>
+  <text x="532" y="594" class="txt med bold">Car Loan Comparison</text>
+  <text x="532" y="634" class="muted med bold">Compare 3 Cars</text>
+  <polyline points="532,701 577,686 619,697 664,677 705,686 748,663 787,669 826,651" fill="none" stroke="#3b82f6" stroke-width="4"/>
+
+  <!-- Card 4 -->
+  <rect x="404" y="761" width="100" height="98" rx="22" fill="url(#yellowCard)"/>
+  <circle cx="453" cy="810" r="19" fill="#fbbf24" stroke="#f59e0b" stroke-width="4"/>
+  <g stroke="#f59e0b" stroke-width="4" stroke-linecap="round">
+    <line x1="453" y1="777" x2="453" y2="767"/><line x1="453" y1="853" x2="453" y2="843"/>
+    <line x1="420" y1="810" x2="410" y2="810"/><line x1="496" y1="810" x2="486" y2="810"/>
+    <line x1="430" y1="787" x2="422" y2="779"/><line x1="484" y1="841" x2="476" y2="833"/>
+    <line x1="476" y1="787" x2="484" y2="779"/><line x1="422" y1="841" x2="430" y2="833"/>
+  </g>
+  <text x="532" y="786" class="txt med bold">Solar Savings</text>
+  <text x="532" y="828" class="txt big">₹4,200</text><text x="648" y="828" class="muted med">/month</text>
+  <text x="532" y="862" class="muted med">Estimated Savings</text>
+  <polyline points="532,902 578,890 620,899 663,881 705,889 747,867 785,876 826,853" fill="none" stroke="#65a30d" stroke-width="4"/>
+
+  <!-- Better Decisions orbit -->
+  <circle cx="1134" cy="470" r="215" fill="none" stroke="#6d86b0" stroke-width="3" stroke-dasharray="7 9"/>
+  <g filter="url(#shadow)">
+    <circle cx="1134" cy="470" r="128" fill="#fff"/>
+    <circle cx="1134" cy="255" r="66" fill="#fff"/>
+    <circle cx="1349" cy="470" r="66" fill="#fff"/>
+    <circle cx="1134" cy="685" r="66" fill="#fff"/>
+    <circle cx="919" cy="470" r="66" fill="#fff"/>
+  </g>
+
+  <!-- center -->
+  <g transform="translate(1102 385)">
+    <path d="M0 45 C8 17, 35 17, 43 45 C51 73, 78 73, 86 45" fill="none" stroke="#0f2a57" stroke-width="10" stroke-linecap="round"/>
+    <path d="M49 62 L70 20" stroke="#ff7a16" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="1134" y="490" class="txt big" text-anchor="middle">Better</text>
+  <text x="1134" y="530" class="txt big" text-anchor="middle">Decisions</text>
+
+  <!-- research -->
+  <circle cx="1134" cy="240" r="18" fill="none" stroke="#2563eb" stroke-width="6"/>
+  <line x1="1148" y1="254" x2="1163" y2="269" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+  <text x="1134" y="300" class="txt med bold" text-anchor="middle" fill="#2563eb">Research</text>
+
+  <!-- calculate -->
+  <rect x="1328" y="432" width="42" height="48" rx="8" fill="none" stroke="#16a34a" stroke-width="5"/>
+  <rect x="1337" y="441" width="24" height="10" rx="3" fill="#16a34a"/>
+  <g fill="#16a34a"><circle cx="1339" cy="461" r="3"/><circle cx="1349" cy="461" r="3"/><circle cx="1359" cy="461" r="3"/><circle cx="1339" cy="471" r="3"/><circle cx="1349" cy="471" r="3"/><circle cx="1359" cy="471" r="3"/></g>
+  <text x="1349" y="520" class="txt med bold" text-anchor="middle" fill="#15803d">Calculate</text>
+
+  <!-- compare -->
+  <path d="M1114 662h40M1134 637v25M1119 662l-14 25h28zM1149 662l-14 25h28z" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linejoin="round"/>
+  <text x="1134" y="730" class="txt med bold" text-anchor="middle" fill="#7c3aed">Compare</text>
+
+  <!-- decide -->
+  <circle cx="919" cy="447" r="24" fill="#f97316"/>
+  <path d="M907 447l8 8 17-19" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="919" y="520" class="txt med bold" text-anchor="middle" fill="#c2410c">Decide</text>
+
+  <!-- decorative leaves -->
+  <g transform="translate(1290 610)">
+    <path d="M115 270 C105 210, 105 145, 100 70" fill="none" stroke="#15803d" stroke-width="5"/>
+    <ellipse cx="92" cy="95" rx="22" ry="48" transform="rotate(-8 92 95)" fill="url(#leaf)"/>
+    <ellipse cx="125" cy="145" rx="22" ry="48" transform="rotate(35 125 145)" fill="url(#leaf)"/>
+    <ellipse cx="74" cy="170" rx="22" ry="50" transform="rotate(-55 74 170)" fill="url(#leaf)"/>
+    <ellipse cx="133" cy="223" rx="22" ry="48" transform="rotate(45 133 223)" fill="url(#leaf)"/>
+    <ellipse cx="82" cy="245" rx="20" ry="43" transform="rotate(-55 82 245)" fill="url(#leaf)"/>
+    <path d="M10 300 C40 265, 70 240, 110 220" fill="none" stroke="#65a30d" stroke-width="4"/>
+    <ellipse cx="22" cy="285" rx="18" ry="34" transform="rotate(-55 22 285)" fill="#84cc16" opacity=".85"/>
+    <ellipse cx="52" cy="258" rx="18" ry="34" transform="rotate(-35 52 258)" fill="#65a30d" opacity=".85"/>
+  </g>
+</svg>

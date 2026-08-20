@@ -86,12 +86,12 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
             <div className="flex flex-wrap items-center gap-1.5">
               <p className="truncate text-xs font-medium text-slate-500">{lenderName}</p>
               {loan.featured ? (
-                <span className="rounded bg-[var(--cl-navy)]/90 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded bg-[var(--cl-navy)]/90 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
               {loan.sponsored ? (
-                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-900">
+                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
                   Sponsored
                 </span>
               ) : null}
@@ -198,12 +198,12 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
             <div className="flex flex-wrap items-center gap-1">
               <p className="truncate text-xs font-medium text-[var(--cl-muted)]">{lenderName}</p>
               {loan.featured ? (
-                <span className="rounded bg-[var(--cl-navy)]/90 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded bg-[var(--cl-navy)]/90 px-1 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
               {loan.sponsored ? (
-                <span className="rounded bg-amber-50 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-amber-900">
+                <span className="rounded bg-amber-50 px-1 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
                   Sponsored
                 </span>
               ) : null}
@@ -280,7 +280,7 @@ function LenderMark({ loan, lenderName }: { loan: FinanceLoan; lenderName: strin
           fetchPriority="low"
         />
       ) : (
-        <span className="text-[10px] font-bold tracking-wide text-[var(--cl-navy)]" aria-hidden>
+        <span className="text-xs font-bold tracking-wide text-[var(--cl-navy)]" aria-hidden>
           {lenderInitials(lenderName)}
         </span>
       )}
@@ -379,7 +379,7 @@ export function CarLoanOfferResults({
         ) : catalog.length ? (
           <div className="overflow-hidden rounded-[var(--cl-radius-lg)] bg-white">
             <div
-              className="hidden grid-cols-[minmax(8rem,1.05fr)_minmax(3.5rem,0.45fr)_minmax(4rem,0.55fr)_minmax(4rem,0.55fr)_minmax(5rem,0.7fr)_minmax(4rem,0.55fr)_minmax(3.75rem,0.5fr)_minmax(3.5rem,0.45fr)_minmax(3.75rem,0.5fr)_minmax(8rem,0.9fr)] gap-2 border-b border-[var(--cl-border)] bg-[var(--cl-navy)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white lg:grid"
+              className="hidden grid-cols-[minmax(8rem,1.05fr)_minmax(3.5rem,0.45fr)_minmax(4rem,0.55fr)_minmax(4rem,0.55fr)_minmax(5rem,0.7fr)_minmax(4rem,0.55fr)_minmax(3.75rem,0.5fr)_minmax(3.5rem,0.45fr)_minmax(3.75rem,0.5fr)_minmax(8rem,0.9fr)] gap-2 border-b border-[var(--cl-border)] bg-[var(--cl-navy)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white lg:grid"
               role="row"
             >
               <span>Lender / Product</span>

@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 export function HubTrustBar({ title, items }: { title: string; items: HubTrustItem[] }) {
   return (
     <section className="full-bleed border-t border-slate-200 bg-slate-50">
-      <div className="site-container px-4 py-7 sm:py-8">
+      <div className="site-container py-7 sm:py-8">
         <h2 className="text-center text-base font-extrabold text-[#0b1f3a] sm:text-lg">{title}</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-5 lg:gap-4">
           {items.map((item, index) => (

@@ -73,12 +73,12 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
             <div className="flex flex-wrap items-center gap-1.5">
               <p className="truncate text-xs font-medium text-slate-500">{lenderName}</p>
               {loan.featured ? (
-                <span className="rounded bg-[var(--hl-navy)]/90 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded bg-[var(--hl-navy)]/90 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
               {loan.sponsored ? (
-                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-900">
+                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
                   Sponsored
                 </span>
               ) : null}
@@ -163,16 +163,14 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
           <LenderMark loan={loan} lenderName={lenderName} />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1">
-              <p className="truncate text-[11px] font-medium text-[var(--hl-muted)]">
-                {lenderName}
-              </p>
+              <p className="truncate text-xs font-medium text-[var(--hl-muted)]">{lenderName}</p>
               {loan.featured ? (
-                <span className="rounded bg-[var(--hl-navy)]/90 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded bg-[var(--hl-navy)]/90 px-1 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
               {loan.sponsored ? (
-                <span className="rounded bg-amber-50 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-amber-900">
+                <span className="rounded bg-amber-50 px-1 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
                   Sponsored
                 </span>
               ) : null}
@@ -186,12 +184,12 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
               </Link>
             </p>
             {freshness.verifiedLabel ? (
-              <p className="mt-0.5 truncate text-[11px] text-[var(--hl-muted)]">
+              <p className="mt-0.5 truncate text-xs text-[var(--hl-muted)]">
                 Rates verified: {freshness.verifiedLabel}
                 {freshness.publicNotice ? ` · ${freshness.publicNotice}` : ''}
               </p>
             ) : (
-              <p className="mt-0.5 truncate text-[11px] text-[var(--hl-muted)]">
+              <p className="mt-0.5 truncate text-xs text-[var(--hl-muted)]">
                 Verified date: Not currently available
               </p>
             )}
@@ -248,7 +246,7 @@ function LenderMark({ loan, lenderName }: { loan: FinanceLoan; lenderName: strin
           fetchPriority="low"
         />
       ) : (
-        <span className="text-[10px] font-bold tracking-wide text-[var(--hl-navy)]" aria-hidden>
+        <span className="text-xs font-bold tracking-wide text-[var(--hl-navy)]" aria-hidden>
           {lenderInitials(lenderName)}
         </span>
       )}
@@ -323,7 +321,7 @@ export function HomeLoanOfferResults({
         ) : catalog.length ? (
           <div className="overflow-hidden rounded-[var(--hl-radius-lg)] bg-white">
             <div
-              className="hidden grid-cols-[minmax(9rem,1.1fr)_minmax(4.5rem,0.6fr)_minmax(4.5rem,0.65fr)_minmax(5.5rem,0.75fr)_minmax(4.5rem,0.6fr)_minmax(4.5rem,0.6fr)_minmax(4rem,0.55fr)_minmax(8.5rem,0.95fr)] gap-2.5 border-b border-[var(--hl-border)] bg-[var(--hl-navy)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-white lg:grid"
+              className="hidden grid-cols-[minmax(9rem,1.1fr)_minmax(4.5rem,0.6fr)_minmax(4.5rem,0.65fr)_minmax(5.5rem,0.75fr)_minmax(4.5rem,0.6fr)_minmax(4.5rem,0.6fr)_minmax(4rem,0.55fr)_minmax(8.5rem,0.95fr)] gap-2.5 border-b border-[var(--hl-border)] bg-[var(--hl-navy)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white lg:grid"
               role="row"
             >
               <span>Lender / Product</span>

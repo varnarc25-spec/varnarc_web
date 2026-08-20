@@ -30,7 +30,7 @@ export function HubHeroSteps({
             </div>
             <div className="min-w-0">
               <div className="text-xs font-semibold text-[#0b1f3a] sm:text-sm">{step.title}</div>
-              <div className="text-[11px] text-slate-500 line-clamp-2">{step.description}</div>
+              <div className="text-xs text-slate-500 line-clamp-2">{step.description}</div>
             </div>
           </li>
         ))}

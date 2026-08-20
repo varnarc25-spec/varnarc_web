@@ -19,19 +19,69 @@ export default async function SettingsHubPage() {
   const flagCount = Array.isArray(flagsResult.data) ? flagsResult.data.length : 0;
 
   const categories = [
-    { href: '/settings/general', title: 'General', description: 'Site name, contact info, locale, and branding URLs.' },
-    { href: '/settings/maintenance', title: 'Maintenance', description: 'Maintenance mode, scheduled windows, and bypass rules.' },
-    { href: '/settings/security', title: 'Security', description: 'Rate limits, CORS, CSP, and password policies.' },
-    { href: '/settings/features', title: 'Feature flags', description: 'Enable or disable platform features at runtime.' },
-    { href: '/settings/advanced', title: 'Advanced', description: 'Raw JSON setting upsert for power users.' },
+    {
+      href: '/settings/general',
+      title: 'General',
+      description: 'Site name, contact info, locale, and branding URLs.',
+    },
+    {
+      href: '/settings/contact',
+      title: 'Contact email',
+      description: 'Contact form delivery addresses and Resend configuration.',
+    },
+    {
+      href: '/settings/contact-messages',
+      title: 'Contact inbox',
+      description: 'Stored contact form submissions and delivery status.',
+    },
+    {
+      href: '/settings/maintenance',
+      title: 'Maintenance',
+      description: 'Maintenance mode, scheduled windows, and bypass rules.',
+    },
+    {
+      href: '/settings/security',
+      title: 'Security',
+      description: 'Rate limits, CORS, CSP, and password policies.',
+    },
+    {
+      href: '/settings/features',
+      title: 'Feature flags',
+      description: 'Enable or disable platform features at runtime.',
+    },
+    {
+      href: '/settings/advanced',
+      title: 'Advanced',
+      description: 'Raw JSON setting upsert for power users.',
+    },
   ];
 
   const moduleLinks = [
-    { href: '/analytics/integrations', title: 'Analytics', description: 'GA, Clarity, Plausible, and telemetry toggles.' },
-    { href: '/seo/integrations', title: 'SEO integrations', description: 'Search Console and webmaster verification.' },
-    { href: '/seo/robots', title: 'Robots.txt', description: 'Crawl rules for production robots.txt.' },
-    { href: '/notifications/providers', title: 'Notifications', description: 'Email, SMS, and push provider configuration.' },
-    { href: '/themes', title: 'Themes', description: 'Visual branding, tokens, and default theme.' },
+    {
+      href: '/analytics/integrations',
+      title: 'Analytics',
+      description: 'GA, Clarity, Plausible, and telemetry toggles.',
+    },
+    {
+      href: '/seo/integrations',
+      title: 'SEO integrations',
+      description: 'Search Console and webmaster verification.',
+    },
+    {
+      href: '/seo/robots',
+      title: 'Robots.txt',
+      description: 'Crawl rules for production robots.txt.',
+    },
+    {
+      href: '/notifications/providers',
+      title: 'Notifications',
+      description: 'Email, SMS, and push provider configuration.',
+    },
+    {
+      href: '/themes',
+      title: 'Themes',
+      description: 'Visual branding, tokens, and default theme.',
+    },
   ];
 
   return (
@@ -46,7 +96,9 @@ export default async function SettingsHubPage() {
         <Card>
           <CardHeader>
             <CardTitle>Maintenance mode is active</CardTitle>
-            <CardDescription>{maintenance.message ?? 'The public site may be unavailable.'}</CardDescription>
+            <CardDescription>
+              {maintenance.message ?? 'The public site may be unavailable.'}
+            </CardDescription>
           </CardHeader>
         </Card>
       ) : null}
@@ -55,7 +107,11 @@ export default async function SettingsHubPage() {
         <h2 className="text-lg font-semibold">Platform settings</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((item) => (
-            <Link key={item.href} href={item.href} className="block rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:border-[var(--varnarc-brand)]">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:border-[var(--varnarc-brand)]"
+            >
               <h3 className="font-medium">{item.title}</h3>
               <p className="mt-1 text-sm text-[var(--varnarc-subtle)]">{item.description}</p>
             </Link>
@@ -66,11 +122,16 @@ export default async function SettingsHubPage() {
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Module settings</h2>
         <p className="text-sm text-[var(--varnarc-subtle)]">
-          Domain-specific configuration lives with each module. Use these links instead of duplicating keys here.
+          Domain-specific configuration lives with each module. Use these links instead of
+          duplicating keys here.
         </p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {moduleLinks.map((item) => (
-            <Link key={item.href} href={item.href} className="block rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:border-[var(--varnarc-brand)]">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:border-[var(--varnarc-brand)]"
+            >
               <h3 className="font-medium">{item.title}</h3>
               <p className="mt-1 text-sm text-[var(--varnarc-subtle)]">{item.description}</p>
             </Link>

@@ -37,7 +37,7 @@ export function HubGuideCard({ item, index }: { item: HubGuideItem; index: numbe
       </div>
       <div className="flex flex-1 flex-col p-4">
         {item.category ? (
-          <span className="text-[11px] font-bold uppercase tracking-wide text-blue-600">
+          <span className="text-xs font-bold uppercase tracking-wide text-blue-600">
             {hubCategoryLabel(item.category)}
           </span>
         ) : null}

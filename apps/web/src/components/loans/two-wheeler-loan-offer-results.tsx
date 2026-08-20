@@ -94,13 +94,17 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
         </div>
         <dl className="grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Interest Rate</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Interest Rate
+            </dt>
             <dd className="mt-0.5 text-sm font-bold tabular-nums text-[var(--tw-navy)]">
               {rate.label}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Illustrative EMI</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Illustrative EMI
+            </dt>
             <dd className="mt-0.5 text-sm font-bold tabular-nums text-[var(--tw-navy)]">
               {offerEmi.status === 'ok'
                 ? `${formatInr(Math.round(offerEmi.monthlyEmi))}/mo`
@@ -108,27 +112,37 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Loan Amount</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Loan Amount
+            </dt>
             <dd className="mt-0.5 text-sm font-semibold tabular-nums text-[var(--tw-navy)]">
               {amountLabel ?? 'Not currently available'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Tenure</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Tenure
+            </dt>
             <dd className="mt-0.5 text-sm font-semibold text-[var(--tw-navy)]">
               {tenure ?? 'Not currently available'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">New / Used</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              New / Used
+            </dt>
             <dd className="mt-0.5 text-sm font-semibold text-[var(--tw-navy)]">{vehicleLabel}</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Processing Fee</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Processing Fee
+            </dt>
             <dd className="mt-0.5 text-sm font-semibold text-[var(--tw-navy)]">{fee}</dd>
           </div>
           <div className="col-span-2">
-            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">Verified Date</dt>
+            <dt className="text-xs font-medium uppercase tracking-wide text-[var(--tw-muted)]">
+              Verified Date
+            </dt>
             <dd className="mt-0.5 text-sm font-semibold text-[var(--tw-navy)]">
               {freshness.verifiedLabel
                 ? `Rates verified: ${freshness.verifiedLabel}`
@@ -236,7 +250,7 @@ function LenderMark({ loan, lenderName }: { loan: FinanceLoan; lenderName: strin
           fetchPriority="low"
         />
       ) : (
-        <span className="text-[10px] font-bold tracking-wide text-[var(--tw-navy)]" aria-hidden>
+        <span className="text-xs font-bold tracking-wide text-[var(--tw-navy)]" aria-hidden>
           {lenderInitials(lenderName)}
         </span>
       )}
@@ -315,7 +329,7 @@ export function TwoWheelerLoanOfferResults({
         ) : catalog.length ? (
           <div className="overflow-hidden rounded-[var(--tw-radius-md)] bg-white">
             <div
-              className="hidden grid-cols-[minmax(8rem,1.1fr)_minmax(3.5rem,0.45fr)_minmax(4rem,0.55fr)_minmax(4rem,0.55fr)_minmax(5rem,0.7fr)_minmax(4rem,0.55fr)_minmax(3.75rem,0.5fr)_minmax(8rem,0.9fr)] gap-2 border-b border-[var(--tw-border)] bg-[var(--tw-navy)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-white lg:grid"
+              className="hidden grid-cols-[minmax(8rem,1.1fr)_minmax(3.5rem,0.45fr)_minmax(4rem,0.55fr)_minmax(4rem,0.55fr)_minmax(5rem,0.7fr)_minmax(4rem,0.55fr)_minmax(3.75rem,0.5fr)_minmax(8rem,0.9fr)] gap-2 border-b border-[var(--tw-border)] bg-[var(--tw-navy)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white lg:grid"
               role="row"
             >
               <span>Lender / Product</span>

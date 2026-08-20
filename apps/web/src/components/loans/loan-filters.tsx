@@ -562,7 +562,7 @@ export function LoanFilters({
           <SlidersHorizontal className="h-4 w-4" aria-hidden />
           Filters
           {activeCount > 0 ? (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0b1f3a] px-1.5 text-[11px] font-bold text-white">
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0b1f3a] px-1.5 text-xs font-bold text-white">
               {activeCount}
             </span>
           ) : null}
@@ -581,14 +581,14 @@ export function LoanFilters({
           <p
             className={
               quiet
-                ? 'text-[11px] font-semibold uppercase tracking-wide text-slate-500'
+                ? 'text-xs font-semibold uppercase tracking-wide text-slate-500'
                 : 'text-sm font-bold text-[#0b1f3a]'
             }
           >
             Filters
           </p>
           {activeCount > 0 ? (
-            <span className="rounded-full bg-[#e8eef5] px-2 py-0.5 text-[11px] font-semibold text-[#0b1f3a]">
+            <span className="rounded-full bg-[#e8eef5] px-2 py-0.5 text-xs font-semibold text-[#0b1f3a]">
               {activeCount} active
             </span>
           ) : null}
@@ -628,7 +628,7 @@ export function LoanFilters({
                   Filters
                 </p>
                 {activeCount > 0 ? (
-                  <span className="rounded-full bg-[#e8eef5] px-2 py-0.5 text-[11px] font-bold text-[#0b1f3a]">
+                  <span className="rounded-full bg-[#e8eef5] px-2 py-0.5 text-xs font-bold text-[#0b1f3a]">
                     {activeCount} active
                   </span>
                 ) : null}

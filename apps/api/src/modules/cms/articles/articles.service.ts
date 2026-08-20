@@ -65,10 +65,10 @@ export class ArticlesService {
   ) {
     const [articles, trending, popular, topQueries, zeroResults] = await Promise.all([
       this.repos.articles.coverageIndex(),
-      this.repos.popularSearches.trending(15),
-      this.repos.popularSearches.top(15),
-      this.repos.searchQueries.topQueries(20),
-      this.repos.searchQueries.zeroResultQueries(20),
+      this.repos.popularSearches.trending(15).catch(() => []),
+      this.repos.popularSearches.top(15).catch(() => []),
+      this.repos.searchQueries.topQueries(20).catch(() => []),
+      this.repos.searchQueries.zeroResultQueries(20).catch(() => []),
     ]);
 
     return buildEditorialSuggestions({

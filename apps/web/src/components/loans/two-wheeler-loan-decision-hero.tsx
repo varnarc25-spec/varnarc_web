@@ -111,7 +111,7 @@ export function TwoWheelerLoanDecisionHero({
       <CmsMediaPreload href={illustrationSrc} media={HERO_MEDIA} />
       <div className="grid items-center gap-6 p-1 sm:p-2 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:gap-10 lg:p-4">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
             Two-Wheeler Loan
           </p>
           <h1 className="mt-1.5 text-[1.5rem] font-extrabold tracking-tight text-[var(--tw-navy)] sm:text-[1.875rem] sm:leading-tight">
@@ -209,11 +209,7 @@ export function TwoWheelerLoanDecisionHero({
             {/* Vehicle Type */}
             <div>
               <p className="text-sm font-bold text-[var(--tw-navy)]">Vehicle Type</p>
-              <div
-                className="mt-2.5 flex flex-wrap gap-2"
-                role="group"
-                aria-label="Vehicle type"
-              >
+              <div className="mt-2.5 flex flex-wrap gap-2" role="group" aria-label="Vehicle type">
                 {(
                   [
                     ['motorcycle', 'Motorcycle'],

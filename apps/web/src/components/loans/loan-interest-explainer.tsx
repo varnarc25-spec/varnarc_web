@@ -70,7 +70,7 @@ function FlowDiagram() {
                 }`}
               >
                 <span
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     isLast ? 'bg-[#f97316] text-white' : 'bg-[#0b1f3a] text-white'
                   }`}
                   style={{ color: '#ffffff' }}
@@ -119,7 +119,7 @@ function AmortizationIllustration() {
       <ul className="mt-4 space-y-3" aria-hidden>
         {AMORT_BARS.map((bar) => (
           <li key={bar.label}>
-            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+            <div className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-600">
               <span>{bar.label}</span>
               <span className="tabular-nums text-slate-500">
                 {bar.interest}% interest · {bar.principal}% principal
@@ -141,7 +141,7 @@ function AmortizationIllustration() {
         ))}
       </ul>
 
-      <ul className="mt-3 flex flex-wrap gap-4 text-[11px] font-medium text-slate-600" aria-hidden>
+      <ul className="mt-3 flex flex-wrap gap-4 text-xs font-medium text-slate-600" aria-hidden>
         <li className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-[#f97316]" />
           Interest portion

@@ -53,7 +53,7 @@ export function LoanGuidesSection({
                 </Link>
 
                 <div className="flex flex-1 flex-col p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#f97316]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#f97316]">
                     {guide.categoryLabel}
                   </p>
                   <h3 className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-snug text-[#0b1f3a]">
@@ -69,7 +69,7 @@ export function LoanGuidesSection({
                     <span className="flex-1" />
                   )}
 
-                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
                     {updated ? (
                       <time dateTime={guide.updatedAt ?? undefined}>Updated {updated}</time>
                     ) : null}

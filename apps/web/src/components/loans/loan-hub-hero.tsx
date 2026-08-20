@@ -74,7 +74,7 @@ export function LoanHubHero({
         }`}
       >
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#f97316]">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#f97316]">
             Finance · Loans
           </p>
           <h1
@@ -90,10 +90,7 @@ export function LoanHubHero({
 
           <ul className="mt-2.5 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
             {points.map((label) => (
-              <li
-                key={label}
-                className="inline-flex items-center gap-1.5 text-[11px] text-slate-500"
-              >
+              <li key={label} className="inline-flex items-center gap-1.5 text-xs text-slate-500">
                 <span className="text-[#f97316]" aria-hidden>
                   ✓
                 </span>

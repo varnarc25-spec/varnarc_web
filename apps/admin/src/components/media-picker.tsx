@@ -155,11 +155,11 @@ export function MediaPicker({
                       height={120}
                       className="mb-1 aspect-square w-full rounded object-cover"
                     />
-                    <p className="truncate text-[11px] text-[var(--varnarc-subtle)]">
+                    <p className="truncate text-xs text-[var(--varnarc-subtle)]">
                       {asset.title || asset.alt || asset.publicId}
                     </p>
                     {asset.width && asset.height ? (
-                      <p className="text-[10px] text-[var(--varnarc-subtle)]">
+                      <p className="text-xs text-[var(--varnarc-subtle)]">
                         {asset.width}×{asset.height}
                       </p>
                     ) : null}

@@ -16,11 +16,7 @@ import { getRateFreshness } from '@/lib/loan-rate-freshness';
 function SpecItem({ label, value, compact }: { label: string; value: string; compact?: boolean }) {
   return (
     <div className="min-w-0">
-      <dt
-        className={`font-medium tracking-wide text-slate-500 ${
-          compact ? 'text-[11px]' : 'text-xs'
-        }`}
-      >
+      <dt className={`font-medium tracking-wide text-slate-500 ${compact ? 'text-xs' : 'text-xs'}`}>
         {label}
       </dt>
       <dd
@@ -82,7 +78,7 @@ export function LoanProductCard({
                 fetchPriority="low"
               />
             ) : (
-              <span className="text-[10px] font-bold tracking-wide text-[#0b1f3a]" aria-hidden>
+              <span className="text-xs font-bold tracking-wide text-[#0b1f3a]" aria-hidden>
                 {lenderInitials(lenderName)}
               </span>
             )}
@@ -92,12 +88,12 @@ export function LoanProductCard({
             {(loan.featured || loan.sponsored) && (
               <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
                 {loan.featured ? (
-                  <span className="rounded bg-[#0b1f3a]/90 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
+                  <span className="rounded bg-[#0b1f3a]/90 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                     Featured
                   </span>
                 ) : null}
                 {loan.sponsored ? (
-                  <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-900">
+                  <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
                     Sponsored
                   </span>
                 ) : null}
@@ -108,12 +104,12 @@ export function LoanProductCard({
 
         <div className="hidden shrink-0 flex-wrap items-start justify-end gap-1 sm:flex">
           {loan.featured ? (
-            <span className="rounded bg-[#0b1f3a]/90 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
+            <span className="rounded bg-[#0b1f3a]/90 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
               Featured
             </span>
           ) : null}
           {loan.sponsored ? (
-            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-900">
+            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-amber-900">
               Sponsored
             </span>
           ) : null}
@@ -136,7 +132,7 @@ export function LoanProductCard({
       <div
         className={`mt-2.5 rounded-xl bg-[#f8fafc] ${isFeaturedLayout ? 'px-3 py-2' : 'px-3 py-2.5'}`}
       >
-        <p className="text-[11px] font-medium text-slate-500">Interest rate</p>
+        <p className="text-xs font-medium text-slate-500">Interest rate</p>
         <p
           className={`mt-0.5 font-extrabold tracking-tight tabular-nums text-[#0b1f3a] ${
             isFeaturedLayout ? 'text-lg' : 'text-xl sm:text-[1.35rem]'
@@ -148,7 +144,7 @@ export function LoanProductCard({
           ) : null}
         </p>
         {rate.qualifier ? (
-          <p className="mt-0.5 text-[11px] font-medium text-slate-500">{rate.qualifier}</p>
+          <p className="mt-0.5 text-xs font-medium text-slate-500">{rate.qualifier}</p>
         ) : null}
       </div>
 
@@ -166,11 +162,11 @@ export function LoanProductCard({
         {!isFeaturedLayout ? <SpecItem label="Processing fee" value={fee} /> : null}
       </dl>
 
-      <p className="mt-2.5 text-[11px] leading-snug text-slate-500">
+      <p className="mt-2.5 text-xs leading-snug text-slate-500">
         Rates verified {freshness.verifiedLabel ?? 'pending'}
       </p>
       {freshness.publicNotice ? (
-        <p className="mt-1 text-[11px] leading-snug text-slate-500">{freshness.publicNotice}</p>
+        <p className="mt-1 text-xs leading-snug text-slate-500">{freshness.publicNotice}</p>
       ) : null}
 
       {loan.sponsored ? (

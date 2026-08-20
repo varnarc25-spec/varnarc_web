@@ -37,7 +37,10 @@ function InputField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]"
+      >
         {label}
       </label>
       <div className="relative mt-1 border-b border-[var(--tw-border)] pb-1 focus-within:border-[var(--tw-orange)]">
@@ -75,7 +78,11 @@ export function TwTenureSimulator() {
     () =>
       TW_TENURE_YEARS.map((years) => {
         const months = years * 12;
-        const result = calculateEmi({ principal: loanRequirement, annualRatePercent: ratePercent, tenureMonths: months });
+        const result = calculateEmi({
+          principal: loanRequirement,
+          annualRatePercent: ratePercent,
+          tenureMonths: months,
+        });
         return {
           years,
           months,
@@ -88,12 +95,21 @@ export function TwTenureSimulator() {
   );
 
   return (
-    <section id="tw-tenure" aria-labelledby="tw-tenure-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-tenure"
+      aria-labelledby="tw-tenure-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Tenure</p>
-        <h2 id="tw-tenure-heading" className="cl-h2 text-[var(--tw-navy)]">Compare Tenure Options</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Tenure
+        </p>
+        <h2 id="tw-tenure-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Compare Tenure Options
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          See how tenure length changes monthly EMI, total interest and total repayment for your two-wheeler loan.
+          See how tenure length changes monthly EMI, total interest and total repayment for your
+          two-wheeler loan.
         </p>
         <div className="mt-7 overflow-x-auto">
           <table className="w-full min-w-[480px] text-sm">
@@ -137,14 +153,21 @@ export function TwFinancingPercent() {
   const downPct = 100 - loanPct;
 
   return (
-    <section id="tw-financing" aria-labelledby="tw-financing-heading" className="full-bleed bg-[var(--tw-surface-2)]">
+    <section
+      id="tw-financing"
+      aria-labelledby="tw-financing-heading"
+      className="full-bleed bg-[var(--tw-surface-2)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Financing %</p>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Financing %
+        </p>
         <h2 id="tw-financing-heading" className="cl-h2 text-[var(--tw-navy)]">
           How Much of the Vehicle Price Are You Financing?
         </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Financing % = Loan Required ÷ Vehicle Price × 100. It is a planning ratio, not a lender limit.
+          Financing % = Loan Required ÷ Vehicle Price × 100. It is a planning ratio, not a lender
+          limit.
         </p>
         <div className="mt-8 max-w-3xl">
           <div className="flex h-12 overflow-hidden rounded-[var(--tw-radius-sm)]">
@@ -162,9 +185,12 @@ export function TwFinancingPercent() {
             </div>
           </div>
           <p className="mt-4 text-sm text-slate-600">
-            <span className="font-bold text-[var(--tw-navy)]">{formatInr(loanRequirement)}</span> loan
-            ÷ <span className="font-bold text-[var(--tw-navy)]">{formatInr(vehiclePrice)}</span> vehicle
-            = <span className="font-bold text-[var(--tw-orange)]">{loanPct.toFixed(1)}%</span> financed
+            <span className="font-bold text-[var(--tw-navy)]">{formatInr(loanRequirement)}</span>{' '}
+            loan ÷{' '}
+            <span className="font-bold text-[var(--tw-navy)]">{formatInr(vehiclePrice)}</span>{' '}
+            vehicle ={' '}
+            <span className="font-bold text-[var(--tw-orange)]">{loanPct.toFixed(1)}%</span>{' '}
+            financed
           </p>
         </div>
       </div>
@@ -175,35 +201,60 @@ export function TwFinancingPercent() {
 /* ─── c) New vs Used ─── */
 export function TwNewVsUsed() {
   return (
-    <section id="tw-new-vs-used" aria-labelledby="tw-new-vs-used-heading" className="full-bleed bg-[var(--tw-surface-4)]">
+    <section
+      id="tw-new-vs-used"
+      aria-labelledby="tw-new-vs-used-heading"
+      className="full-bleed bg-[var(--tw-surface-4)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">New vs Used</p>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          New vs Used
+        </p>
         <h2 id="tw-new-vs-used-heading" className="cl-h2 text-[var(--tw-navy)]">
           New vs Used Two-Wheeler Financing
         </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Financing terms differ between new and used two-wheelers. Compare product specifics rather than assuming one structure.
+          Financing terms differ between new and used two-wheelers. Compare product specifics rather
+          than assuming one structure.
         </p>
         <div className="mt-8 grid items-stretch gap-5 lg:grid-cols-2">
           <article className="flex h-full flex-col bg-[var(--tw-surface-1)] p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">New Vehicle</p>
-            <h3 className="mt-1 text-lg font-bold text-[var(--tw-navy)]">Financing a New Two-Wheeler</h3>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+              New Vehicle
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-[var(--tw-navy)]">
+              Financing a New Two-Wheeler
+            </h3>
             <ul className="mt-4 flex-1 space-y-3">
               {TW_NEW_VS_USED_ROWS.map((row) => (
-                <li key={`new-${row.label}`} className="border-t border-[var(--tw-border)] pt-3 first:border-0 first:pt-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">{row.label}</p>
+                <li
+                  key={`new-${row.label}`}
+                  className="border-t border-[var(--tw-border)] pt-3 first:border-0 first:pt-0"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+                    {row.label}
+                  </p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-600">{row.newVehicle}</p>
                 </li>
               ))}
             </ul>
           </article>
           <article className="flex h-full flex-col bg-[var(--tw-surface-2)] p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">Used Vehicle</p>
-            <h3 className="mt-1 text-lg font-bold text-[var(--tw-navy)]">Financing a Used Two-Wheeler</h3>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+              Used Vehicle
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-[var(--tw-navy)]">
+              Financing a Used Two-Wheeler
+            </h3>
             <ul className="mt-4 flex-1 space-y-3">
               {TW_NEW_VS_USED_ROWS.map((row) => (
-                <li key={`used-${row.label}`} className="border-t border-[var(--tw-border)] pt-3 first:border-0 first:pt-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">{row.label}</p>
+                <li
+                  key={`used-${row.label}`}
+                  className="border-t border-[var(--tw-border)] pt-3 first:border-0 first:pt-0"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+                    {row.label}
+                  </p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-600">{row.usedVehicle}</p>
                 </li>
               ))}
@@ -228,9 +279,15 @@ export function TwAffordability() {
   );
 
   return (
-    <section id="tw-affordability" aria-labelledby="tw-affordability-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-affordability"
+      aria-labelledby="tw-affordability-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Affordability</p>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Affordability
+        </p>
         <h2 id="tw-affordability-heading" className="cl-h2 text-[var(--tw-navy)]">
           What Two-Wheeler Can You Afford?
         </h2>
@@ -238,21 +295,49 @@ export function TwAffordability() {
           Enter your monthly income and existing EMIs to get an indicative vehicle budget.
         </p>
         <div className="mt-7 grid gap-6 sm:grid-cols-3 max-w-2xl">
-          <InputField label="Monthly Income" id="tw-aff-income" value={income} onChange={setIncome} prefix="₹" />
-          <InputField label="Existing EMIs" id="tw-aff-emi" value={existingEmis} onChange={setExistingEmis} prefix="₹" />
+          <InputField
+            label="Monthly Income"
+            id="tw-aff-income"
+            value={income}
+            onChange={setIncome}
+            prefix="₹"
+          />
+          <InputField
+            label="Existing EMIs"
+            id="tw-aff-emi"
+            value={existingEmis}
+            onChange={setExistingEmis}
+            prefix="₹"
+          />
           <InputField label="Down Payment" id="tw-aff-dp" value={dp} onChange={setDp} prefix="₹" />
         </div>
         {result ? (
           <div className="mt-6 rounded-[var(--tw-radius-md)] bg-[var(--tw-surface-4)] p-5 max-w-md">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">Indicative Vehicle Budget</p>
-            <p className="mt-2 text-3xl font-extrabold tabular-nums text-[var(--tw-navy)]">{formatInr(result.indicativeBudget)}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+              Indicative Vehicle Budget
+            </p>
+            <p className="mt-2 text-3xl font-extrabold tabular-nums text-[var(--tw-navy)]">
+              {formatInr(result.indicativeBudget)}
+            </p>
             <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-[var(--tw-muted)]">Max Loan</dt><dd className="font-semibold tabular-nums text-[var(--tw-navy)]">{formatInr(result.maxLoan)}</dd></div>
-              <div className="flex justify-between"><dt className="text-[var(--tw-muted)]">Max EMI</dt><dd className="font-semibold tabular-nums text-[var(--tw-navy)]">{formatInr(Math.round(result.maxEmi))}/mo</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-[var(--tw-muted)]">Max Loan</dt>
+                <dd className="font-semibold tabular-nums text-[var(--tw-navy)]">
+                  {formatInr(result.maxLoan)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-[var(--tw-muted)]">Max EMI</dt>
+                <dd className="font-semibold tabular-nums text-[var(--tw-navy)]">
+                  {formatInr(Math.round(result.maxEmi))}/mo
+                </dd>
+              </div>
             </dl>
           </div>
         ) : (
-          <p className="mt-6 text-sm text-[var(--tw-muted)]">Enter valid income to see an estimate.</p>
+          <p className="mt-6 text-sm text-[var(--tw-muted)]">
+            Enter valid income to see an estimate.
+          </p>
         )}
       </div>
     </section>
@@ -266,7 +351,11 @@ export function TwInterestOverTime() {
   const rows = useMemo(
     () =>
       TW_TENURE_YEARS.map((years) => {
-        const result = calculateEmi({ principal: loanRequirement, annualRatePercent: ratePercent, tenureMonths: years * 12 });
+        const result = calculateEmi({
+          principal: loanRequirement,
+          annualRatePercent: ratePercent,
+          tenureMonths: years * 12,
+        });
         return { years, interest: result ? Math.round(result.totalInterest) : 0 };
       }),
     [loanRequirement, ratePercent],
@@ -274,10 +363,18 @@ export function TwInterestOverTime() {
   const maxInterest = Math.max(...rows.map((r) => r.interest), 1);
 
   return (
-    <section id="tw-interest" aria-labelledby="tw-interest-heading" className="full-bleed bg-[var(--tw-surface-2)]">
+    <section
+      id="tw-interest"
+      aria-labelledby="tw-interest-heading"
+      className="full-bleed bg-[var(--tw-surface-2)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Interest</p>
-        <h2 id="tw-interest-heading" className="cl-h2 text-[var(--tw-navy)]">Total Interest by Tenure</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Interest
+        </p>
+        <h2 id="tw-interest-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Total Interest by Tenure
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
           Longer tenure reduces EMI but increases total interest paid over the life of the loan.
         </p>
@@ -305,12 +402,21 @@ export function TwInterestOverTime() {
 /* ─── f) Dealer vs Lender ─── */
 export function TwDealerVsLender() {
   return (
-    <section id="tw-dealer-vs-lender" aria-labelledby="tw-dealer-heading" className="full-bleed bg-[var(--tw-surface-3)]">
+    <section
+      id="tw-dealer-vs-lender"
+      aria-labelledby="tw-dealer-heading"
+      className="full-bleed bg-[var(--tw-surface-3)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Dealer vs Lender</p>
-        <h2 id="tw-dealer-heading" className="cl-h2 text-[var(--tw-navy)]">Dealer Finance vs Direct Lender</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Dealer vs Lender
+        </p>
+        <h2 id="tw-dealer-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Dealer Finance vs Direct Lender
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Two-wheeler financing is available through dealerships and directly from banks/NBFCs. Each has trade-offs.
+          Two-wheeler financing is available through dealerships and directly from banks/NBFCs. Each
+          has trade-offs.
         </p>
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
           <article className="bg-[var(--tw-surface-1)] p-5 sm:p-6">
@@ -318,7 +424,10 @@ export function TwDealerVsLender() {
             <ul className="mt-4 space-y-3">
               {TW_DEALER_POINTS.map((p) => (
                 <li key={p} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--tw-orange)]" aria-hidden />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--tw-orange)]"
+                    aria-hidden
+                  />
                   {p}
                 </li>
               ))}
@@ -329,7 +438,10 @@ export function TwDealerVsLender() {
             <ul className="mt-4 space-y-3">
               {TW_LENDER_POINTS.map((p) => (
                 <li key={p} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--tw-navy)]" aria-hidden />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--tw-navy)]"
+                    aria-hidden
+                  />
                   {p}
                 </li>
               ))}
@@ -337,7 +449,8 @@ export function TwDealerVsLender() {
           </article>
         </div>
         <p className="mt-5 text-xs text-[var(--tw-muted)]">
-          Neither option is universally better. Compare the actual sanction terms, effective rate, and total cost.
+          Neither option is universally better. Compare the actual sanction terms, effective rate,
+          and total cost.
         </p>
       </div>
     </section>
@@ -347,12 +460,21 @@ export function TwDealerVsLender() {
 /* ─── g) Eligibility ─── */
 export function TwEligibility() {
   return (
-    <section id="tw-eligibility" aria-labelledby="tw-eligibility-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-eligibility"
+      aria-labelledby="tw-eligibility-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Eligibility</p>
-        <h2 id="tw-eligibility-heading" className="cl-h2 text-[var(--tw-navy)]">Two-Wheeler Loan Eligibility</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Eligibility
+        </p>
+        <h2 id="tw-eligibility-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Two-Wheeler Loan Eligibility
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Eligibility depends on applicant profile, vehicle details and lender policy. This is a general framework — actual criteria vary.
+          Eligibility depends on applicant profile, vehicle details and lender policy. This is a
+          general framework — actual criteria vary.
         </p>
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="bg-[var(--tw-surface-2)] p-5">
@@ -385,13 +507,17 @@ export function TwEligibility() {
           <div>
             <h4 className="text-sm font-bold text-[var(--tw-navy)]">Salaried</h4>
             <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-              {TW_SALARIED_NOTES.map((n) => <li key={n}>{n}</li>)}
+              {TW_SALARIED_NOTES.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
             </ul>
           </div>
           <div>
             <h4 className="text-sm font-bold text-[var(--tw-navy)]">Self-Employed</h4>
             <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-              {TW_SELF_EMPLOYED_NOTES.map((n) => <li key={n}>{n}</li>)}
+              {TW_SELF_EMPLOYED_NOTES.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -403,12 +529,21 @@ export function TwEligibility() {
 /* ─── h) Fees ─── */
 export function TwFees() {
   return (
-    <section id="tw-fees" aria-labelledby="tw-fees-heading" className="full-bleed bg-[var(--tw-surface-2)]">
+    <section
+      id="tw-fees"
+      aria-labelledby="tw-fees-heading"
+      className="full-bleed bg-[var(--tw-surface-2)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Fees & Charges</p>
-        <h2 id="tw-fees-heading" className="cl-h2 text-[var(--tw-navy)]">Two-Wheeler Loan Fees</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Fees & Charges
+        </p>
+        <h2 id="tw-fees-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Two-Wheeler Loan Fees
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Fees vary by lender and product. Confirm before accepting a sanction letter. Unknown fees are marked accordingly.
+          Fees vary by lender and product. Confirm before accepting a sanction letter. Unknown fees
+          are marked accordingly.
         </p>
         <div className="mt-7 max-w-2xl space-y-4">
           {TW_FEE_TYPES.map((fee) => (
@@ -419,7 +554,8 @@ export function TwFees() {
           ))}
         </div>
         <p className="mt-5 text-xs text-[var(--tw-muted)]">
-          Vehicle cost (on-road price) and finance cost (interest + fees) are separate. Confirm what is included in the loan amount.
+          Vehicle cost (on-road price) and finance cost (interest + fees) are separate. Confirm what
+          is included in the loan amount.
         </p>
       </div>
     </section>
@@ -440,18 +576,50 @@ export function TwPrepayment() {
   );
 
   return (
-    <section id="tw-prepayment" aria-labelledby="tw-prepayment-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-prepayment"
+      aria-labelledby="tw-prepayment-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Prepayment</p>
-        <h2 id="tw-prepayment-heading" className="cl-h2 text-[var(--tw-navy)]">Prepayment Calculator</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Prepayment
+        </p>
+        <h2 id="tw-prepayment-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Prepayment Calculator
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          See how an additional payment may reduce tenure or EMI. Check your agreement for foreclosure charges.
+          See how an additional payment may reduce tenure or EMI. Check your agreement for
+          foreclosure charges.
         </p>
         <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 max-w-3xl">
-          <InputField label="Outstanding" id="tw-prep-out" value={outstanding} onChange={setOutstanding} prefix="₹" />
-          <InputField label="Rate (%)" id="tw-prep-rate" value={ratePercent} onChange={() => {}} suffix="%" />
-          <InputField label="Remaining (months)" id="tw-prep-rem" value={remaining} onChange={setRemaining} />
-          <InputField label="Prepay Amount" id="tw-prep-amt" value={prepayAmount} onChange={setPrepayAmount} prefix="₹" />
+          <InputField
+            label="Outstanding"
+            id="tw-prep-out"
+            value={outstanding}
+            onChange={setOutstanding}
+            prefix="₹"
+          />
+          <InputField
+            label="Rate (%)"
+            id="tw-prep-rate"
+            value={ratePercent}
+            onChange={() => {}}
+            suffix="%"
+          />
+          <InputField
+            label="Remaining (months)"
+            id="tw-prep-rem"
+            value={remaining}
+            onChange={setRemaining}
+          />
+          <InputField
+            label="Prepay Amount"
+            id="tw-prep-amt"
+            value={prepayAmount}
+            onChange={setPrepayAmount}
+            prefix="₹"
+          />
         </div>
         <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Prepayment mode">
           {(['reduce-tenure', 'reduce-emi'] as const).map((m) => (
@@ -469,8 +637,22 @@ export function TwPrepayment() {
         {impact ? (
           <div className="mt-5 rounded-[var(--tw-radius-md)] bg-[var(--tw-surface-4)] p-5 max-w-md">
             <dl className="space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-[var(--tw-muted)]">Interest Saved</dt><dd className="font-bold tabular-nums text-[var(--tw-navy)]">{formatInr(Math.round(impact.interestSaved))}</dd></div>
-              <div className="flex justify-between"><dt className="text-[var(--tw-muted)]">{mode === 'reduce-tenure' ? 'Months Saved' : 'New EMI'}</dt><dd className="font-bold tabular-nums text-[var(--tw-navy)]">{mode === 'reduce-tenure' ? `${impact.monthsSaved} months` : formatInr(Math.round(impact.revised.monthlyEmi))}</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-[var(--tw-muted)]">Interest Saved</dt>
+                <dd className="font-bold tabular-nums text-[var(--tw-navy)]">
+                  {formatInr(Math.round(impact.interestSaved))}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-[var(--tw-muted)]">
+                  {mode === 'reduce-tenure' ? 'Months Saved' : 'New EMI'}
+                </dt>
+                <dd className="font-bold tabular-nums text-[var(--tw-navy)]">
+                  {mode === 'reduce-tenure'
+                    ? `${impact.monthsSaved} months`
+                    : formatInr(Math.round(impact.revised.monthlyEmi))}
+                </dd>
+              </div>
             </dl>
           </div>
         ) : null}
@@ -482,26 +664,42 @@ export function TwPrepayment() {
 /* ─── j) Hypothecation ─── */
 export function TwHypothecation() {
   return (
-    <section id="tw-hypothecation" aria-labelledby="tw-hypothecation-heading" className="full-bleed bg-[var(--tw-surface-4)]">
+    <section
+      id="tw-hypothecation"
+      aria-labelledby="tw-hypothecation-heading"
+      className="full-bleed bg-[var(--tw-surface-4)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Hypothecation</p>
-        <h2 id="tw-hypothecation-heading" className="cl-h2 text-[var(--tw-navy)]">What is Hypothecation?</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Hypothecation
+        </p>
+        <h2 id="tw-hypothecation-heading" className="cl-h2 text-[var(--tw-navy)]">
+          What is Hypothecation?
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          When you finance a two-wheeler, the vehicle is hypothecated to the lender — meaning the lender has a charge on it until the loan is repaid.
+          When you finance a two-wheeler, the vehicle is hypothecated to the lender — meaning the
+          lender has a charge on it until the loan is repaid.
         </p>
         <div className="mt-7 flex flex-col items-center gap-4 sm:flex-row sm:gap-8 max-w-lg mx-auto">
           <div className="rounded-[var(--tw-radius-md)] bg-[var(--tw-surface-1)] p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">Borrower</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+              Borrower
+            </p>
             <p className="mt-1 text-sm font-bold text-[var(--tw-navy)]">Uses vehicle</p>
           </div>
-          <div className="text-2xl text-[var(--tw-muted)]" aria-hidden>↔</div>
+          <div className="text-2xl text-[var(--tw-muted)]" aria-hidden>
+            ↔
+          </div>
           <div className="rounded-[var(--tw-radius-md)] bg-[var(--tw-surface-1)] p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">Lender</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--tw-muted)]">
+              Lender
+            </p>
             <p className="mt-1 text-sm font-bold text-[var(--tw-navy)]">Holds charge on RC</p>
           </div>
         </div>
         <p className="mt-6 text-sm text-slate-600 max-w-2xl">
-          The RC (Registration Certificate) records the hypothecation. After loan closure, the lender issues a NOC and you submit it to the RTO to remove the endorsement.
+          The RC (Registration Certificate) records the hypothecation. After loan closure, the
+          lender issues a NOC and you submit it to the RTO to remove the endorsement.
         </p>
       </div>
     </section>
@@ -511,10 +709,18 @@ export function TwHypothecation() {
 /* ─── k) Closure ─── */
 export function TwClosure() {
   return (
-    <section id="tw-closure" aria-labelledby="tw-closure-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-closure"
+      aria-labelledby="tw-closure-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Loan Closure</p>
-        <h2 id="tw-closure-heading" className="cl-h2 text-[var(--tw-navy)]">Loan Closure Timeline</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Loan Closure
+        </p>
+        <h2 id="tw-closure-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Loan Closure Timeline
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
           Steps from final payment to clear ownership of your two-wheeler.
         </p>
@@ -544,12 +750,21 @@ export function TwClosure() {
 /* ─── l) Documents ─── */
 export function TwDocuments() {
   return (
-    <section id="tw-documents" aria-labelledby="tw-documents-heading" className="full-bleed bg-[var(--tw-surface-2)]">
+    <section
+      id="tw-documents"
+      aria-labelledby="tw-documents-heading"
+      className="full-bleed bg-[var(--tw-surface-2)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Documents</p>
-        <h2 id="tw-documents-heading" className="cl-h2 text-[var(--tw-navy)]">Required Documents</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Documents
+        </p>
+        <h2 id="tw-documents-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Required Documents
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
-          Common document requirements for a two-wheeler loan application. Lender-specific lists may differ.
+          Common document requirements for a two-wheeler loan application. Lender-specific lists may
+          differ.
         </p>
         <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl">
           {TW_DOCUMENT_GROUPS.map((group) => (
@@ -558,7 +773,10 @@ export function TwDocuments() {
               <ul className="mt-3 space-y-2">
                 {group.items.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                    <span className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--tw-border)]" aria-hidden />
+                    <span
+                      className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--tw-border)]"
+                      aria-hidden
+                    />
                     {item}
                   </li>
                 ))}
@@ -574,10 +792,18 @@ export function TwDocuments() {
 /* ─── m) Application Journey ─── */
 export function TwApplicationJourney() {
   return (
-    <section id="tw-application" aria-labelledby="tw-application-heading" className="full-bleed bg-[var(--tw-surface-1)]">
+    <section
+      id="tw-application"
+      aria-labelledby="tw-application-heading"
+      className="full-bleed bg-[var(--tw-surface-1)]"
+    >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">Application</p>
-        <h2 id="tw-application-heading" className="cl-h2 text-[var(--tw-navy)]">Application Journey</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+          Application
+        </p>
+        <h2 id="tw-application-heading" className="cl-h2 text-[var(--tw-navy)]">
+          Application Journey
+        </h2>
         <p className="cl-lede text-[var(--tw-muted)]">
           A typical two-wheeler loan application flow from research to repayment.
         </p>
@@ -590,7 +816,7 @@ export function TwApplicationJourney() {
                   {i + 1}
                 </span>
                 <p className="mt-2 text-xs font-bold text-[var(--tw-navy)]">{s.step}</p>
-                <p className="mt-1 text-[11px] text-slate-500">{s.detail}</p>
+                <p className="mt-1 text-xs text-slate-500">{s.detail}</p>
               </div>
             ))}
           </div>

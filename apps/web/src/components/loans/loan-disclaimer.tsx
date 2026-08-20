@@ -20,7 +20,7 @@ export function LoanDisclaimer({ className = '' }: { className?: string }) {
 
 export function LoanSponsoredDisclosure({ text }: { text?: string | null }) {
   return (
-    <p className="text-[11px] leading-snug text-amber-800">
+    <p className="text-xs leading-snug text-amber-800">
       {text?.trim() ||
         'Sponsored listing. This does not change the factual rate or fee information shown.'}
     </p>

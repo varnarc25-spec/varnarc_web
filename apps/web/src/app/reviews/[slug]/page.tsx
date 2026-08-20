@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageShell } from '@/components/layout/page-shell';
 import { MarkdownContent } from '@/components/shared/markdown-content';
@@ -58,6 +59,10 @@ export default async function ReviewDetailPage({ params }: Props) {
       overallScore?: number | string | null;
       entityType?: string | null;
       entityId?: string | null;
+      publishedAt?: string | null;
+      updatedAt?: string | null;
+      author?: { displayName?: string | null; username?: string | null } | null;
+      product?: { name?: string | null; category?: string | null } | null;
       pros?: Array<{ text: string }>;
       cons?: Array<{ text: string }>;
       scores?: Array<{ label: string; score: number | string; maxScore: number | string }>;
@@ -119,7 +124,7 @@ export default async function ReviewDetailPage({ params }: Props) {
           title={data.title}
           description={
             data.summary ||
-            (score != null ? `Expert score: ${score.toFixed(1)} / 5` : undefined)
+            (score != null ? `Varnarc Editorial Rating: ${score.toFixed(1)} / 5` : undefined)
           }
           breadcrumbs={[
             { label: 'Home', href: '/' },
@@ -133,6 +138,36 @@ export default async function ReviewDetailPage({ params }: Props) {
             </span>
           ) : null}
 
+          <p className="mb-6 text-sm text-slate-600">
+            {score != null ? (
+              <span className="mr-3 font-semibold text-slate-900">
+                Varnarc Editorial Rating: {score.toFixed(1)} / 5
+              </span>
+            ) : null}
+            Reviewed by{' '}
+            {data.author?.username ? (
+              <Link
+                href={`/authors/${data.author.username}`}
+                className="font-semibold text-blue-700 hover:underline"
+              >
+                {data.author.displayName || data.author.username}
+              </Link>
+            ) : (
+              <Link
+                href="/authors/varnarc-editorial"
+                className="font-semibold text-blue-700 hover:underline"
+              >
+                Varnarc Editorial
+              </Link>
+            )}
+            {data.publishedAt
+              ? ` · Published ${new Date(data.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`
+              : ''}
+            {data.updatedAt
+              ? ` · Last reviewed ${new Date(data.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`
+              : ''}
+          </p>
+
           <ReviewMediaGallery metadata={data.metadata} />
 
           {data.scores?.length ? (
@@ -142,7 +177,10 @@ export default async function ReviewDetailPage({ params }: Props) {
                   <p className="text-xs uppercase tracking-wide text-slate-500">{s.label}</p>
                   <p className="mt-1 text-lg font-semibold text-slate-900">
                     {Number(s.score).toFixed(1)}
-                    <span className="text-sm font-normal text-slate-500"> / {Number(s.maxScore)}</span>
+                    <span className="text-sm font-normal text-slate-500">
+                      {' '}
+                      / {Number(s.maxScore)}
+                    </span>
                   </p>
                 </div>
               ))}
@@ -199,6 +237,32 @@ export default async function ReviewDetailPage({ params }: Props) {
               totalRatings={userReviewData?.summary?.totalRatings ?? 0}
             />
           ) : null}
+
+          <div className="mt-10 space-y-3 border-t border-slate-100 pt-6 text-sm text-slate-600">
+            <p>
+              <Link
+                href="/reviews#how-varnarc-reviews"
+                className="font-semibold text-blue-700 hover:underline"
+              >
+                How we review
+              </Link>
+              {' · '}
+              <Link
+                href={`/contact?type=correction&page=${encodeURIComponent(`/reviews/${data.slug}`)}`}
+                className="font-semibold text-blue-700 hover:underline"
+              >
+                Report a correction
+              </Link>
+            </p>
+            <p className="text-[13px] leading-6 text-slate-500">
+              This review is for general research. Editorial ratings reflect Varnarc&apos;s
+              assessment at the time of review and are not a recommendation for every user. Verify
+              important details with the manufacturer, provider or other official source.{' '}
+              <Link href="/disclaimer" className="font-semibold text-blue-700 hover:underline">
+                Disclaimer
+              </Link>
+            </p>
+          </div>
         </PageShell>
       </>
     );

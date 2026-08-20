@@ -129,13 +129,13 @@ export function LoanSecuredUnsecuredSection() {
               <h3 className="text-sm font-extrabold text-[#0b1f3a]">{row.label}</h3>
               <dl className="mt-2.5 space-y-2.5">
                 <div>
-                  <dt className="text-[11px] font-bold uppercase tracking-wide text-[#f97316]">
+                  <dt className="text-xs font-bold uppercase tracking-wide text-[#f97316]">
                     Secured Loan
                   </dt>
                   <dd className="mt-0.5 text-xs leading-relaxed text-slate-600">{row.secured}</dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-bold uppercase tracking-wide text-[#0b1f3a]">
+                  <dt className="text-xs font-bold uppercase tracking-wide text-[#0b1f3a]">
                     Unsecured Loan
                   </dt>
                   <dd className="mt-0.5 text-xs leading-relaxed text-slate-600">{row.unsecured}</dd>

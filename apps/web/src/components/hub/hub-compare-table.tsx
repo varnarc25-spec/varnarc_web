@@ -145,7 +145,7 @@ export function HubCompareTable({
                   <td className="py-2 pr-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white ${
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
                           row.logoColor ?? LOGO_COLORS[index % LOGO_COLORS.length]
                         }`}
                         aria-hidden

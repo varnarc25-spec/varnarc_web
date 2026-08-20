@@ -31,6 +31,14 @@
   --varnarc-subtle: #475569;
   --varnarc-muted: #fff4eb;
   --varnarc-border: #e2e8f0;
+
+  /* Typography floor — nothing on the site should render below 12px */
+  --font-size-min: 12px;
+}
+
+@theme {
+  --text-xs: 0.75rem; /* 12px — site minimum */
+  --text-xs--line-height: 1rem;
 }
 
 .dark {
@@ -59,6 +67,18 @@ html {
   padding: 0;
   width: 100%;
   overflow-x: clip;
+}
+
+/* Catch leftover sub-12px utilities so the floor always holds */
+.text-\[8px\],
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\],
+.text-\[0\.5rem\],
+.text-\[0\.5625rem\],
+.text-\[0\.625rem\],
+.text-\[0\.6875rem\] {
+  font-size: var(--font-size-min, 12px) !important;
 }
 
 body {
@@ -299,7 +319,7 @@ select:focus-visible {
 }
 
 .pl-page .pl-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 0.75rem; /* 12px floor */
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -330,7 +350,7 @@ select:focus-visible {
 }
 
 .pl-page .pl-metric-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem; /* 12px floor */
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -365,7 +385,7 @@ select:focus-visible {
 }
 
 .hl-page .hl-eyebrow {
-  font-size: 0.6875rem;
+  font-size: 0.75rem; /* 12px floor */
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -396,7 +416,7 @@ select:focus-visible {
 }
 
 .hl-page .hl-metric-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem; /* 12px floor */
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;

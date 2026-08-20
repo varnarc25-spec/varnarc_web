@@ -3,6 +3,8 @@ import Link from 'next/link';
 const links = [
   { href: '/settings', label: 'Overview' },
   { href: '/settings/general', label: 'General' },
+  { href: '/settings/contact', label: 'Contact email' },
+  { href: '/settings/contact-messages', label: 'Contact inbox' },
   { href: '/settings/maintenance', label: 'Maintenance' },
   { href: '/settings/security', label: 'Security' },
   { href: '/settings/features', label: 'Feature flags' },
@@ -38,7 +40,11 @@ export function SettingsNav({ active }: { active?: string }) {
       <div className="flex flex-wrap gap-3 text-sm">
         <span className="text-[var(--varnarc-subtle)]">Module settings:</span>
         {external.map((link) => (
-          <Link key={link.href} href={link.href} className="text-[var(--varnarc-brand)] hover:underline">
+          <Link
+            key={link.href}
+            href={link.href}
+            className="text-[var(--varnarc-brand)] hover:underline"
+          >
             {link.label}
           </Link>
         ))}

@@ -25,7 +25,7 @@ export function FinanceProductCard({
               <Landmark className="h-4 w-4" aria-hidden />
             </div>
             {featured ? (
-              <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+              <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                 Featured
               </span>
             ) : null}
@@ -57,15 +57,13 @@ export function AffiliateCta({ url, label = 'Apply now' }: { url: string; label?
   );
 }
 
-export function RelatedCalculators({
-  links,
-}: {
-  links: Array<{ href: string; label: string }>;
-}) {
+export function RelatedCalculators({ links }: { links: Array<{ href: string; label: string }> }) {
   if (!links.length) return null;
   return (
     <section className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5">
-      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Related calculators</h2>
+      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+        Related calculators
+      </h2>
       <div className="mt-3 flex flex-wrap gap-2">
         {links.map((link) => (
           <Link

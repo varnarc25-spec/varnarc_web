@@ -106,7 +106,7 @@ export function LoanApplicationProcess() {
               </div>
 
               <div className="min-w-0 flex-1 pt-0.5 lg:mt-3 lg:pt-0 lg:text-center">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#f97316]">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#f97316]">
                   Step {index + 1}
                 </p>
                 <h3 className="mt-0.5 text-sm font-bold text-[#0b1f3a]">{step.title}</h3>

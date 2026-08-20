@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "@varnarc/ui/styles.css";
 
+:root {
+  --font-size-min: 12px;
+}
+
+@theme {
+  --text-xs: 0.75rem; /* 12px — site minimum */
+  --text-xs--line-height: 1rem;
+}
+
 html,
 body {
   margin: 0;
@@ -8,6 +17,13 @@ body {
   background: var(--varnarc-bg);
   color: var(--varnarc-ink);
   font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.text-\[8px\],
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\] {
+  font-size: var(--font-size-min, 12px) !important;
 }
 
 .tiptap p.is-editor-empty:first-child::before {

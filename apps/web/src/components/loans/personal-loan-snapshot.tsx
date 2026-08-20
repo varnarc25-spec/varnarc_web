@@ -59,7 +59,7 @@ export function PersonalLoanSnapshot() {
           <button
             type="button"
             onClick={() => setRatePercent(PERSONAL_LOAN_ILLUSTRATIVE_RATE)}
-            className="mt-1.5 text-[11px] font-semibold text-[var(--pl-muted)] underline-offset-2 hover:text-[var(--pl-orange)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pl-orange)]"
+            className="mt-1.5 text-xs font-semibold text-[var(--pl-muted)] underline-offset-2 hover:text-[var(--pl-orange)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pl-orange)]"
           >
             Reset to {PERSONAL_LOAN_ILLUSTRATIVE_RATE}% illustrative default
           </button>

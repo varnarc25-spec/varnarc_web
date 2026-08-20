@@ -42,7 +42,7 @@ export function HubHero({
 
   return (
     <section className="full-bleed border-b border-slate-200/60 bg-[#f4f7fb]">
-      <div className="site-container px-4 py-10 sm:py-12 lg:py-14">
+      <div className="site-container py-10 sm:py-12 lg:py-14">
         {showBreadcrumbs && breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
         <div
           className={
@@ -52,7 +52,7 @@ export function HubHero({
           }
         >
           <div className="min-w-0">
-            <span className="inline-block rounded-full bg-blue-100/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-800">
+            <span className="inline-block rounded-full bg-blue-100/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-800">
               {badge}
             </span>
             <h1

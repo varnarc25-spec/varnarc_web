@@ -1,9 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import {
-  paginateWithCursor,
-  type CursorPage,
-  type CursorPageParams,
-} from '../pagination';
+import { paginateWithCursor, type CursorPage, type CursorPageParams } from '../pagination';
 
 export type AuditFields = {
   createdBy?: string | null;
@@ -16,9 +12,7 @@ export type AuditFields = {
 export abstract class BaseRepository {
   constructor(protected readonly db: PrismaClient) {}
 
-  protected notDeleted<T extends Record<string, unknown>>(
-    where?: T,
-  ): T & { deletedAt: null } {
+  protected notDeleted<T extends Record<string, unknown>>(where?: T): T & { deletedAt: null } {
     return { ...(where as T), deletedAt: null };
   }
 
@@ -34,7 +28,7 @@ export abstract class BaseRepository {
 }
 
 /** Prisma delegates are structurally incompatible with strict Record types — use a loose adapter. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type AnyDelegate = {
   findUnique: (args: any) => Promise<any>;
   findFirst: (args: any) => Promise<any>;
@@ -80,21 +74,17 @@ export async function findActiveById<T = unknown>(
   }) as Promise<T | null>;
 }
 
-export async function listActiveWithCursor<
-  T extends { id: string; createdAt: Date },
->(
+export async function listActiveWithCursor<T extends { id: string; createdAt: Date }>(
   delegate: AnyDelegate,
   params: CursorPageParams & {
     where?: Record<string, unknown>;
     include?: Record<string, unknown>;
+    select?: Record<string, unknown>;
     orderBy?: Record<string, unknown> | Array<Record<string, unknown>>;
   } = {},
 ): Promise<CursorPage<T>> {
-  return paginateWithCursor(
-    (args) => delegate.findMany(args) as Promise<T[]>,
-    {
-      ...params,
-      softDelete: true,
-    },
-  );
+  return paginateWithCursor((args) => delegate.findMany(args) as Promise<T[]>, {
+    ...params,
+    softDelete: true,
+  });
 }

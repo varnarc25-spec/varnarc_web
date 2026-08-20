@@ -52,7 +52,7 @@ export function LoanTypeNav({
 
   return (
     <nav className="mt-4" aria-label="Loan types">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
         Browse loan types
       </p>
       <div className="mt-2 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">

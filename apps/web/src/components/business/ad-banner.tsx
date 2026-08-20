@@ -9,6 +9,7 @@ type AdBannerProps = {
   pageType?: string;
   categoryId?: string;
   articleId?: string;
+  collapseWhenEmpty?: boolean;
 };
 
 /**
@@ -21,6 +22,7 @@ export async function AdBanner({
   pageType,
   categoryId,
   articleId,
+  collapseWhenEmpty = false,
 }: AdBannerProps) {
   const result = await fetchAdsForPlacement(slot, {
     pageType,
@@ -37,6 +39,8 @@ export async function AdBanner({
       return <GoogleAdsenseUnit client={client} slot={adsenseSlot} className={className} />;
     }
 
+    if (collapseWhenEmpty) return null;
+
     return (
       <aside
         className={`flex min-h-[90px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center ${className}`}
@@ -44,8 +48,10 @@ export async function AdBanner({
         aria-label="Advertisement"
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Advertisement</p>
-          <p className="mt-1 text-[11px] text-slate-400">Slot: {slot}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Advertisement
+          </p>
+          <p className="mt-1 text-xs text-slate-400">Slot: {slot}</p>
         </div>
       </aside>
     );

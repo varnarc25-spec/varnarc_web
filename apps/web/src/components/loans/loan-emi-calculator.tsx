@@ -71,7 +71,7 @@ function PrincipalInterestDonut({ principal, interest }: { principal: number; in
         aria-label={`Principal ${principalPct.toFixed(0)} percent, interest ${interestPct.toFixed(0)} percent of total repayment`}
       >
         <div className="absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white text-center">
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Split
           </span>
         </div>
@@ -235,7 +235,7 @@ export function LoanEmiCalculator({
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#f97316]">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#f97316]">
               {eyebrow}
             </p>
             <h2
@@ -373,13 +373,13 @@ export function LoanEmiCalculator({
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl bg-white/80 px-3 py-2.5">
-                      <dt className="text-[11px] font-medium text-slate-500">Total interest</dt>
+                      <dt className="text-xs font-medium text-slate-500">Total interest</dt>
                       <dd className="mt-0.5 text-base font-bold tabular-nums text-[#0b1f3a]">
                         {formatInr(result.totalInterest)}
                       </dd>
                     </div>
                     <div className="rounded-xl bg-white/80 px-3 py-2.5">
-                      <dt className="text-[11px] font-medium text-slate-500">Total repayment</dt>
+                      <dt className="text-xs font-medium text-slate-500">Total repayment</dt>
                       <dd className="mt-0.5 text-base font-bold tabular-nums text-[#0b1f3a]">
                         {formatInr(result.totalRepayment)}
                       </dd>
@@ -417,7 +417,7 @@ export function LoanEmiCalculator({
 
       <div className="space-y-3 border-t border-slate-100 px-5 py-4 sm:px-6">
         <ContextualLinkList links={related} label="Related calculators" />
-        <p className="text-[11px] leading-relaxed text-slate-500">
+        <p className="text-xs leading-relaxed text-slate-500">
           Illustrative estimate. Actual lender terms may differ.
         </p>
       </div>

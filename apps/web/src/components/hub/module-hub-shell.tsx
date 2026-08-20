@@ -50,7 +50,7 @@ export function ModuleHubShell({
         popularStyle={isFinance ? 'pills' : 'links'}
       />
       {showIntentSelector ? <HubIntentSelector /> : null}
-      <div className="site-container space-y-10 px-4 py-8 sm:space-y-12 sm:py-10">
+      <div className="site-container space-y-10 py-8 sm:space-y-12 sm:py-10">
         {showAd ? (
           <div>
             <AdBanner slot="content-top" />

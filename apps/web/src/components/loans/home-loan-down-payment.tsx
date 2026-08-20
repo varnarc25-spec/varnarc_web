@@ -22,7 +22,7 @@ function FinancingBar({
 
   return (
     <div className="bg-[var(--hl-surface-2)] px-5 py-5 sm:px-6 sm:py-6">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
         Property Value
       </p>
       <p className="hl-metric-value mt-1 text-2xl sm:text-3xl">{formatInr(propertyValue)}</p>
@@ -33,13 +33,13 @@ function FinancingBar({
         aria-label={`Down payment ${formatInr(downPayment) ?? ''} (${downPct.toFixed(1)} percent). Loan financed ${formatInr(loanRequirement) ?? ''} (${loanPct.toFixed(1)} percent).`}
       >
         <div
-          className="flex items-center justify-center bg-[var(--hl-orange)] px-2 text-[11px] font-semibold text-white"
+          className="flex items-center justify-center bg-[var(--hl-orange)] px-2 text-xs font-semibold text-white"
           style={{ width: `${Math.max(downPct, 0)}%`, minWidth: downPct > 0 ? '2.75rem' : 0 }}
         >
           {downPct >= 14 ? 'Down' : null}
         </div>
         <div
-          className="flex flex-1 items-center justify-center bg-[var(--hl-navy)] px-2 text-[11px] font-semibold text-white"
+          className="flex flex-1 items-center justify-center bg-[var(--hl-navy)] px-2 text-xs font-semibold text-white"
           style={{ minWidth: loanPct > 0 ? '2.75rem' : 0 }}
         >
           {loanPct >= 14 ? 'Loan' : null}
@@ -48,7 +48,7 @@ function FinancingBar({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
             Down Payment
           </p>
           <p className="mt-1 text-base font-bold tabular-nums text-[var(--hl-navy)]">
@@ -59,7 +59,7 @@ function FinancingBar({
           </p>
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
             Loan Financed
           </p>
           <p className="mt-1 text-base font-bold tabular-nums text-[var(--hl-navy)]">
@@ -140,7 +140,7 @@ export function HomeLoanDownPayment() {
                     : 'bg-[var(--hl-surface-2)] hover:bg-[var(--hl-surface-4)]'
                 }`}
               >
-                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                   {active ? (
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--hl-orange)]" aria-hidden />
                   ) : null}

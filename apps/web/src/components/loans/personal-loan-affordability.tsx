@@ -135,7 +135,7 @@ export function PersonalLoanAffordabilityPanel({ compact = false }: { compact?: 
         </div>
 
         <div className="rounded-2xl bg-[#0b1f3a] p-5 text-white">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#fdba74]">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#fdba74]">
             Indicative result
           </p>
           {estimate ? (

@@ -34,12 +34,12 @@ export function AutomobileVehicleCard({
             </div>
             <div className="flex flex-wrap justify-end gap-1">
               {sponsored ? (
-                <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Sponsored
                 </span>
               ) : null}
               {featured ? (
-                <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                   Featured
                 </span>
               ) : null}
@@ -107,15 +107,13 @@ export function AffiliateCta({
   );
 }
 
-export function RelatedCalculators({
-  links,
-}: {
-  links: Array<{ href: string; label: string }>;
-}) {
+export function RelatedCalculators({ links }: { links: Array<{ href: string; label: string }> }) {
   if (!links.length) return null;
   return (
     <section className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5">
-      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Related calculators</h2>
+      <h2 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+        Related calculators
+      </h2>
       <div className="mt-3 flex flex-wrap gap-2">
         {links.map((link) => (
           <Link
@@ -131,7 +129,13 @@ export function RelatedCalculators({
   );
 }
 
-export function AutomobileDetailSection({ title, children }: { title: string; children: ReactNode }) {
+export function AutomobileDetailSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <section className="mt-8">
       <h2 className="text-lg font-extrabold text-[#0b1f3a]">{title}</h2>
@@ -149,9 +153,7 @@ export function VehicleGallery({
   fallbackUrl?: string | null;
   alt: string;
 }) {
-  const urls = (images ?? [])
-    .map((img) => img.imageUrl)
-    .filter((u): u is string => Boolean(u));
+  const urls = (images ?? []).map((img) => img.imageUrl).filter((u): u is string => Boolean(u));
   if (!urls.length && fallbackUrl) urls.push(fallbackUrl);
   if (!urls.length) return null;
   return (
@@ -257,7 +259,8 @@ export function AffiliateLeadCapture({
           email: email || undefined,
           phone: phone || undefined,
           referrer: typeof document !== 'undefined' ? document.referrer || null : null,
-          sessionId: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : null,
+          sessionId:
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : null,
         }),
         keepalive: true,
       });
@@ -350,7 +353,9 @@ export function VehicleReviewsBlock({
                 </span>
               ) : null}
             </div>
-            {review.body ? <p className="mt-2 line-clamp-2 text-sm text-slate-600">{review.body}</p> : null}
+            {review.body ? (
+              <p className="mt-2 line-clamp-2 text-sm text-slate-600">{review.body}</p>
+            ) : null}
           </Link>
         ))}
       </div>

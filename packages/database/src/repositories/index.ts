@@ -103,6 +103,7 @@ import {
   HomepageLayoutRepository,
   WidgetRepository,
 } from './settings/settings.repository';
+import { ContactMessageRepository } from './contact/contact.repository';
 import {
   SeoMetadataRepository,
   SeoRedirectRepository,
@@ -155,6 +156,7 @@ export * from './ai-tools/ai-tools.repository';
 export * from './search/search.repository';
 export * from './analytics/analytics.repository';
 export * from './settings/settings.repository';
+export * from './contact/contact.repository';
 export * from './seo/seo.repository';
 export * from './notifications/notifications.repository';
 export * from './user-module/user-module.repository';
@@ -252,6 +254,7 @@ export function createRepositories(db: PrismaClient) {
     featureFlags: new FeatureFlagRepository(db),
     homepageLayouts: new HomepageLayoutRepository(db),
     widgets: new WidgetRepository(db),
+    contactMessages: new ContactMessageRepository(db),
     aiJobs: new AiJobRepository(db),
     aiPrompts: new AiPromptRepository(db),
     aiModels: new AiModelRepository(db),

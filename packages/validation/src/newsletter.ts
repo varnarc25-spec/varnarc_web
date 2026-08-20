@@ -10,6 +10,12 @@ export const newsletterUnsubscribeSchema = z.object({
   email: z.string().trim().email().max(320),
 });
 
+export const updateNewsletterSubscriberStatusSchema = z.object({
+  status: z.enum(['subscribed', 'unsubscribed']),
+  reason: z.string().trim().max(240).optional(),
+  notify: z.boolean().default(true),
+});
+
 export const newsletterSubscriberListQuerySchema = cursorPaginationQuerySchema.extend({
   status: z.enum(['subscribed', 'unsubscribed', 'all']).default('all'),
   search: z.string().trim().max(200).optional(),
@@ -47,6 +53,9 @@ export const sendNewsletterCampaignSchema = z.object({
 
 export type NewsletterSubscribeInput = z.infer<typeof newsletterSubscribeSchema>;
 export type NewsletterUnsubscribeInput = z.infer<typeof newsletterUnsubscribeSchema>;
+export type UpdateNewsletterSubscriberStatusInput = z.infer<
+  typeof updateNewsletterSubscriberStatusSchema
+>;
 export type NewsletterSubscriberListQuery = z.infer<typeof newsletterSubscriberListQuerySchema>;
 export type CreateNewsletterTemplateInput = z.infer<typeof createNewsletterTemplateSchema>;
 export type UpdateNewsletterTemplateInput = z.infer<typeof updateNewsletterTemplateSchema>;

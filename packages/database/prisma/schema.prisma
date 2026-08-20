@@ -153,6 +153,15 @@ enum LeadStatus {
   @@map("lead_status")
 }
 
+enum ContactMessageStatus {
+  NEW
+  SENT
+  FAILED
+  SPAM
+  ARCHIVED
+  @@map("contact_message_status")
+}
+
 enum DirectoryEventType {
   VIEW
   PROFILE_CLICK
@@ -419,6 +428,32 @@ model Setting {
   updatedBy String?   @map("updated_by") @db.Uuid
   @@index([group])
   @@map("settings")
+}
+
+model ContactMessage {
+  id           String               @id @default(uuid()) @db.Uuid
+  topic        String
+  destination  String               @default("general")
+  name         String
+  email        String
+  subject      String
+  message      String
+  company      String?
+  orgWebsite   String?              @map("org_website")
+  pageUrl      String?              @map("page_url")
+  metadata     Json?
+  status       ContactMessageStatus @default(NEW)
+  emailError   String?              @map("email_error")
+  sentAt       DateTime?            @map("sent_at")
+  ipHash       String?              @map("ip_hash")
+  userAgent    String?              @map("user_agent")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  deletedAt    DateTime?            @map("deleted_at")
+  @@index([status, createdAt])
+  @@index([topic, createdAt])
+  @@index([email, createdAt])
+  @@map("contact_messages")
 }
 
 model FeatureFlag {
@@ -2978,6 +3013,7 @@ model NewsletterSubscriber {
   id             String    @id @default(uuid()) @db.Uuid
   email          String    @unique
   status         String    @default("subscribed")
+  source         String?   @db.VarChar(80)
   subscribedAt   DateTime  @default(now()) @map("subscribed_at")
   unsubscribedAt DateTime? @map("unsubscribed_at")
   createdAt      DateTime  @default(now()) @map("created_at")

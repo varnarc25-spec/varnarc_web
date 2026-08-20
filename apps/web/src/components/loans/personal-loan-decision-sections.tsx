@@ -110,7 +110,7 @@ export function PersonalLoanEligibilityProfile() {
               <div className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-[var(--pl-navy)] text-white">
                 <UserRound className="h-8 w-8 text-white" strokeWidth={1.75} />
               </div>
-              <p className="absolute left-1/2 top-[calc(50%+4.1rem)] -translate-x-1/2 text-center text-[11px] font-semibold text-[var(--pl-navy)]">
+              <p className="absolute left-1/2 top-[calc(50%+4.1rem)] -translate-x-1/2 text-center text-xs font-semibold text-[var(--pl-navy)]">
                 Applicant Profile
               </p>
               {(
@@ -244,7 +244,7 @@ export function PersonalLoanEligibilityProfile() {
               <span>900</span>
             </div>
             <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-gradient-to-r from-[#d5dde8] via-[#a8b8cb] to-[var(--pl-navy)]" />
-            <div className="mt-2 flex justify-between text-[11px] font-medium text-[var(--pl-muted)]">
+            <div className="mt-2 flex justify-between text-xs font-medium text-[var(--pl-muted)]">
               <span>Lower</span>
               <span>Fair</span>
               <span>Good</span>
@@ -338,7 +338,7 @@ export function PersonalLoanTrueCost({ loans }: { loans: FinanceLoan[] }) {
             <table className="min-w-full border-collapse text-left text-sm">
               <caption className="sr-only">Verified processing fee comparison</caption>
               <thead>
-                <tr className="border-b border-[var(--pl-border)] text-[11px] uppercase tracking-wide text-[var(--pl-muted)]">
+                <tr className="border-b border-[var(--pl-border)] text-xs uppercase tracking-wide text-[var(--pl-muted)]">
                   <th scope="col" className="px-4 py-3 font-semibold">
                     Lender
                   </th>
@@ -436,7 +436,7 @@ export function PersonalLoanPrepaymentImpact() {
                   />
                 ))}
               </div>
-              <div className="mt-2 flex justify-between text-[11px] text-[var(--pl-muted)]">
+              <div className="mt-2 flex justify-between text-xs text-[var(--pl-muted)]">
                 <span>Start</span>
                 <span>End</span>
               </div>
@@ -457,7 +457,7 @@ export function PersonalLoanPrepaymentImpact() {
                 ))}
                 <span className="absolute left-[48%] top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--pl-orange)] ring-[3px] ring-[var(--pl-surface-3)]" />
               </div>
-              <div className="relative mt-2 flex justify-between text-[11px] text-[var(--pl-muted)]">
+              <div className="relative mt-2 flex justify-between text-xs text-[var(--pl-muted)]">
                 <span>Start</span>
                 <span className="absolute left-[48%] -translate-x-1/2 font-semibold text-[var(--pl-orange)]">
                   ↑ Prepayment
@@ -617,11 +617,11 @@ export function PersonalLoanBorrowingOptions() {
               }`}
             >
               {panel.current ? (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fdba74]">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#fdba74]">
                   You&apos;re viewing
                 </p>
               ) : (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-transparent">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-transparent">
                   Option
                 </p>
               )}
@@ -632,7 +632,7 @@ export function PersonalLoanBorrowingOptions() {
                 {panel.points.map(([label, value]) => (
                   <div key={label}>
                     <dt
-                      className={`text-[11px] font-semibold uppercase tracking-wide ${
+                      className={`text-xs font-semibold uppercase tracking-wide ${
                         panel.current ? 'text-[#fdba74]' : 'text-[var(--pl-muted)]'
                       }`}
                     >
@@ -707,7 +707,7 @@ export function PersonalLoanApplicationJourney() {
                   <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                 </span>
                 <div className="min-w-0 pt-0.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
                     Step {index + 1}
                   </p>
                   <p className="mt-0.5 text-sm font-bold text-[var(--pl-navy)]">{step}</p>
@@ -741,7 +741,7 @@ export function PersonalLoanApplicationJourney() {
                       <span className="relative z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--pl-navy)] text-white">
                         <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                       </span>
-                      <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
                         Step {index + 1}
                       </p>
                       <p className="mt-0.5 text-sm font-bold leading-snug text-[var(--pl-navy)]">

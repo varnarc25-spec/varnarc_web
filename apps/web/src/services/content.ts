@@ -167,6 +167,22 @@ export type ReviewListItem = {
   title: string;
   slug: string;
   overallScore: number | string | null;
+  summary?: string | null;
+  reviewType?: string | null;
+  entityType?: string | null;
+  publishedAt?: string | null;
+  updatedAt?: string | null;
+  viewCount?: number | null;
+  author?: {
+    displayName?: string | null;
+    username?: string | null;
+  } | null;
+  product?: {
+    name?: string | null;
+    slug?: string | null;
+    category?: string | null;
+  } | null;
+  scores?: Array<{ label: string; score: number | string; maxScore?: number | string }>;
 };
 
 export type CalculatorListItem = {
@@ -203,9 +219,12 @@ export type HomepageLayout = {
   }>;
 };
 
-export async function fetchReviews(limit = 12) {
+export async function fetchReviews(limit = 12, options?: { search?: string; entityType?: string }) {
   try {
-    return await apiPublicFetch<ReviewListItem[]>(`/reviews?limit=${limit}`, {
+    const qs = new URLSearchParams({ limit: String(limit) });
+    if (options?.search) qs.set('search', options.search);
+    if (options?.entityType) qs.set('entityType', options.entityType);
+    return await apiPublicFetch<ReviewListItem[]>(`/reviews?${qs.toString()}`, {
       cache: 'no-store',
     });
   } catch {

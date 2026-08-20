@@ -50,18 +50,34 @@ export class HttpExceptionFilter implements ExceptionFilter {
         code = obj.error ?? HttpStatus[status] ?? code;
         if (Array.isArray(obj.message)) details = obj.message;
       }
-    } else if (
-      exception &&
-      typeof exception === 'object' &&
-      'code' in exception &&
-      (exception as { code?: string }).code === 'P2002'
-    ) {
-      status = HttpStatus.CONFLICT;
-      code = 'DUPLICATE_SLUG';
-      message = 'A record with this slug already exists.';
-      const meta = (exception as { meta?: { target?: string[] } }).meta;
-      if (meta?.target?.length) {
-        details = { fields: meta.target };
+    } else if (exception && typeof exception === 'object' && 'code' in exception) {
+      const prismaCode = (exception as { code?: string }).code;
+      if (prismaCode === 'P2002') {
+        status = HttpStatus.CONFLICT;
+        code = 'DUPLICATE_SLUG';
+        message = 'A record with this slug already exists.';
+        const meta = (exception as { meta?: { target?: string[] } }).meta;
+        if (meta?.target?.length) {
+          details = { fields: meta.target };
+        }
+      } else if (prismaCode === 'P2023') {
+        status = HttpStatus.BAD_REQUEST;
+        code = 'INVALID_ID';
+        message = 'Invalid identifier.';
+      } else if (prismaCode === 'P2022') {
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
+        code = 'SCHEMA_MISMATCH';
+        message =
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred.'
+            : ((exception as { message?: string }).message ?? 'Database column is missing.');
+        this.logger.error(exception instanceof Error ? exception.stack : String(exception));
+      } else if (exception instanceof Error) {
+        message =
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred.'
+            : exception.message;
+        this.logger.error(exception.message, exception.stack);
       }
     } else if (exception instanceof Error) {
       message =

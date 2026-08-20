@@ -76,7 +76,7 @@ export function LoanDocumentsSection() {
                 <card.icon className="h-4 w-4" aria-hidden />
               </span>
               <h3 className="mt-2.5 text-sm font-bold text-[#0b1f3a]">{card.title}</h3>
-              <p className="mt-1 flex-1 text-[11px] leading-relaxed text-slate-600 sm:text-xs">
+              <p className="mt-1 flex-1 text-xs leading-relaxed text-slate-600 sm:text-xs">
                 {card.body}
               </p>
             </article>

@@ -55,9 +55,7 @@ export default async function ArticlesPage() {
               <div key={a.id}>
                 <ArticleCard {...articleCardPropsFromListItem(a)} />
                 {a.publishedAt ? (
-                  <p className="mt-2 px-1 text-[11px] text-slate-500">
-                    {formatDate(a.publishedAt)}
-                  </p>
+                  <p className="mt-2 px-1 text-xs text-slate-500">{formatDate(a.publishedAt)}</p>
                 ) : null}
               </div>
             ))}

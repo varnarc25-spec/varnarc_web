@@ -122,7 +122,7 @@ function TypesOfLoans({
                 <span className="mt-2.5 text-sm font-bold text-[#0b1f3a] group-hover:text-[#f97316]">
                   {cat.name}
                 </span>
-                <span className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                <span className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
                   {cat.shortDescription?.trim() || 'Explore products in this category.'}
                 </span>
               </Link>
@@ -156,7 +156,7 @@ function HowInterestWorks({ module }: { module: LoanEducationModuleBase }) {
                 }`}
               >
                 <span
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     isLast ? 'bg-[#f97316] text-white' : 'bg-[#e8eef5] text-[#0b1f3a]'
                   }`}
                   aria-hidden
@@ -286,11 +286,11 @@ function SecuredVsUnsecured({ module }: { module: LoanEducationModuleBase }) {
               <h4 className="text-sm font-bold text-[#0b1f3a]">{row.label}</h4>
               <dl className="mt-2 grid grid-cols-2 gap-3">
                 <div>
-                  <dt className="text-[11px] font-semibold text-[#f97316]">Secured</dt>
+                  <dt className="text-xs font-semibold text-[#f97316]">Secured</dt>
                   <dd className="mt-0.5 text-xs leading-relaxed text-slate-600">{row.secured}</dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-semibold text-slate-500">Unsecured</dt>
+                  <dt className="text-xs font-semibold text-slate-500">Unsecured</dt>
                   <dd className="mt-0.5 text-xs leading-relaxed text-slate-600">{row.unsecured}</dd>
                 </div>
               </dl>
@@ -371,7 +371,7 @@ function TenureAndCost({ module }: { module: LoanEducationModuleBase }) {
               <p className="text-sm font-bold text-[#0b1f3a]">{col.label}</p>
               <div className="mt-4 space-y-3">
                 <div>
-                  <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-slate-500">
+                  <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-500">
                     <span>EMI</span>
                     <span className="text-[#0b1f3a]">{col.emi}</span>
                   </div>
@@ -384,7 +384,7 @@ function TenureAndCost({ module }: { module: LoanEducationModuleBase }) {
                   </div>
                 </div>
                 <div>
-                  <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-slate-500">
+                  <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-500">
                     <span>Total interest</span>
                     <span className="text-[#0b1f3a]">{col.interest}</span>
                   </div>
@@ -401,7 +401,7 @@ function TenureAndCost({ module }: { module: LoanEducationModuleBase }) {
           );
         })}
       </div>
-      <p className="mt-3 max-w-2xl text-[11px] leading-relaxed text-slate-500">
+      <p className="mt-3 max-w-2xl text-xs leading-relaxed text-slate-500">
         Bars are illustrative of the trade-off direction only — not product-specific figures.
       </p>
     </SectionShell>

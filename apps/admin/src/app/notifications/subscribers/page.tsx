@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Card, CardDescription, CardHeader, CardTitle, PageHeader } from '@varnarc/ui';
 import { apiServerFetch } from '@/lib/api';
+import { SubscriberStatusActions } from '@/components/notifications/subscriber-status-actions';
 
 type Summary = {
   subscribed: number;
@@ -12,6 +13,7 @@ type Subscriber = {
   id: string;
   email: string;
   status: string;
+  source?: string | null;
   subscribedAt: string;
   unsubscribedAt?: string | null;
 };
@@ -22,7 +24,8 @@ export default async function NewsletterSubscribersPage({
   searchParams: Promise<{ status?: string; search?: string }>;
 }) {
   const params = await searchParams;
-  const status = params.status === 'subscribed' || params.status === 'unsubscribed' ? params.status : 'all';
+  const status =
+    params.status === 'subscribed' || params.status === 'unsubscribed' ? params.status : 'all';
   const search = params.search?.trim() ?? '';
 
   const qs = new URLSearchParams({ limit: '50', status });
@@ -39,16 +42,22 @@ export default async function NewsletterSubscribersPage({
     <div className="space-y-8">
       <PageHeader
         title="Newsletter subscribers"
-        description="Emails collected from the public site, homepage, and footer forms."
+        description="Emails collected from the public site, homepage, and footer forms. Opt out updates the stored status and notifies the subscriber and admin."
       />
       <div className="flex flex-wrap gap-3 text-sm">
         <Link href="/notifications" className="text-[var(--varnarc-brand)] hover:underline">
           Notifications
         </Link>
-        <Link href="/notifications/campaigns" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/notifications/campaigns"
+          className="text-[var(--varnarc-brand)] hover:underline"
+        >
           Campaigns
         </Link>
-        <Link href="/notifications/newsletter-templates" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/notifications/newsletter-templates"
+          className="text-[var(--varnarc-brand)] hover:underline"
+        >
           Newsletter templates
         </Link>
       </div>
@@ -119,14 +128,16 @@ export default async function NewsletterSubscribersPage({
               <tr>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Subscribed</th>
                 <th className="px-4 py-3">Unsubscribed</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {subscribers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
                     No subscribers yet.
                   </td>
                 </tr>
@@ -135,11 +146,15 @@ export default async function NewsletterSubscribersPage({
                   <tr key={row.id} className="border-t border-slate-100">
                     <td className="px-4 py-3 font-medium">{row.email}</td>
                     <td className="px-4 py-3 capitalize">{row.status}</td>
+                    <td className="px-4 py-3 text-slate-600">{row.source || '—'}</td>
                     <td className="px-4 py-3 text-slate-600">
                       {row.subscribedAt ? new Date(row.subscribedAt).toLocaleString() : '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       {row.unsubscribedAt ? new Date(row.unsubscribedAt).toLocaleString() : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <SubscriberStatusActions id={row.id} status={row.status} />
                     </td>
                   </tr>
                 ))

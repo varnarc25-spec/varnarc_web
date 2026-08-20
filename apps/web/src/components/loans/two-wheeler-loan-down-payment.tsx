@@ -117,7 +117,7 @@ export function TwoWheelerLoanDownPayment() {
       className="full-bleed bg-[var(--tw-surface-1)]"
     >
       <div className="site-container cl-section px-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--tw-orange)]">
           Down Payment
         </p>
         <h2 id="tw-down-payment-heading" className="cl-h2 text-[var(--tw-navy)]">

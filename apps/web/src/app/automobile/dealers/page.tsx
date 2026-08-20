@@ -26,7 +26,10 @@ export default async function AutomobileDealersPage() {
     >
       <p className="mb-6 text-sm text-slate-600">
         Listings are sourced from the{' '}
-        <Link href="/directory?vertical=automobile" className="font-medium text-[#ea580c] hover:underline">
+        <Link
+          href="/directory?vertical=automobile"
+          className="font-medium text-[#ea580c] hover:underline"
+        >
           business directory
         </Link>
         . Contact dealers directly or view their full profile.
@@ -43,13 +46,15 @@ export default async function AutomobileDealersPage() {
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-base font-extrabold text-[#0b1f3a]">{dealer.name}</h2>
                 {dealer.sponsored ? (
-                  <span className="shrink-0 rounded-full bg-[#ea580c] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  <span className="shrink-0 rounded-full bg-[#ea580c] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
                     Sponsored
                   </span>
                 ) : null}
               </div>
               {dealer.category ? (
-                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">{dealer.category}</p>
+                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  {dealer.category}
+                </p>
               ) : null}
               {dealer.city ? <p className="mt-2 text-sm text-slate-600">{dealer.city}</p> : null}
               {dealer.phone ? (
@@ -58,7 +63,9 @@ export default async function AutomobileDealersPage() {
               {dealer.description ? (
                 <p className="mt-2 line-clamp-2 text-sm text-slate-600">{dealer.description}</p>
               ) : null}
-              <span className="mt-3 inline-block text-sm font-medium text-[#ea580c]">View profile →</span>
+              <span className="mt-3 inline-block text-sm font-medium text-[#ea580c]">
+                View profile →
+              </span>
             </Link>
           ))}
         </div>

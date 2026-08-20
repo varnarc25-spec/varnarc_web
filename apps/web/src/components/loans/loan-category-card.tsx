@@ -91,7 +91,7 @@ export function LoanCategoryCard({
       </p>
 
       {stat ? (
-        <p className="relative z-[2] mt-2.5 text-[11px] font-medium text-slate-500">{stat}</p>
+        <p className="relative z-[2] mt-2.5 text-xs font-medium text-slate-500">{stat}</p>
       ) : null}
 
       <p className="relative z-[2] mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0b1f3a] transition group-hover:text-[#f97316]">

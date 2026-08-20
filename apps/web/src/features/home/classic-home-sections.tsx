@@ -108,14 +108,12 @@ export function ClassicHeroSection({ popularTerms }: { popularTerms: string[] })
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2">
-                  <span className="text-[11px] font-semibold text-slate-600">
-                    Popular Searches:
-                  </span>
+                  <span className="text-xs font-semibold text-slate-600">Popular Searches:</span>
                   {popularTerms.map((term) => (
                     <Link
                       key={term}
                       href={`/search?q=${encodeURIComponent(term)}`}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-600 transition hover:border-[#f97316] hover:text-[#f97316]"
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-[#f97316] hover:text-[#f97316]"
                     >
                       {term}
                     </Link>
@@ -165,7 +163,7 @@ function CalculatorTile({ name, href, color, icon }: ClassicCalculatorTile) {
       >
         <HomeIcon name={icon} className="h-6 w-6 text-white" />
       </div>
-      <div className="mt-2 line-clamp-2 text-center text-[11px] font-semibold text-slate-700 group-hover:text-[#f97316]">
+      <div className="mt-2 line-clamp-2 text-center text-xs font-semibold text-slate-700 group-hover:text-[#f97316]">
         {name}
       </div>
     </Link>
@@ -283,14 +281,14 @@ export function ClassicArticlesSection({
                 className="h-24 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
               />
               <div className="p-3">
-                <div className="text-[10px] font-extrabold uppercase tracking-wide text-[#f97316]">
+                <div className="text-xs font-extrabold uppercase tracking-wide text-[#f97316]">
                   {a.category}
                 </div>
                 <div className="mt-2 line-clamp-2 text-[12px] font-semibold text-slate-900 group-hover:text-[#f97316]">
                   {a.title}
                 </div>
                 {a.date ? (
-                  <div className="mt-1 text-[10px] font-medium text-slate-500">{a.date}</div>
+                  <div className="mt-1 text-xs font-medium text-slate-500">{a.date}</div>
                 ) : null}
               </div>
             </Link>
@@ -333,7 +331,7 @@ export function ClassicAiToolsSection({
               >
                 <HomeIcon name={t.icon} className="h-5 w-5 text-white" />
               </div>
-              <div className="mt-2 line-clamp-2 text-center text-[11px] font-medium text-slate-700 group-hover:text-[#f97316]">
+              <div className="mt-2 line-clamp-2 text-center text-xs font-medium text-slate-700 group-hover:text-[#f97316]">
                 {t.name}
               </div>
             </Link>
@@ -370,12 +368,12 @@ export function ClassicTripleColumnSection({
                 >
                   <div className="relative mb-2 flex items-center justify-center gap-1">
                     <img src={c.leftImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
-                    <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0f172a] px-2 py-0.5 text-[10px] font-bold text-white">
+                    <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0f172a] px-2 py-0.5 text-xs font-bold text-white">
                       VS
                     </span>
                     <img src={c.rightImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
                   </div>
-                  <div className="line-clamp-2 text-center text-[11px] font-semibold text-[#0f172a]">
+                  <div className="line-clamp-2 text-center text-xs font-semibold text-[#0f172a]">
                     {c.title}
                   </div>
                 </Link>
@@ -423,7 +421,7 @@ export function ClassicTripleColumnSection({
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#f97316]">
                     <HomeIcon name={p.icon} className="h-4 w-4" />
                   </span>
-                  <span className="whitespace-nowrap text-[11px] font-semibold text-slate-900">
+                  <span className="whitespace-nowrap text-xs font-semibold text-slate-900">
                     {p.name}
                   </span>
                 </Link>
@@ -456,7 +454,7 @@ function TrustItem({
       </span>
       <div className="min-w-0">
         <div className="whitespace-nowrap text-[13px] font-bold text-[#0b1f3a]">{title}</div>
-        <div className="whitespace-nowrap text-[11px] text-slate-500">{subtitle}</div>
+        <div className="whitespace-nowrap text-xs text-slate-500">{subtitle}</div>
       </div>
     </div>
   );
@@ -500,7 +498,7 @@ export function ClassicTrustNewsletterSection() {
               <h2 className="text-[15px] font-extrabold tracking-tight text-[#0b1f3a]">
                 Subscribe to Newsletter
               </h2>
-              <p className="mt-1 text-[11px] leading-snug text-slate-600">
+              <p className="mt-1 text-xs leading-snug text-slate-600">
                 Get helpful tips, latest articles and tools delivered to your inbox.
               </p>
               <NewsletterForm variant="inline" source="homepage" className="mt-3 w-full" />

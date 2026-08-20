@@ -108,15 +108,15 @@ function CreditScoreScale() {
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: band.color }} />
               {band.label}
             </p>
-            <p className="mt-0.5 text-[10px] font-semibold tabular-nums text-slate-500">
+            <p className="mt-0.5 text-xs font-semibold tabular-nums text-slate-500">
               {band.from}–{band.to}
             </p>
-            <p className="mt-1 text-[11px] leading-snug text-slate-600">{band.hint}</p>
+            <p className="mt-1 text-xs leading-snug text-slate-600">{band.hint}</p>
           </li>
         ))}
       </ul>
 
-      <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+      <p className="mt-3 text-xs leading-relaxed text-slate-500">
         Illustrative bands only. Bureau models and lender cut-offs differ — a score alone does not
         guarantee approval or a specific rate.
       </p>

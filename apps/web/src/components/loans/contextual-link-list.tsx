@@ -14,7 +14,7 @@ export function ContextualLinkList({
 
   return (
     <nav aria-label={label} className={className}>
-      <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
       <ul className="mt-2 flex flex-wrap gap-2">
         {links.map((link) => (
           <li key={`${link.href}-${link.label}`}>

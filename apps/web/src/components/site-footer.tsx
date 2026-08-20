@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { NewsletterForm } from '@/features/newsletter/newsletter-form';
+import { SocialIcon } from '@/components/social-icon';
 import { quickTools } from '@/features/home/static-data';
 
 const defaultQuickLinks = [
@@ -22,9 +23,6 @@ const helpfulLinks = [
 const resources = [
   { href: '/articles', label: 'Guides' },
   { href: '/calculators', label: 'Calculators' },
-  { href: '/ai-tools', label: 'AI Tools' },
-  { href: '/developers', label: 'Developers' },
-  { href: '/premium', label: 'Premium' },
   { href: '/contact', label: 'Support' },
 ];
 
@@ -58,15 +56,15 @@ export function SiteFooter({
     socialLinks && socialLinks.length > 0
       ? socialLinks
       : [
-          { label: 'F', href: 'https://facebook.com' },
-          { label: 'T', href: 'https://twitter.com' },
-          { label: 'I', href: 'https://instagram.com' },
-          { label: 'Y', href: 'https://youtube.com' },
+          { label: 'Facebook', href: 'https://facebook.com' },
+          { label: 'X', href: 'https://x.com' },
+          { label: 'Instagram', href: 'https://instagram.com' },
+          { label: 'YouTube', href: 'https://youtube.com' },
         ];
 
   return (
     <footer className="full-bleed mt-auto bg-[var(--vn-footer,#071428)] text-slate-300">
-      <div className="site-container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="site-container py-8 sm:py-10">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
           <div className="lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2">
@@ -87,9 +85,10 @@ export function SiteFooter({
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
+                  aria-label={item.label}
+                  className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
                 >
-                  {item.label.slice(0, 1).toUpperCase()}
+                  <SocialIcon label={item.label} href={item.href} />
                 </a>
               ))}
             </div>

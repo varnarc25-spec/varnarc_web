@@ -205,7 +205,7 @@ export function PersonalLoanDecisionHero({
                 Estimate Eligibility →
               </Link>
             </div>
-            <p className="text-[11px] text-[var(--pl-muted)]">
+            <p className="text-xs text-[var(--pl-muted)]">
               Illustrative planning only. EMI snapshots use a labeled default of{' '}
               {PERSONAL_LOAN_ILLUSTRATIVE_RATE}% p.a. unless you adjust the rate.
             </p>

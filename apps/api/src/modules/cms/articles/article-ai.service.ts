@@ -44,13 +44,22 @@ export class ArticleAiService {
   ) {}
 
   configured() {
-    const cfg = getLlmConfig();
-    return {
-      configured: cfg.configured,
-      provider: cfg.provider,
-      imageModel: cfg.imageModel,
-      imageGeneration: cfg.configured,
-    };
+    try {
+      const cfg = getLlmConfig();
+      return {
+        configured: cfg.configured,
+        provider: cfg.provider,
+        imageModel: cfg.imageModel,
+        imageGeneration: cfg.configured,
+      };
+    } catch {
+      return {
+        configured: false,
+        provider: 'openai-compatible',
+        imageModel: 'gpt-image-1',
+        imageGeneration: false,
+      };
+    }
   }
 
   private async withJobLog<T>(

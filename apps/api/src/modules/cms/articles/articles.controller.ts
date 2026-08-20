@@ -18,18 +18,10 @@ import {
   scheduleContentSchema,
   reviewActionSchema,
   updateArticleSchema,
-  generateArticleDraftSchema,
-  improveArticleSchema,
-  suggestRelatedArticlesSchema,
-  generateArticleImageSchema,
   type CreateArticleInput,
   type CursorPaginationQuery,
-  type GenerateArticleDraftInput,
-  type GenerateArticleImageInput,
-  type ImproveArticleInput,
   type ScheduleContentInput,
   type ReviewActionInput,
-  type SuggestRelatedArticlesInput,
   type UpdateArticleInput,
 } from '@varnarc/validation';
 import { z } from 'zod';
@@ -40,7 +32,6 @@ import { CurrentUserDecorator } from '../../../auth/decorators/current-user.deco
 import { ZodValidationPipe } from '../../../common/zod-validation.pipe';
 import { ok, okCursor } from '../../../common/utils/response';
 import { ArticlesService } from './articles.service';
-import { ArticleAiService } from './article-ai.service';
 
 const articleListSchema = cursorPaginationQuerySchema.extend({
   status: publishStatusSchema.optional(),
@@ -69,10 +60,7 @@ const editorialSuggestionsQuerySchema = limitSchema.extend({
 @ApiTags('articles')
 @Controller('articles')
 export class ArticlesController {
-  constructor(
-    private readonly service: ArticlesService,
-    private readonly articleAi: ArticleAiService,
-  ) {}
+  constructor(private readonly service: ArticlesService) {}
 
   @Public()
   @Get()
@@ -111,48 +99,6 @@ export class ArticlesController {
         source,
       }),
     );
-  }
-
-  @Get('ai/status')
-  @RequirePermissions(PERMISSIONS.ARTICLE_CREATE)
-  async aiStatus() {
-    return ok(this.articleAi.configured());
-  }
-
-  @Post('ai/generate-draft')
-  @RequirePermissions(PERMISSIONS.ARTICLE_CREATE)
-  async generateDraft(
-    @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(generateArticleDraftSchema)) body: GenerateArticleDraftInput,
-  ) {
-    return ok(await this.articleAi.generateDraft(body, user.id));
-  }
-
-  @Post('ai/improve')
-  @RequirePermissions(PERMISSIONS.ARTICLE_EDIT)
-  async improveArticle(
-    @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(improveArticleSchema)) body: ImproveArticleInput,
-  ) {
-    return ok(await this.articleAi.improve(body, user.id));
-  }
-
-  @Post('ai/suggest-related')
-  @RequirePermissions(PERMISSIONS.ARTICLE_EDIT)
-  async suggestRelated(
-    @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(suggestRelatedArticlesSchema)) body: SuggestRelatedArticlesInput,
-  ) {
-    return ok(await this.articleAi.suggestRelated(body, user.id));
-  }
-
-  @Post('ai/generate-image')
-  @RequirePermissions(PERMISSIONS.ARTICLE_CREATE)
-  async generateImage(
-    @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(generateArticleImageSchema)) body: GenerateArticleImageInput,
-  ) {
-    return ok(await this.articleAi.generateImage(body, user.id));
   }
 
   @Public()

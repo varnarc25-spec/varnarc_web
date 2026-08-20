@@ -67,8 +67,18 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
         { '@type': 'ListItem', position: 2, name: 'Construction', item: `${siteUrl}/construction` },
-        { '@type': 'ListItem', position: 3, name: 'Materials', item: `${siteUrl}/construction/materials` },
-        { '@type': 'ListItem', position: 4, name: material.name, item: `${siteUrl}/construction/materials/${id}` },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Materials',
+          item: `${siteUrl}/construction/materials`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 4,
+          name: material.name,
+          item: `${siteUrl}/construction/materials/${id}`,
+        },
       ],
     },
     {
@@ -87,7 +97,9 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
             },
           }
         : {}),
-      ...(material.rating != null ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(material.rating) } } : {}),
+      ...(material.rating != null
+        ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(material.rating) } }
+        : {}),
     },
   ];
 
@@ -121,18 +133,21 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
         { label: material.name },
       ]}
     >
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <AdBanner slot="content-top" />
 
-      {(material.featured || material.sponsored) ? (
+      {material.featured || material.sponsored ? (
         <div className="mb-4 flex flex-wrap gap-2">
           {material.sponsored ? (
-            <span className="rounded-full bg-[#f97316] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-[#f97316] px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Sponsored
             </span>
           ) : null}
           {material.featured ? (
-            <span className="rounded-full bg-[#0b1f3a] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-[#0b1f3a] px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Featured
             </span>
           ) : null}
@@ -150,7 +165,9 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
       </div>
 
       {material.description ? (
-        <ConstructionDetailSection title="Overview">{material.description}</ConstructionDetailSection>
+        <ConstructionDetailSection title="Overview">
+          {material.description}
+        </ConstructionDetailSection>
       ) : null}
       {material.specifications ? (
         <ConstructionDetailSection title="Specifications">

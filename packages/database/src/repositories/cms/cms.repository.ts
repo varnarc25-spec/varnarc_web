@@ -7,6 +7,54 @@ import {
 } from '../base.repository';
 import type { CursorPageParams } from '../../pagination';
 
+/** List payload without `content` / hero+og FKs so admin tables stay light and survive pending media-column migrations. */
+const articleListSelect = {
+  id: true,
+  authorId: true,
+  categoryId: true,
+  featuredImageId: true,
+  title: true,
+  slug: true,
+  excerpt: true,
+  status: true,
+  publishedAt: true,
+  isFeatured: true,
+  readingTimeMinutes: true,
+  metadata: true,
+  createdAt: true,
+  updatedAt: true,
+  author: {
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      firstName: true,
+      lastName: true,
+    },
+  },
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      parent: { select: { id: true, name: true, slug: true } },
+    },
+  },
+  featuredImage: {
+    select: {
+      id: true,
+      url: true,
+      secureUrl: true,
+      alt: true,
+      title: true,
+      caption: true,
+      width: true,
+      height: true,
+    },
+  },
+  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
+} satisfies Prisma.ArticleSelect;
+
 export class ArticleRepository extends BaseRepository {
   constructor(db: PrismaClient) {
     super(db);
@@ -121,16 +169,7 @@ export class ArticleRepository extends BaseRepository {
     return listActiveWithCursor(this.db.article, {
       ...params,
       where,
-      include: {
-        author: true,
-        category: {
-          include: {
-            parent: { select: { id: true, name: true, slug: true } },
-          },
-        },
-        featuredImage: true,
-        tags: { include: { tag: true } },
-      },
+      select: articleListSelect,
     });
   }
 

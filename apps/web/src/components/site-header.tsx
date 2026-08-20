@@ -84,7 +84,7 @@ export function SiteHeader({
                 <span className="block text-base font-bold leading-none tracking-tight text-[var(--varnarc-ink)]">
                   {brand}
                 </span>
-                <span className="mt-0.5 block text-[10px] font-medium tracking-wide text-[var(--varnarc-subtle)]">
+                <span className="mt-0.5 block text-xs font-medium tracking-wide text-[var(--varnarc-subtle)]">
                   {brandTagline}
                 </span>
               </span>

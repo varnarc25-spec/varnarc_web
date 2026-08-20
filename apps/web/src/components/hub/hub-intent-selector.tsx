@@ -17,7 +17,7 @@ export function HubIntentSelector({
 }) {
   return (
     <div className="border-b border-slate-200/80 bg-white py-3">
-      <div className="site-container px-4">
+      <div className="site-container">
         <p className="text-sm font-medium text-slate-600">{title}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {intents.map((intent) => (

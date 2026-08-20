@@ -73,7 +73,7 @@ export function HomeLoanLtvSection() {
         </p>
 
         <div className="mt-8 max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
             Loan-to-Value
           </p>
           <p className="hl-metric-value mt-2 text-[3rem] leading-none sm:text-[3.75rem]">
@@ -85,7 +85,7 @@ export function HomeLoanLtvSection() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                 Property value
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--hl-navy)]">
@@ -93,7 +93,7 @@ export function HomeLoanLtvSection() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                 Loan financed
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--hl-navy)]">
@@ -101,7 +101,7 @@ export function HomeLoanLtvSection() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--hl-muted)]">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--hl-muted)]">
                 Down payment / equity
               </p>
               <p className="mt-1 text-base font-bold tabular-nums text-[var(--hl-navy)]">
@@ -211,7 +211,7 @@ export function HomeLoanFixedVsFloating() {
 
         <div className="mt-8 grid items-stretch gap-5 lg:grid-cols-2">
           <article className="flex h-full flex-col bg-[var(--hl-surface-2)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               Fixed Rate
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--hl-navy)]">More predictable path</h3>
@@ -231,7 +231,7 @@ export function HomeLoanFixedVsFloating() {
             </Link>
           </article>
           <article className="flex h-full flex-col bg-[var(--hl-surface-4)] p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               Floating Rate
             </p>
             <h3 className="mt-1 text-lg font-bold text-[var(--hl-navy)]">May move with terms</h3>
@@ -423,7 +423,7 @@ export function HomeLoanEligibilityProfile() {
           <div>
             {/* Desktop applicant + property grouping */}
             <div className="hidden md:block">
-              <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                 Applicant Profile
               </p>
               <div
@@ -456,7 +456,7 @@ export function HomeLoanEligibilityProfile() {
                 </svg>
                 <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-[var(--hl-navy)] text-white shadow-sm">
                   <UserRound className="h-8 w-8" strokeWidth={1.75} aria-hidden />
-                  <span className="mt-1 text-[9px] font-semibold uppercase tracking-wide">
+                  <span className="mt-1 text-xs font-semibold uppercase tracking-wide">
                     Applicant
                   </span>
                 </div>
@@ -478,7 +478,7 @@ export function HomeLoanEligibilityProfile() {
               </div>
 
               <div className="mt-8">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                   Home Loan Profile
                 </p>
                 <ul
@@ -539,7 +539,7 @@ export function HomeLoanEligibilityProfile() {
                   ),
                 )}
               </ul>
-              <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+              <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                 Home Loan Profile
               </p>
               <ul
@@ -890,13 +890,13 @@ export function HomeLoanBalanceTransfer() {
           aria-hidden
         >
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               Current Loan
             </p>
             <div className="mt-2 h-1.5 rounded-full bg-[var(--hl-navy)]/70" />
           </div>
           <div className="flex shrink-0 flex-col items-center gap-1 px-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--hl-orange)]">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-orange)]">
               Transfer
             </span>
             <span className="h-3 w-px bg-[var(--hl-orange)] sm:h-px sm:w-8" />
@@ -905,7 +905,7 @@ export function HomeLoanBalanceTransfer() {
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
               New Loan
             </p>
             <div className="mt-2 h-1.5 rounded-full bg-[var(--hl-navy)]/40" />
@@ -948,7 +948,7 @@ export function HomeLoanBalanceTransfer() {
           <>
             <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
               <div>
-                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                   Current Home Loan
                 </h3>
                 <dl className="mt-3 space-y-3">
@@ -979,7 +979,7 @@ export function HomeLoanBalanceTransfer() {
                 </dl>
               </div>
               <div>
-                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                   After Transfer
                 </h3>
                 <dl className="mt-3 space-y-3">
@@ -1165,7 +1165,7 @@ export function HomeLoanFeesAndCharges({ loans }: { loans: FinanceLoan[] }) {
             <table className="min-w-full border-collapse text-left text-sm">
               <caption className="sr-only">Verified processing fee comparison</caption>
               <thead>
-                <tr className="border-b border-[var(--hl-border)] text-[11px] uppercase tracking-wide text-[var(--hl-muted)]">
+                <tr className="border-b border-[var(--hl-border)] text-xs uppercase tracking-wide text-[var(--hl-muted)]">
                   <th scope="col" className="px-4 py-3 font-semibold">
                     Lender / Product
                   </th>
@@ -1300,7 +1300,7 @@ export function HomeLoanApplicationJourney() {
                   <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                 </span>
                 <div className="min-w-0 pt-0.5">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                     Step {index + 1}
                   </p>
                   <p className="mt-0.5 text-sm font-bold text-[var(--hl-navy)]">{step}</p>
@@ -1333,7 +1333,7 @@ export function HomeLoanApplicationJourney() {
                       <span className="relative z-[1] inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--hl-navy)]/20 bg-white text-[var(--hl-navy)]">
                         <Icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                       </span>
-                      <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
                         Step {index + 1}
                       </p>
                       <p className="mt-0.5 text-sm font-bold leading-snug text-[var(--hl-navy)]">
@@ -1410,7 +1410,7 @@ function TimelineBar({
 
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hl-muted)]">
         {label}
       </p>
       <div className="mt-3" aria-hidden>
@@ -1426,7 +1426,7 @@ function TimelineBar({
             />
           ) : null}
         </div>
-        <div className="relative mt-2 flex justify-between text-[11px] text-[var(--hl-muted)]">
+        <div className="relative mt-2 flex justify-between text-xs text-[var(--hl-muted)]">
           <span>Start</span>
           {variant === 'prepay' ? (
             <span

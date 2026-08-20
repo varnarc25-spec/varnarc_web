@@ -10,16 +10,31 @@ import { SimpleBarChart } from '@/components/shared/simple-chart';
 import type { ComparisonDetail } from '@/services/content';
 
 type RelatedContent = {
-  reviews: Array<{ id: string; title: string; slug: string; overallScore?: number | string | null }>;
+  reviews: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    overallScore?: number | string | null;
+  }>;
   articles: Array<{ id: string; title: string; slug: string; excerpt?: string | null }>;
   calculators: Array<{ id: string; name: string; slug: string; description?: string | null }>;
-  affiliateOffers: Array<{ label: string; url: string; entityType: string; entityId: string; sponsored?: boolean }>;
+  affiliateOffers: Array<{
+    label: string;
+    url: string;
+    entityType: string;
+    entityId: string;
+    sponsored?: boolean;
+  }>;
   sponsoredAds: Array<{ id: string; name: string; targetUrl?: string | null }>;
   domainComparisons: Array<{ module: string; title: string; slug: string; href: string }>;
   products: Array<{ id: string; name: string; slug: string }>;
 };
 
-type CompareRow = { feature: string; groupKey?: string | null; [key: string]: string | null | undefined };
+type CompareRow = {
+  feature: string;
+  groupKey?: string | null;
+  [key: string]: string | null | undefined;
+};
 
 const recommendationLabels: Record<string, string> = {
   best_overall: 'Best Overall',
@@ -46,7 +61,10 @@ function buildMatrix(detail: ComparisonDetail) {
       : typeof attr.values === 'object' && attr.values
         ? Object.values(attr.values as Record<string, unknown>)
         : [String(attr.values ?? '')];
-    const row: CompareRow = { feature: attr.label, groupKey: (attr as { groupKey?: string }).groupKey };
+    const row: CompareRow = {
+      feature: attr.label,
+      groupKey: (attr as { groupKey?: string }).groupKey,
+    };
     columns.forEach((col, idx) => {
       row[col.key] = String(values[idx] ?? '—');
     });
@@ -62,7 +80,9 @@ function buildMatrix(detail: ComparisonDetail) {
     };
   });
 
-  const groups = [...new Set(detail.attributes.map((a) => (a as { groupKey?: string }).groupKey).filter(Boolean))] as string[];
+  const groups = [
+    ...new Set(detail.attributes.map((a) => (a as { groupKey?: string }).groupKey).filter(Boolean)),
+  ] as string[];
 
   return { columns, rows, chart, groups };
 }
@@ -75,11 +95,17 @@ function diffOnlyRows(rows: CompareRow[], columnKeys: string[]) {
 }
 
 async function trackAffiliateClick(comparisonId: string, url: string) {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'}/comparisons/${comparisonId}/affiliate/click`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ affiliateUrl: url, referrer: typeof window !== 'undefined' ? window.location.href : undefined }),
-  }).catch(() => undefined);
+  await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'}/comparisons/${comparisonId}/affiliate/click`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        affiliateUrl: url,
+        referrer: typeof window !== 'undefined' ? window.location.href : undefined,
+      }),
+    },
+  ).catch(() => undefined);
 }
 
 export function ComparisonDetailClient({
@@ -144,10 +170,18 @@ export function ComparisonDetailClient({
               type="button"
               onClick={() => setViewMode(mode)}
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                viewMode === mode ? 'bg-[#0b1f3a] text-white' : 'border border-slate-200 text-slate-600'
+                viewMode === mode
+                  ? 'bg-[#0b1f3a] text-white'
+                  : 'border border-slate-200 text-slate-600'
               }`}
             >
-              {mode === 'table' ? 'Side-by-side' : mode === 'diff' ? 'Differences only' : mode === 'cards' ? 'Summary cards' : 'Mobile accordion'}
+              {mode === 'table'
+                ? 'Side-by-side'
+                : mode === 'diff'
+                  ? 'Differences only'
+                  : mode === 'cards'
+                    ? 'Summary cards'
+                    : 'Mobile accordion'}
             </button>
           ))}
           {matrix.groups.length ? (
@@ -173,12 +207,16 @@ export function ComparisonDetailClient({
         {viewMode === 'cards' ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {matrix.columns.map((col) => (
-              <div key={col.key} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div
+                key={col.key}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              >
                 <h3 className="text-sm font-extrabold text-[#0b1f3a]">{col.header}</h3>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   {filteredRows.map((row) => (
                     <li key={`${col.key}-${row.feature}`}>
-                      <span className="font-medium text-slate-800">{row.feature}:</span> {row[col.key]}
+                      <span className="font-medium text-slate-800">{row.feature}:</span>{' '}
+                      {row[col.key]}
                     </li>
                   ))}
                 </ul>
@@ -190,12 +228,18 @@ export function ComparisonDetailClient({
         {viewMode === 'accordion' ? (
           <div className="space-y-2">
             {filteredRows.map((row) => (
-              <details key={row.feature} className="rounded-lg border border-slate-200 bg-white p-4">
-                <summary className="cursor-pointer text-sm font-semibold text-[#0b1f3a]">{row.feature}</summary>
+              <details
+                key={row.feature}
+                className="rounded-lg border border-slate-200 bg-white p-4"
+              >
+                <summary className="cursor-pointer text-sm font-semibold text-[#0b1f3a]">
+                  {row.feature}
+                </summary>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {matrix.columns.map((col) => (
                     <div key={col.key} className="text-sm text-slate-600">
-                      <span className="font-medium text-slate-800">{col.header}:</span> {row[col.key]}
+                      <span className="font-medium text-slate-800">{col.header}:</span>{' '}
+                      {row[col.key]}
                     </div>
                   ))}
                 </div>
@@ -223,7 +267,9 @@ export function ComparisonDetailClient({
                   className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-[#0b1f3a] hover:bg-slate-100"
                 >
                   {offer.label}
-                  {offer.sponsored ? <span className="ml-2 text-xs text-amber-700">Sponsored</span> : null}
+                  {offer.sponsored ? (
+                    <span className="ml-2 text-xs text-amber-700">Sponsored</span>
+                  ) : null}
                 </a>
               ))}
             </div>
@@ -255,9 +301,14 @@ export function ComparisonDetailClient({
             <ul className="space-y-2">
               {related.reviews.map((review) => (
                 <li key={review.id}>
-                  <Link href={`/reviews/${review.slug}`} className="text-sm font-medium text-[#0b1f3a] hover:underline">
+                  <Link
+                    href={`/reviews/${review.slug}`}
+                    className="text-sm font-medium text-[#0b1f3a] hover:underline"
+                  >
                     {review.title}
-                    {review.overallScore != null ? ` · ${Number(review.overallScore).toFixed(1)}` : ''}
+                    {review.overallScore != null
+                      ? ` · ${Number(review.overallScore).toFixed(1)}`
+                      : ''}
                   </Link>
                 </li>
               ))}
@@ -271,7 +322,10 @@ export function ComparisonDetailClient({
             <ul className="space-y-2">
               {related.articles.map((article) => (
                 <li key={article.id}>
-                  <Link href={`/articles/${article.slug}`} className="text-sm font-medium text-[#0b1f3a] hover:underline">
+                  <Link
+                    href={`/articles/${article.slug}`}
+                    className="text-sm font-medium text-[#0b1f3a] hover:underline"
+                  >
                     {article.title}
                   </Link>
                 </li>
@@ -286,7 +340,10 @@ export function ComparisonDetailClient({
             <ul className="space-y-2">
               {related.calculators.map((calc) => (
                 <li key={calc.id}>
-                  <Link href={`/calculators/${calc.slug}`} className="text-sm font-medium text-[#0b1f3a] hover:underline">
+                  <Link
+                    href={`/calculators/${calc.slug}`}
+                    className="text-sm font-medium text-[#0b1f3a] hover:underline"
+                  >
                     {calc.name}
                   </Link>
                 </li>
@@ -301,7 +358,10 @@ export function ComparisonDetailClient({
             <ul className="space-y-2">
               {related.domainComparisons.map((item) => (
                 <li key={`${item.module}-${item.slug}`}>
-                  <Link href={item.href} className="text-sm font-medium text-[#0b1f3a] hover:underline">
+                  <Link
+                    href={item.href}
+                    className="text-sm font-medium text-[#0b1f3a] hover:underline"
+                  >
                     [{item.module}] {item.title}
                   </Link>
                 </li>
@@ -323,6 +383,16 @@ export function ComparisonDetailClient({
             </ul>
           </section>
         ) : null}
+
+        <p className="mt-10 border-t border-slate-100 pt-5 text-[13px] leading-6 text-slate-500">
+          Comparison information is provided for general research and educational purposes.
+          Specifications, prices, rates, fees and availability can change. Verify important details
+          with official manufacturers, providers or other authoritative sources before deciding.{' '}
+          <Link href="/disclaimer" className="font-semibold text-blue-700 hover:underline">
+            Read our disclaimer
+          </Link>
+          .
+        </p>
       </PageShell>
     </>
   );

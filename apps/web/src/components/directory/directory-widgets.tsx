@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 
 const inputClass =
-  'h-10 w-full rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 text-sm';
+  'h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30';
 
 export function DirectorySearchForm({
   initialSearch = '',
@@ -18,6 +18,7 @@ export function DirectorySearchForm({
   initialTopRated = false,
   initialSort = '',
   action = '/directory/search',
+  secondary = false,
 }: {
   initialSearch?: string;
   initialCity?: string;
@@ -29,6 +30,8 @@ export function DirectorySearchForm({
   initialTopRated?: boolean;
   initialSort?: string;
   action?: string;
+  /** When true, presents as advanced filters (results page). */
+  secondary?: boolean;
 }) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
@@ -58,51 +61,112 @@ export function DirectorySearchForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="mb-8 space-y-3">
-      <div className="grid gap-3 sm:grid-cols-4">
-        <input
-          className={inputClass}
-          placeholder="Search businesses"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <input className={inputClass} placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-        <input
-          className={inputClass}
-          placeholder="Category slug"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-        <select className={inputClass} value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="">Sort: Recent</option>
-          <option value="rating">Top rated</option>
-          <option value="reviews">Most reviewed</option>
-          <option value="popular">Most viewed</option>
-          <option value="name">Name A–Z</option>
-        </select>
+    <form
+      onSubmit={onSubmit}
+      className={`space-y-3 ${secondary ? 'rounded-2xl border border-slate-200 bg-white p-4' : 'mb-8'}`}
+      role="search"
+      aria-label={secondary ? 'Refine directory search' : 'Directory search'}
+    >
+      {secondary ? <p className="text-sm font-bold text-slate-900">Filters</p> : null}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label htmlFor="dir-q" className="mb-1 block text-[12px] font-semibold text-slate-600">
+            Service or business
+          </label>
+          <input
+            id="dir-q"
+            className={inputClass}
+            placeholder="Architect, electrician…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="dir-city" className="mb-1 block text-[12px] font-semibold text-slate-600">
+            City
+          </label>
+          <input
+            id="dir-city"
+            className={inputClass}
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="dir-category"
+            className="mb-1 block text-[12px] font-semibold text-slate-600"
+          >
+            Category slug
+          </label>
+          <input
+            id="dir-category"
+            className={inputClass}
+            placeholder="e.g. architects"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+        </div>
+        <div>
+          <label htmlFor="dir-sort" className="mb-1 block text-[12px] font-semibold text-slate-600">
+            Sort
+          </label>
+          <select
+            id="dir-sort"
+            className={inputClass}
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            <option value="">Relevance</option>
+            <option value="rating">Rating</option>
+            <option value="reviews">Most reviewed</option>
+            <option value="recent">Recently added</option>
+            <option value="popular">Most viewed</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-4 text-sm">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} />
-          Verified
+        <label className="flex min-h-11 items-center gap-2">
+          <input
+            type="checkbox"
+            checked={verified}
+            onChange={(e) => setVerified(e.target.checked)}
+          />
+          Verified only
         </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+        <label className="flex min-h-11 items-center gap-2">
+          <input
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+          />
           Featured
         </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={sponsored} onChange={(e) => setSponsored(e.target.checked)} />
+        <label className="flex min-h-11 items-center gap-2">
+          <input
+            type="checkbox"
+            checked={sponsored}
+            onChange={(e) => setSponsored(e.target.checked)}
+          />
           Sponsored
         </label>
-        <label className="flex items-center gap-2">
+        <label className="flex min-h-11 items-center gap-2">
           <input type="checkbox" checked={openNow} onChange={(e) => setOpenNow(e.target.checked)} />
           Open now
         </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={topRated} onChange={(e) => setTopRated(e.target.checked)} />
+        <label className="flex min-h-11 items-center gap-2">
+          <input
+            type="checkbox"
+            checked={topRated}
+            onChange={(e) => setTopRated(e.target.checked)}
+          />
           Top rated
         </label>
-        <Button type="submit">Search</Button>
+        <Button type="submit" className="min-h-11">
+          Apply
+        </Button>
       </div>
     </form>
   );
@@ -115,7 +179,7 @@ export function ListingLeadForm({ listingId }: { listingId: string }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
-  const [leadType, setLeadType] = useState('contact');
+  const [leadType, setLeadType] = useState('quote');
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -160,26 +224,44 @@ export function ListingLeadForm({ listingId }: { listingId: string }) {
 
   return (
     <form
+      id="request-quote"
       onSubmit={onSubmit}
-      className="space-y-3 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4"
+      className="scroll-mt-24 space-y-3 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4"
     >
-      <h3 className="font-semibold">Contact this business</h3>
+      <h3 className="font-semibold">Request a quote</h3>
       <select className={inputClass} value={leadType} onChange={(e) => setLeadType(e.target.value)}>
-        <option value="contact">General inquiry</option>
         <option value="quote">Quote request</option>
+        <option value="contact">General inquiry</option>
         <option value="appointment">Appointment request</option>
       </select>
-      <input className={inputClass} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <input className={inputClass} placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className={inputClass} placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <input
+        className={inputClass}
+        placeholder="Your name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <input
+        className={inputClass}
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        className={inputClass}
+        placeholder="Phone"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
       <textarea
         className="min-h-24 w-full rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 py-2 text-sm"
-        placeholder="Message"
+        placeholder="Describe the work you need"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
       <Button type="submit" disabled={loading || !name}>
-        {loading ? 'Sending…' : 'Send inquiry'}
+        {loading ? 'Sending…' : 'Send request'}
       </Button>
     </form>
   );

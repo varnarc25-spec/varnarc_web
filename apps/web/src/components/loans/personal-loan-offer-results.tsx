@@ -118,7 +118,7 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
         <div className="flex min-w-0 items-center gap-2.5">
           <LenderMark loan={loan} lenderName={lenderName} />
           <div className="min-w-0">
-            <p className="truncate text-[11px] font-medium text-[var(--pl-muted)]">{lenderName}</p>
+            <p className="truncate text-xs font-medium text-[var(--pl-muted)]">{lenderName}</p>
             <p className="truncate text-sm font-bold text-[var(--pl-navy)]">
               <Link
                 href={href}
@@ -177,7 +177,7 @@ function LenderMark({ loan, lenderName }: { loan: FinanceLoan; lenderName: strin
           fetchPriority="low"
         />
       ) : (
-        <span className="text-[10px] font-bold tracking-wide text-[#0b1f3a]" aria-hidden>
+        <span className="text-xs font-bold tracking-wide text-[#0b1f3a]" aria-hidden>
           {lenderInitials(lenderName)}
         </span>
       )}
@@ -230,7 +230,7 @@ export function PersonalLoanOfferResults({
         {catalog.length ? (
           <div className="overflow-hidden rounded-[var(--pl-radius-lg)] bg-white">
             <div
-              className="hidden grid-cols-[minmax(10rem,1.2fr)_minmax(5.5rem,0.7fr)_minmax(6rem,0.8fr)_minmax(5.5rem,0.7fr)_minmax(5.5rem,0.7fr)_minmax(5rem,0.65fr)_minmax(9rem,1fr)] gap-3 border-b border-[var(--pl-border)] bg-[var(--pl-navy)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-white lg:grid"
+              className="hidden grid-cols-[minmax(10rem,1.2fr)_minmax(5.5rem,0.7fr)_minmax(6rem,0.8fr)_minmax(5.5rem,0.7fr)_minmax(5.5rem,0.7fr)_minmax(5rem,0.65fr)_minmax(9rem,1fr)] gap-3 border-b border-[var(--pl-border)] bg-[var(--pl-navy)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white lg:grid"
               role="row"
             >
               <span>Lender / Product</span>
@@ -249,7 +249,7 @@ export function PersonalLoanOfferResults({
           </div>
         ) : (
           <div className="rounded-[var(--pl-radius-lg)] bg-white px-4 py-5 text-center sm:px-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pl-muted)]">
               Search results
             </p>
             <h3 className="mt-1 text-sm font-bold text-[var(--pl-navy)]">

@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PERMISSIONS } from '@varnarc/auth';
 import {
   cmsDefaultsSettingsSchema,
+  contactSettingsSchema,
   createThemeSchema,
   cursorPaginationQuerySchema,
   generalSettingsSchema,
@@ -12,6 +13,7 @@ import {
   upsertFeatureFlagSchema,
   upsertSettingSchema,
   type CmsDefaultsSettingsInput,
+  type ContactSettingsInput,
   type CreateThemeInput,
   type CursorPaginationQuery,
   type GeneralSettingsInput,
@@ -36,7 +38,9 @@ export class SettingsController {
 
   @Get()
   @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
-  async list(@Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery) {
+  async list(
+    @Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery,
+  ) {
     return okCursor(await this.service.listSettings(query));
   }
 
@@ -130,6 +134,30 @@ export class SettingsController {
     return ok(await this.service.setSeoDefaults(body, user.id));
   }
 
+  @Get('contact')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async contact() {
+    return ok(await this.service.getContact());
+  }
+
+  @Public()
+  @Get('contact/public')
+  async contactPublic() {
+    const settings = await this.service.getContact();
+    return ok({
+      publicContactEmail: settings.publicContactEmail ?? null,
+    });
+  }
+
+  @Put('contact')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async updateContact(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(contactSettingsSchema)) body: ContactSettingsInput,
+  ) {
+    return ok(await this.service.setContact(body, user.id));
+  }
+
   @Public()
   @Get('feature-flags/:key/enabled')
   async featureFlagEnabled(@Param('key') key: string) {
@@ -144,7 +172,9 @@ export class SettingsController {
 
   @Get('themes')
   @RequirePermissions(PERMISSIONS.THEME_MANAGE)
-  async themes(@Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery) {
+  async themes(
+    @Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery,
+  ) {
     return okCursor(await this.service.listThemes(query));
   }
 
@@ -159,7 +189,9 @@ export class SettingsController {
 
   @Get('feature-flags')
   @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
-  async flags(@Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery) {
+  async flags(
+    @Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery,
+  ) {
     return okCursor(await this.service.listFlags(query));
   }
 

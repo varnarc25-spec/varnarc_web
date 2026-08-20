@@ -20,6 +20,12 @@ export class NewsletterSubscriberRepository extends BaseRepository {
     });
   }
 
+  findById(id: string) {
+    return this.db.newsletterSubscriber.findFirst({
+      where: { id, deletedAt: null },
+    });
+  }
+
   create(data: Prisma.NewsletterSubscriberCreateInput) {
     return this.db.newsletterSubscriber.create({ data });
   }
@@ -35,8 +41,7 @@ export class NewsletterSubscriberRepository extends BaseRepository {
     status?: NewsletterSubscriberStatus | 'all';
     search?: string;
   }) {
-    const status =
-      params.status && params.status !== 'all' ? { status: params.status } : {};
+    const status = params.status && params.status !== 'all' ? { status: params.status } : {};
     const search = params.search?.trim();
     return listActiveWithCursor(this.db.newsletterSubscriber, {
       cursor: params.cursor,

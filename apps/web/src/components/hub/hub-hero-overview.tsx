@@ -3,19 +3,19 @@ export function HubHeroOverview({ title = 'Your Finance Overview' }: { title?: s
     <div className="rounded-xl border border-slate-200/70 bg-white p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="text-sm font-bold text-[#0b1f3a]">{title}</div>
-        <span className="shrink-0 text-[10px] font-medium text-slate-400">Live snapshot</span>
+        <span className="shrink-0 text-xs font-medium text-slate-400">Live snapshot</span>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="min-w-0">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
             Total investments
           </div>
           <div className="mt-1 text-base font-extrabold text-[#0b1f3a] sm:text-lg">₹12,45,000</div>
           <div className="mt-0.5 text-xs font-semibold text-emerald-600">+12.55% YoY</div>
         </div>
         <div className="min-w-0">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
             Monthly EMI
           </div>
           <div className="mt-1 text-base font-extrabold text-[#0b1f3a] sm:text-lg">₹32,650</div>
@@ -24,7 +24,7 @@ export function HubHeroOverview({ title = 'Your Finance Overview' }: { title?: s
               className="h-8 w-8 shrink-0 rounded-full border-4 border-blue-500 border-r-orange-400 border-b-emerald-400 border-l-violet-400 sm:h-9 sm:w-9"
               aria-hidden
             />
-            <span className="text-[10px] text-slate-500">EMI split</span>
+            <span className="text-xs text-slate-500">EMI split</span>
           </div>
         </div>
       </div>

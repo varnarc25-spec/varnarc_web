@@ -29,9 +29,7 @@ export default async function LoanMethodologyPage() {
           aria-label="On this page"
           className="rounded-xl border border-slate-200 bg-[#f8fafc] p-4"
         >
-          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
-            On this page
-          </p>
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">On this page</p>
           <ol className="mt-2 columns-1 gap-x-6 space-y-1.5 text-sm sm:columns-2">
             {LOAN_METHODOLOGY_SECTIONS.map((section) => (
               <li key={section.id} className="break-inside-avoid">

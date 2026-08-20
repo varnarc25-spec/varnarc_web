@@ -89,7 +89,10 @@ export function MediaBrowser({
             {folder.name}
           </Link>
         ))}
-        <Link href="/media/folders" className="mt-2 block text-xs text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/media/folders"
+          className="mt-2 block text-xs text-[var(--varnarc-brand)] hover:underline"
+        >
           Manage folders →
         </Link>
       </aside>
@@ -145,7 +148,9 @@ export function MediaBrowser({
               <div
                 key={asset.id}
                 className={`relative overflow-hidden rounded-lg border bg-[var(--varnarc-surface)] ${
-                  checked ? 'border-[var(--varnarc-brand)] ring-1 ring-[var(--varnarc-brand)]' : 'border-[var(--varnarc-border)]'
+                  checked
+                    ? 'border-[var(--varnarc-brand)] ring-1 ring-[var(--varnarc-brand)]'
+                    : 'border-[var(--varnarc-border)]'
                 }`}
               >
                 <label className="absolute left-2 top-2 z-10">
@@ -166,7 +171,7 @@ export function MediaBrowser({
                   <p className="line-clamp-1 text-xs font-medium">
                     {asset.alt || asset.originalName || asset.publicId}
                   </p>
-                  <p className="line-clamp-1 font-mono text-[10px] text-[var(--varnarc-subtle)]">
+                  <p className="line-clamp-1 font-mono text-xs text-[var(--varnarc-subtle)]">
                     {asset.publicId}
                   </p>
                 </Link>

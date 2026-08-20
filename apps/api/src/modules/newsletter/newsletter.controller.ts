@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { PERMISSIONS } from '@varnarc/auth';
@@ -14,6 +24,7 @@ import {
   newsletterUnsubscribeSchema,
   sendNewsletterCampaignSchema,
   updateNewsletterCampaignSchema,
+  updateNewsletterSubscriberStatusSchema,
   updateNewsletterTemplateSchema,
   type CreateNewsletterCampaignInput,
   type CreateNewsletterTemplateInput,
@@ -22,6 +33,7 @@ import {
   type NewsletterTemplateListQuery,
   type SendNewsletterCampaignInput,
   type UpdateNewsletterCampaignInput,
+  type UpdateNewsletterSubscriberStatusInput,
   type UpdateNewsletterTemplateInput,
 } from '@varnarc/validation';
 import { CurrentUserDecorator } from '../../auth/decorators/current-user.decorator';
@@ -78,7 +90,8 @@ export class NewsletterController {
   @RequirePermissions(PERMISSIONS.NOTIFICATIONS_VIEW)
   @ApiOperation({ summary: 'List newsletter subscribers (admin)' })
   async listSubscribers(
-    @Query(new ZodValidationPipe(newsletterSubscriberListQuerySchema)) query: NewsletterSubscriberListQuery,
+    @Query(new ZodValidationPipe(newsletterSubscriberListQuerySchema))
+    query: NewsletterSubscriberListQuery,
   ) {
     const page = await this.service.listSubscribers(query);
     return okCursor({
@@ -90,10 +103,23 @@ export class NewsletterController {
     });
   }
 
+  @Put('subscribers/:id/status')
+  @RequirePermissions(PERMISSIONS.NOTIFICATIONS_MANAGE)
+  @ApiOperation({ summary: 'Update newsletter subscriber status (admin opt-out / re-subscribe)' })
+  async updateSubscriberStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(updateNewsletterSubscriberStatusSchema))
+    body: UpdateNewsletterSubscriberStatusInput,
+  ) {
+    return ok(await this.service.updateSubscriberStatus(id, body, user.id));
+  }
+
   @Get('templates')
   @RequirePermissions(PERMISSIONS.NOTIFICATIONS_VIEW)
   async listTemplates(
-    @Query(new ZodValidationPipe(newsletterTemplateListQuerySchema)) query: NewsletterTemplateListQuery,
+    @Query(new ZodValidationPipe(newsletterTemplateListQuerySchema))
+    query: NewsletterTemplateListQuery,
   ) {
     const page = await this.service.listTemplates(query);
     return okCursor({
@@ -115,7 +141,8 @@ export class NewsletterController {
   @RequirePermissions(PERMISSIONS.NOTIFICATIONS_MANAGE)
   async createTemplate(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(createNewsletterTemplateSchema)) body: CreateNewsletterTemplateInput,
+    @Body(new ZodValidationPipe(createNewsletterTemplateSchema))
+    body: CreateNewsletterTemplateInput,
   ) {
     return ok(await this.service.createTemplate(body, user.id));
   }
@@ -125,7 +152,8 @@ export class NewsletterController {
   async updateTemplate(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(updateNewsletterTemplateSchema)) body: UpdateNewsletterTemplateInput,
+    @Body(new ZodValidationPipe(updateNewsletterTemplateSchema))
+    body: UpdateNewsletterTemplateInput,
   ) {
     return ok(await this.service.updateTemplate(id, body, user.id));
   }
@@ -142,7 +170,8 @@ export class NewsletterController {
   @Get('campaigns')
   @RequirePermissions(PERMISSIONS.NOTIFICATIONS_VIEW)
   async listCampaigns(
-    @Query(new ZodValidationPipe(newsletterCampaignListQuerySchema)) query: NewsletterCampaignListQuery,
+    @Query(new ZodValidationPipe(newsletterCampaignListQuerySchema))
+    query: NewsletterCampaignListQuery,
   ) {
     const page = await this.service.listCampaigns(query);
     return okCursor({
@@ -164,7 +193,8 @@ export class NewsletterController {
   @RequirePermissions(PERMISSIONS.NOTIFICATIONS_MANAGE)
   async createCampaign(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(createNewsletterCampaignSchema)) body: CreateNewsletterCampaignInput,
+    @Body(new ZodValidationPipe(createNewsletterCampaignSchema))
+    body: CreateNewsletterCampaignInput,
   ) {
     return ok(await this.service.createCampaign(body, user.id));
   }
@@ -174,7 +204,8 @@ export class NewsletterController {
   async updateCampaign(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(updateNewsletterCampaignSchema)) body: UpdateNewsletterCampaignInput,
+    @Body(new ZodValidationPipe(updateNewsletterCampaignSchema))
+    body: UpdateNewsletterCampaignInput,
   ) {
     return ok(await this.service.updateCampaign(id, body, user.id));
   }
