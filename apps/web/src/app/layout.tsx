@@ -56,6 +56,14 @@ export async function generateMetadata(): Promise<Metadata> {
     icons.apple = branding.appleTouchIconUrl;
   }
 
+  const verification: Metadata['verification'] = {};
+  if (process.env.GOOGLE_SITE_VERIFICATION) {
+    verification.google = process.env.GOOGLE_SITE_VERIFICATION;
+  }
+  if (process.env.BING_SITE_VERIFICATION) {
+    verification.other = { 'msvalidate.01': process.env.BING_SITE_VERIFICATION };
+  }
+
   return {
     metadataBase: new URL(siteUrl),
     title: {
@@ -83,6 +91,7 @@ export async function generateMetadata(): Promise<Metadata> {
       index: true,
       follow: true,
     },
+    verification: Object.keys(verification).length ? verification : undefined,
     appleWebApp: {
       capable: true,
       title: siteName,
