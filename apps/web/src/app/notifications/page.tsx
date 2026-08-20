@@ -21,6 +21,7 @@ async function fetchInboxServer(token: string, limit = 50): Promise<InboxItem[]>
 
 export const metadata: Metadata = {
   title: 'Notifications',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/notifications' },
 };
 
@@ -36,7 +37,10 @@ export default async function NotificationsPage() {
         description="Product updates, saved item alerts, and account messages."
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Notifications' }]}
       >
-        <EmptyState title="Sign in required" message="Unable to load notifications. Try signing in again." />
+        <EmptyState
+          title="Sign in required"
+          message="Unable to load notifications. Try signing in again."
+        />
       </PageShell>
     );
   }

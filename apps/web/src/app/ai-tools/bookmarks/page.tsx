@@ -9,6 +9,7 @@ import { unwrapList } from '@/components/ai-tools/types';
 export const metadata: Metadata = {
   title: 'My AI Tool Bookmarks',
   description: 'Saved AI tools and collections.',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/ai-tools/bookmarks' },
 };
 
@@ -60,7 +61,10 @@ export default async function AiToolsBookmarksPage({
           { label: 'Bookmarks' },
         ]}
       >
-        <EmptyState title="Sign in required" message="Create an account to bookmark tools into collections." />
+        <EmptyState
+          title="Sign in required"
+          message="Create an account to bookmark tools into collections."
+        />
       </ContentLayout>
     );
   }
@@ -178,7 +182,9 @@ export default async function AiToolsBookmarksPage({
                     freePlan={b.tool.freePlan}
                   />
                   {b.collectionName ? (
-                    <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">Collection: {b.collectionName}</p>
+                    <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+                      Collection: {b.collectionName}
+                    </p>
                   ) : null}
                 </div>
               ) : null,

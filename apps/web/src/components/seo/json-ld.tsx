@@ -4,10 +4,7 @@ type JsonLdProps = {
 
 export function JsonLd({ data }: JsonLdProps) {
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
   );
 }
 
@@ -29,6 +26,9 @@ export function articleJsonLd(input: {
   description?: string | null;
   url: string;
   datePublished?: string | null;
+  dateModified?: string | null;
+  authorName?: string | null;
+  image?: string | null;
 }) {
   return {
     '@context': 'https://schema.org',
@@ -37,18 +37,20 @@ export function articleJsonLd(input: {
     description: input.description ?? undefined,
     mainEntityOfPage: input.url,
     datePublished: input.datePublished ?? undefined,
+    dateModified: input.dateModified ?? input.datePublished ?? undefined,
+    image: input.image ?? undefined,
+    author: input.authorName
+      ? { '@type': 'Person', name: input.authorName }
+      : { '@type': 'Organization', name: 'Varnarc' },
     publisher: {
       '@type': 'Organization',
       name: 'Varnarc',
+      url: 'https://varnarc.com',
     },
   };
 }
 
-export function reviewJsonLd(input: {
-  title: string;
-  url: string;
-  score?: number | null;
-}) {
+export function reviewJsonLd(input: { title: string; url: string; score?: number | null }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Review',
@@ -157,6 +159,7 @@ export function organizationJsonLd(input: {
   description?: string | null;
   url?: string | null;
   logo?: string | null;
+  sameAs?: string[];
 }) {
   return {
     '@context': 'https://schema.org',
@@ -165,6 +168,34 @@ export function organizationJsonLd(input: {
     description: input.description ?? undefined,
     url: input.url ?? undefined,
     logo: input.logo ?? undefined,
+    sameAs: input.sameAs?.length ? input.sameAs : undefined,
+  };
+}
+
+export function websiteJsonLd(input: {
+  name: string;
+  url: string;
+  description?: string | null;
+  searchUrlTemplate?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: input.name,
+    url: input.url,
+    description: input.description ?? undefined,
+    ...(input.searchUrlTemplate
+      ? {
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: input.searchUrlTemplate,
+            },
+            'query-input': 'required name=search_term_string',
+          },
+        }
+      : {}),
   };
 }
 

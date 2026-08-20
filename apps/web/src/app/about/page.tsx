@@ -184,10 +184,11 @@ const companyLinks = [
 ];
 
 const commitmentLinks = [
-  { label: 'Accuracy', href: '/finance/loans/methodology' },
+  { label: 'Editorial policy', href: '/editorial-policy' },
+  { label: 'Methodology', href: '/methodology' },
+  { label: 'Corrections', href: '/corrections' },
   { label: 'Transparency', href: '/disclaimer' },
   { label: 'Privacy', href: '/privacy' },
-  { label: 'Continuous improvement', href: '/contact?type=correction' },
 ];
 
 const teams = [

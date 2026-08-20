@@ -21,6 +21,7 @@ import { isAuth0Configured, isAuthUiEnabled, appBaseUrlMatchesHost } from '@varn
 import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
+import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/components/seo/json-ld';
 import type { CurrentUser } from '@varnarc/types';
 import './globals.css';
 
@@ -246,6 +247,28 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               tagline={branding.siteTagline}
               logoUrl={branding.logoUrl}
               stickyHeader={stickyHeader}
+            />
+            <JsonLd
+              data={organizationJsonLd({
+                name: branding.siteName?.trim() || 'Varnarc',
+                description:
+                  'Calculators, guides, reviews & tools for finance, home, automobiles and everyday planning.',
+                url: siteUrl,
+                logo: branding.logoUrl
+                  ? `${siteUrl}${branding.logoUrl}`
+                  : `${siteUrl}/brand/logo.png`,
+                sameAs: (footerTokens.socialLinks as Array<{ href: string }> | null)
+                  ?.map((l) => l.href)
+                  .filter(Boolean),
+              })}
+            />
+            <JsonLd
+              data={websiteJsonLd({
+                name: branding.siteName?.trim() || 'Varnarc',
+                url: siteUrl,
+                description: branding.siteTagline?.trim() || 'Smart Tools & Expert Guides',
+                searchUrlTemplate: `${siteUrl}/search?q={search_term_string}`,
+              })}
             />
             <div id="main-content" className="w-full min-w-0 flex-1" tabIndex={-1}>
               {children}

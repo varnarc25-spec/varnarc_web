@@ -7,6 +7,7 @@ import { apiServerFetch } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Saved Calculations',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/saved-calculations' },
 };
 
@@ -32,9 +33,7 @@ export default async function SavedCalculationsPage() {
       description="Your calculator results and scenarios."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Saved Calculations' }]}
     >
-      {result.error ? (
-        <p className="mb-4 text-sm text-red-600">{result.error}</p>
-      ) : null}
+      {result.error ? <p className="mb-4 text-sm text-red-600">{result.error}</p> : null}
       <SavedCalculationsList initial={rows} />
     </PageShell>
   );

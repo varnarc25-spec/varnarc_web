@@ -29,7 +29,19 @@ const SITEMAP_CACHE_TTL = 300_000;
 const META_CACHE_TTL = 120_000;
 
 const DEFAULT_ROBOTS: SeoRobotsSettingsInput = {
-  disallow: ['/profile', '/bookmarks', '/saved-calculations', '/notifications', '/api/'],
+  disallow: [
+    '/profile',
+    '/bookmarks',
+    '/saved-calculations',
+    '/notifications',
+    '/preferences',
+    '/subscriptions',
+    '/membership',
+    '/activity',
+    '/reading-history',
+    '/api/',
+    '/newsletter/unsubscribe',
+  ],
   allow: ['/'],
   crawlDelay: null,
 };

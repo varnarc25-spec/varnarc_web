@@ -2,6 +2,15 @@ import type { ReactNode } from 'react';
 
 type SocialKind = 'facebook' | 'x' | 'instagram' | 'youtube' | 'linkedin' | 'generic';
 
+const BRAND_COLORS: Record<SocialKind, string> = {
+  facebook: '#1877F2',
+  x: '#000000',
+  instagram: '#E4405F',
+  youtube: '#FF0000',
+  linkedin: '#0A66C2',
+  generic: 'rgba(255,255,255,0.1)',
+};
+
 function detectSocial(label: string, href: string): SocialKind {
   const hay = `${label} ${href}`.toLowerCase();
   if (hay.includes('facebook') || hay.includes('fb.com')) return 'facebook';
@@ -22,6 +31,10 @@ function detectSocial(label: string, href: string): SocialKind {
   if (letter === 'y') return 'youtube';
   if (letter === 'l') return 'linkedin';
   return 'generic';
+}
+
+export function getSocialBrandColor(label: string, href: string): string {
+  return BRAND_COLORS[detectSocial(label, href)];
 }
 
 function IconSvg({ children }: { children: ReactNode }) {

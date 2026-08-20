@@ -189,7 +189,31 @@ export class SeoSitemapRepository extends BaseRepository {
           select: { slug: true, updatedAt: true },
           take: 5000,
         });
-        return rows.map((r) => ({ loc: `${siteUrl}/p/${r.slug}`, lastmod: r.updatedAt }));
+        const now = new Date();
+        const staticPages = [
+          '/',
+          '/about',
+          '/contact',
+          '/editorial-policy',
+          '/methodology',
+          '/corrections',
+          '/disclaimer',
+          '/privacy',
+          '/terms',
+          '/reviews',
+          '/articles',
+          '/compare',
+          '/compare/products',
+          '/calculators',
+          '/directory',
+          '/ai-tools',
+          '/solar',
+          '/search',
+        ];
+        return [
+          ...staticPages.map((path) => ({ loc: `${siteUrl}${path}`, lastmod: now })),
+          ...rows.map((r) => ({ loc: `${siteUrl}/p/${r.slug}`, lastmod: r.updatedAt })),
+        ];
       }
       case 'reviews': {
         const rows = await this.db.review.findMany({
@@ -285,6 +309,15 @@ export class SeoSitemapRepository extends BaseRepository {
         const hubPaths = [
           '/finance',
           '/finance/loans',
+          '/finance/loans/home-loan',
+          '/finance/loans/personal-loan',
+          '/finance/loans/car-loan',
+          '/finance/loans/education-loan',
+          '/finance/loans/business-loan',
+          '/finance/loans/gold-loan',
+          '/finance/loans/two-wheeler-loan',
+          '/finance/loans/loan-against-property',
+          '/finance/loans/methodology',
           '/finance/credit-cards',
           '/finance/insurance',
           '/finance/investments',
@@ -294,6 +327,8 @@ export class SeoSitemapRepository extends BaseRepository {
           '/finance/glossary',
           '/finance/guides',
           '/finance/compare',
+          '/finance/eligibility',
+          '/finance/credit-score',
         ];
         const now = new Date();
         return [
@@ -349,7 +384,10 @@ export class SeoSitemapRepository extends BaseRepository {
             take: 2000,
           }),
         ]);
+        const now = new Date();
+        const constructionHubs = ['/construction', '/construction/faqs', '/construction/guides'];
         return [
+          ...constructionHubs.map((path) => ({ loc: `${siteUrl}${path}`, lastmod: now })),
           ...materials.map((r) => ({
             loc: `${siteUrl}/construction/materials/${r.id}`,
             lastmod: r.updatedAt,
@@ -387,7 +425,10 @@ export class SeoSitemapRepository extends BaseRepository {
             take: 2000,
           }),
         ]);
+        const now = new Date();
+        const autoHubs = ['/automobile', '/automobile/faqs', '/automobile/guides'];
         return [
+          ...autoHubs.map((path) => ({ loc: `${siteUrl}${path}`, lastmod: now })),
           ...vehicles.map((r) => ({
             loc: `${siteUrl}/automobile/vehicles/${r.slug}`,
             lastmod: r.updatedAt,

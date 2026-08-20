@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { JsonLd, breadcrumbJsonLd } from '@/components/seo/json-ld';
 import { ModuleHubShell } from '@/components/hub/module-hub-shell';
 import { HubSectionHeader } from '@/components/hub/hub-section-header';
 import { HubCalculatorSection } from '@/components/hub/hub-calculator-section';
@@ -750,63 +751,73 @@ export default async function FinancePage() {
 
   const faqs = apiFaqs.length >= 6 ? apiFaqs : MOCK_FAQS;
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
+
   return (
-    <ModuleHubShell
-      moduleKey="finance"
-      title={page.h1}
-      description={page.intro}
-      showAd={false}
-      showIntentSelector
-    >
-      <HubCalculatorSection
-        title="Popular finance calculators"
-        previewItems={calculatorPreview}
-        allItems={allFinanceCalculatorItems}
-        previewCount={8}
+    <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', url: siteUrl },
+          { name: 'Finance', url: `${siteUrl}/finance` },
+        ])}
       />
+      <ModuleHubShell
+        moduleKey="finance"
+        title={page.h1}
+        description={page.intro}
+        showAd={false}
+        showIntentSelector
+      >
+        <HubCalculatorSection
+          title="Popular finance calculators"
+          previewItems={calculatorPreview}
+          allItems={allFinanceCalculatorItems}
+          previewCount={8}
+        />
 
-      <HubProductSection
-        title="Explore financial products"
-        previewItems={productPreview}
-        allItems={allFinanceProductItems}
-        previewCount={7}
-      />
+        <HubProductSection
+          title="Explore financial products"
+          previewItems={productPreview}
+          allItems={allFinanceProductItems}
+          previewCount={7}
+        />
 
-      <section aria-labelledby="compare-heading">
-        <h2 id="compare-heading" className="sr-only">
-          Compare rates and products
-        </h2>
-        <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-          <HubCompareTable
-            title="Compare financial products"
-            variant="panel"
-            tabGroups={compareTabGroups}
-            activeTab="Home Loans"
-            viewAllHref="/finance/compare"
-            subtitle="Compare top products side by side and choose the best."
-            headerLinkHref="/finance/compare"
-            headerLinkLabel="Compare now →"
-          />
-          <HubRatesList
-            title="Latest interest rates"
-            items={rateItems}
-            footer={`Rates updated on ${formatRatesDate()}`}
-            viewAllHref="/finance/rates"
-            variant="panel"
-          />
-          <HubFeaturedStack
-            title="Featured financial products"
-            items={featuredItems}
-            viewAllHref="/finance/loans"
-            variant="panel"
-            layout="stack"
-          />
-        </div>
-      </section>
+        <section aria-labelledby="compare-heading">
+          <h2 id="compare-heading" className="sr-only">
+            Compare rates and products
+          </h2>
+          <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
+            <HubCompareTable
+              title="Compare financial products"
+              variant="panel"
+              tabGroups={compareTabGroups}
+              activeTab="Home Loans"
+              viewAllHref="/finance/compare"
+              subtitle="Compare top products side by side and choose the best."
+              headerLinkHref="/finance/compare"
+              headerLinkLabel="Compare now →"
+            />
+            <HubRatesList
+              title="Latest interest rates"
+              items={rateItems}
+              footer={`Rates updated on ${formatRatesDate()}`}
+              viewAllHref="/finance/rates"
+              variant="panel"
+            />
+            <HubFeaturedStack
+              title="Featured financial products"
+              items={featuredItems}
+              viewAllHref="/finance/loans"
+              variant="panel"
+              layout="stack"
+            />
+          </div>
+        </section>
 
-      <HubGuideGrid items={guides} viewAllHref="/finance/guides" />
+        <HubGuideGrid items={guides} viewAllHref="/finance/guides" />
 
-      <HubFaqSection faqs={faqs} viewAllHref="/finance/faqs" />
-    </ModuleHubShell>
+        <HubFaqSection faqs={faqs} viewAllHref="/finance/faqs" />
+      </ModuleHubShell>
+    </>
   );
 }

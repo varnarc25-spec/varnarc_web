@@ -9,6 +9,7 @@ import { getApiAccessToken } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Bookmarks',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/bookmarks' },
 };
 
@@ -41,7 +42,10 @@ export default async function BookmarksPage() {
       {items.length ? (
         <BookmarksList initialItems={items} />
       ) : (
-        <EmptyState title="Nothing saved yet" message="Save articles and tools to find them here." />
+        <EmptyState
+          title="Nothing saved yet"
+          message="Save articles and tools to find them here."
+        />
       )}
     </PageShell>
   );

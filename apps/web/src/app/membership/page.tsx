@@ -10,6 +10,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags';
 
 export const metadata: Metadata = {
   title: 'Membership',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/membership' },
 };
 
@@ -53,17 +54,23 @@ export default async function MembershipPage() {
       <AccountNav />
 
       {!enabled ? (
-        <p className="text-sm text-slate-600">Premium billing is not enabled on this environment.</p>
+        <p className="text-sm text-slate-600">
+          Premium billing is not enabled on this environment.
+        </p>
       ) : membership?.subscription ? (
         <div className="max-w-lg space-y-4 rounded-xl border border-slate-200 p-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current plan</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Current plan
+            </p>
             <p className="text-xl font-bold text-[#0b1f3a]">{membership.subscription.plan.name}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Status</p>
-              <p className="font-medium capitalize">{membership.subscription.status.toLowerCase()}</p>
+              <p className="font-medium capitalize">
+                {membership.subscription.status.toLowerCase()}
+              </p>
             </div>
             <div>
               <p className="text-slate-500">Renews / ends</p>
@@ -77,7 +84,10 @@ export default async function MembershipPage() {
           {membership.isPremium && membership.subscription.status === 'ACTIVE' ? (
             <CancelMembershipButton />
           ) : null}
-          <Link href="/premium" className="inline-block text-sm font-medium text-[var(--varnarc-brand)] hover:underline">
+          <Link
+            href="/premium"
+            className="inline-block text-sm font-medium text-[var(--varnarc-brand)] hover:underline"
+          >
             Change plan
           </Link>
         </div>

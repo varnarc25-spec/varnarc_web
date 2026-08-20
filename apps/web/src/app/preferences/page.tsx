@@ -7,6 +7,7 @@ import { auth0 } from '@/lib/auth0';
 
 export const metadata: Metadata = {
   title: 'Preferences',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/preferences' },
 };
 

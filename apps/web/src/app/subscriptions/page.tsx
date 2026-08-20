@@ -7,6 +7,7 @@ import { auth0 } from '@/lib/auth0';
 
 export const metadata: Metadata = {
   title: 'My Subscriptions',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/subscriptions' },
 };
 
@@ -17,7 +18,7 @@ export default async function SubscriptionsPage() {
   return (
     <PageShell
       title="My Subscriptions"
-        description="Follow authors, categories, topics, and tags for a personalized article feed."
+      description="Follow authors, categories, topics, and tags for a personalized article feed."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Subscriptions' }]}
     >
       <AccountNav />

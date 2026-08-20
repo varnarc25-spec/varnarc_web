@@ -9,6 +9,7 @@ import { getApiAccessToken } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'My Activity',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/activity' },
 };
 

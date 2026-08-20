@@ -9,6 +9,7 @@ import { getApiAccessToken } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Reading History',
+  robots: { index: false, follow: false },
   alternates: { canonical: '/reading-history' },
 };
 

@@ -1,10 +1,24 @@
-import { PageHeader, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from '@varnarc/ui';
+import type { Metadata } from 'next';
+import {
+  PageHeader,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Badge,
+} from '@varnarc/ui';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import type { UserProfile } from '@/lib/user-profile';
 import { redirect } from 'next/navigation';
 import { ProfileForm } from '@/components/profile-form';
 import { AccountNav } from '@/components/account-nav';
+
+export const metadata: Metadata = {
+  title: 'Profile',
+  robots: { index: false, follow: false },
+};
 
 export default async function ProfilePage() {
   const session = await auth0.getSession();

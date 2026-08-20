@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { NewsletterForm } from '@/features/newsletter/newsletter-form';
-import { SocialIcon } from '@/components/social-icon';
+import { SocialIcon, getSocialBrandColor } from '@/components/social-icon';
 import { quickTools } from '@/features/home/static-data';
 
 const defaultQuickLinks = [
   { href: '/about', label: 'About Us' },
   { href: '/contact', label: 'Contact' },
+  { href: '/editorial-policy', label: 'Editorial Policy' },
+  { href: '/methodology', label: 'Methodology' },
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms & Conditions' },
   { href: '/disclaimer', label: 'Disclaimer' },
@@ -79,18 +81,22 @@ export function SiteFooter({
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">{brandTagline}</p>
             <div className="mt-4 flex gap-2">
-              {social.map((item) => (
-                <a
-                  key={item.href + item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={item.label}
-                  className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
-                >
-                  <SocialIcon label={item.label} href={item.href} />
-                </a>
-              ))}
+              {social.map((item) => {
+                const brandColor = getSocialBrandColor(item.label, item.href);
+                return (
+                  <a
+                    key={item.href + item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={item.label}
+                    className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
+                    style={{ backgroundColor: brandColor }}
+                  >
+                    <SocialIcon label={item.label} href={item.href} />
+                  </a>
+                );
+              })}
             </div>
             {newsletterEnabled ? (
               <div className="mt-4">

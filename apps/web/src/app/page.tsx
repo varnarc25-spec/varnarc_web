@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   fetchArticles,
   fetchBusinesses,
@@ -12,6 +13,15 @@ import { StaticHomePage } from '@/features/home/static-home-page';
 import { isClassicHomeLayout } from '@/features/home/classic-home-renderer';
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Varnarc — Financial Calculators, Guides, Comparisons & Smart Tools for India',
+  description:
+    'Free EMI calculators, loan comparisons, expert reviews, construction cost tools & solar calculators. Make smarter financial and lifestyle decisions with Varnarc.',
+  alternates: {
+    canonical: '/',
+  },
+};
 
 /**
  * Homepage uses the CMS default layout when configured.
@@ -29,7 +39,11 @@ export default async function HomePage() {
   let trendingLimit = 8;
   for (const section of layout.sections) {
     for (const instance of section.widgetInstances ?? []) {
-      const settings = (instance.settings || {}) as { source?: string; categoryId?: string; limit?: number };
+      const settings = (instance.settings || {}) as {
+        source?: string;
+        categoryId?: string;
+        limit?: number;
+      };
       if (settings.source === 'category' && settings.categoryId) {
         categoryIds.add(settings.categoryId);
       }
@@ -45,17 +59,25 @@ export default async function HomePage() {
   const classic = isClassicHomeLayout(layout);
   const articleLimit = classic ? 12 : 12;
 
-  const [articles, featured, reviews, calculators, businesses, comparisons, trending, ...categoryResults] =
-    await Promise.all([
-      fetchArticles(articleLimit),
-      fetchArticles(articleLimit, { featured: true }),
-      fetchReviews(12),
-      fetchCalculators(12),
-      fetchBusinesses(12),
-      fetchComparisons(8),
-      fetchTrendingSearches(trendingLimit),
-      ...[...categoryIds].map((categoryId) => fetchArticles(articleLimit, { categoryId })),
-    ]);
+  const [
+    articles,
+    featured,
+    reviews,
+    calculators,
+    businesses,
+    comparisons,
+    trending,
+    ...categoryResults
+  ] = await Promise.all([
+    fetchArticles(articleLimit),
+    fetchArticles(articleLimit, { featured: true }),
+    fetchReviews(12),
+    fetchCalculators(12),
+    fetchBusinesses(12),
+    fetchComparisons(8),
+    fetchTrendingSearches(trendingLimit),
+    ...[...categoryIds].map((categoryId) => fetchArticles(articleLimit, { categoryId })),
+  ]);
 
   const articlesByCategory: Record<string, typeof articles.data> = {};
   [...categoryIds].forEach((categoryId, index) => {
