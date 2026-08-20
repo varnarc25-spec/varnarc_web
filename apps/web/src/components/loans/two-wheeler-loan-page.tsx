@@ -53,7 +53,7 @@ import {
   TW_DEFAULT_GUIDES,
   TW_DECISION_HERO_ASSET,
   TW_ILLUSTRATIVE_RATE,
-  TW_INTRO,
+  TW_LOAN_INTRO,
   TW_RELATED_CALCULATORS,
 } from '@/lib/two-wheeler-loan-page';
 
@@ -120,7 +120,7 @@ export function TwoWheelerLoanPage({
   const cmsSections = parseContentSections(category.contentSections);
 
   const h1 = 'Plan and Compare Two-Wheeler Loans';
-  const intro = category.introduction?.trim() || TW_INTRO;
+  const intro = category.introduction?.trim() || TW_LOAN_INTRO;
   const heroImageUrl = resolveTwHeroImage(category);
   const heroImageAlt =
     category.heroImageAlt?.trim() ||

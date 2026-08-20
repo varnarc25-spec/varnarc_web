@@ -248,7 +248,7 @@ export default async function ReviewDetailPage({ params }: Props) {
               </Link>
               {' · '}
               <Link
-                href={`/contact?type=correction&page=${encodeURIComponent(`/reviews/${data.slug}`)}`}
+                href={`/contact?type=correction&page=${encodeURIComponent(`/reviews/${slug}`)}`}
                 className="font-semibold text-blue-700 hover:underline"
               >
                 Report a correction

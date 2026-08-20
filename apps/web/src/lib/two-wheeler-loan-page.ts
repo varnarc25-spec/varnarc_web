@@ -124,30 +124,44 @@ export function parseTwoWheelerMoneyInput(raw: string | number | null | undefine
 
 export type { PrepaymentImpact, PrepaymentMode, EmiResult };
 
-export function estimateTwPrepaymentImpact(input: {
-  outstanding: number;
-  annualRatePercent: number;
-  remainingMonths: number;
-  prepaymentAmount: number;
-  mode: PrepaymentMode;
-}): PrepaymentImpact | null {
-  return estimateHomeLoanPrepaymentImpact(input);
-}
-
 export type TwAffordabilityEstimate = {
   comfortableEmi: number;
   loanCapacity: number;
   vehicleBudget: number;
+  /** Aliases used by UI sections */
+  maxEmi: number;
+  maxLoan: number;
+  indicativeBudget: number;
 };
 
-export function estimateTwAffordability(input: {
-  monthlyIncome: number;
-  existingEmis: number;
-  availableDownPayment: number;
-  annualRatePercent: number;
-  tenureYears: number;
-  foirRatio?: number;
-}): TwAffordabilityEstimate | null {
+export function estimateTwAffordability(
+  monthlyIncomeOrInput:
+    | number
+    | {
+        monthlyIncome: number;
+        existingEmis: number;
+        availableDownPayment: number;
+        annualRatePercent: number;
+        tenureYears: number;
+        foirRatio?: number;
+      },
+  existingEmisArg?: number,
+  availableDownPaymentArg?: number,
+  annualRatePercentArg?: number,
+  tenureMonthsOrYearsArg?: number,
+): TwAffordabilityEstimate | null {
+  const input =
+    typeof monthlyIncomeOrInput === 'number'
+      ? {
+          monthlyIncome: monthlyIncomeOrInput,
+          existingEmis: existingEmisArg ?? 0,
+          availableDownPayment: availableDownPaymentArg ?? 0,
+          annualRatePercent: annualRatePercentArg ?? TW_ILLUSTRATIVE_RATE,
+          // Call sites historically passed tenure in months as the 5th arg.
+          tenureYears: (tenureMonthsOrYearsArg ?? TW_DEFAULT_TENURE_YEARS * 12) / 12,
+        }
+      : monthlyIncomeOrInput;
+
   const comfortableEmi = estimateAffordableEmi({
     monthlyIncome: input.monthlyIncome,
     existingEmis: input.existingEmis,
@@ -166,47 +180,101 @@ export function estimateTwAffordability(input: {
   const downPayment = Number.isFinite(input.availableDownPayment)
     ? Math.max(0, input.availableDownPayment)
     : 0;
+  const vehicleBudget = loanCapacity + downPayment;
 
   return {
     comfortableEmi,
     loanCapacity,
-    vehicleBudget: loanCapacity + downPayment,
+    vehicleBudget,
+    maxEmi: comfortableEmi,
+    maxLoan: loanCapacity,
+    indicativeBudget: vehicleBudget,
   };
+}
+
+export function estimateTwPrepaymentImpact(
+  outstandingOrInput:
+    | number
+    | {
+        outstanding: number;
+        annualRatePercent: number;
+        remainingMonths: number;
+        prepaymentAmount: number;
+        mode: PrepaymentMode;
+      },
+  annualRatePercentArg?: number,
+  remainingMonthsArg?: number,
+  prepaymentAmountArg?: number,
+  modeArg?: PrepaymentMode,
+): PrepaymentImpact | null {
+  const input =
+    typeof outstandingOrInput === 'number'
+      ? {
+          outstanding: outstandingOrInput,
+          annualRatePercent: annualRatePercentArg ?? TW_ILLUSTRATIVE_RATE,
+          remainingMonths: remainingMonthsArg ?? 12,
+          prepaymentAmount: prepaymentAmountArg ?? 0,
+          mode: modeArg ?? ('reduce-tenure' as PrepaymentMode),
+        }
+      : outstandingOrInput;
+  return estimateHomeLoanPrepaymentImpact(input);
 }
 
 export const TW_LOAN_INTRO =
   'Estimate your down payment, loan requirement, EMI and total financing cost before comparing available Two-Wheeler Loan options.';
 
+/** @deprecated Prefer TW_LOAN_INTRO */
+export const TW_INTRO = TW_LOAN_INTRO;
+
+export const TW_DOCUMENT_GROUPS = [
+  {
+    title: 'Identity',
+    items: ['Aadhaar / PAN', 'Passport or other accepted photo ID'],
+  },
+  {
+    title: 'Address',
+    items: ['Utility bill / rental agreement', 'Aadhaar address (if accepted)'],
+  },
+  {
+    title: 'Income',
+    items: ['Salary slips or IT returns', 'Bank statements as requested'],
+  },
+  {
+    title: 'Vehicle',
+    items: ['Quotation / invoice', 'RC and insurance for used vehicles'],
+  },
+] as const;
+
 export const TW_NEW_VS_USED_ROWS = [
   {
     label: 'Valuation',
-    newTw: 'Invoice / showroom price',
-    usedTw: 'Vehicle valuation or inspection may apply',
+    newVehicle: 'Invoice / showroom price',
+    usedVehicle: 'Vehicle valuation or inspection may apply',
   },
   {
     label: 'Vehicle Age',
-    newTw: 'Current-model or new stock',
-    usedTw: 'Age and condition are reviewed',
+    newVehicle: 'Current-model or new stock',
+    usedVehicle: 'Age and condition are reviewed',
   },
   {
     label: 'Documentation',
-    newTw: 'Dealer invoice / purchase papers common',
-    usedTw: 'Ownership and registration reviewed carefully',
+    newVehicle: 'Dealer invoice / purchase papers common',
+    usedVehicle: 'Ownership and registration reviewed carefully',
   },
   {
     label: 'Potential Tenure',
-    newTw: 'Options vary by lender and ticket size',
-    usedTw: 'May be shorter depending on product policy',
+    newVehicle: 'Options vary by lender and ticket size',
+    usedVehicle: 'May be shorter depending on product policy',
   },
   {
     label: 'Financing Structure',
-    newTw: 'Follows each lender\u2019s new-vehicle policy',
-    usedTw: 'May differ by valuation and age rules',
+    newVehicle: 'Follows each lender\u2019s new-vehicle policy',
+    usedVehicle: 'May differ by valuation and age rules',
   },
   {
     label: 'Dealer / Lender Availability',
-    newTw: 'Widely available through dealers and lenders',
-    usedTw: 'Availability varies by lender and vehicle profile',
+    newVehicle: 'Widely available through dealers and lenders',
+    usedVehicle: 'Availability varies by lender and vehicle profile',
   },
 ] as const;
 
@@ -254,50 +322,64 @@ export const TW_DEALER_LENDER_COMPARE = [
 
 export const TW_FEE_TYPES = [
   {
-    key: 'processing',
-    title: 'Processing Fee',
-    detail: 'Charged by some lenders when processing an application. Confirm GST and refund rules.',
+    label: 'Processing Fee',
+    note: 'Charged by some lenders when processing an application. Confirm GST and refund rules.',
   },
   {
-    key: 'documentation',
-    title: 'Documentation Charges',
-    detail: 'Admin or documentation fees may appear on the sanction letter \u2014 verify before accepting.',
+    label: 'Documentation Charges',
+    note: 'Admin or documentation fees may appear on the sanction letter — verify before accepting.',
   },
   {
-    key: 'prepayment',
-    title: 'Prepayment / Foreclosure',
-    detail: 'Prepayment or foreclosure charges are product-specific. Confirm lock-in and fee terms on the offer letter.',
+    label: 'Prepayment / Foreclosure',
+    note: 'Prepayment or foreclosure charges are product-specific. Confirm lock-in and fee terms on the offer letter.',
   },
   {
-    key: 'other',
-    title: 'Other Lender Charges',
-    detail: 'Late payment, bounce, or statement fees may apply \u2014 check the schedule of charges.',
+    label: 'Other Lender Charges',
+    note: 'Late payment, bounce, or statement fees may apply — check the schedule of charges.',
   },
 ] as const;
 
 export const TW_CLOSURE_STEPS = [
-  'Final Payment',
-  'Loan Closure Confirmation',
-  'NOC / Closure Documents',
-  'Hypothecation Removal Process',
-  'Updated Vehicle Records',
+  {
+    step: 'Final Payment',
+    detail: 'Clear the outstanding balance including applicable charges.',
+  },
+  {
+    step: 'Loan Closure Confirmation',
+    detail: 'Request written confirmation that the account is closed.',
+  },
+  {
+    step: 'NOC / Closure Documents',
+    detail: 'Collect NOC and related closure paperwork from the lender.',
+  },
+  {
+    step: 'Hypothecation Removal Process',
+    detail: 'Submit documents to the transport authority to update the RC.',
+  },
+  {
+    step: 'Updated Vehicle Records',
+    detail: 'Confirm hypothecation removal appears on the registration record.',
+  },
 ] as const;
 
 export const TW_TIMELINE_STEPS = [
-  'Set Vehicle Budget',
-  'Choose Motorcycle / Scooter',
-  'Decide New / Used',
-  'Plan Down Payment',
-  'Estimate EMI',
-  'Compare Finance Options',
-  'Check Eligibility',
-  'Prepare Documents',
-  'Apply',
-  'Verification',
-  'Lender Decision',
-  'Vehicle Purchase / Disbursement',
-  'Repayment',
-  'Loan Closure / Hypothecation Removal',
+  { step: 'Set Vehicle Budget', detail: 'Decide on-road budget and comfort EMI.' },
+  { step: 'Choose Motorcycle / Scooter', detail: 'Shortlist models that fit use and budget.' },
+  { step: 'Decide New / Used', detail: 'Compare documentation and financing differences.' },
+  { step: 'Plan Down Payment', detail: 'Set how much you can pay upfront.' },
+  { step: 'Estimate EMI', detail: 'Illustrate EMI across tenure options.' },
+  { step: 'Compare Finance Options', detail: 'Review lenders, rates and fees.' },
+  { step: 'Check Eligibility', detail: 'Confirm profile and documentation readiness.' },
+  { step: 'Prepare Documents', detail: 'Gather ID, income and vehicle papers.' },
+  { step: 'Apply', detail: 'Submit application with the chosen lender or dealer.' },
+  { step: 'Verification', detail: 'Lender reviews income, KYC and vehicle details.' },
+  { step: 'Lender Decision', detail: 'Sanction letter outlines amount and terms.' },
+  { step: 'Vehicle Purchase / Disbursement', detail: 'Funds are released per lender process.' },
+  { step: 'Repayment', detail: 'Pay EMIs on schedule and track statements.' },
+  {
+    step: 'Loan Closure / Hypothecation Removal',
+    detail: 'Close the loan and clear RC endorsement.',
+  },
 ] as const;
 
 export const TW_SALARIED_NOTES = [

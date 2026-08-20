@@ -134,3 +134,9 @@ export function filterTwoWheelerCatalog(
     );
   });
 }
+
+/** Short aliases used by older call sites / tests */
+export const resolveTwProductFields = resolveTwoWheelerProductFields;
+export const formatTwVehicleConditionLabel = formatTwoWheelerVehicleConditionLabel;
+export const formatTwFinancingPercentLabel = formatTwoWheelerFinancingPercentLabel;
+export const filterTwLoanCatalog = filterTwoWheelerCatalog;

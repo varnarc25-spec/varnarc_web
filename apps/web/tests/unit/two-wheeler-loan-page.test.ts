@@ -128,7 +128,7 @@ describe('product fields', () => {
 
   it('formats condition label', () => {
     expect(formatTwVehicleConditionLabel('new')).toBe('New');
-    expect(formatTwVehicleConditionLabel('unknown')).toBe('Not specified');
+    expect(formatTwVehicleConditionLabel(null)).toBe('Not currently available');
   });
 
   it('filters catalog by condition', () => {

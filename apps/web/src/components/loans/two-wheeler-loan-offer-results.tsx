@@ -26,12 +26,11 @@ import {
   shouldExposePaginationUi,
 } from '@/lib/loan-catalog';
 import { calculatorHref, financeEligibilityPath } from '@/lib/finance-routes';
-import { formatTwRateTypeLabel, illustrativeTwOfferEmi } from '@/lib/two-wheeler-loan-page';
+import { illustrativeTwOfferEmi } from '@/lib/two-wheeler-loan-page';
 import {
-  filterTwLoanCatalog,
-  formatTwFinancingPercentLabel,
-  formatTwVehicleConditionLabel,
-  resolveTwProductFields,
+  filterTwoWheelerCatalog,
+  formatTwoWheelerVehicleConditionLabel,
+  resolveTwoWheelerProductFields,
 } from '@/lib/two-wheeler-loan-product';
 import { getRateFreshness } from '@/lib/loan-rate-freshness';
 import type { LoanFilterState } from '@/components/loans/loan-filters';
@@ -63,10 +62,9 @@ function OfferRow({ loan }: { loan: FinanceLoan }) {
   const lenderName = loan.bank?.name ?? 'Lender';
   const offerEmi = illustrativeTwOfferEmi(loan, loanRequirement, tenureMonths);
   const startingRate = toNumber(loan.interestRateMin) ?? toNumber(loan.interestRate);
-  const rateTypeLabel = formatTwRateTypeLabel(loan.rateType);
   const freshness = getRateFreshness(loan.rateLastVerifiedAt);
-  const twFields = resolveTwProductFields(loan);
-  const vehicleLabel = formatTwVehicleConditionLabel(twFields.vehicleCondition);
+  const twFields = resolveTwoWheelerProductFields(loan);
+  const vehicleLabel = formatTwoWheelerVehicleConditionLabel(twFields.vehicleCondition);
 
   const emiCalcHref = calculatorHref('bike-loan-emi', {
     amount: loanRequirement,
@@ -280,10 +278,10 @@ export function TwoWheelerLoanOfferResults({
   const { catalog: baseCatalog } = prepareLoanCatalog(loans, featuredLoans);
   const catalog = useMemo(
     () =>
-      filterTwLoanCatalog(baseCatalog, {
+      filterTwoWheelerCatalog(baseCatalog, {
         vehicleCondition: filterState?.vehicleCondition,
         financingPercentMin: filterState?.financingPercentMin
-          ? Number(filterState.financingPercentMin)
+          ? String(filterState.financingPercentMin)
           : undefined,
       }),
     [baseCatalog, filterState?.vehicleCondition, filterState?.financingPercentMin],
