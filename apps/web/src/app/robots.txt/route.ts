@@ -1,8 +1,19 @@
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
+import { headers as nextHeaders } from 'next/headers';
 
-function fixLocalhostUrls(text: string) {
-  return text.replace(/https?:\/\/localhost:\d+/g, siteUrl);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+const PROD_SITE_URL = 'https://varnarc.com';
+
+function resolvePublicUrl(requestHeaders: Headers): string {
+  const host = requestHeaders.get('host');
+  if (host && !host.includes('localhost')) {
+    const proto = requestHeaders.get('x-forwarded-proto') || 'https';
+    return `${proto}://${host}`;
+  }
+  return PROD_SITE_URL;
+}
+
+function ensureProductionUrls(text: string, publicUrl: string) {
+  return text.replace(/https?:\/\/localhost:\d+/g, publicUrl);
 }
 
 export async function GET() {
@@ -12,18 +23,21 @@ export async function GET() {
     });
   }
 
+  const reqHeaders = await nextHeaders();
+  const publicUrl = resolvePublicUrl(reqHeaders);
+
   try {
     const res = await fetch(`${apiUrl}/seo/robots.txt`, {
       next: { revalidate: 300 },
       signal: AbortSignal.timeout(5000),
     });
     const text = await res.text();
-    return new Response(fixLocalhostUrls(text), {
+    return new Response(ensureProductionUrls(text, publicUrl), {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch {
     return new Response(
-      `User-agent: *\nAllow: /\nDisallow: /profile\nSitemap: ${siteUrl}/sitemap.xml\n`,
+      `User-agent: *\nAllow: /\nDisallow: /profile\nSitemap: ${publicUrl}/sitemap.xml\n`,
       {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       },

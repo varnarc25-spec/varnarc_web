@@ -1,5 +1,16 @@
+import { headers as nextHeaders } from 'next/headers';
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
+const PROD_SITE_URL = 'https://varnarc.com';
+
+function resolvePublicUrl(requestHeaders: Headers): string {
+  const host = requestHeaders.get('host');
+  if (host && !host.includes('localhost')) {
+    const proto = requestHeaders.get('x-forwarded-proto') || 'https';
+    return `${proto}://${host}`;
+  }
+  return PROD_SITE_URL;
+}
 
 const STATIC_FALLBACK_URLS: Record<string, string[]> = {
   pages: [
@@ -62,37 +73,39 @@ const STATIC_FALLBACK_URLS: Record<string, string[]> = {
   automobile: ['/automobile', '/automobile/faqs', '/automobile/guides'],
 };
 
-function buildFallbackUrlSet(type: string) {
+function buildFallbackUrlSet(type: string, publicUrl: string) {
   const paths = STATIC_FALLBACK_URLS[type] ?? [];
   const now = new Date().toISOString();
   const entries = paths
-    .map((p) => `  <url>\n    <loc>${siteUrl}${p}</loc>\n    <lastmod>${now}</lastmod>\n  </url>`)
+    .map((p) => `  <url>\n    <loc>${publicUrl}${p}</loc>\n    <lastmod>${now}</lastmod>\n  </url>`)
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
 }
 
-function fixLocalhostUrls(xml: string) {
-  return xml.replace(/https?:\/\/localhost:\d+/g, siteUrl);
+function ensureProductionUrls(xml: string, publicUrl: string) {
+  return xml.replace(/https?:\/\/localhost:\d+/g, publicUrl);
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
   const normalized = type.replace(/\.xml$/i, '');
-  const headers = { 'Content-Type': 'application/xml; charset=utf-8' };
+  const reqHeaders = await nextHeaders();
+  const publicUrl = resolvePublicUrl(reqHeaders);
+  const respHeaders = { 'Content-Type': 'application/xml; charset=utf-8' };
   try {
     const res = await fetch(`${apiUrl}/seo/sitemap/${normalized}`, {
       next: { revalidate: 300 },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
-      return new Response(buildFallbackUrlSet(normalized), { headers });
+      return new Response(buildFallbackUrlSet(normalized, publicUrl), { headers: respHeaders });
     }
     const xml = await res.text();
     if (!xml || xml.trim().length < 100) {
-      return new Response(buildFallbackUrlSet(normalized), { headers });
+      return new Response(buildFallbackUrlSet(normalized, publicUrl), { headers: respHeaders });
     }
-    return new Response(fixLocalhostUrls(xml), { headers });
+    return new Response(ensureProductionUrls(xml, publicUrl), { headers: respHeaders });
   } catch {
-    return new Response(buildFallbackUrlSet(normalized), { headers });
+    return new Response(buildFallbackUrlSet(normalized, publicUrl), { headers: respHeaders });
   }
 }
