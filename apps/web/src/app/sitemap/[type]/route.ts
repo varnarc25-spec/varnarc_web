@@ -71,6 +71,10 @@ function buildFallbackUrlSet(type: string) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
 }
 
+function fixLocalhostUrls(xml: string) {
+  return xml.replace(/https?:\/\/localhost:\d+/g, siteUrl);
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
   const normalized = type.replace(/\.xml$/i, '');
@@ -87,7 +91,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ type: s
     if (!xml || xml.trim().length < 100) {
       return new Response(buildFallbackUrlSet(normalized), { headers });
     }
-    return new Response(xml, { headers });
+    return new Response(fixLocalhostUrls(xml), { headers });
   } catch {
     return new Response(buildFallbackUrlSet(normalized), { headers });
   }

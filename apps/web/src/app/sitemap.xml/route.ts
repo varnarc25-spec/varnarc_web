@@ -23,6 +23,10 @@ function buildFallbackSitemapIndex() {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
 }
 
+function fixLocalhostUrls(xml: string) {
+  return xml.replace(/https?:\/\/localhost:\d+/g, siteUrl);
+}
+
 export async function GET() {
   const headers = { 'Content-Type': 'application/xml; charset=utf-8' };
   try {
@@ -37,7 +41,7 @@ export async function GET() {
     if (!xml || xml.trim().length < 100) {
       return new Response(buildFallbackSitemapIndex(), { headers });
     }
-    return new Response(xml, { headers });
+    return new Response(fixLocalhostUrls(xml), { headers });
   } catch {
     return new Response(buildFallbackSitemapIndex(), { headers });
   }
