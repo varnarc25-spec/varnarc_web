@@ -34,7 +34,7 @@ type GoogleAdsenseUnitProps = {
 };
 
 /**
- * Renders a single AdSense ad unit. Requires GoogleAdsenseScript in the document once per page.
+ * Renders a single AdSense ad unit. The AdSense loader script is included in the root layout.
  */
 export function GoogleAdsenseUnit({
   client,

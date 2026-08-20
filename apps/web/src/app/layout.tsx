@@ -12,7 +12,6 @@ import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-inte
 import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
 import { isCmpConfigured } from '@/lib/cmp-config';
 import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
-import { GoogleAdsenseScript } from '@/components/business/google-adsense';
 import { getAdsenseClient } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
@@ -231,6 +230,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <link rel="stylesheet" href={fontsHref} />
           </>
         ) : null}
+        {adsenseClient ? (
+          <>
+            <meta name="google-adsense-account" content={adsenseClient} />
+            <script
+              async
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+              crossOrigin="anonymous"
+            />
+          </>
+        ) : null}
         {isCmpConfigured() ? <CmpSdkScript /> : null}
         {isCmpConfigured() && isCmpTestScriptsEnabled() ? (
           <script id="cmp-test-scripts" src="/cmp-test-scripts.js" defer />
@@ -297,7 +306,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <AnalyticsIntegrationsRoot />
           <AnalyticsPageBeaconRoot />
           <WebVitalsReporterRoot />
-          {adsenseClient ? <GoogleAdsenseScript client={adsenseClient} /> : null}
         </AppProviders>
       </body>
     </html>

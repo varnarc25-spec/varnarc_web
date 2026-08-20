@@ -1,6 +1,8 @@
-/** Publisher ID from AdSense (e.g. ca-pub-1234567890123456). */
+/** Publisher ID from AdSense (override with NEXT_PUBLIC_ADSENSE_CLIENT). */
+export const DEFAULT_ADSENSE_CLIENT = 'ca-pub-6274053387170397';
+
 export function getAdsenseClient(): string | null {
-  const client = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim();
+  const client = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || DEFAULT_ADSENSE_CLIENT;
   return client || null;
 }
 
