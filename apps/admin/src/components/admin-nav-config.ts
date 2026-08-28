@@ -270,6 +270,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: 'Analytics',
         permission: PERMISSIONS.ADVERTISEMENT_VIEW,
       },
+      {
+        href: '/settings/adsense',
+        label: 'AdSense',
+        permission: PERMISSIONS.SETTINGS_MANAGE,
+      },
     ],
   },
   {

@@ -1,7 +1,11 @@
 import { AdCreative } from '@/components/business/ad-creative';
 import { GoogleAdsenseUnit } from '@/components/business/google-adsense';
 import { fetchAdsForPlacement } from '@/lib/ads';
-import { getAdsenseClient, getAdsenseSlotForPlacement } from '@/lib/adsense-config';
+import {
+  fetchAdsensePublicConfig,
+  getAdsenseClientFromConfig,
+  getAdsenseSlotForPlacement,
+} from '@/lib/adsense-config';
 
 type AdBannerProps = {
   slot: string;
@@ -33,8 +37,9 @@ export async function AdBanner({
   const ad = result.data?.ads?.[0];
 
   if (!ad) {
-    const client = getAdsenseClient();
-    const adsenseSlot = getAdsenseSlotForPlacement(slot);
+    const adsense = await fetchAdsensePublicConfig();
+    const client = getAdsenseClientFromConfig(adsense);
+    const adsenseSlot = getAdsenseSlotForPlacement(slot, adsense);
     if (client && adsenseSlot) {
       return <GoogleAdsenseUnit client={client} slot={adsenseSlot} className={className} />;
     }

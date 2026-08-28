@@ -12,7 +12,7 @@ import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-inte
 import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
 import { isCmpConfigured } from '@/lib/cmp-config';
 import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
-import { getAdsenseClient } from '@/lib/adsense-config';
+import { fetchAdsensePublicConfig, getAdsenseClientFromConfig } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
@@ -183,11 +183,12 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [headerUser, menuRes, footerRes, activeTheme] = await Promise.all([
+  const [headerUser, menuRes, footerRes, activeTheme, adsenseConfig] = await Promise.all([
     loadHeaderUser(),
     fetchMenuByLocation('header'),
     fetchMenuByLocation('footer'),
     fetchActiveTheme(),
+    fetchAdsensePublicConfig(),
   ]);
 
   const cmsNav =
@@ -209,7 +210,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const branding = activeTheme?.branding ?? {};
   const footerTokens = activeTheme?.tokens?.footer ?? {};
   const stickyHeader = activeTheme?.tokens?.navigation?.stickyHeader !== false;
-  const adsenseClient = getAdsenseClient();
+  const adsenseClient = getAdsenseClientFromConfig(adsenseConfig);
   const fontsHref = googleFontsHref(
     activeTheme?.googleFonts ?? activeTheme?.fonts?.googleFonts ?? undefined,
   );

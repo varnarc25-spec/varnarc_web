@@ -53,6 +53,25 @@ export const seoDefaultsSettingsSchema = z.object({
   robotsIndexDefault: z.boolean().default(true),
 });
 
+const adsenseClientIdSchema = z
+  .union([
+    z.string().regex(/^ca-pub-\d+$/i, 'Must be a ca-pub-… publisher ID'),
+    z.literal(''),
+    z.null(),
+  ])
+  .optional();
+
+const adsenseSlotIdSchema = z
+  .union([z.string().max(40).regex(/^\d*$/, 'Slot ID must be numeric'), z.null()])
+  .optional();
+
+export const adsenseSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  client: adsenseClientIdSchema,
+  defaultSlot: adsenseSlotIdSchema,
+  slots: z.record(z.string().min(1).max(80), z.string().max(40).regex(/^\d+$/)).default({}),
+});
+
 export const upsertSettingSchema = z.object({
   key: z.string().min(1).max(120),
   value: jsonValueSchema,
@@ -98,6 +117,7 @@ export type MaintenanceSettingsInput = z.infer<typeof maintenanceSettingsSchema>
 export type SecuritySettingsInput = z.infer<typeof securitySettingsSchema>;
 export type CmsDefaultsSettingsInput = z.infer<typeof cmsDefaultsSettingsSchema>;
 export type SeoDefaultsSettingsInput = z.infer<typeof seoDefaultsSettingsSchema>;
+export type AdsenseSettingsInput = z.infer<typeof adsenseSettingsSchema>;
 export type UpsertSettingInput = z.infer<typeof upsertSettingSchema>;
 export type UpsertFeatureFlagInput = z.infer<typeof upsertFeatureFlagSchema>;
 export type CreateHomepageLayoutInput = z.infer<typeof createHomepageLayoutSchema>;

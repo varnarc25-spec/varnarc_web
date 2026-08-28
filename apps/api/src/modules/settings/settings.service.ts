@@ -11,10 +11,12 @@ import type {
   MaintenanceSettingsInput,
   SecuritySettingsInput,
   SeoDefaultsSettingsInput,
+  AdsenseSettingsInput,
   UpsertFeatureFlagInput,
   UpsertSettingInput,
 } from '@varnarc/validation';
 import {
+  adsenseSettingsSchema,
   cmsDefaultsSettingsSchema,
   contactSettingsSchema,
   generalSettingsSchema,
@@ -33,6 +35,7 @@ export const SETTINGS_KEYS = {
   cms: 'settings.cms',
   seoDefaults: 'settings.seo-defaults',
   contact: 'settings.contact',
+  adsense: 'settings.adsense',
 } as const;
 
 const DEFAULT_GENERAL: GeneralSettingsInput = {
@@ -94,6 +97,13 @@ const DEFAULT_CONTACT: ContactSettingsInput = {
   toPrivacy: null,
   publicContactEmail: null,
   resendApiKey: null,
+};
+
+const DEFAULT_ADSENSE: AdsenseSettingsInput = {
+  enabled: true,
+  client: 'ca-pub-6274053387170397',
+  defaultSlot: null,
+  slots: {},
 };
 
 @Injectable()
@@ -333,6 +343,41 @@ export class SettingsService {
       'settings.contact.update',
     );
     return this.getContact();
+  }
+
+  async getAdsense(): Promise<AdsenseSettingsInput> {
+    return this.readJson(SETTINGS_KEYS.adsense, DEFAULT_ADSENSE);
+  }
+
+  async getAdsensePublic() {
+    const settings = await this.getAdsense();
+    const client = settings.client?.trim() || null;
+    if (!settings.enabled || !client) {
+      return {
+        enabled: false,
+        client: null,
+        defaultSlot: null,
+        slots: {} as Record<string, string>,
+      };
+    }
+    return {
+      enabled: true,
+      client,
+      defaultSlot: settings.defaultSlot?.trim() || null,
+      slots: settings.slots ?? {},
+    };
+  }
+
+  async setAdsense(input: AdsenseSettingsInput, actorId: string) {
+    const parsed = adsenseSettingsSchema.parse(input);
+    const merged: AdsenseSettingsInput = {
+      enabled: parsed.enabled,
+      client: parsed.client?.trim() || null,
+      defaultSlot: parsed.defaultSlot?.trim() || null,
+      slots: parsed.slots ?? {},
+    };
+    await this.writeJson(SETTINGS_KEYS.adsense, merged, 'ads', actorId, 'settings.adsense.update');
+    return merged;
   }
 
   async isFeatureEnabled(key: string) {

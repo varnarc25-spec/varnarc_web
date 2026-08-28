@@ -30,6 +30,11 @@ export default async function SettingsHubPage() {
       description: 'Contact form delivery addresses and Resend configuration.',
     },
     {
+      href: '/settings/adsense',
+      title: 'Google AdSense',
+      description: 'Publisher ID and ad unit slots for the public website.',
+    },
+    {
       href: '/settings/contact-messages',
       title: 'Contact inbox',
       description: 'Stored contact form submissions and delivery status.',

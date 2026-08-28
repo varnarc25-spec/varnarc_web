@@ -10,8 +10,10 @@ import {
   maintenanceSettingsSchema,
   securitySettingsSchema,
   seoDefaultsSettingsSchema,
+  adsenseSettingsSchema,
   upsertFeatureFlagSchema,
   upsertSettingSchema,
+  type AdsenseSettingsInput,
   type CmsDefaultsSettingsInput,
   type ContactSettingsInput,
   type CreateThemeInput,
@@ -156,6 +158,27 @@ export class SettingsController {
     @Body(new ZodValidationPipe(contactSettingsSchema)) body: ContactSettingsInput,
   ) {
     return ok(await this.service.setContact(body, user.id));
+  }
+
+  @Get('adsense')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async adsense() {
+    return ok(await this.service.getAdsense());
+  }
+
+  @Public()
+  @Get('adsense/public')
+  async adsensePublic() {
+    return ok(await this.service.getAdsensePublic());
+  }
+
+  @Put('adsense')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async updateAdsense(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(adsenseSettingsSchema)) body: AdsenseSettingsInput,
+  ) {
+    return ok(await this.service.setAdsense(body, user.id));
   }
 
   @Public()

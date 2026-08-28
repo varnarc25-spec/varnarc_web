@@ -48,14 +48,26 @@ export default async function AdvertisementsPage({
       />
 
       <div className="mb-4 flex flex-wrap gap-3 text-sm">
-        <Link href="/advertisements/campaigns" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/advertisements/campaigns"
+          className="text-[var(--varnarc-brand)] hover:underline"
+        >
           Campaigns
         </Link>
-        <Link href="/advertisements/placements" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/advertisements/placements"
+          className="text-[var(--varnarc-brand)] hover:underline"
+        >
           Placements
         </Link>
-        <Link href="/advertisements/analytics" className="text-[var(--varnarc-brand)] hover:underline">
+        <Link
+          href="/advertisements/analytics"
+          className="text-[var(--varnarc-brand)] hover:underline"
+        >
           Analytics
+        </Link>
+        <Link href="/settings/adsense" className="text-[var(--varnarc-brand)] hover:underline">
+          Google AdSense
         </Link>
       </div>
 
