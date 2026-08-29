@@ -1,17 +1,12 @@
-import { auth0 } from '@/lib/auth0';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
 export { getApiBaseUrl };
 
 export async function getApiAccessToken(): Promise<string | null> {
-  try {
-    const audience = process.env.AUTH0_AUDIENCE;
-    const result = await auth0.getAccessToken(audience ? { audience } : undefined);
-    return result?.token ?? null;
-  } catch (error) {
-    console.error('[auth] getAccessToken failed', error);
-    return null;
-  }
+  const jar = await cookies();
+  return jar.get(ADMIN_SESSION_COOKIE)?.value ?? null;
 }
 
 export async function apiServerFetch<T>(

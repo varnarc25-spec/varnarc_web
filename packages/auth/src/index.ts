@@ -311,6 +311,15 @@ export function isAdminRole(roles: readonly string[]): boolean {
   return hasAnyRole(roles, ['super_admin', 'admin']);
 }
 
+/** Only this mailbox may hold the super_admin role. */
+export const SUPER_ADMIN_EMAIL = 'business@varnarc.com';
+
+export const ADMIN_STAFF_ROLES = ['super_admin', 'admin', 'editor'] as const;
+
+export function isSuperAdminEmail(email: string | null | undefined): boolean {
+  return (email ?? '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+}
+
 export const AUTH_ERROR_CODES = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   FORBIDDEN: 'FORBIDDEN',

@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# One-time setup: bind Auth0 secrets + public URLs to varnarc-web or varnarc-admin.
+# One-time setup: public URLs for varnarc-admin, or Auth0 secrets + URLs for varnarc-web.
 # Run AFTER ./deploy/gcp/setup-secrets.sh has created secrets in GCP.
 #
-# Usage (admin):
+# Usage (admin — email/password, no Auth0):
 #   export GCP_PROJECT_ID=myweb-503314
 #   export GCP_REGION=us-central1
-#   export APP_BASE_URL=https://varnarc-admin-414895350436.us-central1.run.app
-#   export API_URL=https://varnarc-api-XXXX.us-central1.run.app/api/v1
-#   export AUTH0_CLIENT_ID=your-admin-auth0-client-id
+#   export APP_BASE_URL=https://admin.varnarc.com
+#   export API_URL=https://api.varnarc.com/api/v1
 #   ./scripts/gcp/configure-cloud-run-frontend.sh admin
 #
 # Usage (web):
@@ -58,6 +57,21 @@ case "$SERVICE" in
     exit 1
     ;;
 esac
+
+if [[ "$SERVICE" == "admin" ]]; then
+  echo "Updating Cloud Run service: $SERVICE_NAME ($GCP_REGION) without Auth0"
+  gcloud run services update "$SERVICE_NAME" \
+    --region="$GCP_REGION" \
+    --port="$CONTAINER_PORT" \
+    --set-env-vars="NODE_ENV=production,APP_BASE_URL=${APP_BASE_URL},API_URL=${API_URL},NEXT_PUBLIC_API_URL=${API_URL}" \
+    --memory=512Mi \
+    --cpu=1 \
+    --quiet
+  echo "Done. $SERVICE_NAME uses in-app email/password via the API."
+  echo "Set ADMIN_JWT_SECRET and ADMIN_BOOTSTRAP_PASSWORD on the API service."
+  echo "First login: business@varnarc.com (super admin)."
+  exit 0
+fi
 
 : "${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID for this Auth0 Regular Web Application}"
 

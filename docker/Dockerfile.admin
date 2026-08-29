@@ -33,12 +33,8 @@ RUN pnpm install --frozen-lockfile || pnpm install
 FROM deps AS build
 ARG NEXT_PUBLIC_ADMIN_URL=http://localhost:3001
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
-ARG NEXT_PUBLIC_AUTH0_CONFIGURED=false
-ARG NEXT_PUBLIC_AUTH0_CLIENT_ID=
 ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_AUTH0_CONFIGURED=$NEXT_PUBLIC_AUTH0_CONFIGURED
-ENV NEXT_PUBLIC_AUTH0_CLIENT_ID=$NEXT_PUBLIC_AUTH0_CLIENT_ID
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=src /work .
 RUN pnpm --filter @varnarc/admin... build
@@ -49,12 +45,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
-ARG NEXT_PUBLIC_AUTH0_CONFIGURED=false
-ARG NEXT_PUBLIC_AUTH0_CLIENT_ID=
-ENV NEXT_PUBLIC_AUTH0_CONFIGURED=$NEXT_PUBLIC_AUTH0_CONFIGURED
-ENV NEXT_PUBLIC_AUTH0_CLIENT_ID=$NEXT_PUBLIC_AUTH0_CLIENT_ID
-ENV AUTH0_CLIENT_ID=$NEXT_PUBLIC_AUTH0_CLIENT_ID
-
 COPY --from=build --chown=varnarc:varnarc /app/apps/admin/.next/standalone ./
 COPY --from=build --chown=varnarc:varnarc /app/apps/admin/.next/static ./apps/admin/.next/static
 COPY --from=build --chown=varnarc:varnarc /app/apps/admin/public ./apps/admin/public

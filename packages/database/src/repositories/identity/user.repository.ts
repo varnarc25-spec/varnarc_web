@@ -5,11 +5,7 @@ import {
   listActiveWithCursor,
   softDeleteById,
 } from '../base.repository';
-import {
-  paginateWithCursor,
-  type CursorPage,
-  type CursorPageParams,
-} from '../../pagination';
+import { paginateWithCursor, type CursorPage, type CursorPageParams } from '../../pagination';
 
 const userInclude = {
   roles: {
@@ -137,6 +133,41 @@ export class UserRepository extends BaseRepository {
     ]);
 
     return { total, rows: rows as UserWithRoles[] };
+  }
+
+  createStaffUser(data: {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    passwordHash: string;
+  }) {
+    return this.db.user.create({
+      data: {
+        id: data.id,
+        auth0UserId: `local:${data.id}`,
+        email: data.email,
+        displayName: data.displayName ?? data.email.split('@')[0] ?? null,
+        passwordHash: data.passwordHash,
+        emailVerified: true,
+        status: 'ACTIVE',
+        lastLoginAt: new Date(),
+      },
+      include: userInclude,
+    });
+  }
+
+  setPasswordHash(userId: string, passwordHash: string) {
+    return this.db.user.update({
+      where: { id: userId },
+      data: { passwordHash, lastLoginAt: new Date() },
+      include: userInclude,
+    });
+  }
+
+  countWithPassword() {
+    return this.db.user.count({
+      where: { deletedAt: null, passwordHash: { not: null } },
+    });
   }
 
   upsertFromAuth0(data: {

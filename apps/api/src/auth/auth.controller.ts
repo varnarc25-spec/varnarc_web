@@ -2,16 +2,25 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { Auth0ConfigService } from './auth0-config.service';
+import { AdminLocalAuthService } from './admin-local-auth.service';
 import { CurrentUserDecorator } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { CurrentUser } from '@varnarc/types';
+import {
+  adminLoginSchema,
+  createStaffUserSchema,
+  type AdminLoginInput,
+  type CreateStaffUserInput,
+} from '@varnarc/validation';
+import { ZodValidationPipe } from '../common/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly auth0Config: Auth0ConfigService,
+    private readonly adminLocalAuth: AdminLocalAuthService,
   ) {}
 
   @Public()
@@ -21,12 +30,27 @@ export class AuthController {
     return {
       success: true,
       data: {
-        provider: 'auth0',
-        configured: config.configured,
+        provider: 'local+auth0',
+        adminLocal: true,
+        configured: true,
         domain: config.configured ? config.domain : null,
         audience: config.configured ? config.audience : null,
       },
     };
+  }
+
+  @Public()
+  @Post('admin/login')
+  async adminLogin(@Body(new ZodValidationPipe(adminLoginSchema)) body: AdminLoginInput) {
+    return { success: true, data: await this.adminLocalAuth.login(body.email, body.password) };
+  }
+
+  @Post('admin/staff')
+  async createStaff(
+    @CurrentUserDecorator() actor: CurrentUser,
+    @Body(new ZodValidationPipe(createStaffUserSchema)) body: CreateStaffUserInput,
+  ) {
+    return { success: true, data: await this.adminLocalAuth.createStaff(body, actor) };
   }
 
   @UseGuards(JwtAuthGuard)

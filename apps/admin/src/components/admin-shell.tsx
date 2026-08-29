@@ -6,18 +6,17 @@ import { ADMIN_NAV_GROUPS, type AdminNavGroup } from '@/components/admin-nav-con
 import { AdminNavSidebar } from '@/components/admin-nav-sidebar';
 
 function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('') || '?';
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '?'
+  );
 }
 
-function canSeeItem(
-  permission: Permission | null,
-  currentUser: CurrentUser | null,
-): boolean {
+function canSeeItem(permission: Permission | null, currentUser: CurrentUser | null): boolean {
   if (!permission) return true;
   if (!currentUser) return false;
   return hasPermission(currentUser.permissions, permission) || isAdminRole(currentUser.roles);
@@ -67,7 +66,10 @@ export function AdminShell({
                 </span>
               )}
               <span>{displayName}</span>
-              <a href="/auth/logout" className="text-[var(--varnarc-brand)] hover:underline">
+              <a
+                href="/api/admin/auth/logout"
+                className="text-[var(--varnarc-brand)] hover:underline"
+              >
                 Logout
               </a>
             </div>

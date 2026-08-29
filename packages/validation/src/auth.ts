@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { slugSchema, uuidSchema } from './common';
 
-export {
-  updateProfileSchema,
-  type UpdateProfileInput,
-} from './users';
+export { updateProfileSchema, type UpdateProfileInput } from './users';
 
 export const updateUserStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'DISABLED', 'PENDING']),
@@ -37,6 +34,20 @@ export const authSyncSchema = z.object({
   picture: z.string().url().optional().or(z.literal('')),
 });
 
+export const adminLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).max(200),
+});
+
+export const createStaffUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).max(200),
+  displayName: z.string().min(1).max(150).optional().nullable(),
+  roleSlug: z.enum(['admin', 'editor']).default('admin'),
+});
+
 export type AssignUserRolesInput = z.infer<typeof assignUserRolesSchema>;
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
+export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
+export type CreateStaffUserInput = z.infer<typeof createStaffUserSchema>;

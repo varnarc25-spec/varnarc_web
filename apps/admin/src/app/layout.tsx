@@ -1,10 +1,3 @@
-import {
-  AUTH0_LOGOUT_PATH,
-  resolveAppBaseUrlFromHeaders,
-  isAuth0Configured,
-  getAuth0LogoutReturnTo,
-} from '@varnarc/auth';
-import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import type { CurrentUser } from '@varnarc/types';
 import type { ReactNode } from 'react';
@@ -24,58 +17,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-async function syncAndLoadUser(): Promise<{
-  currentUser: CurrentUser | null;
-  sessionPicture: string | null;
-}> {
-  if (!isAuth0Configured()) {
-    return { currentUser: null, sessionPicture: null };
-  }
-
-  const session = await auth0.getSession();
-  if (!session?.user) return { currentUser: null, sessionPicture: null };
-
-  const user = session.user as {
-    sub?: string;
-    email?: string;
-    email_verified?: boolean;
-    name?: string;
-    given_name?: string;
-    family_name?: string;
-    picture?: string;
-  };
-
-  await apiServerFetch('/auth/sync', {
-    method: 'POST',
-    body: JSON.stringify({
-      sub: user.sub,
-      email: user.email,
-      email_verified: user.email_verified,
-      name: user.name,
-      given_name: user.given_name,
-      family_name: user.family_name,
-      picture: user.picture,
-    }),
-  });
-
-  const me = await apiServerFetch<CurrentUser>('/auth/me');
-  if (me.error || !me.data) {
-    return { currentUser: null, sessionPicture: user.picture || null };
-  }
-
-  return {
-    currentUser: me.data,
-    sessionPicture: user.picture || null,
-  };
-}
-
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const pathname = (await headers()).get('x-middleware-pathname') ?? '';
-  const onAuthRoute = pathname.startsWith('/auth');
-  const session = isAuth0Configured() ? await auth0.getSession() : null;
+  const onAuthRoute = pathname === '/login' || pathname.startsWith('/api/admin/auth');
 
-  // Auth routes (login/logout/callback) render without the admin chrome.
-  if (!session?.user || onAuthRoute) {
+  if (onAuthRoute) {
     return (
       <html lang="en">
         <body>
@@ -85,20 +31,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     );
   }
 
-  const { currentUser, sessionPicture } = await syncAndLoadUser();
-  if (!currentUser) {
-    const base = resolveAppBaseUrlFromHeaders(await headers());
-    const returnTo = encodeURIComponent(getAuth0LogoutReturnTo(base));
-    redirect(`${base}${AUTH0_LOGOUT_PATH}?returnTo=${returnTo}`);
+  const me = await apiServerFetch<CurrentUser>('/auth/me');
+  if (!me.data) {
+    redirect('/login');
   }
 
   return (
     <html lang="en">
       <body>
         <Providers>
-          <AdminShell currentUser={currentUser} sessionPicture={sessionPicture}>
-            {children}
-          </AdminShell>
+          <AdminShell currentUser={me.data}>{children}</AdminShell>
         </Providers>
       </body>
     </html>

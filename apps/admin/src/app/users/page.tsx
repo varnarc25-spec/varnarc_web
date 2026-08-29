@@ -1,6 +1,7 @@
 import { PageHeader, Badge, Card, CardHeader, CardTitle, CardDescription } from '@varnarc/ui';
 import { apiServerFetch } from '@/lib/api';
 import Link from 'next/link';
+import { CreateStaffUserForm } from '@/components/create-staff-user-form';
 
 type AdminUser = {
   id: string;
@@ -28,7 +29,7 @@ export default async function UsersPage({
     <div>
       <PageHeader
         title="Users"
-        description="Manage Auth0-synced users, roles, and account status."
+        description="Three office levels: super admin (business@varnarc.com), admin, and editor."
         actions={
           <div className="flex items-center gap-3">
             <a
@@ -65,42 +66,48 @@ export default async function UsersPage({
           </CardHeader>
         </Card>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)]">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] text-[var(--varnarc-subtle)]">
-              <tr>
-                <th className="px-4 py-3 font-medium">User</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Roles</th>
-                <th className="px-4 py-3 font-medium">Last login</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-[var(--varnarc-border)]">
-                  <td className="px-4 py-3">
-                    <Link href={`/users/${user.id}`} className="font-medium text-[var(--varnarc-brand)] hover:underline">
-                      {user.displayName || user.email}
-                    </Link>
-                    <div className="text-xs text-[var(--varnarc-subtle)]">{user.email}</div>
-                  </td>
-                  <td className="px-4 py-3">{user.status}</td>
-                  <td className="px-4 py-3">{(user.roles || []).join(', ') || '—'}</td>
-                  <td className="px-4 py-3 text-[var(--varnarc-subtle)]">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'}
-                  </td>
-                </tr>
-              ))}
-              {!users.length ? (
+        <>
+          <CreateStaffUserForm />
+          <div className="overflow-x-auto rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)]">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] text-[var(--varnarc-subtle)]">
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-[var(--varnarc-subtle)]">
-                    No users yet. Sign in once to sync your Auth0 profile.
-                  </td>
+                  <th className="px-4 py-3 font-medium">User</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Roles</th>
+                  <th className="px-4 py-3 font-medium">Last login</th>
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-[var(--varnarc-border)]">
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="font-medium text-[var(--varnarc-brand)] hover:underline"
+                      >
+                        {user.displayName || user.email}
+                      </Link>
+                      <div className="text-xs text-[var(--varnarc-subtle)]">{user.email}</div>
+                    </td>
+                    <td className="px-4 py-3">{user.status}</td>
+                    <td className="px-4 py-3">{(user.roles || []).join(', ') || '—'}</td>
+                    <td className="px-4 py-3 text-[var(--varnarc-subtle)]">
+                      {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'}
+                    </td>
+                  </tr>
+                ))}
+                {!users.length ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-[var(--varnarc-subtle)]">
+                      No office users yet. Create one above.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

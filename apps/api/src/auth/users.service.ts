@@ -9,7 +9,7 @@ import {
 import { ProfileVisibility, UserStatus } from '@varnarc/database';
 import type { Repositories, UserWithRoles } from '@varnarc/database';
 import type { Auth0TokenClaims, CurrentUser, RoleSlug } from '@varnarc/types';
-import { AUTH_ERROR_CODES } from '@varnarc/auth';
+import { AUTH_ERROR_CODES, isSuperAdminEmail } from '@varnarc/auth';
 import type {
   AssignUserRolesInput,
   PaginationQuery,
@@ -30,6 +30,23 @@ export class UsersService {
         error: {
           code: AUTH_ERROR_CODES.UNAUTHORIZED,
           message: 'User profile not synchronized. Call POST /api/v1/auth/sync.',
+        },
+      });
+    }
+
+    this.assertActive(user);
+    return this.toCurrentUser(user);
+  }
+
+  async findCurrentUserById(id: string): Promise<CurrentUser> {
+    const user = await this.repos.users.findById(id);
+
+    if (!user) {
+      throw new UnauthorizedException({
+        success: false,
+        error: {
+          code: AUTH_ERROR_CODES.UNAUTHORIZED,
+          message: 'User not found.',
         },
       });
     }
@@ -231,13 +248,10 @@ export class UsersService {
           : input.socialLinks === null
             ? ({ set: null } as const)
             : input.socialLinks,
-      profileVisibility: input.profileVisibility === undefined ? undefined : input.profileVisibility,
+      profileVisibility:
+        input.profileVisibility === undefined ? undefined : input.profileVisibility,
       avatarUrl:
-        input.avatarUrl === undefined
-          ? undefined
-          : input.avatarUrl === ''
-            ? null
-            : input.avatarUrl,
+        input.avatarUrl === undefined ? undefined : input.avatarUrl === '' ? null : input.avatarUrl,
       updatedBy: actorId,
     });
 
@@ -293,6 +307,27 @@ export class UsersService {
       });
     }
 
+    const assigned = await Promise.all(input.roleIds.map((id) => this.repos.roles.findById(id)));
+    const slugs = assigned.flatMap((role) => (role ? [role.slug] : []));
+    if (slugs.includes('super_admin') && !isSuperAdminEmail(existing.email)) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: AUTH_ERROR_CODES.FORBIDDEN,
+          message: 'Super admin can only be assigned to business@varnarc.com.',
+        },
+      });
+    }
+    if (isSuperAdminEmail(existing.email) && !slugs.includes('super_admin')) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: AUTH_ERROR_CODES.FORBIDDEN,
+          message: 'Cannot remove super admin from business@varnarc.com.',
+        },
+      });
+    }
+
     const result = await this.repos.users.assignRoles(userId, input.roleIds);
     if (!result.ok) {
       throw new BadRequestException({
@@ -329,7 +364,10 @@ export class UsersService {
     return { deleted: true };
   }
 
-  async loginHistory(userId: string, query: PaginationQuery): Promise<{
+  async loginHistory(
+    userId: string,
+    query: PaginationQuery,
+  ): Promise<{
     data: Array<{
       id: string;
       userId: string;
@@ -364,7 +402,10 @@ export class UsersService {
     };
   }
 
-  async auditLogs(userId: string, query: PaginationQuery): Promise<{
+  async auditLogs(
+    userId: string,
+    query: PaginationQuery,
+  ): Promise<{
     data: Array<{
       id: string;
       userId: string | null;
