@@ -4,10 +4,34 @@ import { isAuth0Configured, isAuthUiEnabled, appBaseUrlMatchesHost } from '@varn
 import { auth0 } from './lib/auth0';
 import { getMaintenanceStatus } from './lib/maintenance';
 import { resolveSeoRedirect } from './lib/seo-redirects';
+import { resolveHostCanonicalRedirect } from './lib/www-canonical';
+
+const STATIC_SEO_PATHS = new Set(['/favicon.ico', '/robots.txt', '/ads.txt', '/sitemap.xml']);
 
 export async function middleware(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname;
+    const host =
+      request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+      request.headers.get('host') ||
+      request.nextUrl.host;
+    const proto =
+      request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+      request.nextUrl.protocol.replace(':', '');
+
+    const hostRedirect = resolveHostCanonicalRedirect({
+      host,
+      proto,
+      pathname,
+      search: request.nextUrl.search,
+    });
+    if (hostRedirect) {
+      return NextResponse.redirect(hostRedirect, 301);
+    }
+
+    if (STATIC_SEO_PATHS.has(pathname) || pathname.startsWith('/sitemap/')) {
+      return NextResponse.next();
+    }
 
     // Auth0 redirects here with ?error= when login fails (e.g. wrong audience).
     // Handle before auth0.middleware — otherwise the SDK throws and returns 500.
@@ -83,7 +107,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap\\.xml|sitemap/|robots\\.txt|ads\\.txt).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image).*)'],
 };

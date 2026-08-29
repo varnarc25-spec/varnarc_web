@@ -4,12 +4,12 @@ Cloud Run provides **managed SSL** when you map a custom domain.
 
 ## Domain layout (example)
 
-| Host                | Service         |
-| ------------------- | --------------- |
-| `varnarc.com`       | `varnarc-web`   |
-| `www.varnarc.com`   | `varnarc-web`   |
-| `api.varnarc.com`   | `varnarc-api`   |
-| `admin.varnarc.com` | `varnarc-admin` |
+| Host                | Service                                     |
+| ------------------- | ------------------------------------------- |
+| `varnarc.com`       | `varnarc-web`                               |
+| `www.varnarc.com`   | `varnarc-web` (301 → `https://varnarc.com`) |
+| `api.varnarc.com`   | `varnarc-api`                               |
+| `admin.varnarc.com` | `varnarc-admin`                             |
 
 ## Map domain (Cloud Run)
 
@@ -20,7 +20,9 @@ gcloud run domain-mappings create \
   --region us-central1
 ```
 
-Repeat for web and admin. Follow the DNS records shown in the command output.
+Repeat for web, admin, and **www.varnarc.com** (same `varnarc-web` service). Follow the DNS records shown in the command output.
+
+Canonical public URL is **`https://varnarc.com`** (no www). After `www` is mapped to Cloud Run, the web app issues a **301** to the apex host so PageRank is not split. Without a Cloud Run domain mapping + DNS for `www`, Google Hosting may serve a 404 instead of that redirect.
 
 ## DNS providers
 

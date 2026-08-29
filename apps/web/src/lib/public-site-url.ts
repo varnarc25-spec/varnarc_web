@@ -1,7 +1,8 @@
 import { headers } from 'next/headers';
 import { getAppBaseUrl, resolveAppBaseUrlFromHeaders } from '@varnarc/auth';
+import { CANONICAL_WEB_ORIGIN } from '@/lib/www-canonical';
 
-export const PRODUCTION_SITE_URL = 'https://varnarc.com';
+export const PRODUCTION_SITE_URL = CANONICAL_WEB_ORIGIN;
 
 function isLocalSiteUrl(url: string): boolean {
   return /localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(url);
