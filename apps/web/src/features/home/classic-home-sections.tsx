@@ -80,7 +80,7 @@ export function ClassicHeroSection({ popularTerms }: { popularTerms: string[] })
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
           <div className="text-left">
             <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-[#0b1f3a] sm:text-3xl md:text-4xl">
-              Your All-in-One Platform for{' '}
+              Varnarc — Your All-in-One Platform for{' '}
               <span className="text-[#f97316]">Finance, Home, Automobiles</span> &amp; Smart Tools
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
@@ -235,7 +235,7 @@ export function ClassicCategoriesSection({ title }: { title: string }) {
                 <Link href={cat.href} aria-label={`Browse ${cat.title}`} className="shrink-0">
                   <img
                     src={cat.image}
-                    alt=""
+                    alt={cat.title}
                     className="h-24 w-24 rounded-xl object-cover transition hover:opacity-90"
                   />
                 </Link>
@@ -277,7 +277,7 @@ export function ClassicArticlesSection({
             >
               <img
                 src={a.image}
-                alt=""
+                alt={a.title}
                 className="h-24 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
               />
               <div className="p-3">
@@ -342,6 +342,11 @@ export function ClassicAiToolsSection({
   );
 }
 
+function vsParts(title: string): [string, string] {
+  const parts = title.split(/\s+vs\.?\s+/i);
+  return [parts[0]?.trim() || title, parts[1]?.trim() || title];
+}
+
 export function ClassicTripleColumnSection({
   comparisons,
   reviews,
@@ -360,24 +365,35 @@ export function ClassicTripleColumnSection({
               linkLabel="View all comparisons"
             />
             <div className="mt-4 grid grid-cols-2 gap-3">
-              {comparisons.map((c) => (
-                <Link
-                  key={c.href}
-                  href={c.href}
-                  className="rounded-xl border border-slate-100 bg-slate-50 p-3 transition hover:shadow-sm"
-                >
-                  <div className="relative mb-2 flex items-center justify-center gap-1">
-                    <img src={c.leftImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
-                    <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0f172a] px-2 py-0.5 text-xs font-bold text-white">
-                      VS
-                    </span>
-                    <img src={c.rightImage} alt="" className="h-12 w-12 rounded-lg object-cover" />
-                  </div>
-                  <div className="line-clamp-2 text-center text-xs font-semibold text-[#0f172a]">
-                    {c.title}
-                  </div>
-                </Link>
-              ))}
+              {comparisons.map((c) => {
+                const [leftName, rightName] = vsParts(c.title);
+                return (
+                  <Link
+                    key={c.href}
+                    href={c.href}
+                    className="rounded-xl border border-slate-100 bg-slate-50 p-3 transition hover:shadow-sm"
+                  >
+                    <div className="relative mb-2 flex items-center justify-center gap-1">
+                      <img
+                        src={c.leftImage}
+                        alt={leftName}
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
+                      <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0f172a] px-2 py-0.5 text-xs font-bold text-white">
+                        VS
+                      </span>
+                      <img
+                        src={c.rightImage}
+                        alt={rightName}
+                        className="h-12 w-12 rounded-lg object-cover"
+                      />
+                    </div>
+                    <div className="line-clamp-2 text-center text-xs font-semibold text-[#0f172a]">
+                      {c.title}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -394,7 +410,11 @@ export function ClassicTripleColumnSection({
                     href={r.href}
                     className="flex gap-3 rounded-xl p-2 transition hover:bg-slate-50 hover:shadow-sm"
                   >
-                    <img src={r.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                    <img
+                      src={r.image}
+                      alt={r.title}
+                      className="h-12 w-12 rounded-lg object-cover"
+                    />
                     <div className="min-w-0">
                       <div className="line-clamp-2 text-[12px] font-semibold text-slate-900">
                         {r.title}
@@ -489,7 +509,7 @@ export function ClassicTrustNewsletterSection() {
                 icon={<Award className="h-5 w-5" strokeWidth={2.25} />}
                 color="bg-[#0b1f3a]"
                 title="Unbiased Reviews"
-                subtitle="Find the best for you"
+                subtitle="Find what fits you"
               />
             </div>
           </div>

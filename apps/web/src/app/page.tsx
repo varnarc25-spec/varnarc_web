@@ -11,15 +11,31 @@ import {
 import { HomepageBuilder } from '@/features/home/homepage-builder';
 import { StaticHomePage } from '@/features/home/static-home-page';
 import { isClassicHomeLayout } from '@/features/home/classic-home-renderer';
+import {
+  DEFAULT_OG_IMAGE_PATH,
+  DEFAULT_SEO_DESCRIPTION,
+  DEFAULT_SEO_TITLE,
+} from '@/lib/seo-defaults';
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Varnarc — Financial Calculators, Guides, Comparisons & Smart Tools for India',
-  description:
-    'Free EMI calculators, loan comparisons, expert reviews, construction cost tools & solar calculators. Make smarter financial and lifestyle decisions with Varnarc.',
+  title: DEFAULT_SEO_TITLE,
+  description: DEFAULT_SEO_DESCRIPTION,
   alternates: {
     canonical: '/',
+  },
+  openGraph: {
+    title: DEFAULT_SEO_TITLE,
+    description: DEFAULT_SEO_DESCRIPTION,
+    type: 'website',
+    images: [{ url: DEFAULT_OG_IMAGE_PATH }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: DEFAULT_SEO_TITLE,
+    description: DEFAULT_SEO_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE_PATH],
   },
 };
 

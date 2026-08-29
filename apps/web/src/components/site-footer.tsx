@@ -54,25 +54,37 @@ export function SiteFooter({
     tagline?.trim() || 'Smart tools and expert guides to help you plan better and spend smarter.';
   const brandCopyright =
     copyright?.trim() || `© ${new Date().getFullYear()} Varnarc. All rights reserved.`;
-  const social =
-    socialLinks && socialLinks.length > 0
-      ? socialLinks
-      : [
-          { label: 'Facebook', href: 'https://facebook.com' },
-          { label: 'X', href: 'https://x.com' },
-          { label: 'Instagram', href: 'https://instagram.com' },
-          { label: 'YouTube', href: 'https://youtube.com' },
-        ];
+  const social = (socialLinks ?? []).filter((item) => {
+    try {
+      const url = new URL(item.href);
+      const host = url.hostname.replace(/^www\./, '');
+      const path = url.pathname.replace(/\/+$/, '');
+      const generic = new Set([
+        'facebook.com',
+        'x.com',
+        'twitter.com',
+        'instagram.com',
+        'youtube.com',
+        'linkedin.com',
+      ]);
+      return !(generic.has(host) && path === '');
+    } catch {
+      return false;
+    }
+  });
 
   return (
-    <footer className="full-bleed mt-auto bg-[var(--vn-footer,#071428)] text-slate-300">
+    <footer
+      data-print-hide="true"
+      className="full-bleed mt-auto bg-[var(--vn-footer,#071428)] text-slate-300"
+    >
       <div className="site-container py-8 sm:py-10">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
           <div className="lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2">
               <img
                 src={logoUrl || '/brand/logo.png'}
-                alt=""
+                alt={`${brand} logo`}
                 width={40}
                 height={40}
                 className="h-9 w-9 rounded-md object-contain"
@@ -80,24 +92,26 @@ export function SiteFooter({
               <span className="text-lg font-bold text-white">{brand}</span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">{brandTagline}</p>
-            <div className="mt-4 flex gap-2">
-              {social.map((item) => {
-                const brandColor = getSocialBrandColor(item.label, item.href);
-                return (
-                  <a
-                    key={item.href + item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={item.label}
-                    className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
-                    style={{ backgroundColor: brandColor }}
-                  >
-                    <SocialIcon label={item.label} href={item.href} />
-                  </a>
-                );
-              })}
-            </div>
+            {social.length ? (
+              <div className="mt-4 flex gap-2">
+                {social.map((item) => {
+                  const brandColor = getSocialBrandColor(item.label, item.href);
+                  return (
+                    <a
+                      key={item.href + item.label}
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={item.label}
+                      className="flex h-9 w-9 min-h-11 min-w-11 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50"
+                      style={{ backgroundColor: brandColor }}
+                    >
+                      <SocialIcon label={item.label} href={item.href} />
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
             {newsletterEnabled ? (
               <div className="mt-4">
                 <NewsletterForm variant="compact" source="footer" />

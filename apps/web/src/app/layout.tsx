@@ -22,6 +22,12 @@ import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/components/seo/json-ld';
 import { getPublicSiteUrl } from '@/lib/public-site-url';
+import {
+  DEFAULT_OG_IMAGE_PATH,
+  DEFAULT_SEO_DESCRIPTION,
+  seoDescriptionFromTagline,
+  seoTitleFromBranding,
+} from '@/lib/seo-defaults';
 import type { CurrentUser } from '@varnarc/types';
 import './globals.css';
 
@@ -43,10 +49,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const branding = theme?.branding ?? {};
   const siteName = branding.siteName?.trim() || 'Varnarc';
   const tagline = branding.siteTagline?.trim() || 'Smart Tools & Expert Guides';
-  const titleDefault = `${siteName} — ${tagline}`;
-  const description =
-    tagline ||
-    'Calculators, guides, reviews & tools for finance, home, automobiles and everyday planning.';
+  const titleDefault = seoTitleFromBranding(siteName, tagline);
+  const description = seoDescriptionFromTagline(branding.siteTagline) || DEFAULT_SEO_DESCRIPTION;
+  const ogImage = branding.ogImageUrl?.trim() || DEFAULT_OG_IMAGE_PATH;
   const icons: Metadata['icons'] = {};
   if (branding.faviconUrl) {
     icons.icon = branding.faviconUrl;
@@ -78,13 +83,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title: titleDefault,
       description,
       url: siteUrl,
-      ...(branding.ogImageUrl ? { images: [{ url: branding.ogImageUrl }] } : {}),
+      images: [{ url: ogImage }],
     },
     twitter: {
       card: 'summary_large_image',
       title: titleDefault,
       description,
-      ...(branding.ogImageUrl ? { images: [branding.ogImageUrl] } : {}),
+      images: [ogImage],
     },
     robots: {
       index: true,

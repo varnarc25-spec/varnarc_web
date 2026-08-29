@@ -25,7 +25,7 @@ export function Spinner({
   return (
     <img
       src={src}
-      alt=""
+      alt={label}
       role="status"
       aria-label={label}
       className={cn('animate-spin object-contain', sizeClass[size], className)}

@@ -65,6 +65,7 @@ export function SiteHeader({
 
   return (
     <header
+      data-print-hide="true"
       className={`full-bleed z-40 w-full bg-[var(--color-header,var(--varnarc-surface))] shadow-sm ${
         stickyHeader ? 'sticky top-0' : 'relative'
       }`}
@@ -106,7 +107,7 @@ export function SiteHeader({
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
-                      alt=""
+                      alt={user.displayName || 'Account'}
                       width={32}
                       height={32}
                       className="h-8 w-8 rounded-full object-cover ring-1 ring-[var(--varnarc-border)]"
