@@ -6,17 +6,34 @@ import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { apiPublicFetch, ApiError } from '@/services/api-client';
 import type { ComparisonDetail } from '@/services/content';
 import { RecordContentView } from '@/components/record-content-view';
+import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 
 type Props = { params: Promise<{ slug: string }> };
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+const siteUrl = getPublicSiteUrlSync();
 
 type RelatedContent = {
-  reviews: Array<{ id: string; title: string; slug: string; overallScore?: number | string | null }>;
+  reviews: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    overallScore?: number | string | null;
+  }>;
   articles: Array<{ id: string; title: string; slug: string; excerpt?: string | null }>;
   calculators: Array<{ id: string; name: string; slug: string; description?: string | null }>;
-  affiliateOffers: Array<{ label: string; url: string; entityType: string; entityId: string; sponsored?: boolean }>;
-  sponsoredAds: Array<{ id: string; name: string; title?: string | null; targetUrl?: string | null }>;
+  affiliateOffers: Array<{
+    label: string;
+    url: string;
+    entityType: string;
+    entityId: string;
+    sponsored?: boolean;
+  }>;
+  sponsoredAds: Array<{
+    id: string;
+    name: string;
+    title?: string | null;
+    targetUrl?: string | null;
+  }>;
   domainComparisons: Array<{ module: string; title: string; slug: string; href: string }>;
   products: Array<{ id: string; name: string; slug: string }>;
 };
@@ -26,10 +43,9 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const { data } = await apiPublicFetch<ComparisonDetail & { seoTitle?: string | null; seoDescription?: string | null }>(
-      `/comparisons/slug/${slug}`,
-      { next: { revalidate: 60 } },
-    );
+    const { data } = await apiPublicFetch<
+      ComparisonDetail & { seoTitle?: string | null; seoDescription?: string | null }
+    >(`/comparisons/slug/${slug}`, { next: { revalidate: 60 } });
     return buildSeoMetadata({
       entityType: 'comparison',
       entityId: data.id,
@@ -47,11 +63,17 @@ export default async function CompareDetailPage({ params }: Props) {
 
   try {
     const [comparisonResult, relatedResult] = await Promise.all([
-      apiPublicFetch<ComparisonDetail & { seoTitle?: string | null; seoDescription?: string | null; description?: string | null; recommendation?: string | null }>(
-        `/comparisons/slug/${slug}`,
-        { next: { revalidate: 60 } },
-      ),
-      apiPublicFetch<RelatedContent>(`/comparisons/slug/${slug}/related`, { next: { revalidate: 60 } }).catch(() => ({
+      apiPublicFetch<
+        ComparisonDetail & {
+          seoTitle?: string | null;
+          seoDescription?: string | null;
+          description?: string | null;
+          recommendation?: string | null;
+        }
+      >(`/comparisons/slug/${slug}`, { next: { revalidate: 60 } }),
+      apiPublicFetch<RelatedContent>(`/comparisons/slug/${slug}/related`, {
+        next: { revalidate: 60 },
+      }).catch(() => ({
         data: null,
       })),
     ]);

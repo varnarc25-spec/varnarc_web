@@ -21,6 +21,7 @@ import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
 import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/components/seo/json-ld';
+import { getPublicSiteUrl } from '@/lib/public-site-url';
 import type { CurrentUser } from '@varnarc/types';
 import './globals.css';
 
@@ -36,9 +37,8 @@ const display = Fraunces({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-
 export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = await getPublicSiteUrl();
   const theme = await fetchActiveTheme();
   const branding = theme?.branding ?? {};
   const siteName = branding.siteName?.trim() || 'Varnarc';
@@ -89,6 +89,9 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: {
       index: true,
       follow: true,
+    },
+    alternates: {
+      canonical: siteUrl,
     },
     verification: Object.keys(verification).length ? verification : undefined,
     appleWebApp: {
@@ -183,12 +186,13 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [headerUser, menuRes, footerRes, activeTheme, adsenseConfig] = await Promise.all([
+  const [headerUser, menuRes, footerRes, activeTheme, adsenseConfig, siteUrl] = await Promise.all([
     loadHeaderUser(),
     fetchMenuByLocation('header'),
     fetchMenuByLocation('footer'),
     fetchActiveTheme(),
     fetchAdsensePublicConfig(),
+    getPublicSiteUrl(),
   ]);
 
   const cmsNav =

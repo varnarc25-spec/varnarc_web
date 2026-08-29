@@ -17,6 +17,7 @@ import {
   fetchAutomobileVehicleOffers,
 } from '@/services/automobile';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 import { ApiError } from '@/services/api-client';
 import { notFound } from 'next/navigation';
 
@@ -63,7 +64,7 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
 
   const title = vehicle.seoTitle || vehicle.name;
   const description = vehicle.seoDescription || vehicle.description;
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const siteUrl = getPublicSiteUrlSync();
 
   const jsonLd = {
     '@context': 'https://schema.org',

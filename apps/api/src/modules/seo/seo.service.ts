@@ -60,7 +60,12 @@ export class SeoService {
   ) {}
 
   private siteUrl() {
-    return process.env.PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+    const url =
+      process.env.WEB_APP_URL?.trim() ||
+      process.env.PUBLIC_APP_URL?.trim() ||
+      process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+      (process.env.NODE_ENV === 'production' ? 'https://varnarc.com' : 'http://localhost:3000');
+    return url.replace(/\/$/, '');
   }
 
   private isProduction() {

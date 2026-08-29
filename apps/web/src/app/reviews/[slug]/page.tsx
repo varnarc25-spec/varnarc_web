@@ -10,10 +10,11 @@ import { ReviewMediaGallery } from '@/components/reviews/review-media-gallery';
 import { JsonLd, breadcrumbJsonLd, reviewJsonLd } from '@/components/seo/json-ld';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { apiPublicFetch, ApiError } from '@/services/api-client';
+import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 
 type Props = { params: Promise<{ slug: string }> };
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+const siteUrl = getPublicSiteUrlSync();
 
 const recommendationLabels: Record<string, string> = {
   best_overall: 'Best Overall',

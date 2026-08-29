@@ -20,10 +20,9 @@ import { RecordContentView } from '@/components/record-content-view';
 import { SponsoredLabel } from '@/components/business/sponsored-label';
 import { CmsMediaImage } from '@/components/cms/cms-media-image';
 import { parseArticleSponsor } from '@/lib/article-sponsor';
+import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 
 type Props = { params: Promise<{ slug: string }> };
-
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -61,6 +60,7 @@ export default async function ArticleDetailPage({ params }: Props) {
     }>(`/article-comments?articleId=${data.id}&limit=100`).catch(() => ({
       data: { items: [] as ArticleComment[], total: 0 },
     }));
+    const siteUrl = getPublicSiteUrlSync();
     const url = `${siteUrl}/articles/${slug}`;
     return (
       <>

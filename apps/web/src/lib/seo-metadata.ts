@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { apiPublicFetch } from '@/services/api-client';
+import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 
 export type SeoOverride = {
   title?: string | null;
@@ -22,8 +23,6 @@ export type SeoMetadataInput = {
   image?: string | null;
   canonicalUrl?: string | null;
 };
-
-const siteUrl = () => process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export async function fetchSeoOverride(
   entityType: string,
@@ -51,7 +50,7 @@ function parseRobots(robots?: string | null): Metadata['robots'] | undefined {
 
 /** Merge entity defaults with centralized seo_metadata overrides. */
 export async function buildSeoMetadata(input: SeoMetadataInput): Promise<Metadata> {
-  const baseUrl = siteUrl();
+  const baseUrl = getPublicSiteUrlSync();
   const path = input.path.startsWith('/') ? input.path : `/${input.path}`;
   const override =
     input.entityId != null ? await fetchSeoOverride(input.entityType, input.entityId) : null;
