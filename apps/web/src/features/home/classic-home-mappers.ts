@@ -1,6 +1,5 @@
 import type {
   ArticleListItem,
-  BusinessListItem,
   CalculatorListItem,
   ComparisonListItem,
   ReviewListItem,
@@ -60,7 +59,10 @@ export function mapTrendingTerms(trending?: TrendingSearchItem[]) {
   return [...popularSearches];
 }
 
-export function mapCalculatorTiles(calculators: CalculatorListItem[], limit = 10): ClassicCalculatorTile[] {
+export function mapCalculatorTiles(
+  calculators: CalculatorListItem[],
+  limit = 10,
+): ClassicCalculatorTile[] {
   if (!calculators.length) {
     return quickTools.slice(0, limit).map((t) => ({ ...t }));
   }
@@ -89,7 +91,10 @@ export function mapArticleCards(articles: ArticleListItem[], limit = 5): Classic
   }));
 }
 
-export function mapComparisonCards(comparisons: ComparisonListItem[], limit = 2): ClassicComparisonCard[] {
+export function mapComparisonCards(
+  comparisons: ComparisonListItem[],
+  limit = 2,
+): ClassicComparisonCard[] {
   if (!comparisons.length) {
     return staticComparisons.slice(0, limit).map((c) => ({
       title: c.title,

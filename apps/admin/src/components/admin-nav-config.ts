@@ -88,6 +88,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: 'Suppliers',
         permission: PERMISSIONS.CONSTRUCTION_VIEW,
       },
+      {
+        href: '/construction/seo-audit',
+        label: 'SEO Audit',
+        permission: PERMISSIONS.SEO_AUDIT,
+      },
+      {
+        href: '/construction/search-opportunities',
+        label: 'Search Opportunities',
+        permission: PERMISSIONS.SEARCH_ANALYTICS,
+      },
       { href: '/construction/faqs', label: 'FAQs', permission: PERMISSIONS.CONSTRUCTION_VIEW },
       { href: '/construction/guides', label: 'Guides', permission: PERMISSIONS.CONSTRUCTION_VIEW },
     ],

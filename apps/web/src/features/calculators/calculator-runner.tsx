@@ -12,6 +12,15 @@ import {
   type FieldVisibilityMap,
 } from '@varnarc/validation';
 import { trackAnalyticsEvent } from '@/lib/analytics-client';
+import {
+  categorizeConstructionResultRange,
+  isConstructionCalculatorSlug,
+  trackCalculationSaved,
+  trackCalculationShared,
+  trackCalculatorCompleted,
+  trackCalculatorError,
+  trackCalculatorStarted,
+} from '@/lib/construction/analytics';
 import { CalculatorAiAssistant } from '@/components/calculators/calculator-ai-assistant';
 import { Spinner } from '@/components/shared/spinner';
 import { DateInput, openDatePicker } from '@/components/shared/date-input';
@@ -515,6 +524,10 @@ export function CalculatorRunner({
     setError(null);
     setMessage(null);
     setOutputs(null);
+    const isConstruction = isConstructionCalculatorSlug(calculatorSlug);
+    if (isConstruction) {
+      trackCalculatorStarted({ calculator_type: calculatorSlug, logged_in: false });
+    }
     try {
       const res = await fetch(`/api/calculators/${calculatorId}/calculate`, {
         method: 'POST',
@@ -541,8 +554,34 @@ export function CalculatorRunner({
         entityId: calculatorId,
         metadata: { name },
       });
+      if (isConstruction) {
+        const primary =
+          json.data?.outputs?.total ??
+          json.data?.outputs?.totalCost ??
+          json.data?.outputs?.quantity ??
+          json.data?.outputs?.result ??
+          null;
+        const unitField = values.unit || values.unitSystem || null;
+        trackCalculatorCompleted({
+          calculator_type: calculatorSlug,
+          unit: unitField,
+          location_level: 'unknown',
+          result_range_category: categorizeConstructionResultRange(
+            primary,
+            calculatorSlug.includes('cost') ? 'cost_inr' : 'quantity',
+          ),
+          logged_in: false,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed');
+      if (isConstruction) {
+        trackCalculatorError({
+          calculator_type: calculatorSlug,
+          error_code: 'calculate_failed',
+          logged_in: false,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -577,6 +616,9 @@ export function CalculatorRunner({
       }
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
       setMessage('Saved to your account');
+      if (isConstructionCalculatorSlug(calculatorSlug)) {
+        trackCalculationSaved({ calculator_type: calculatorSlug, logged_in: true });
+      }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Save failed');
     }
@@ -600,6 +642,9 @@ export function CalculatorRunner({
       } else {
         await navigator.clipboard.writeText(shareUrl);
         setMessage('Share calculation link copied');
+      }
+      if (isConstructionCalculatorSlug(calculatorSlug)) {
+        trackCalculationShared({ calculator_type: calculatorSlug, logged_in: false });
       }
     } catch {
       setMessage('Unable to share');

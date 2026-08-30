@@ -12,15 +12,7 @@ import {
   isClassicHomeLayout,
   type ClassicHomeData,
 } from '@/features/home/classic-home-renderer';
-import type {
-  ArticleListItem,
-  BusinessListItem,
-  CalculatorListItem,
-  ComparisonListItem,
-  HomepageLayout,
-  ReviewListItem,
-  TrendingSearchItem,
-} from '@/services/content';
+import type { ArticleListItem, HomepageLayout } from '@/services/content';
 
 type HomeData = ClassicHomeData & {
   layout: HomepageLayout | null;
@@ -147,7 +139,12 @@ export function HomepageBuilder({ data }: { data: HomeData }) {
             <SectionShell key={section.id} title={section.name} href="/calculators">
               <div className="grid gap-6 md:grid-cols-3">
                 {data.calculators.slice(0, 6).map((c) => (
-                  <CalculatorCard key={c.id} name={c.name} slug={c.slug} description={c.description} />
+                  <CalculatorCard
+                    key={c.id}
+                    name={c.name}
+                    slug={c.slug}
+                    description={c.description}
+                  />
                 ))}
               </div>
             </SectionShell>
@@ -176,7 +173,12 @@ export function HomepageBuilder({ data }: { data: HomeData }) {
             <SectionShell key={section.id} title={section.name} href="/directory">
               <div className="grid gap-6 md:grid-cols-3">
                 {data.businesses.slice(0, 6).map((b) => (
-                  <BusinessCard key={b.id} name={b.name} slug={b.slug} description={b.description} />
+                  <BusinessCard
+                    key={b.id}
+                    name={b.name}
+                    slug={b.slug}
+                    description={b.description}
+                  />
                 ))}
               </div>
             </SectionShell>
@@ -203,7 +205,9 @@ export function HomepageBuilder({ data }: { data: HomeData }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[var(--varnarc-subtle)]">Trending searches will appear as visitors use site search.</p>
+                <p className="text-sm text-[var(--varnarc-subtle)]">
+                  Trending searches will appear as visitors use site search.
+                </p>
               )}
             </SectionShell>
           );
@@ -217,7 +221,9 @@ export function HomepageBuilder({ data }: { data: HomeData }) {
             >
               <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-14 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold text-[var(--varnarc-ink)]">{section.name}</h2>
+                  <h2 className="text-2xl font-semibold text-[var(--varnarc-ink)]">
+                    {section.name}
+                  </h2>
                   <p className="mt-2 text-sm text-[var(--varnarc-subtle)]">
                     Get calculators, guides, and product updates in your inbox.
                   </p>

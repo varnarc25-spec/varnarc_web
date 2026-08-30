@@ -755,7 +755,7 @@ export function LoanSortSelect({
         className="min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 sm:w-auto"
       >
         <option value="recommended">Recommended</option>
-        <option value="lowest_interest">Lowest Interest Rate</option>
+        <option value="lowest_interest">Interest Rate: Low to High</option>
         <option value="highest_amount">Highest Loan Amount</option>
         <option value="lowest_processing_fee">Lowest Processing Fee</option>
         <option value="longest_tenure">Longest Tenure</option>

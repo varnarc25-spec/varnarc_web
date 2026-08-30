@@ -24,28 +24,28 @@ export type ModuleHubMeta = {
 const FINANCE_TRUST: HubTrustItem[] = [
   {
     icon: 'scale',
-    title: 'Unbiased comparisons',
-    description: 'No paid rankings.',
+    title: 'Structured comparisons',
+    description: 'Side-by-side product attributes.',
   },
   {
     icon: 'calculator',
-    title: 'Accurate calculators',
+    title: 'Useful calculators',
     description: 'Free planning tools.',
   },
   {
     icon: 'zap',
-    title: 'Latest information',
-    description: 'Regularly updated rates.',
+    title: 'Regularly reviewed information',
+    description: 'Updated periodically.',
   },
   {
     icon: 'shield',
-    title: 'Secure & trusted',
-    description: 'Private and protected.',
+    title: 'Source transparency',
+    description: 'Data sources identified.',
   },
   {
     icon: 'book',
-    title: 'Expert resources',
-    description: 'Guides for real decisions.',
+    title: 'Educational resources',
+    description: 'Guides for informed decisions.',
   },
 ];
 

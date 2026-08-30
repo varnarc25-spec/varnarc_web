@@ -209,6 +209,36 @@ export class GcsStorageService {
     await storage.bucket(this.bucketName).file(publicId).delete({ ignoreNotFound: true });
   }
 
+  /**
+   * Short-lived signed URL for private objects.
+   * Prefer streaming via Nest after auth for construction vault downloads.
+   */
+  async getSignedUrl(publicId: string, expiresMinutes = 15): Promise<string> {
+    this.assertConfigured();
+    const storage = this.storage!;
+    const [url] = await storage
+      .bucket(this.bucketName)
+      .file(publicId.replace(/^\/+/, ''))
+      .getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: Date.now() + Math.max(1, expiresMinutes) * 60_000,
+      });
+    return url;
+  }
+
+  async downloadBuffer(publicId: string): Promise<{ buffer: Buffer; contentType?: string }> {
+    this.assertConfigured();
+    const storage = this.storage!;
+    const file = storage.bucket(this.bucketName).file(publicId.replace(/^\/+/, ''));
+    const [buffer] = await file.download();
+    const [metadata] = await file.getMetadata().catch(() => [null]);
+    return {
+      buffer,
+      contentType: metadata?.contentType as string | undefined,
+    };
+  }
+
   buildPublicUrl(publicId: string) {
     const path = publicId.replace(/^\/+/, '');
     if (this.publicBaseUrl) {

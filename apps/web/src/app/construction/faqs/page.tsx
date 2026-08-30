@@ -1,46 +1,43 @@
 import type { Metadata } from 'next';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { fetchConstructionFaqs } from '@/services/construction';
+import { buildConstructionPageMetadata, constructionHubBreadcrumbs } from '@/lib/construction/seo';
+import { CONSTRUCTION_PAGE_DEFAULTS } from '@/lib/construction/seo-pages';
 
-export const metadata: Metadata = {
-  title: 'Construction FAQs',
-  description: 'Frequently asked questions about materials, costs, and home construction.',
-  alternates: { canonical: '/construction/faqs' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildConstructionPageMetadata('faqs');
+}
 
 export const revalidate = 60;
 
 export default async function ConstructionFaqsPage() {
   const { data } = await fetchConstructionFaqs();
-
-  const jsonLd = data.length
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: data.map((faq) => ({
-          '@type': 'Question',
-          name: faq.question,
-          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-        })),
-      }
-    : null;
+  const defaults = CONSTRUCTION_PAGE_DEFAULTS.faqs;
+  const faqs = data.map((faq) => ({ question: faq.question, answer: faq.answer }));
 
   return (
     <ContentLayout
-      title="Construction FAQs"
-      description="Answers to common questions about building materials and project planning."
+      title={defaults.h1}
+      description={defaults.description}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Construction', href: '/construction' },
         { label: 'FAQs' },
       ]}
     >
-      {jsonLd ? (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      ) : null}
+      <ConstructionSeo
+        breadcrumbs={constructionHubBreadcrumbs([{ name: 'FAQs', path: '/construction/faqs' }])}
+        webPage={{
+          name: defaults.title,
+          description: defaults.description,
+          path: '/construction/faqs',
+        }}
+        faqs={faqs}
+      />
 
-      {data.length ? (
+      {faqs.length ? (
         <div className="space-y-3">
           {data.map((faq) => (
             <details
@@ -58,7 +55,10 @@ export default async function ConstructionFaqsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No FAQs yet" message="Construction FAQs will appear here once published." />
+        <EmptyState
+          title="No FAQs yet"
+          message="Construction FAQs will appear here once published."
+        />
       )}
     </ContentLayout>
   );

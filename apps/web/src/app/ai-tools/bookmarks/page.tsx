@@ -217,7 +217,7 @@ export default async function AiToolsBookmarksPage({
 
       {recs.length ? (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Recommended for you</h2>
+          <h2 className="mb-3 text-lg font-semibold">Explore more tools</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {recs.map((t) => (
               <AiToolCard

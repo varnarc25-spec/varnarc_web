@@ -22,7 +22,7 @@ type SavedRow = {
 
 export default async function SavedCalculationsPage() {
   const session = await auth0.getSession();
-  if (!session?.user) redirect('/auth/login');
+  if (!session?.user) redirect('/auth/login?returnTo=/saved-calculations');
 
   const result = await apiServerFetch<SavedRow[]>('/calculators/results?limit=50');
   const rows = Array.isArray(result.data) ? result.data : [];
@@ -34,6 +34,13 @@ export default async function SavedCalculationsPage() {
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Saved Calculations' }]}
     >
       {result.error ? <p className="mb-4 text-sm text-red-600">{result.error}</p> : null}
+      <p className="mb-4 text-sm text-slate-600">
+        Looking for construction calculator saves?{' '}
+        <a href="/construction/saved-calculations" className="font-semibold text-[#f97316]">
+          Open construction saved calculations
+        </a>
+        .
+      </p>
       <SavedCalculationsList initial={rows} />
     </PageShell>
   );

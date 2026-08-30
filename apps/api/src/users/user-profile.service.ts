@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Repositories } from '@varnarc/database';
 import type {
   ActivityListQuery,
   BookmarkListQuery,
   CheckContentSubscriptionsInput,
   CreateBookmarkInput,
+  ConstructionToolRecentListQuery,
+  RecordConstructionToolRecentInput,
   RecordReadingHistoryInput,
   ReadingHistoryListQuery,
   SetAvatarInput,
@@ -18,7 +15,12 @@ import type {
   UpdateProfileInput,
   UserPreferencesInput,
 } from '@varnarc/validation';
-import { READING_HISTORY_ACTIVITY_TYPE } from '@varnarc/validation';
+import {
+  CONSTRUCTION_TOOL_ACTIVITY_TYPE,
+  CONSTRUCTION_TOOL_ENTITY_TYPE,
+  READING_HISTORY_ACTIVITY_TYPE,
+  RECENT_CONSTRUCTION_TOOLS_LIMIT,
+} from '@varnarc/validation';
 import { REPOS } from '../database/database.module';
 import { UsersService } from '../auth/users.service';
 import { MediaService } from '../modules/media/media.service';
@@ -30,7 +32,7 @@ function sliceCursor<T extends { id: string }>(rows: T[], limit: number) {
   return {
     items,
     hasMore,
-    nextCursor: hasMore ? items[items.length - 1]?.id ?? null : null,
+    nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null,
   };
 }
 
@@ -149,7 +151,11 @@ export class UserProfileService {
     const rows = await this.repos.userActivity.list(userId, query);
     const filtered = query.activityType
       ? rows
-      : rows.filter((row) => row.activityType !== READING_HISTORY_ACTIVITY_TYPE);
+      : rows.filter(
+          (row) =>
+            row.activityType !== READING_HISTORY_ACTIVITY_TYPE &&
+            row.activityType !== CONSTRUCTION_TOOL_ACTIVITY_TYPE,
+        );
     const page = sliceCursor(filtered, limit);
     const items = await Promise.all(
       page.items.map(async (row) => {
@@ -203,13 +209,16 @@ export class UserProfileService {
       limit,
     });
     const page = sliceCursor(rows, limit);
-    const items = await enrichBookmarks(this.repos, page.items as Array<{
-      id: string;
-      entityType: string;
-      entityId: string;
-      createdAt: Date;
-      metadata?: unknown;
-    }>);
+    const items = await enrichBookmarks(
+      this.repos,
+      page.items as Array<{
+        id: string;
+        entityType: string;
+        entityId: string;
+        createdAt: Date;
+        metadata?: unknown;
+      }>,
+    );
     return { ...page, items };
   }
 
@@ -223,6 +232,88 @@ export class UserProfileService {
     const result = await this.repos.userActivity.clearReadingHistory(
       userId,
       READING_HISTORY_ACTIVITY_TYPE,
+    );
+    return { deleted: result.count };
+  }
+
+  async recordConstructionToolRecent(userId: string, input: RecordConstructionToolRecentInput) {
+    const metadata = {
+      calculatorSlug: input.calculatorSlug,
+      label: input.label,
+      href: input.href,
+      resultSummary: input.resultSummary ?? null,
+    };
+    const now = new Date();
+    const existing = await this.repos.userActivity.findLatestByActivityMetadataSlug(
+      userId,
+      CONSTRUCTION_TOOL_ACTIVITY_TYPE,
+      CONSTRUCTION_TOOL_ENTITY_TYPE,
+      input.calculatorSlug,
+    );
+    if (existing) {
+      return this.repos.userActivity.updateReadingView(existing.id, {
+        createdAt: now,
+        metadata: metadata as never,
+      });
+    }
+    return this.repos.userActivity.record({
+      userId,
+      activityType: CONSTRUCTION_TOOL_ACTIVITY_TYPE,
+      entityType: CONSTRUCTION_TOOL_ENTITY_TYPE,
+      entityId: null,
+      metadata: metadata as never,
+    });
+  }
+
+  async listConstructionToolRecent(userId: string, query: ConstructionToolRecentListQuery) {
+    const limit = query.limit ?? RECENT_CONSTRUCTION_TOOLS_LIMIT;
+    const rows = await this.repos.userActivity.listByActivityType(
+      userId,
+      CONSTRUCTION_TOOL_ACTIVITY_TYPE,
+      limit * 3,
+    );
+    const seen = new Set<string>();
+    const items: Array<{
+      id: string;
+      calculatorSlug: string;
+      label: string;
+      href: string;
+      resultSummary: string | null;
+      usedAt: string;
+    }> = [];
+    for (const row of rows) {
+      const meta = (row.metadata ?? {}) as {
+        calculatorSlug?: string;
+        label?: string;
+        href?: string;
+        resultSummary?: string | null;
+      };
+      const slug = meta.calculatorSlug;
+      if (!slug || seen.has(slug)) continue;
+      seen.add(slug);
+      items.push({
+        id: row.id,
+        calculatorSlug: slug,
+        label: meta.label ?? slug,
+        href: meta.href ?? `/construction/${slug}`,
+        resultSummary: meta.resultSummary ?? null,
+        usedAt: row.createdAt.toISOString(),
+      });
+      if (items.length >= limit) break;
+    }
+    return { items };
+  }
+
+  async deleteConstructionToolRecent(userId: string, activityId: string) {
+    const result = await this.repos.userActivity.deleteForUser(userId, activityId);
+    if (!result.count) throw new NotFoundException('Recent tool entry not found');
+    return { ok: true };
+  }
+
+  async clearConstructionToolRecent(userId: string) {
+    const result = await this.repos.userActivity.clearReadingHistory(
+      userId,
+      CONSTRUCTION_TOOL_ACTIVITY_TYPE,
     );
     return { deleted: result.count };
   }

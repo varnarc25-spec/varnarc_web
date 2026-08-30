@@ -109,12 +109,18 @@ export function EligibilityCheckForm() {
       {result ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
           <p className="font-semibold text-[#0b1f3a]">
-            {result.eligible ? 'You may be eligible' : 'May not be eligible'}
+            {result.eligible
+              ? 'Based on the information entered, you may meet indicative criteria'
+              : 'Based on the information entered, indicative criteria may not be met'}
           </p>
           {result.message ? <p className="mt-2 text-slate-700">{result.message}</p> : null}
           {result.maxAmount != null ? (
-            <p className="mt-1 text-slate-600">Suggested max: ₹{result.maxAmount}</p>
+            <p className="mt-1 text-slate-600">Indicative max amount: ₹{result.maxAmount}</p>
           ) : null}
+          <p className="mt-3 text-xs text-slate-500">
+            This is an indicative estimate only. Final eligibility is determined by the lender based
+            on their criteria and verification process.
+          </p>
         </div>
       ) : null}
     </div>
@@ -159,9 +165,7 @@ export function CreditScoreCheckForm() {
         className="space-y-3 rounded-xl border border-slate-200 bg-white p-5"
       >
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            PAN (optional mock)
-          </label>
+          <label className="mb-1 block text-sm font-medium text-slate-700">PAN (optional)</label>
           <input
             className={inputClass}
             value={pan}
@@ -187,6 +191,10 @@ export function CreditScoreCheckForm() {
             <p className="mt-1 font-medium text-slate-700">Band: {result.band}</p>
           ) : null}
           {result.message ? <p className="mt-2 text-slate-600">{result.message}</p> : null}
+          <p className="mt-3 text-xs text-slate-500">
+            This is an illustrative score. For your official credit score, check directly with
+            credit bureaus such as CIBIL, Experian, CRIF, or Equifax.
+          </p>
         </div>
       ) : null}
     </div>

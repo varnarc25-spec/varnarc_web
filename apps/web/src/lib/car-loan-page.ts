@@ -387,7 +387,7 @@ export const CAR_LOAN_USED_CAR_POINTS = [
 export const CAR_LOAN_BANK_POINTS = [
   'Direct relationship with the lender',
   'Rate and fee structure set by the bank/NBFC product',
-  'Pre-approved offers may apply for some customers',
+  'Some lenders may extend pre-qualification or pre-approved offers directly',
   'Financing process is separate from vehicle purchase',
   'Terms vary by lender and applicant profile',
 ] as const;

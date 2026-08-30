@@ -1,6 +1,7 @@
 import { BusinessStatus, PrismaClient, UserStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { ROLE_DEFINITIONS, PERMISSIONS } from '@varnarc/auth';
+import { CANONICAL_CONSTRUCTION_CHECKLISTS } from '@varnarc/validation';
 import { seedContent } from './seed-content';
 import { enrichExistingCalculators, seedExtendedCalculators } from './seed-calculators';
 import { seedEmiCalculators } from './seed-emi-calculators';
@@ -2891,47 +2892,21 @@ async function main() {
     },
   });
 
-  const checklistSeeds = [
-    {
-      slug: 'residential-pre-construction',
-      title: 'Residential pre-construction checklist',
-      description: 'Permits, site survey, and material planning before breaking ground.',
-      projectType: 'Planning',
-      items: [
-        { label: 'Confirm land title and building permits', phase: 'Planning' },
-        { label: 'Soil test and site survey completed', phase: 'Planning' },
-        { label: 'Architect drawings and BOQ finalized', phase: 'Planning' },
-        { label: 'Shortlist cement, steel, and brick suppliers', phase: 'Materials' },
-        { label: 'Arrange temporary power and water on site', phase: 'Site prep' },
-      ],
-    },
-    {
-      slug: 'foundation-milestones',
-      title: 'Foundation & structure milestones',
-      description: 'Track excavation through slab and frame completion.',
-      projectType: 'Structure',
-      items: [
-        { label: 'Excavation depth verified', phase: 'Foundation' },
-        { label: 'PCC and footing reinforcement inspected', phase: 'Foundation' },
-        { label: 'Column and beam shuttering checked', phase: 'Structure' },
-        { label: 'Slab pour scheduled with cube tests', phase: 'Structure' },
-        { label: 'Waterproofing applied below grade', phase: 'Structure' },
-      ],
-    },
-    {
-      slug: 'finishing-handover',
-      title: 'Finishing & handover checklist',
-      description: 'Plaster, MEP, paint, and snag list before possession.',
-      projectType: 'Finishing',
-      items: [
-        { label: 'Internal plaster and putty complete', phase: 'Finishing' },
-        { label: 'Electrical and plumbing tested', phase: 'MEP' },
-        { label: 'Flooring and tile work signed off', phase: 'Finishing' },
-        { label: 'Final paint coats applied', phase: 'Finishing' },
-        { label: 'Snag list closed and handover docs ready', phase: 'Handover' },
-      ],
-    },
-  ] as const;
+  const checklistSeeds = CANONICAL_CONSTRUCTION_CHECKLISTS.map((c) => ({
+    slug: c.slug,
+    title: c.title,
+    description: c.description,
+    projectType: c.phase,
+    items: c.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      phase: item.phase,
+      professionalReviewRequired: item.professionalReviewRequired,
+      sortOrder: item.sortOrder,
+    })),
+  }));
 
   for (const checklist of checklistSeeds) {
     await prisma.constructionChecklist.upsert({

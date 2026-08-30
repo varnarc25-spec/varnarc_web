@@ -23,7 +23,10 @@ export const updateProfileSchema = z.object({
   language: z.string().max(12).optional().nullable(),
   timezone: z.string().max(80).optional().nullable(),
   website: z.string().url().optional().nullable().or(z.literal('')),
-  socialLinks: z.record(z.string().url().or(z.literal(''))).optional().nullable(),
+  socialLinks: z
+    .record(z.string().url().or(z.literal('')))
+    .optional()
+    .nullable(),
   profileVisibility: profileVisibilitySchema.optional(),
 });
 
@@ -63,6 +66,10 @@ export const activityListQuerySchema = z.object({
 /** Stored in `user_activity.activity_type` for reading history rows. */
 export const READING_HISTORY_ACTIVITY_TYPE = 'content.viewed';
 
+/** Stored in `user_activity.activity_type` for construction recently-used tools. */
+export const CONSTRUCTION_TOOL_ACTIVITY_TYPE = 'construction.tool_used';
+export const CONSTRUCTION_TOOL_ENTITY_TYPE = 'construction_tool';
+
 export const recordReadingHistorySchema = z.object({
   entityType: z.string().min(1).max(80),
   entityId: uuidSchema,
@@ -75,8 +82,22 @@ export const readingHistoryListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 
+export const recordConstructionToolRecentSchema = z.object({
+  calculatorSlug: z.string().min(1).max(120),
+  label: z.string().min(1).max(150),
+  href: z.string().min(1).max(300),
+  /** Brief, non-sensitive result line only (no full inputs). */
+  resultSummary: z.string().max(160).optional().nullable(),
+});
+
+export const constructionToolRecentListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).optional(),
+});
+
 export type RecordReadingHistoryInput = z.infer<typeof recordReadingHistorySchema>;
 export type ReadingHistoryListQuery = z.infer<typeof readingHistoryListQuerySchema>;
+export type RecordConstructionToolRecentInput = z.infer<typeof recordConstructionToolRecentSchema>;
+export type ConstructionToolRecentListQuery = z.infer<typeof constructionToolRecentListQuerySchema>;
 
 export const contentSubscriptionTypeSchema = z.enum([
   'newsletter',

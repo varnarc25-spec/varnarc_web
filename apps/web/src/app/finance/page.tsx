@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { JsonLd, breadcrumbJsonLd } from '@/components/seo/json-ld';
 import { ModuleHubShell } from '@/components/hub/module-hub-shell';
-import { HubSectionHeader } from '@/components/hub/hub-section-header';
 import { HubCalculatorSection } from '@/components/hub/hub-calculator-section';
 import type { HubGridItem } from '@/components/hub/hub-icon-grid';
 import {
@@ -244,7 +243,7 @@ const extendedProductLinks: HubProductLink[] = [
   {
     label: 'Loan Eligibility',
     href: '/finance/eligibility',
-    description: 'Check approval odds',
+    description: 'Indicative eligibility check',
     icon: 'calculator',
   },
   {
@@ -296,107 +295,7 @@ function mergeFinanceProductItems(
   return merged;
 }
 
-const MOCK_COMPARE_ROWS: HubCompareRow[] = [
-  { provider: 'SBI', rate: '8.40%', fee: '0.35%', tenure: '30 years', logoColor: 'bg-blue-600' },
-  { provider: 'HDFC', rate: '8.50%', fee: '0.50%', tenure: '30 years', logoColor: 'bg-red-600' },
-  {
-    provider: 'ICICI',
-    rate: '8.45%',
-    fee: '0.50%',
-    tenure: '30 years',
-    logoColor: 'bg-orange-500',
-  },
-  { provider: 'Axis', rate: '8.55%', fee: '0.50%', tenure: '30 years', logoColor: 'bg-indigo-600' },
-];
-
-const MOCK_PERSONAL_LOAN_ROWS: HubCompareRow[] = [
-  { provider: 'HDFC', rate: '10.49%', fee: '1.00%', tenure: '5 years', logoColor: 'bg-red-600' },
-  {
-    provider: 'ICICI',
-    rate: '10.75%',
-    fee: '0.99%',
-    tenure: '5 years',
-    logoColor: 'bg-orange-500',
-  },
-  {
-    provider: 'Bajaj Finserv',
-    rate: '11.00%',
-    fee: '2.00%',
-    tenure: '5 years',
-    logoColor: 'bg-blue-600',
-  },
-  { provider: 'Axis', rate: '10.85%', fee: '1.50%', tenure: '5 years', logoColor: 'bg-indigo-600' },
-];
-
-const MOCK_CREDIT_CARD_ROWS: HubCompareRow[] = [
-  {
-    provider: 'HDFC Regalia',
-    rate: '42% p.a.',
-    fee: '₹2,500',
-    tenure: 'Annual fee',
-    logoColor: 'bg-red-600',
-    href: '/finance/credit-cards',
-  },
-  {
-    provider: 'SBI Card ELITE',
-    rate: '42% p.a.',
-    fee: '₹4,999',
-    tenure: 'Annual fee',
-    logoColor: 'bg-blue-600',
-    href: '/finance/credit-cards',
-  },
-  {
-    provider: 'ICICI Amazon Pay',
-    rate: '42% p.a.',
-    fee: 'Lifetime free',
-    tenure: 'No annual fee',
-    logoColor: 'bg-orange-500',
-    href: '/finance/credit-cards',
-  },
-  {
-    provider: 'Axis Magnus',
-    rate: '42% p.a.',
-    fee: '₹10,000',
-    tenure: 'Annual fee',
-    logoColor: 'bg-indigo-600',
-    href: '/finance/credit-cards',
-  },
-];
-
-const MOCK_INSURANCE_ROWS: HubCompareRow[] = [
-  {
-    provider: 'HDFC ERGO',
-    rate: '₹8,200/yr',
-    fee: '₹5L cover',
-    tenure: '1 year',
-    logoColor: 'bg-red-600',
-    href: '/finance/insurance',
-  },
-  {
-    provider: 'ICICI Lombard',
-    rate: '₹7,500/yr',
-    fee: '₹5L cover',
-    tenure: '1 year',
-    logoColor: 'bg-orange-500',
-    href: '/finance/insurance',
-  },
-  {
-    provider: 'Star Health',
-    rate: '₹9,100/yr',
-    fee: '₹10L cover',
-    tenure: '1 year',
-    logoColor: 'bg-blue-600',
-    href: '/finance/insurance',
-  },
-  {
-    provider: 'Max Life',
-    rate: '₹12,000/yr',
-    fee: '₹1L cover',
-    tenure: '1 year',
-    logoColor: 'bg-indigo-600',
-    href: '/finance/insurance',
-  },
-];
+/** Show only real API data — no fabricated lender rates/fees as fallback. */
 
 const COMPARE_LOGO_COLORS = ['bg-blue-600', 'bg-red-600', 'bg-orange-500', 'bg-indigo-600'];
 
@@ -404,8 +303,8 @@ function loanToCompareRow(loan: FinanceLoan, index: number): HubCompareRow {
   return {
     provider: loan.bank?.name ?? loan.name,
     rate: loan.interestRate != null ? `${loan.interestRate}%` : '—',
-    fee: loan.processingFee != null ? `${loan.processingFee}%` : '0.50%',
-    tenure: loan.tenureMax != null ? `${Math.round(loan.tenureMax / 12)} years` : '30 years',
+    fee: loan.processingFee != null ? `${loan.processingFee}%` : '—',
+    tenure: loan.tenureMax != null ? `${Math.round(loan.tenureMax / 12)} years` : '—',
     href: `/finance/loans/${loan.id}`,
     logoColor: COMPARE_LOGO_COLORS[index % COMPARE_LOGO_COLORS.length],
   };
@@ -441,77 +340,66 @@ function insuranceToCompareRow(item: FinanceInsurance, index: number): HubCompar
   };
 }
 
-function compareRowsFromLoans(loans: FinanceLoan[], fallback: HubCompareRow[]): HubCompareRow[] {
-  const rows = loans.slice(0, 4).map(loanToCompareRow);
-  return rows.length >= 4 ? rows : fallback;
+function compareRowsFromLoans(loans: FinanceLoan[]): HubCompareRow[] {
+  return loans.slice(0, 4).map(loanToCompareRow);
 }
 
-const MOCK_RATE_ITEMS = [
+const RATE_CATEGORY_HINTS = [
   {
     label: 'Home Loan',
-    rateLabel: 'Starting from',
-    value: '8.40% p.a.',
     icon: 'home',
     href: '/finance/rates',
   },
   {
     label: 'Personal Loan',
-    rateLabel: 'Starting from',
-    value: '10.49% p.a.',
     icon: 'wallet',
     href: '/finance/rates',
   },
   {
     label: 'Car Loan',
-    rateLabel: 'Starting from',
-    value: '8.75% p.a.',
     icon: 'car',
     href: '/finance/rates',
   },
   {
     label: 'Credit Card',
-    rateLabel: 'Up to',
-    value: '42% p.a.',
     icon: 'card',
     href: '/finance/credit-cards',
   },
   {
     label: 'Fixed Deposit',
-    rateLabel: 'Up to',
-    value: '7.10% p.a.',
     icon: 'wallet',
     href: '/finance/rates',
   },
 ];
 
-const MOCK_FEATURED = [
+const FEATURED_CATEGORY_LINKS = [
   {
-    id: 'hdfc-regalia',
-    name: 'HDFC Regalia Credit Card',
-    href: '/finance/credit-cards',
-    imageUrl: getFinanceFeaturedImage('/finance/credit-cards/'),
-    bullets: ['Joining Fee: ₹2,500', 'Reward points on spends'],
-  },
-  {
-    id: 'sbi-home',
-    name: 'SBI Home Loan',
+    id: 'loans',
+    name: 'Explore Loans',
     href: '/finance/loans',
     imageUrl: getFinanceFeaturedImage('/finance/loans/'),
-    bullets: ['Interest: Starting 8.40% p.a.', 'Up to 30 years tenure'],
+    bullets: ['Compare home, personal, car & more', 'EMI calculators available'],
   },
   {
-    id: 'term-plan',
-    name: 'Term Plan Insurance',
+    id: 'credit-cards',
+    name: 'Explore Credit Cards',
+    href: '/finance/credit-cards',
+    imageUrl: getFinanceFeaturedImage('/finance/credit-cards/'),
+    bullets: ['Rewards, cashback & travel cards', 'Side-by-side comparisons'],
+  },
+  {
+    id: 'insurance',
+    name: 'Explore Insurance',
     href: '/finance/insurance',
     imageUrl: getFinanceFeaturedImage('/finance/insurance/'),
-    bullets: ['Premium: Starting ₹490/month', 'Life cover options'],
+    bullets: ['Health, life & motor options', 'Coverage comparison tools'],
   },
 ];
 
-const MOCK_GUIDES = [
+const FALLBACK_GUIDES = [
   {
     slug: 'home-loan-guide',
-    title: 'How to Choose the Right Home Loan in 2024',
+    title: 'How to Choose the Right Home Loan',
     category: 'HOME LOANS',
     href: '/finance/guides',
     readMinutes: 5,
@@ -535,7 +423,7 @@ const MOCK_GUIDES = [
   },
   {
     slug: 'tax-saving',
-    title: 'Tax-Saving Investment Options for FY 2024-25',
+    title: 'Tax-Saving Investment Options',
     category: 'TAXATION',
     href: '/finance/guides',
     readMinutes: 5,
@@ -559,7 +447,7 @@ const MOCK_GUIDES = [
   },
 ];
 
-const MOCK_FAQS = [
+const FALLBACK_FAQS = [
   {
     id: 'faq-1',
     question: 'How do I calculate my home loan EMI?',
@@ -613,7 +501,7 @@ export default async function FinancePage() {
     loansRes,
     cardsRes,
     insuranceRes,
-    investmentsRes,
+    _investmentsRes,
     ratesRes,
     guidesRes,
     faqsRes,
@@ -658,40 +546,24 @@ export default async function FinancePage() {
     {
       label: 'Home Loans',
       href: '/finance/loans',
-      rows: compareRowsFromLoans(homeLoans.length ? homeLoans : loans, MOCK_COMPARE_ROWS),
+      rows: compareRowsFromLoans(homeLoans.length ? homeLoans : loans),
     },
     {
       label: 'Personal Loans',
       href: '/finance/loans',
-      rows: compareRowsFromLoans(personalLoans, MOCK_PERSONAL_LOAN_ROWS),
+      rows: compareRowsFromLoans(personalLoans),
     },
     {
       label: 'Credit Cards',
       href: '/finance/credit-cards',
-      rows:
-        cards.length >= 4
-          ? cards.slice(0, 4).map(cardToCompareRow)
-          : cards.length > 0
-            ? [...cards.map(cardToCompareRow), ...MOCK_CREDIT_CARD_ROWS.slice(cards.length)].slice(
-                0,
-                4,
-              )
-            : MOCK_CREDIT_CARD_ROWS,
+      rows: cards.slice(0, 4).map(cardToCompareRow),
     },
     {
       label: 'Insurance',
       href: '/finance/insurance',
-      rows:
-        insurance.length >= 4
-          ? insurance.slice(0, 4).map(insuranceToCompareRow)
-          : insurance.length > 0
-            ? [
-                ...insurance.map(insuranceToCompareRow),
-                ...MOCK_INSURANCE_ROWS.slice(insurance.length),
-              ].slice(0, 4)
-            : MOCK_INSURANCE_ROWS,
+      rows: insurance.slice(0, 4).map(insuranceToCompareRow),
     },
-  ];
+  ].filter((group) => group.rows.length > 0);
 
   const apiFeatured = [
     ...loans.slice(0, 2).map((item) => {
@@ -719,7 +591,7 @@ export default async function FinancePage() {
     }),
   ].slice(0, 3);
 
-  const featuredItems = apiFeatured.length >= 3 ? apiFeatured : MOCK_FEATURED;
+  const featuredItems = apiFeatured.length >= 1 ? apiFeatured : FEATURED_CATEGORY_LINKS;
 
   const apiRateItems = rates.slice(0, 5).map((row) => ({
     label: row.productType || row.loan?.name || row.bank?.name || 'Rate',
@@ -729,7 +601,10 @@ export default async function FinancePage() {
     icon: 'percent',
   }));
 
-  const rateItems = apiRateItems.length >= 5 ? apiRateItems : MOCK_RATE_ITEMS;
+  const rateItems =
+    apiRateItems.length > 0
+      ? apiRateItems
+      : RATE_CATEGORY_HINTS.map((h) => ({ ...h, rateLabel: 'View rates', value: 'See details' }));
 
   const apiGuides = (guidesRes.data ?? []).slice(0, 6).map((g) => ({
     slug: g.slug,
@@ -741,7 +616,10 @@ export default async function FinancePage() {
     imageUrl: getFinanceGuideImage(g.slug, hubCategoryLabel(g.category)),
   }));
 
-  const guides = (apiGuides.length >= 4 ? apiGuides : [...apiGuides, ...MOCK_GUIDES]).slice(0, 4);
+  const guides = (apiGuides.length >= 4 ? apiGuides : [...apiGuides, ...FALLBACK_GUIDES]).slice(
+    0,
+    4,
+  );
 
   const apiFaqs = (faqsRes.data ?? []).slice(0, 6).map((f) => ({
     id: f.id,
@@ -749,7 +627,7 @@ export default async function FinancePage() {
     answer: f.answer,
   }));
 
-  const faqs = apiFaqs.length >= 6 ? apiFaqs : MOCK_FAQS;
+  const faqs = apiFaqs.length >= 6 ? apiFaqs : FALLBACK_FAQS;
 
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
 
@@ -793,7 +671,7 @@ export default async function FinancePage() {
               tabGroups={compareTabGroups}
               activeTab="Home Loans"
               viewAllHref="/finance/compare"
-              subtitle="Compare top products side by side and choose the best."
+              subtitle="Compare products side by side to find what suits you."
               headerLinkHref="/finance/compare"
               headerLinkLabel="Compare now →"
             />

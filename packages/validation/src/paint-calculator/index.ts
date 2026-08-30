@@ -1,0 +1,14 @@
+export * from './types';
+export {
+  PAINT_CALC_VERSION,
+  DEFAULT_PAINT_COVERAGE_M2_PER_L,
+  DEFAULT_PRIMER_COVERAGE_M2_PER_L,
+  DEFAULT_PUTTY_KG_PER_M2,
+  DEFAULT_PAINT_PACKAGE_SIZES_L,
+  DEFAULT_DOOR_WIDTH_M,
+  DEFAULT_DOOR_HEIGHT_M,
+  DEFAULT_WINDOW_WIDTH_M,
+  DEFAULT_WINDOW_HEIGHT_M,
+  M2_TO_FT2,
+} from './rates';
+export { calculatePaintQuantity, planPaintPackages } from './calculate';

@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "@varnarc/auth": "workspace:^"
+    "@varnarc/auth": "workspace:^",
+    "@varnarc/validation": "workspace:^"
   },
   "devDependencies": {
     "prisma": "^6.19.3",

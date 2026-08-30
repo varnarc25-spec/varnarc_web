@@ -5,7 +5,12 @@ import { Button, PageHeader } from '@varnarc/ui';
 
 type SitemapStatus = {
   indexUrl?: string;
-  types?: Array<{ type: string; count: number; url: string }>;
+  types?: Array<{
+    type: string;
+    count: number;
+    url: string;
+    segments?: Array<{ type: string; count: number; url: string }>;
+  }>;
   lastRebuild?: string;
 };
 
@@ -52,13 +57,28 @@ export default function SeoSitemapsPage() {
             </tr>
           </thead>
           <tbody>
-            {(data?.types ?? []).map((row) => (
-              <tr key={row.type} className="border-b border-[var(--varnarc-border)]">
-                <td className="px-3 py-2">{row.type}</td>
-                <td className="px-3 py-2">{row.count}</td>
-                <td className="px-3 py-2 font-mono text-xs">{row.url}</td>
-              </tr>
-            ))}
+            {(data?.types ?? []).flatMap((row) => {
+              const rows = [
+                <tr key={row.type} className="border-b border-[var(--varnarc-border)]">
+                  <td className="px-3 py-2 font-medium">{row.type}</td>
+                  <td className="px-3 py-2">{row.count}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{row.url}</td>
+                </tr>,
+              ];
+              for (const seg of row.segments ?? []) {
+                rows.push(
+                  <tr
+                    key={seg.type}
+                    className="border-b border-[var(--varnarc-border)] bg-[var(--varnarc-surface)]/40"
+                  >
+                    <td className="px-3 py-2 pl-6 text-[var(--varnarc-subtle)]">{seg.type}</td>
+                    <td className="px-3 py-2">{seg.count}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{seg.url}</td>
+                  </tr>,
+                );
+              }
+              return rows;
+            })}
           </tbody>
         </table>
       </div>

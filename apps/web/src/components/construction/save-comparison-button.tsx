@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { trackComparisonCompleted } from '@/lib/construction/analytics';
 
 export function SaveComparisonButton({ ids }: { ids: string[] }) {
   const [title, setTitle] = useState('');
@@ -30,6 +31,11 @@ export function SaveComparisonButton({ ids }: { ids: string[] }) {
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
       setMessage('Comparison saved.');
       setTitle('');
+      trackComparisonCompleted({
+        path: '/construction/compare',
+        comparison_item_count: Math.min(ids.length, 10),
+        logged_in: true,
+      });
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Save failed');
     } finally {

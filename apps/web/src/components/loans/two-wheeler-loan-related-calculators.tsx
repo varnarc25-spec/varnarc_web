@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Calculator, type LucideIcon } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import type { ContextualLink } from '@/lib/loan-contextual-links';
 import { TW_RELATED_SECONDARY } from '@/lib/two-wheeler-loan-page';
 
@@ -16,7 +16,8 @@ export function TwoWheelerLoanRelatedCalculators({ links }: { links: ContextualL
         Related Calculators
       </h2>
       <p className="cl-lede text-[var(--tw-muted)]">
-        Tools for Two-Wheeler Loan EMI, eligibility and prepayment. Estimates only — not lender approvals.
+        Tools for Two-Wheeler Loan EMI, eligibility and prepayment. Estimates only — not lender
+        approvals.
       </p>
 
       <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -66,7 +66,7 @@ export default async function FinanceGuideDetailPage({ params }: Props) {
       ) : guide.summary ? (
         <p className="text-sm leading-relaxed text-slate-700">{guide.summary}</p>
       ) : (
-        <p className="text-sm text-slate-600">Full guide content coming soon.</p>
+        <p className="text-sm text-slate-600">Content is not yet available for this guide.</p>
       )}
 
       <RelatedArticles />

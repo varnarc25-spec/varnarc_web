@@ -1,27 +1,33 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { ContentLayout } from '@/components/layout/content-layout';
+import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { RelatedArticles } from '@/components/construction/related-articles';
 import { RelatedCalculators } from '@/components/construction/construction-material-card';
+import { GuideClusterLinkBlocks } from '@/components/construction/guide-clusters/guide-cluster-link-blocks';
 import { fetchConstructionGuide } from '@/services/construction';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { constructionHubBreadcrumbs } from '@/lib/construction/seo';
 import { notFound } from 'next/navigation';
+import { buildGuideClusterLanding, resolveClusterSlugForCmsGuide } from '@varnarc/validation';
+import { cx } from '@/components/construction/styles';
 
 type Props = { params: Promise<{ slug: string }> };
 
 const DEFAULT_CALCULATORS = [
   { href: '/calculators/construction-cost', label: 'Construction Cost Calculator' },
-  { href: '/calculators/cement', label: 'Cement Calculator' },
-  { href: '/calculators/concrete', label: 'Concrete Calculator' },
-  { href: '/calculators/steel', label: 'Steel Calculator' },
+  { href: '/construction/cement-calculator', label: 'Cement Calculator' },
+  { href: '/construction/concrete-calculator', label: 'Concrete Calculator' },
+  { href: '/construction/steel-calculator', label: 'Steel Calculator' },
 ];
 
 const GUIDE_CALCULATORS: Record<string, Array<{ href: string; label: string }>> = {
   'cement-buying-guide': [
-    { href: '/calculators/cement', label: 'Cement Calculator' },
-    { href: '/calculators/concrete', label: 'Concrete Calculator' },
-    { href: '/calculators/sand', label: 'Sand Calculator' },
-    { href: '/calculators/aggregate', label: 'Aggregate Calculator' },
-    { href: '/calculators/plaster', label: 'Plaster Calculator' },
+    { href: '/construction/cement-calculator', label: 'Cement Calculator' },
+    { href: '/construction/concrete-calculator', label: 'Concrete Calculator' },
+    { href: '/construction/sand-calculator', label: 'Sand Calculator' },
+    { href: '/construction/aggregate-calculator', label: 'Aggregate Calculator' },
+    { href: '/construction/plaster-calculator', label: 'Plaster Calculator' },
   ],
 };
 
@@ -52,7 +58,10 @@ export default async function ConstructionGuideDetailPage({ params }: Props) {
     notFound();
   }
 
+  const clusterSlug = resolveClusterSlugForCmsGuide(slug);
+  const clusterLanding = clusterSlug ? buildGuideClusterLanding(clusterSlug) : null;
   const calculatorLinks = GUIDE_CALCULATORS[slug] ?? DEFAULT_CALCULATORS;
+  const path = `/construction/guides/${slug}`;
 
   return (
     <ContentLayout
@@ -65,8 +74,32 @@ export default async function ConstructionGuideDetailPage({ params }: Props) {
         { label: guide.title },
       ]}
     >
+      <ConstructionSeo
+        breadcrumbs={constructionHubBreadcrumbs([
+          { name: 'Guides', path: '/construction/guides' },
+          { name: guide.title, path },
+        ])}
+        article={{
+          title: guide.title,
+          description: guide.summary,
+          path,
+        }}
+      />
+
       {guide.category ? (
-        <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#f97316]">{guide.category}</p>
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#f97316]">
+          {guide.category}
+        </p>
+      ) : null}
+
+      {clusterLanding ? (
+        <p className="mb-4 text-sm text-slate-600">
+          Part of the{' '}
+          <Link href={clusterLanding.canonicalPath} className="font-semibold text-[#f97316]">
+            {clusterLanding.title}
+          </Link>{' '}
+          topic hub.
+        </p>
       ) : null}
 
       {guide.content ? (
@@ -79,8 +112,24 @@ export default async function ConstructionGuideDetailPage({ params }: Props) {
         <p className="text-sm text-slate-600">Full guide content coming soon.</p>
       )}
 
-      <RelatedCalculators links={calculatorLinks} />
+      {clusterLanding ? (
+        <div className="mt-10">
+          <GuideClusterLinkBlocks landing={clusterLanding} />
+        </div>
+      ) : (
+        <RelatedCalculators links={calculatorLinks} />
+      )}
+
       <RelatedArticles />
+
+      <div className="mt-8 flex flex-wrap gap-2">
+        <Link href="/construction/topics" className={cx.secondaryBtn}>
+          Topic hubs
+        </Link>
+        <Link href="/construction/guides" className={cx.secondaryBtn}>
+          All guides
+        </Link>
+      </div>
     </ContentLayout>
   );
 }

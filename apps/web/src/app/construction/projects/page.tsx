@@ -30,7 +30,9 @@ export default async function ConstructionProjectsPage() {
     >
       {unauthorized ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <p className="text-sm text-amber-900">Sign in to save and view your construction projects.</p>
+          <p className="text-sm text-amber-900">
+            Sign in to save and view your construction projects.
+          </p>
           <Link
             href="/auth/login?returnTo=/construction/projects"
             className="mt-3 inline-flex rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0b1f3a]/90"
@@ -39,18 +41,42 @@ export default async function ConstructionProjectsPage() {
           </Link>
         </div>
       ) : data?.length ? (
-        <ConstructionProjectsClient projects={data} checklists={checklists} />
+        <div className="space-y-4">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              href="/construction/saved-calculations"
+              className="inline-flex rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#0b1f3a]"
+            >
+              Saved calculations
+            </Link>
+            <Link
+              href="/construction/project/new"
+              className="inline-flex rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0b1f3a]/90"
+            >
+              Create project
+            </Link>
+          </div>
+          <ConstructionProjectsClient projects={data} checklists={checklists} />
+        </div>
       ) : (
         <EmptyState
           title="No projects yet"
-          message="Create a project from the cost estimator once you are signed in."
+          message="Start with a short guided setup, or save an estimate once you are signed in."
           action={
-            <Link
-              href="/construction/estimate"
-              className="inline-flex rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0b1f3a]/90"
-            >
-              Get an estimate
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/construction/project/new"
+                className="inline-flex rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0b1f3a]/90"
+              >
+                Create project
+              </Link>
+              <Link
+                href="/construction/estimate"
+                className="inline-flex rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#0b1f3a]"
+              >
+                Get an estimate
+              </Link>
+            </div>
           }
         />
       )}

@@ -1116,3 +1116,206 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* —— Construction calculation report (print / Save as PDF) —— */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0b1f3a !important;
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  [data-print-hide='true'],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* When a dedicated report is present, print only that document */
+  body:has([data-construction-report='true']) * {
+    visibility: hidden !important;
+  }
+
+  body:has([data-construction-report='true']) .construction-print-report,
+  body:has([data-construction-report='true']) .construction-print-report * {
+    visibility: visible !important;
+  }
+
+  .construction-print-report {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    color: #0b1f3a;
+    background: #fff;
+  }
+
+  .construction-print-report__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    border-bottom: 2px solid #0b1f3a;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .construction-print-report__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .construction-print-report__logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .construction-print-report__brand-name {
+    font-size: 14pt;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .construction-print-report__brand-tag,
+  .construction-print-report__version,
+  .construction-print-report__muted,
+  .construction-print-report__hint,
+  .construction-print-report__footer-note {
+    font-size: 9pt;
+    color: #475569;
+    margin: 0.15rem 0 0;
+  }
+
+  .construction-print-report__title {
+    font-size: 16pt;
+    font-weight: 800;
+    margin: 0 0 0.25rem;
+    page-break-after: avoid;
+  }
+
+  .construction-print-report__subtitle {
+    font-size: 11pt;
+    color: #475569;
+    margin: 0 0 1rem;
+  }
+
+  .construction-print-report__section {
+    margin: 1rem 0;
+  }
+
+  .construction-print-report__section--keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .construction-print-report__section h2 {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.25rem;
+    page-break-after: avoid;
+  }
+
+  .construction-print-report__kv {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .construction-print-report__kv--hero .construction-print-report__kv-row:first-child dd {
+    font-size: 13pt;
+    font-weight: 700;
+  }
+
+  .construction-print-report__kv-row {
+    display: grid;
+    grid-template-columns: 38% 1fr;
+    gap: 0.5rem;
+    break-inside: avoid;
+  }
+
+  .construction-print-report__kv-row dt {
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .construction-print-report__kv-row dd {
+    margin: 0;
+  }
+
+  .construction-print-report__hint {
+    display: block;
+  }
+
+  .construction-print-report__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin-bottom: 0.75rem;
+  }
+
+  .construction-print-report__table th,
+  .construction-print-report__table td {
+    border: 1px solid #cbd5e1;
+    padding: 0.35rem 0.45rem;
+    text-align: left;
+  }
+
+  .construction-print-report__table th {
+    background: #f1f5f9;
+    font-weight: 700;
+  }
+
+  .construction-print-report__list,
+  .construction-print-report__steps {
+    margin: 0;
+    padding-left: 1.15rem;
+  }
+
+  .construction-print-report__list li,
+  .construction-print-report__steps li {
+    margin: 0.25rem 0;
+    break-inside: avoid;
+  }
+
+  .construction-print-report__formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9pt;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 0.65rem;
+    break-inside: avoid;
+  }
+
+  .construction-print-report__disclaimer {
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #cbd5e1;
+    break-before: avoid;
+  }
+
+  .construction-print-report__disclaimer h2 {
+    font-size: 11pt;
+    margin: 0 0 0.35rem;
+  }
+
+  .construction-print-report__disclaimer p {
+    font-size: 9pt;
+    color: #334155;
+    margin: 0.35rem 0;
+  }
+}

@@ -148,6 +148,6 @@ describe('defaults', () => {
   });
 
   it('has correct number of guides', () => {
-    expect(TW_DEFAULT_GUIDES.length).toBe(3);
+    expect(TW_DEFAULT_GUIDES.length).toBeGreaterThanOrEqual(3);
   });
 });

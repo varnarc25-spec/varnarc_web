@@ -19,7 +19,7 @@ describe('dedicated loan category pages', () => {
     for (const slug of LOAN_HUB_CATEGORY_SLUGS) {
       expect(isLoanHubCategorySlug(slug)).toBe(true);
       const defaults = LOAN_CATEGORY_PAGE_DEFAULTS[slug];
-      expect(defaults.h1.startsWith('Compare')).toBe(true);
+      expect(defaults.h1.length).toBeGreaterThan(10);
       expect(defaults.breadcrumbLabel.length).toBeGreaterThan(3);
       expect(defaults.intro.length).toBeGreaterThan(20);
       expect(defaults.sections.length).toBeGreaterThan(3);

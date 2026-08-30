@@ -13,14 +13,16 @@ import type {
   SeoRobotsSettingsInput,
   UpdateSeoRedirectInput,
 } from '@varnarc/validation';
+import { CONSTRUCTION_SITEMAP_SEGMENTS, isConstructionSitemapSegment } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
 import {
+  buildConstructionSitemapIndexXml,
   buildRobotsTxt,
   buildSitemapIndexXml,
   buildUrlSetXml,
+  isKnownSitemapRouteType,
   normalizePath,
   SITEMAP_TYPES,
-  type SitemapType,
 } from './seo-xml.util';
 
 const ROBOTS_KEY = 'seo.robots';
@@ -33,6 +35,10 @@ const DEFAULT_ROBOTS: SeoRobotsSettingsInput = {
     '/profile',
     '/bookmarks',
     '/saved-calculations',
+    '/construction/projects',
+    '/construction/project/',
+    '/construction/saved-calculations',
+    '/construction/price-alerts',
     '/notifications',
     '/preferences',
     '/subscriptions',
@@ -308,7 +314,7 @@ export class SeoService {
   }
 
   async sitemapTypeXml(type: string) {
-    if (!SITEMAP_TYPES.includes(type as SitemapType)) {
+    if (!isKnownSitemapRouteType(type)) {
       throw new NotFoundException({
         success: false,
         error: { code: 'NOT_FOUND', message: 'Unknown sitemap type.' },
@@ -318,7 +324,18 @@ export class SeoService {
     const cached = await this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
-    const entries = await this.repos.seoSitemap.entriesForType(type, this.siteUrl());
+    // Nested index: construction.xml → child construction-* urlsets
+    if (type === 'construction') {
+      const children = this.repos.seoSitemap.constructionSitemapIndexEntries(this.siteUrl());
+      const xml = buildConstructionSitemapIndexXml(this.siteUrl(), children);
+      await this.cache.set(cacheKey, xml, SITEMAP_CACHE_TTL);
+      return xml;
+    }
+
+    const entries = isConstructionSitemapSegment(type)
+      ? await this.repos.seoSitemap.entriesForConstructionSegment(type, this.siteUrl())
+      : await this.repos.seoSitemap.entriesForType(type, this.siteUrl());
+
     const xml = buildUrlSetXml(
       entries.map((e) => ({
         loc: e.loc,
@@ -333,17 +350,36 @@ export class SeoService {
 
   async sitemapStatus() {
     const siteUrl = this.siteUrl();
-    const counts = await Promise.all(
-      SITEMAP_TYPES.map(async (type) => ({
-        type,
-        count: (await this.repos.seoSitemap.entriesForType(type, siteUrl)).length,
-        url: `${siteUrl}/sitemap/${type}.xml`,
-      })),
+    const rootCounts = await Promise.all(
+      SITEMAP_TYPES.map(async (type) => {
+        if (type === 'construction') {
+          const segmentCounts = await Promise.all(
+            CONSTRUCTION_SITEMAP_SEGMENTS.map(async (segment) => ({
+              type: segment,
+              count: (await this.repos.seoSitemap.entriesForConstructionSegment(segment, siteUrl))
+                .length,
+              url: `${siteUrl}/sitemap/${segment}.xml`,
+            })),
+          );
+          const total = segmentCounts.reduce((sum, s) => sum + s.count, 0);
+          return {
+            type,
+            count: total,
+            url: `${siteUrl}/sitemap/${type}.xml`,
+            segments: segmentCounts,
+          };
+        }
+        return {
+          type,
+          count: (await this.repos.seoSitemap.entriesForType(type, siteUrl)).length,
+          url: `${siteUrl}/sitemap/${type}.xml`,
+        };
+      }),
     );
     return {
       siteUrl,
       indexUrl: `${siteUrl}/sitemap.xml`,
-      types: counts,
+      types: rootCounts,
       lastRebuild: new Date().toISOString(),
     };
   }
@@ -351,6 +387,9 @@ export class SeoService {
   async rebuildSitemaps() {
     for (const type of SITEMAP_TYPES) {
       await this.cache.del(`seo:sitemap:${type}`).catch(() => undefined);
+    }
+    for (const segment of CONSTRUCTION_SITEMAP_SEGMENTS) {
+      await this.cache.del(`seo:sitemap:${segment}`).catch(() => undefined);
     }
     await this.cache.del('seo:sitemap:index').catch(() => undefined);
     return this.sitemapStatus();

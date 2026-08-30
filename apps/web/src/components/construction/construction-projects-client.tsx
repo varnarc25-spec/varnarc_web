@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 import type { ConstructionChecklistSummary, ConstructionProject } from '@/services/construction';
 import { defaultConstructionTimeline } from '@/services/construction';
+import { trackProjectUpdated } from '@/lib/construction/analytics';
 
 const inputClass =
   'h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-[#0b1f3a]';
@@ -41,6 +42,7 @@ export function ConstructionProjectsClient({
       if (!res.ok) throw new Error(json.error?.message || 'Update failed');
       setMessages((prev) => ({ ...prev, [id]: 'Saved' }));
       setEditingId(null);
+      trackProjectUpdated({ logged_in: true });
       router.refresh();
     } catch (err) {
       setMessages((prev) => ({
@@ -61,7 +63,10 @@ export function ConstructionProjectsClient({
         const checklist = checklists[0];
 
         return (
-          <article key={project.id} className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <article
+            key={project.id}
+            className="rounded-xl border border-slate-200 bg-white shadow-sm"
+          >
             <button
               type="button"
               className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left"
@@ -70,19 +75,33 @@ export function ConstructionProjectsClient({
               <div>
                 <h2 className="text-base font-extrabold text-[#0b1f3a]">{project.name}</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  {[project.projectType, project.estimatedCost != null ? `₹${project.estimatedCost}` : null]
+                  {[
+                    project.projectType,
+                    project.estimatedCost != null ? `₹${project.estimatedCost}` : null,
+                  ]
                     .filter(Boolean)
                     .join(' · ') || 'Construction project'}
                 </p>
+                <Link
+                  href={`/construction/project/${project.id}`}
+                  className="mt-2 inline-block text-xs font-semibold text-[#f97316] hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Open dashboard
+                </Link>
               </div>
-              <span className="text-xs font-medium text-slate-500">{expanded ? 'Hide' : 'Details'}</span>
+              <span className="text-xs font-medium text-slate-500">
+                {expanded ? 'Hide' : 'Details'}
+              </span>
             </button>
 
             {expanded ? (
               <div className="space-y-6 border-t border-slate-100 px-5 py-5">
                 <section>
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Project details</h3>
+                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+                      Project details
+                    </h3>
                     {editingId === project.id ? (
                       <div className="flex gap-2">
                         <Button
@@ -109,7 +128,12 @@ export function ConstructionProjectsClient({
                         </Button>
                       </div>
                     ) : (
-                      <Button type="button" size="sm" variant="secondary" onClick={() => setEditingId(project.id)}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setEditingId(project.id)}
+                      >
                         Edit name &amp; notes
                       </Button>
                     )}
@@ -117,7 +141,9 @@ export function ConstructionProjectsClient({
                   {editingId === project.id ? (
                     <div className="grid gap-3 md:grid-cols-2">
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-slate-600">Name</label>
+                        <label className="mb-1 block text-xs font-medium text-slate-600">
+                          Name
+                        </label>
                         <input
                           className={inputClass}
                           value={draft.name}
@@ -130,7 +156,9 @@ export function ConstructionProjectsClient({
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="mb-1 block text-xs font-medium text-slate-600">Notes</label>
+                        <label className="mb-1 block text-xs font-medium text-slate-600">
+                          Notes
+                        </label>
                         <textarea
                           className={`${inputClass} min-h-24 py-2`}
                           value={draft.notes}
@@ -146,18 +174,26 @@ export function ConstructionProjectsClient({
                   ) : (
                     <dl className="grid gap-3 sm:grid-cols-2 text-sm">
                       <div>
-                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Type</dt>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Type
+                        </dt>
                         <dd className="mt-1 text-[#0b1f3a]">{project.projectType || '—'}</dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Area</dt>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Area
+                        </dt>
                         <dd className="mt-1 text-[#0b1f3a]">
                           {project.areaSqft != null ? `${project.areaSqft} sq ft` : '—'}
                         </dd>
                       </div>
                       <div className="sm:col-span-2">
-                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Notes</dt>
-                        <dd className="mt-1 whitespace-pre-line text-slate-700">{project.notes || '—'}</dd>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Notes
+                        </dt>
+                        <dd className="mt-1 whitespace-pre-line text-slate-700">
+                          {project.notes || '—'}
+                        </dd>
                       </div>
                     </dl>
                   )}
@@ -167,14 +203,21 @@ export function ConstructionProjectsClient({
                 </section>
 
                 <section>
-                  <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Budget</h3>
+                  <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+                    Budget
+                  </h3>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <BudgetStat label="Estimated total" value={project.estimatedCost != null ? `₹${project.estimatedCost}` : '—'} />
+                    <BudgetStat
+                      label="Estimated total"
+                      value={project.estimatedCost != null ? `₹${project.estimatedCost}` : '—'}
+                    />
                     <BudgetStat label="Line items" value={String(project.items?.length ?? 0)} />
                     <BudgetStat label="Region" value={project.region || '—'} />
                     <BudgetStat
                       label="Created"
-                      value={project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '—'}
+                      value={
+                        project.createdAt ? new Date(project.createdAt).toLocaleDateString() : '—'
+                      }
                     />
                   </div>
                   {project.breakdown?.length ? (
@@ -200,22 +243,34 @@ export function ConstructionProjectsClient({
 
                 <section>
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Timeline</h3>
-                    <Link href="/construction/planner" className="text-sm font-medium text-[#f97316] hover:underline">
+                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+                      Timeline
+                    </h3>
+                    <Link
+                      href="/construction/planner"
+                      className="text-sm font-medium text-[#f97316] hover:underline"
+                    >
                       Open planner
                     </Link>
                   </div>
                   <ol className="mt-3 space-y-3">
                     {timeline.map((phase, index) => (
-                      <li key={phase.label} className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
+                      <li
+                        key={phase.label}
+                        className="flex gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3"
+                      >
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0b1f3a] text-xs font-bold text-white">
                           {index + 1}
                         </span>
                         <div>
                           <p className="text-sm font-semibold text-[#0b1f3a]">{phase.label}</p>
-                          {phase.description ? <p className="mt-1 text-xs text-slate-600">{phase.description}</p> : null}
+                          {phase.description ? (
+                            <p className="mt-1 text-xs text-slate-600">{phase.description}</p>
+                          ) : null}
                           {phase.durationWeeks ? (
-                            <p className="mt-1 text-xs font-medium text-slate-500">{phase.durationWeeks} weeks</p>
+                            <p className="mt-1 text-xs font-medium text-slate-500">
+                              {phase.durationWeeks} weeks
+                            </p>
                           ) : null}
                         </div>
                       </li>
@@ -225,7 +280,9 @@ export function ConstructionProjectsClient({
 
                 <section>
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">Checklist</h3>
+                    <h3 className="text-sm font-extrabold uppercase tracking-wide text-[#0b1f3a]">
+                      Checklist
+                    </h3>
                     {checklist ? (
                       <Link
                         href={`/construction/checklists/${checklist.slug}`}
@@ -234,14 +291,18 @@ export function ConstructionProjectsClient({
                         View full checklist
                       </Link>
                     ) : (
-                      <Link href="/construction/checklists" className="text-sm font-medium text-[#f97316] hover:underline">
+                      <Link
+                        href="/construction/checklists"
+                        className="text-sm font-medium text-[#f97316] hover:underline"
+                      >
                         Browse checklists
                       </Link>
                     )}
                   </div>
                   {checklist ? (
                     <p className="mt-2 text-sm text-slate-600">
-                      Start with <span className="font-medium text-[#0b1f3a]">{checklist.title}</span>
+                      Start with{' '}
+                      <span className="font-medium text-[#0b1f3a]">{checklist.title}</span>
                       {checklist.itemCount ? ` (${checklist.itemCount} items)` : ''}.
                     </p>
                   ) : (

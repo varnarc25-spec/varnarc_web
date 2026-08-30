@@ -49,9 +49,30 @@ import {
   ConstructionMaterialRepository,
   CostTemplateRepository,
   ConstructionProjectRepository,
+  ConstructionCalculationRepository,
   ConstructionChecklistRepository,
   ConstructionComparisonRepository,
+  ConstructionBoqRepository,
+  ConstructionProjectPhaseRepository,
+  ConstructionBudgetItemRepository,
+  ConstructionExpenseRepository,
+  ConstructionDocumentRepository,
+  ConstructionLocationRepository,
+  ConstructionMaterialPriceRepository,
+  ConstructionPriceAlertRepository,
+  ConstructionPriceAlertTriggerRepository,
+  ConstructionVcciMethodologyRepository,
+  ConstructionVcciSnapshotRepository,
+  ConstructionCommunityPriceReportRepository,
 } from './construction/construction.repository';
+import {
+  ConstructionSeoAuditRunRepository,
+  ConstructionSeoAuditIssueRepository,
+} from './construction/seo-audit.repository';
+import {
+  ConstructionSearchEventRepository,
+  ConstructionSearchOpportunityRepository,
+} from './construction/search-opportunity.repository';
 import {
   AutomobileManufacturerRepository,
   AutomobileVehicleRepository,
@@ -148,6 +169,8 @@ export * from './ads/ads.repository';
 export * from './calculators/calculator.repository';
 export * from './finance/finance.repository';
 export * from './construction/construction.repository';
+export * from './construction/seo-audit.repository';
+export * from './construction/search-opportunity.repository';
 export * from './automobile/automobile.repository';
 export * from './comparison/comparison.repository';
 export * from './reviews/reviews.repository';
@@ -217,6 +240,23 @@ export function createRepositories(db: PrismaClient) {
     constructionMaterials: new ConstructionMaterialRepository(db),
     costTemplates: new CostTemplateRepository(db),
     constructionProjects: new ConstructionProjectRepository(db),
+    constructionCalculations: new ConstructionCalculationRepository(db),
+    constructionBoqs: new ConstructionBoqRepository(db),
+    constructionProjectPhases: new ConstructionProjectPhaseRepository(db),
+    constructionBudgetItems: new ConstructionBudgetItemRepository(db),
+    constructionExpenses: new ConstructionExpenseRepository(db),
+    constructionDocuments: new ConstructionDocumentRepository(db),
+    constructionLocations: new ConstructionLocationRepository(db),
+    constructionMaterialPrices: new ConstructionMaterialPriceRepository(db),
+    constructionPriceAlerts: new ConstructionPriceAlertRepository(db),
+    constructionPriceAlertTriggers: new ConstructionPriceAlertTriggerRepository(db),
+    constructionCommunityPriceReports: new ConstructionCommunityPriceReportRepository(db),
+    constructionSeoAuditRuns: new ConstructionSeoAuditRunRepository(db),
+    constructionSeoAuditIssues: new ConstructionSeoAuditIssueRepository(db),
+    constructionSearchEvents: new ConstructionSearchEventRepository(db),
+    constructionSearchOpportunities: new ConstructionSearchOpportunityRepository(db),
+    constructionVcciMethodologies: new ConstructionVcciMethodologyRepository(db),
+    constructionVcciSnapshots: new ConstructionVcciSnapshotRepository(db),
     constructionChecklists: new ConstructionChecklistRepository(db),
     constructionComparisons: new ConstructionComparisonRepository(db),
     automobileManufacturers: new AutomobileManufacturerRepository(db),

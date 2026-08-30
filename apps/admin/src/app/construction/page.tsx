@@ -24,6 +24,8 @@ const sections = [
   { href: '/construction/reports', label: 'Reports' },
   { href: '/construction/faqs', label: 'FAQs' },
   { href: '/construction/guides', label: 'Guides' },
+  { href: '/construction/seo-audit', label: 'SEO Audit' },
+  { href: '/construction/search-opportunities', label: 'Search Opportunities' },
 ];
 
 export default async function ConstructionAdminDashboardPage() {
@@ -74,7 +76,9 @@ export default async function ConstructionAdminDashboardPage() {
                 className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:bg-[var(--varnarc-muted)]"
               >
                 <div className="font-medium text-[var(--varnarc-brand)]">{section.label}</div>
-                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">Manage {section.label.toLowerCase()}</div>
+                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+                  Manage {section.label.toLowerCase()}
+                </div>
               </Link>
             ))}
           </div>

@@ -127,24 +127,33 @@ export const constructionEstimateQuerySchema = z
         }
       }),
   })
-  .refine(
-    (data) => (data.rooms?.length ?? 0) > 0 || (data.areaSqft != null && data.areaSqft > 0),
-    { message: 'Provide built-up area or at least one room.' },
-  );
+  .refine((data) => (data.rooms?.length ?? 0) > 0 || (data.areaSqft != null && data.areaSqft > 0), {
+    message: 'Provide built-up area or at least one room.',
+  });
 
 export const createConstructionProjectSchema = z.object({
   name: z.string().min(1).max(150),
   projectType: z.string().min(1).max(80),
+  status: z.enum(['DRAFT', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']).default('DRAFT'),
   areaSqft: z.number().positive().optional().nullable(),
   region: z.string().max(120).optional().nullable(),
+  locationId: uuidSchema.optional().nullable(),
+  currency: z.string().length(3).default('INR'),
+  quality: z.enum(['basic', 'standard', 'premium']).optional().nullable(),
+  estimatedCost: z.number().min(0).optional().nullable(),
+  breakdown: jsonValueSchema.optional().nullable(),
   notes: z.string().max(5000).optional().nullable(),
+  startedAt: z.coerce.date().optional().nullable(),
+  targetEndAt: z.coerce.date().optional().nullable(),
   items: z
     .array(
       z.object({
         materialId: uuidSchema.optional().nullable(),
         name: z.string().max(150).optional().nullable(),
+        unit: z.string().max(40).optional().nullable(),
         quantity: z.number().positive(),
         unitCost: z.number().min(0).optional().nullable(),
+        estimatedCost: z.number().min(0).optional().nullable(),
       }),
     )
     .default([]),
@@ -163,7 +172,12 @@ export const constructionCompareQuerySchema = z.object({
   ids: z
     .string()
     .min(1)
-    .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean))
+    .transform((v) =>
+      v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    )
     .pipe(z.array(uuidSchema).min(2).max(6)),
 });
 
@@ -171,10 +185,9 @@ export const constructionEstimateSaveSchema = constructionEstimateBaseSchema
   .extend({
     name: z.string().min(1).max(150).optional(),
   })
-  .refine(
-    (data) => (data.rooms?.length ?? 0) > 0 || (data.areaSqft != null && data.areaSqft > 0),
-    { message: 'Provide built-up area or at least one room.' },
-  );
+  .refine((data) => (data.rooms?.length ?? 0) > 0 || (data.areaSqft != null && data.areaSqft > 0), {
+    message: 'Provide built-up area or at least one room.',
+  });
 
 export const createConstructionComparisonSchema = z
   .object({
@@ -211,14 +224,24 @@ export const createConstructionChecklistSchema = z.object({
   projectType: z.string().max(80).optional().nullable(),
   items: z
     .array(
-      z.object({
-        label: z.string().min(1).max(200),
-        description: z.string().max(500).optional().nullable(),
-        phase: z.string().max(80).optional().nullable(),
-      }),
+      z
+        .object({
+          id: z.string().min(1).max(80).optional(),
+          title: z.string().min(1).max(200).optional(),
+          /** @deprecated Prefer title */
+          label: z.string().min(1).max(200).optional(),
+          description: z.string().max(1000).optional().nullable(),
+          category: z.string().max(80).optional().nullable(),
+          phase: z.string().max(80).optional().nullable(),
+          professionalReviewRequired: z.boolean().optional().default(false),
+          sortOrder: z.number().int().min(0).max(10_000).optional(),
+        })
+        .refine((v) => Boolean(v.title?.trim() || v.label?.trim()), {
+          message: 'Each checklist item needs a title (or legacy label).',
+        }),
     )
     .min(1)
-    .max(100),
+    .max(120),
   status: publishStatusSchema.default('PUBLISHED'),
 });
 

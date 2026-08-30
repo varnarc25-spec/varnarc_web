@@ -1,5 +1,7 @@
 /** XML helpers for SEO sitemaps and robots.txt */
 
+import { CONSTRUCTION_SITEMAP_SEGMENTS, isConstructionSitemapSegment } from '@varnarc/validation';
+
 export const SITEMAP_TYPES = [
   'articles',
   'pages',
@@ -16,13 +18,50 @@ export const SITEMAP_TYPES = [
 
 export type SitemapType = (typeof SITEMAP_TYPES)[number];
 
-export function buildSitemapIndexXml(siteUrl: string, types: readonly string[] = SITEMAP_TYPES) {
-  const now = new Date().toISOString();
+/** Root + construction child segments accepted by `/seo/sitemap/:type`. */
+export const ALL_SITEMAP_ROUTE_TYPES = [
+  ...SITEMAP_TYPES,
+  ...CONSTRUCTION_SITEMAP_SEGMENTS,
+] as const;
+
+export type SitemapRouteType = (typeof ALL_SITEMAP_ROUTE_TYPES)[number];
+
+export function isKnownSitemapRouteType(type: string): boolean {
+  return (SITEMAP_TYPES as readonly string[]).includes(type) || isConstructionSitemapSegment(type);
+}
+
+export function buildSitemapIndexXml(
+  siteUrl: string,
+  types: readonly string[] = SITEMAP_TYPES,
+  lastmodByType?: Record<string, Date | string>,
+) {
+  const fallbackNow = new Date().toISOString();
   const entries = types
-    .map(
-      (type) =>
-        `  <sitemap>\n    <loc>${escapeXml(`${siteUrl}/sitemap/${type}.xml`)}</loc>\n    <lastmod>${now}</lastmod>\n  </sitemap>`,
-    )
+    .map((type) => {
+      const lm = lastmodByType?.[type];
+      const lastmod =
+        lm instanceof Date ? lm.toISOString() : typeof lm === 'string' ? lm : fallbackNow;
+      return `  <sitemap>\n    <loc>${escapeXml(`${siteUrl}/sitemap/${type}.xml`)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </sitemap>`;
+    })
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
+}
+
+/** Nested construction sitemap index pointing at segment urlsets. */
+export function buildConstructionSitemapIndexXml(
+  siteUrl: string,
+  children: Array<{ loc: string; lastmod?: Date }> = CONSTRUCTION_SITEMAP_SEGMENTS.map(
+    (segment) => ({
+      loc: `${siteUrl.replace(/\/+$/, '')}/sitemap/${segment}.xml`,
+    }),
+  ),
+) {
+  const fallback = new Date().toISOString();
+  const entries = children
+    .map((c) => {
+      const lastmod = c.lastmod ? c.lastmod.toISOString() : fallback;
+      return `  <sitemap>\n    <loc>${escapeXml(c.loc)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </sitemap>`;
+    })
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
 }

@@ -821,7 +821,7 @@ export function resolveCategoryRelatedCalculators(
   return links.length ? links : defaults;
 }
 
-export function resolveCategoryH1(slug: LoanCategorySlug, categoryName?: string | null): string {
+export function resolveCategoryH1(slug: LoanCategorySlug, _categoryName?: string | null): string {
   return LOAN_CATEGORY_PAGE_DEFAULTS[slug].h1;
 }
 

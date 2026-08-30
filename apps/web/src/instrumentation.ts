@@ -1,6 +1,6 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('[startup] Varnarc web initializing', {
+    console.warn('[startup] Varnarc web initializing', {
       nodeEnv: process.env.NODE_ENV,
       port: process.env.PORT ?? '(unset)',
       appBaseUrl: process.env.APP_BASE_URL ?? '(unset)',

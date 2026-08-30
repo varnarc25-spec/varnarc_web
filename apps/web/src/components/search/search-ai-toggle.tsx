@@ -43,10 +43,13 @@ export function SearchAiToggle({ enabled }: { enabled: boolean }) {
   }
 
   return (
-    <form onSubmit={(e) => void runAiSearch(e)} className="rounded-lg border border-dashed border-[#f97316]/40 bg-orange-50/50 p-4">
+    <form
+      onSubmit={(e) => void runAiSearch(e)}
+      className="rounded-lg border border-dashed border-[#f97316]/40 bg-orange-50/50 p-4"
+    >
       <p className="text-sm font-medium text-slate-800">Ask in plain English</p>
       <p className="mt-1 text-xs text-slate-600">
-        e.g. “best home loan rates in Bangalore” or “SIP calculator for retirement”
+        e.g. “compare home loan rates in Bangalore” or “SIP calculator for retirement”
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input

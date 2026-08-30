@@ -37,12 +37,12 @@ type CompareRow = {
 };
 
 const recommendationLabels: Record<string, string> = {
-  best_overall: 'Best Overall',
-  best_budget: 'Best Budget',
-  best_premium: 'Best Premium',
-  best_performance: 'Best Performance',
+  best_overall: 'Top Pick — Overall',
+  best_budget: 'Top Pick — Budget',
+  best_premium: 'Top Pick — Premium',
+  best_performance: 'Top Pick — Performance',
   editors_choice: "Editor's Choice",
-  best_value: 'Best Value',
+  best_value: 'Top Pick — Value',
   most_popular: 'Most Popular',
 };
 

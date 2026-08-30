@@ -22,7 +22,12 @@ export const quickTools = [
     color: '#122b4a',
     icon: 'building',
   },
-  { name: 'Paint Calculator', href: '/calculators/paint', color: '#fb923c', icon: 'paint' },
+  {
+    name: 'Paint Calculator',
+    href: '/construction/paint-calculator',
+    color: '#fb923c',
+    icon: 'paint',
+  },
   { name: 'Solar Savings Calculator', href: '/calculators/solar', color: '#f59e0b', icon: 'sun' },
   { name: 'Car Loan Calculator', href: '/calculators/car-loan', color: '#0b1f3a', icon: 'car' },
   {
@@ -75,7 +80,7 @@ export const categories = [
     links: [
       { label: 'Construction Guide', href: '/construction/guides' },
       { label: 'Interior Design', href: '/construction/guides' },
-      { label: 'Paints & Walls', href: '/calculators/paint' },
+      { label: 'Paints & Walls', href: '/construction/paint-calculator' },
       { label: 'Flooring', href: '/construction/materials' },
       { label: 'Roofing', href: '/construction/materials' },
       { label: 'Plumbing & Electrical', href: '/construction/checklists' },

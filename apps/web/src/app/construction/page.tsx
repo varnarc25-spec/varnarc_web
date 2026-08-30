@@ -1,211 +1,146 @@
-import type { Metadata } from 'next';
-import { ModuleHubShell } from '@/components/hub/module-hub-shell';
-import { HubSectionHeader } from '@/components/hub/hub-section-header';
-import { HubIconGrid } from '@/components/hub/hub-icon-grid';
-import { HubCompareTable } from '@/components/hub/hub-compare-table';
-import { HubRatesList } from '@/components/hub/hub-rates-list';
-import { HubFeaturedStack } from '@/components/hub/hub-featured-stack';
-import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
-import { HubFaqSection } from '@/components/hub/hub-faq-section';
+import { ConstructionLandingPage } from '@/components/construction/landing/landing-page';
+import { buildConstructionPageMetadata } from '@/lib/construction/seo';
 import {
-  fetchConstructionBrands,
-  fetchConstructionCategories,
   fetchConstructionDashboard,
   fetchConstructionFaqs,
   fetchConstructionGuides,
   fetchConstructionMaterials,
+  fetchConstructionProjects,
 } from '@/services/construction';
 
-export const metadata: Metadata = {
-  title: 'Home & Construction',
-  description: 'Construction cost estimators, materials, brands, guides, and home planning tools.',
-  alternates: { canonical: '/construction' },
+type Props = {
+  searchParams: Promise<{ intent?: string }>;
 };
+
+export async function generateMetadata({ searchParams }: Props) {
+  const params = await searchParams;
+  return buildConstructionPageMetadata('hub', { searchParams: params });
+}
 
 export const revalidate = 60;
 
-const productLinks = [
+const FALLBACK_CALCULATORS = [
   {
-    label: 'Materials',
-    href: '/construction/materials',
-    description: 'Cement, steel, tiles',
-    icon: 'box',
+    label: 'Construction Cost',
+    href: '/calculators/construction-cost',
+    description: 'Project cost planning',
+  },
+  { label: 'Cement', href: '/construction/cement-calculator', description: 'Bag quantities' },
+  { label: 'Concrete', href: '/construction/concrete-calculator', description: 'Mix & volume' },
+  { label: 'RCC', href: '/construction/rcc-calculator', description: 'Slab, beam, column' },
+  { label: 'Brick', href: '/construction/brick-calculator', description: 'Wall quantities' },
+  {
+    label: 'AAC blocks',
+    href: '/construction/aac-block-calculator',
+    description: 'Lightweight blocks',
+  },
+  { label: 'Steel', href: '/construction/steel-calculator', description: 'TMT weight' },
+  {
+    label: 'Bar bending schedule',
+    href: '/construction/bar-bending-schedule',
+    description: 'BBS quantities',
   },
   {
-    label: 'Brands',
-    href: '/construction/brands',
-    description: 'Trusted brands',
-    icon: 'building',
+    label: 'BOQ Generator',
+    href: '/construction/boq-generator',
+    description: 'Indicative planning BOQ',
   },
   {
-    label: 'Cost estimator',
-    href: '/construction/estimate',
-    description: 'Project costs',
-    icon: 'calculator',
+    label: 'Timeline planner',
+    href: '/construction/timeline-planner',
+    description: 'Phase schedule estimates',
   },
   {
-    label: 'Project planner',
-    href: '/construction/planner',
-    description: 'Budget & timeline',
-    icon: 'layers',
-  },
-  { label: 'Checklists', href: '/construction/checklists', description: 'By phase', icon: 'check' },
-  {
-    label: 'Compare materials',
-    href: '/construction/compare',
-    description: 'Side-by-side',
-    icon: 'scale',
+    label: 'Budget tracker',
+    href: '/construction/budget-tracker',
+    description: 'Budget vs actual spend',
   },
   {
-    label: 'My projects',
-    href: '/construction/projects',
-    description: 'Saved plans',
-    icon: 'home',
+    label: 'Document vault',
+    href: '/construction/document-vault',
+    description: 'Private project files',
   },
   {
-    label: 'Suppliers',
-    href: '/construction/suppliers',
-    description: 'Dealers & pros',
-    icon: 'users',
+    label: 'Material selector',
+    href: '/construction/material-selector',
+    description: 'Task-based material guidance',
   },
+  { label: 'Sand', href: '/construction/sand-calculator', description: 'Sand volumes' },
+  { label: 'Aggregate', href: '/construction/aggregate-calculator', description: 'Jelly / stone' },
+  { label: 'Plaster', href: '/construction/plaster-calculator', description: 'Wall & ceiling' },
+  { label: 'Paint', href: '/construction/paint-calculator', description: 'Coverage & litres' },
+  { label: 'Tile', href: '/construction/tile-calculator', description: 'Floor & wall area' },
+  { label: 'Flooring', href: '/construction/flooring-calculator', description: 'Area by type' },
 ];
 
-const calculatorLinks = [
-  { label: 'Construction Cost', href: '/calculators/construction-cost', icon: 'calculator' },
-  { label: 'Paint Calculator', href: '/calculators/paint', icon: 'paint' },
-  { label: 'Concrete', href: '/calculators/concrete', icon: 'box' },
-  { label: 'Brick', href: '/calculators/brick', icon: 'layers' },
-  { label: 'Steel', href: '/calculators/steel', icon: 'building' },
-  { label: 'Tile', href: '/calculators/tile', icon: 'grid' },
-];
+export default async function ConstructionPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const [dashboardRes, materialsRes, guidesRes, faqsRes, projectsRes] = await Promise.all([
+    fetchConstructionDashboard(),
+    fetchConstructionMaterials({ featured: true, limit: 6 }),
+    fetchConstructionGuides(),
+    fetchConstructionFaqs(),
+    fetchConstructionProjects(),
+  ]);
 
-const popularLinks = [
-  { label: 'Construction Cost', href: '/calculators/construction-cost' },
-  { label: 'Paint Calculator', href: '/calculators/paint' },
-  { label: 'Materials', href: '/construction/materials' },
-];
-
-export default async function ConstructionPage() {
-  const [dashboardRes, categoriesRes, materialsRes, brandsRes, guidesRes, faqsRes] =
-    await Promise.all([
-      fetchConstructionDashboard(),
-      fetchConstructionCategories(),
-      fetchConstructionMaterials({ featured: true, limit: 6 }),
-      fetchConstructionBrands({ limit: 8 }),
-      fetchConstructionGuides(),
-      fetchConstructionFaqs(),
-    ]);
-
-  const relatedCalculators =
+  const calculators =
     dashboardRes.data?.relatedCalculators?.map((calc) => ({
       label: calc.name,
       description: 'Calculator',
       href: `/calculators/${calc.slug}`,
-      icon: 'calculator',
-    })) ?? calculatorLinks;
+    })) ?? FALLBACK_CALCULATORS;
 
-  const categoryItems = categoriesRes.data?.map((cat) => ({
-    label: cat.name,
-    href: `/construction/materials?categoryId=${cat.id}`,
-    description: 'Browse materials',
-    icon: 'grid',
-  }));
-
-  const featuredMaterials = materialsRes.data ?? [];
-  const featuredItems = featuredMaterials.slice(0, 3).map((item) => ({
+  const materials = (materialsRes.data ?? []).map((item) => ({
     id: item.id,
     name: item.name,
-    description:
-      [item.category?.name, item.brand?.name].filter(Boolean).join(' · ') || item.description,
     href: `/construction/materials/${item.id}`,
+    description: item.description,
+    meta: [item.category?.name, item.brand?.name].filter(Boolean).join(' · ') || null,
+    price: item.approximatePrice,
+    unit: item.unit,
+    priceLabel:
+      item.approximatePrice != null
+        ? `₹${item.approximatePrice}${item.unit ? ` / ${item.unit}` : ''}`
+        : null,
   }));
 
-  const compareRows = featuredMaterials.slice(0, 4).map((m) => ({
-    provider: m.brand?.name ?? m.name,
-    rate: m.approximatePrice != null ? `₹${m.approximatePrice}` : '—',
-    fee: m.unit ?? '—',
-    tenure: m.category?.name ?? '—',
-    href: `/construction/materials/${m.id}`,
-  }));
+  const guides =
+    guidesRes.data?.slice(0, 6).map((g) => ({
+      href: `/construction/guides/${g.slug}`,
+      label: g.title,
+      description: g.summary,
+      category: 'Guide',
+      readMinutes: 6,
+    })) ?? [];
 
-  const brandRates = (brandsRes.data ?? []).slice(0, 5).map((b) => ({
-    label: b.name,
-    value: 'View brand',
-    href: `/construction/brands/${b.slug}`,
-  }));
+  const faqs =
+    faqsRes.data?.slice(0, 8).map((f) => ({
+      id: f.id,
+      question: f.question,
+      answer: f.answer,
+    })) ?? [];
 
-  const guides = guidesRes.data?.slice(0, 6).map((g) => ({
-    slug: g.slug,
-    title: g.title,
-    category: 'Construction',
-    summary: g.summary,
-    href: `/construction/guides/${g.slug}`,
-    readMinutes: 6,
-  }));
-
-  const faqs = faqsRes.data?.slice(0, 8).map((f) => ({
-    id: f.id,
-    question: f.question,
-    answer: f.answer,
-  }));
+  const projects =
+    !projectsRes.unauthorized && projectsRes.data?.length
+      ? projectsRes.data.slice(0, 3).map((p) => ({
+          id: p.id,
+          name: p.name,
+          href: `/construction/project/${p.id}`,
+          summary:
+            [p.projectType, p.estimatedCost != null ? `₹${p.estimatedCost}` : null]
+              .filter(Boolean)
+              .join(' · ') || null,
+        }))
+      : [];
 
   return (
-    <ModuleHubShell
-      moduleKey="construction"
-      title="Home & construction tools, materials & cost estimators"
-      description="Cost estimators, materials, interiors, and home improvement guides for smarter building decisions."
-      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Home & Construction' }]}
-      popularLinks={popularLinks}
-      overviewTitle="Construction overview"
-    >
-      <section>
-        <HubSectionHeader title="Popular construction calculators" viewAllHref="/calculators" />
-        <HubIconGrid items={relatedCalculators} columns={4} />
-      </section>
-
-      <section>
-        <HubSectionHeader title="Explore materials & tools" viewAllHref="/construction/materials" />
-        <HubIconGrid items={categoryItems?.length ? categoryItems : productLinks} columns={4} />
-      </section>
-
-      <section>
-        <div className="grid gap-6 lg:grid-cols-3">
-          {compareRows.length ? (
-            <HubCompareTable
-              title="Compare materials"
-              tabs={[
-                { label: 'Materials', href: '/construction/materials' },
-                { label: 'Brands', href: '/construction/brands' },
-              ]}
-              activeTab="Materials"
-              rows={compareRows}
-              viewAllHref="/construction/compare"
-            />
-          ) : null}
-          {brandRates.length ? (
-            <HubRatesList
-              title="Popular brands"
-              items={brandRates}
-              viewAllHref="/construction/brands"
-            />
-          ) : null}
-          {featuredItems.length ? (
-            <HubFeaturedStack
-              title="Featured materials"
-              items={featuredItems}
-              viewAllHref="/construction/materials"
-            />
-          ) : null}
-        </div>
-      </section>
-
-      <section>
-        <HubSectionHeader title="Browse by area" />
-        <HubIconGrid items={productLinks} columns={4} />
-      </section>
-
-      {guides?.length ? <HubGuideGrid items={guides} viewAllHref="/construction/guides" /> : null}
-      <HubFaqSection faqs={faqs ?? []} viewAllHref="/construction/faqs" />
-    </ModuleHubShell>
+    <ConstructionLandingPage
+      calculators={calculators}
+      materials={materials}
+      guides={guides}
+      faqs={faqs}
+      projects={projects}
+      initialIntent={params.intent ?? null}
+    />
   );
 }

@@ -159,10 +159,7 @@ export class UserActivityRepository extends BaseRepository {
     });
   }
 
-  updateReadingView(
-    id: string,
-    data: { metadata?: Prisma.InputJsonValue; createdAt?: Date },
-  ) {
+  updateReadingView(id: string, data: { metadata?: Prisma.InputJsonValue; createdAt?: Date }) {
     return this.db.userActivity.update({ where: { id }, data });
   }
 
@@ -172,6 +169,31 @@ export class UserActivityRepository extends BaseRepository {
 
   clearReadingHistory(userId: string, activityType: string) {
     return this.db.userActivity.deleteMany({ where: { userId, activityType } });
+  }
+
+  findLatestByActivityMetadataSlug(
+    userId: string,
+    activityType: string,
+    entityType: string,
+    calculatorSlug: string,
+  ) {
+    return this.db.userActivity.findFirst({
+      where: {
+        userId,
+        activityType,
+        entityType,
+        metadata: { path: ['calculatorSlug'], equals: calculatorSlug },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  listByActivityType(userId: string, activityType: string, limit = 40) {
+    return this.db.userActivity.findMany({
+      where: { userId, activityType },
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 100),
+    });
   }
 }
 
@@ -197,10 +219,7 @@ export class UserContentSubscriptionRepository extends BaseRepository {
     });
   }
 
-  async replaceForUser(
-    userId: string,
-    items: Array<{ subscriptionType: string; target: string }>,
-  ) {
+  async replaceForUser(userId: string, items: Array<{ subscriptionType: string; target: string }>) {
     await this.db.$transaction([
       this.db.userContentSubscription.deleteMany({ where: { userId } }),
       ...(items.length
@@ -218,12 +237,7 @@ export class UserContentSubscriptionRepository extends BaseRepository {
     return this.listByUser(userId);
   }
 
-  async toggle(
-    userId: string,
-    subscriptionType: string,
-    target: string,
-    subscribed: boolean,
-  ) {
+  async toggle(userId: string, subscriptionType: string, target: string, subscribed: boolean) {
     const normalizedTarget = target.trim();
     if (!subscribed) {
       await this.db.userContentSubscription.deleteMany({
@@ -246,10 +260,7 @@ export class UserContentSubscriptionRepository extends BaseRepository {
     return { subscribed: true, subscriptionType, target: normalizedTarget };
   }
 
-  async checkMany(
-    userId: string,
-    items: Array<{ subscriptionType: string; target: string }>,
-  ) {
+  async checkMany(userId: string, items: Array<{ subscriptionType: string; target: string }>) {
     if (!items.length) return [];
     const rows = await this.db.userContentSubscription.findMany({
       where: {
@@ -275,11 +286,15 @@ export class UserContentSubscriptionRepository extends BaseRepository {
       const categorySlugs = subs
         .filter((row) => row.subscriptionType === 'category')
         .map((row) => row.target);
-      const tagSlugs = subs.filter((row) => row.subscriptionType === 'tag').map((row) => row.target);
+      const tagSlugs = subs
+        .filter((row) => row.subscriptionType === 'tag')
+        .map((row) => row.target);
       const authorUsernames = subs
         .filter((row) => row.subscriptionType === 'author')
         .map((row) => row.target);
-      const topics = subs.filter((row) => row.subscriptionType === 'topic').map((row) => row.target);
+      const topics = subs
+        .filter((row) => row.subscriptionType === 'topic')
+        .map((row) => row.target);
 
       const or: Array<Record<string, unknown>> = [];
       if (categorySlugs.length) {

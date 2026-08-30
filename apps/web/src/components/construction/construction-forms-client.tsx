@@ -1,10 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@varnarc/ui';
 import { getApiBaseUrl } from '@/services/api-client';
 import type { ConstructionEstimateResult } from '@/services/construction';
+import {
+  categorizeConstructionResultRange,
+  resolveConstructionLocationLevel,
+  trackCalculatorCompleted,
+  trackCalculatorError,
+  trackCalculatorStarted,
+  trackCalculationAddedToProject,
+  trackProjectCreated,
+} from '@/lib/construction/analytics';
 
 const inputClass =
   'h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-[#0b1f3a]';
@@ -47,15 +56,23 @@ function newLineItem(): LineItemDraft {
 export function ConstructionEstimateForm({
   templates,
   isAuthenticated = false,
+  initialAreaSqft,
+  initialRegion,
+  initialQuality,
 }: {
   templates: Array<{ slug: string; name: string }>;
   isAuthenticated?: boolean;
+  initialAreaSqft?: string | null;
+  initialRegion?: string | null;
+  initialQuality?: 'basic' | 'standard' | 'premium' | null;
 }) {
   const [mode, setMode] = useState<EstimateMode>('quick');
   const [templateSlug, setTemplateSlug] = useState(templates[0]?.slug ?? '');
-  const [areaSqft, setAreaSqft] = useState('');
-  const [region, setRegion] = useState('');
-  const [quality, setQuality] = useState<'basic' | 'standard' | 'premium'>('standard');
+  const [areaSqft, setAreaSqft] = useState(initialAreaSqft?.replace(/[^\d]/g, '') ?? '');
+  const [region, setRegion] = useState(initialRegion?.trim() ?? '');
+  const [quality, setQuality] = useState<'basic' | 'standard' | 'premium'>(
+    initialQuality === 'basic' || initialQuality === 'premium' ? initialQuality : 'standard',
+  );
   const [rooms, setRooms] = useState<RoomDraft[]>([newRoom()]);
   const [lineItems, setLineItems] = useState<LineItemDraft[]>([]);
   const [result, setResult] = useState<ConstructionEstimateResult | null>(null);
@@ -64,6 +81,7 @@ export function ConstructionEstimateForm({
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('My construction project');
+  const startedRef = useRef(false);
 
   function buildPayload() {
     const base = {
@@ -108,17 +126,45 @@ export function ConstructionEstimateForm({
     setError(null);
     setResult(null);
     setSaveMessage(null);
+    if (!startedRef.current) {
+      startedRef.current = true;
+      trackCalculatorStarted({
+        calculator_type: 'cost_estimator',
+        logged_in: isAuthenticated,
+      });
+    }
     try {
       const res = await fetch(`${getApiBaseUrl()}/construction/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload()),
       });
-      const json = (await res.json()) as { data?: ConstructionEstimateResult; error?: { message?: string } };
+      const json = (await res.json()) as {
+        data?: ConstructionEstimateResult;
+        error?: { message?: string };
+      };
       if (!res.ok) throw new Error(json.error?.message || 'Estimate failed');
-      setResult(json.data ?? null);
+      const data = json.data ?? null;
+      setResult(data);
+      const total = data?.totalCost != null ? Number(data.totalCost) : null;
+      trackCalculatorCompleted({
+        calculator_type: 'cost_estimator',
+        unit: 'sqft',
+        location_level: resolveConstructionLocationLevel({
+          hasState: Boolean(region.trim()),
+        }),
+        result_range_category: categorizeConstructionResultRange(
+          Number.isFinite(total) ? total : null,
+        ),
+        logged_in: isAuthenticated,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Estimate failed');
+      trackCalculatorError({
+        calculator_type: 'cost_estimator',
+        error_code: 'estimate_failed',
+        logged_in: isAuthenticated,
+      });
     } finally {
       setLoading(false);
     }
@@ -144,6 +190,11 @@ export function ConstructionEstimateForm({
       }
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
       setSaveMessage(json.data?.id ? 'saved' : 'saved');
+      trackProjectCreated({ logged_in: true });
+      trackCalculationAddedToProject({
+        calculator_type: 'cost_estimator',
+        logged_in: true,
+      });
     } catch (err) {
       setSaveMessage(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -170,11 +221,20 @@ export function ConstructionEstimateForm({
         </Button>
       </div>
 
-      <form onSubmit={(e) => void submit(e)} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+      <form
+        onSubmit={(e) => void submit(e)}
+        className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
+      >
         {templates.length ? (
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Project template</label>
-            <select className={inputClass} value={templateSlug} onChange={(e) => setTemplateSlug(e.target.value)}>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Project template
+            </label>
+            <select
+              className={inputClass}
+              value={templateSlug}
+              onChange={(e) => setTemplateSlug(e.target.value)}
+            >
               {templates.map((t) => (
                 <option key={t.slug} value={t.slug}>
                   {t.name}
@@ -186,7 +246,9 @@ export function ConstructionEstimateForm({
 
         {mode === 'quick' ? (
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Built-up area (sq ft)</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Built-up area (sq ft)
+            </label>
             <input
               className={inputClass}
               type="number"
@@ -199,12 +261,19 @@ export function ConstructionEstimateForm({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-800">Rooms</h3>
-              <Button type="button" variant="secondary" onClick={() => setRooms((r) => [...r, newRoom()])}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setRooms((r) => [...r, newRoom()])}
+              >
                 Add room
               </Button>
             </div>
             {rooms.map((room, index) => (
-              <div key={room.id} className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 md:grid-cols-2">
+              <div
+                key={room.id}
+                className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 md:grid-cols-2"
+              >
                 <label className="text-sm md:col-span-2">
                   <span className="mb-1 block text-slate-600">Room name</span>
                   <input
@@ -254,7 +323,9 @@ export function ConstructionEstimateForm({
                     onChange={(e) =>
                       setRooms((rows) =>
                         rows.map((r, i) =>
-                          i === index ? { ...r, quality: e.target.value as RoomDraft['quality'] } : r,
+                          i === index
+                            ? { ...r, quality: e.target.value as RoomDraft['quality'] }
+                            : r,
                         ),
                       )
                     }
@@ -280,7 +351,9 @@ export function ConstructionEstimateForm({
 
             <div className="space-y-3 border-t border-slate-200 pt-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-800">Custom line items (optional)</h3>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Custom line items (optional)
+                </h3>
                 <Button
                   type="button"
                   variant="secondary"
@@ -290,10 +363,15 @@ export function ConstructionEstimateForm({
                 </Button>
               </div>
               {lineItems.length === 0 ? (
-                <p className="text-sm text-slate-500">Add fixtures, fittings, or specialty materials not covered by room area.</p>
+                <p className="text-sm text-slate-500">
+                  Add fixtures, fittings, or specialty materials not covered by room area.
+                </p>
               ) : null}
               {lineItems.map((item, index) => (
-                <div key={item.id} className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 md:grid-cols-3">
+                <div
+                  key={item.id}
+                  className="grid gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 md:grid-cols-3"
+                >
                   <label className="text-sm md:col-span-3">
                     <span className="mb-1 block text-slate-600">Item</span>
                     <input
@@ -315,7 +393,9 @@ export function ConstructionEstimateForm({
                       value={item.quantity}
                       onChange={(e) =>
                         setLineItems((rows) =>
-                          rows.map((r, i) => (i === index ? { ...r, quantity: e.target.value } : r)),
+                          rows.map((r, i) =>
+                            i === index ? { ...r, quantity: e.target.value } : r,
+                          ),
                         )
                       }
                       required
@@ -329,7 +409,9 @@ export function ConstructionEstimateForm({
                       value={item.unitCost}
                       onChange={(e) =>
                         setLineItems((rows) =>
-                          rows.map((r, i) => (i === index ? { ...r, unitCost: e.target.value } : r)),
+                          rows.map((r, i) =>
+                            i === index ? { ...r, unitCost: e.target.value } : r,
+                          ),
                         )
                       }
                       required
@@ -352,7 +434,9 @@ export function ConstructionEstimateForm({
 
         <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Region (optional)</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Region (optional)
+            </label>
             <input
               className={inputClass}
               value={region}
@@ -392,10 +476,16 @@ export function ConstructionEstimateForm({
             <p className="mt-1 text-slate-500">Total area: {result.areaSqft} sq ft</p>
           ) : null}
           <div className="mt-4 space-y-2">
-            {result.materialCost != null ? <Row label="Materials" value={`₹${result.materialCost}`} /> : null}
+            {result.materialCost != null ? (
+              <Row label="Materials" value={`₹${result.materialCost}`} />
+            ) : null}
             {result.laborCost != null ? <Row label="Labor" value={`₹${result.laborCost}`} /> : null}
-            {result.equipmentCost != null ? <Row label="Equipment" value={`₹${result.equipmentCost}`} /> : null}
-            {result.contingency != null ? <Row label="Contingency" value={`₹${result.contingency}`} /> : null}
+            {result.equipmentCost != null ? (
+              <Row label="Equipment" value={`₹${result.equipmentCost}`} />
+            ) : null}
+            {result.contingency != null ? (
+              <Row label="Contingency" value={`₹${result.contingency}`} />
+            ) : null}
           </div>
           {result.breakdown?.length ? (
             <ul className="mt-4 space-y-1 border-t border-slate-200 pt-3">

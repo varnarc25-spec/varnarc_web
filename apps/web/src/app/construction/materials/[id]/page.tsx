@@ -6,16 +6,36 @@ import {
   ConstructionDetailSection,
   RelatedCalculators,
 } from '@/components/construction/construction-material-card';
+import { ConstructionSeo } from '@/components/construction/construction-seo';
+import { MaterialGuideView } from '@/components/construction/materials-hub/material-guide-view';
 import { RelatedArticles } from '@/components/construction/related-articles';
+import {
+  getMaterialGuide,
+  isUuidParam,
+  listMaterialSlugs,
+} from '@/lib/construction/materials-hub/catalog';
 import { fetchConstructionMaterial, parseMaterialGuideSteps } from '@/services/construction';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { constructionHubBreadcrumbs } from '@/lib/construction/seo';
 import { ApiError } from '@/services/api-client';
 import { notFound } from 'next/navigation';
 
 type Props = { params: Promise<{ id: string }> };
 
+export function generateStaticParams() {
+  return listMaterialSlugs().map((slug) => ({ id: slug }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const guide = getMaterialGuide(id);
+  if (guide) {
+    return {
+      title: guide.seoTitle,
+      description: guide.seoDescription,
+      alternates: { canonical: `/construction/materials/${guide.slug}` },
+    };
+  }
   try {
     const { data } = await fetchConstructionMaterial(id);
     return buildSeoMetadata({
@@ -32,20 +52,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const calculatorLinks = [
-  { href: '/calculators/construction-cost', label: 'Construction Cost Calculator' },
-  { href: '/calculators/cement', label: 'Cement Calculator' },
-  { href: '/calculators/concrete', label: 'Concrete Calculator' },
-  { href: '/calculators/brick', label: 'Brick Calculator' },
-  { href: '/calculators/steel', label: 'Steel Calculator' },
-  { href: '/calculators/paint', label: 'Paint Calculator' },
-  { href: '/calculators/tile', label: 'Tile Calculator' },
-  { href: '/calculators/sand', label: 'Sand Calculator' },
-  { href: '/calculators/aggregate', label: 'Aggregate Calculator' },
-  { href: '/calculators/plaster', label: 'Plaster Calculator' },
+  { href: '/construction/cost-calculator', label: 'Construction Cost Calculator' },
+  { href: '/construction/cement-calculator', label: 'Cement Calculator' },
+  { href: '/construction/concrete-calculator', label: 'Concrete Calculator' },
+  { href: '/construction/brick-calculator', label: 'Brick Calculator' },
+  { href: '/construction/steel-calculator', label: 'Steel Calculator' },
+  { href: '/construction/paint-calculator', label: 'Paint Calculator' },
+  { href: '/construction/tile-calculator', label: 'Tile Calculator' },
+  { href: '/construction/sand-calculator', label: 'Sand Calculator' },
+  { href: '/construction/aggregate-calculator', label: 'Aggregate Calculator' },
+  { href: '/construction/plaster-calculator', label: 'Plaster Calculator' },
 ];
 
 export default async function ConstructionMaterialDetailPage({ params }: Props) {
   const { id } = await params;
+
+  const guide = getMaterialGuide(id);
+  if (guide) {
+    return <MaterialGuideView page={guide} />;
+  }
+
+  // Non-guide slugs that aren't UUIDs cannot be CMS entities
+  if (!isUuidParam(id)) {
+    notFound();
+  }
+
   let material: Awaited<ReturnType<typeof fetchConstructionMaterial>>['data'] | null = null;
 
   try {
@@ -59,68 +90,7 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
   const title = material.seoTitle || material.name;
   const description = material.seoDescription || material.description;
   const guideSteps = parseMaterialGuideSteps(material.specifications);
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-
-  const jsonLdGraph: Array<Record<string, unknown>> = [
-    {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
-        { '@type': 'ListItem', position: 2, name: 'Construction', item: `${siteUrl}/construction` },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: 'Materials',
-          item: `${siteUrl}/construction/materials`,
-        },
-        {
-          '@type': 'ListItem',
-          position: 4,
-          name: material.name,
-          item: `${siteUrl}/construction/materials/${id}`,
-        },
-      ],
-    },
-    {
-      '@type': 'Product',
-      name: material.name,
-      description: description || undefined,
-      brand: material.brand?.name ? { '@type': 'Brand', name: material.brand.name } : undefined,
-      category: material.category?.name,
-      ...(material.approximatePrice != null
-        ? {
-            offers: {
-              '@type': 'Offer',
-              price: Number(material.approximatePrice),
-              priceCurrency: 'INR',
-              availability: 'https://schema.org/InStock',
-            },
-          }
-        : {}),
-      ...(material.rating != null
-        ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(material.rating) } }
-        : {}),
-    },
-  ];
-
-  if (guideSteps?.length) {
-    jsonLdGraph.push({
-      '@type': 'HowTo',
-      name: `How to use ${material.name}`,
-      description: description || undefined,
-      step: guideSteps.map((step, index) => ({
-        '@type': 'HowToStep',
-        position: index + 1,
-        name: step.name,
-        text: step.text,
-      })),
-    });
-  }
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': jsonLdGraph,
-  };
+  const path = `/construction/materials/${id}`;
 
   return (
     <PageShell
@@ -133,9 +103,25 @@ export default async function ConstructionMaterialDetailPage({ params }: Props) 
         { label: material.name },
       ]}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <ConstructionSeo
+        breadcrumbs={constructionHubBreadcrumbs([
+          { name: 'Materials', path: '/construction/materials' },
+          { name: material.name, path },
+        ])}
+        webPage={{
+          name: title,
+          description: description ?? undefined,
+          path,
+        }}
+        howTo={
+          guideSteps?.length
+            ? {
+                name: `How to use ${material.name}`,
+                description: description ?? undefined,
+                steps: guideSteps.map((step) => ({ name: step.name, text: step.text })),
+              }
+            : undefined
+        }
       />
       <AdBanner slot="content-top" />
 

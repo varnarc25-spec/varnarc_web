@@ -28,6 +28,8 @@ import {
   paginationQuerySchema,
   recordReadingHistorySchema,
   readingHistoryListQuerySchema,
+  recordConstructionToolRecentSchema,
+  constructionToolRecentListQuerySchema,
   setAvatarSchema,
   updateContentSubscriptionsSchema,
   toggleContentSubscriptionSchema,
@@ -109,7 +111,9 @@ export class UsersController {
     @CurrentUserDecorator() user: CurrentUser,
     @Body(new ZodValidationPipe(userPreferencesSchema)) body: unknown,
   ) {
-    return ok(await this.profileService.updatePreferences(user.id, userPreferencesSchema.parse(body)));
+    return ok(
+      await this.profileService.updatePreferences(user.id, userPreferencesSchema.parse(body)),
+    );
   }
 
   @Get('me/bookmarks')
@@ -165,7 +169,9 @@ export class UsersController {
     @CurrentUserDecorator() user: CurrentUser,
     @Body(new ZodValidationPipe(recordReadingHistorySchema)) body: unknown,
   ) {
-    return ok(await this.profileService.recordReadingView(user.id, recordReadingHistorySchema.parse(body)));
+    return ok(
+      await this.profileService.recordReadingView(user.id, recordReadingHistorySchema.parse(body)),
+    );
   }
 
   @Get('me/reading-history')
@@ -195,6 +201,41 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return ok(await this.profileService.deleteReadingHistoryItem(user.id, id));
+  }
+
+  @Post('me/construction-tools/recent')
+  async recordConstructionToolRecent(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(recordConstructionToolRecentSchema)) body: unknown,
+  ) {
+    return ok(
+      await this.profileService.recordConstructionToolRecent(
+        user.id,
+        recordConstructionToolRecentSchema.parse(body),
+      ),
+    );
+  }
+
+  @Get('me/construction-tools/recent')
+  async listConstructionToolRecent(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Query(new ZodValidationPipe(constructionToolRecentListQuerySchema)) query: unknown,
+  ) {
+    const parsed = constructionToolRecentListQuerySchema.parse(query);
+    return ok(await this.profileService.listConstructionToolRecent(user.id, parsed));
+  }
+
+  @Delete('me/construction-tools/recent')
+  async clearConstructionToolRecent(@CurrentUserDecorator() user: CurrentUser) {
+    return ok(await this.profileService.clearConstructionToolRecent(user.id));
+  }
+
+  @Delete('me/construction-tools/recent/:id')
+  async deleteConstructionToolRecent(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return ok(await this.profileService.deleteConstructionToolRecent(user.id, id));
   }
 
   @Get('me/subscriptions')
@@ -276,9 +317,7 @@ export class UsersController {
 
   @Get('subscriptions')
   @RequirePermissions(PERMISSIONS.USER_VIEW)
-  async adminSubscriptions(
-    @Query(new ZodValidationPipe(bookmarkListQuerySchema)) query: unknown,
-  ) {
+  async adminSubscriptions(@Query(new ZodValidationPipe(bookmarkListQuerySchema)) query: unknown) {
     const parsed = bookmarkListQuerySchema.parse(query);
     const result = await this.profileService.adminSubscriptionsDashboard(parsed);
     return okCursor({
@@ -345,10 +384,7 @@ export class UsersController {
 
   @Delete(':id')
   @RequirePermissions(PERMISSIONS.USER_DELETE)
-  async remove(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUserDecorator() actor: CurrentUser,
-  ) {
+  async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() actor: CurrentUser) {
     return {
       success: true,
       data: await this.usersService.softDelete(id, actor.id),
@@ -361,10 +397,7 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(paginationQuerySchema)) query: unknown,
   ) {
-    const result = await this.usersService.loginHistory(
-      id,
-      paginationQuerySchema.parse(query),
-    );
+    const result = await this.usersService.loginHistory(id, paginationQuerySchema.parse(query));
     return { success: true, ...result };
   }
 

@@ -59,22 +59,119 @@ export type ConstructionCostTemplate = {
 export type ConstructionProjectItem = {
   id: string;
   name?: string | null;
+  unit?: string | null;
   quantity?: number | string | null;
   unitCost?: number | string | null;
   estimatedCost?: number | string | null;
   material?: { id: string; name: string } | null;
 };
 
+export type ConstructionProjectWizardBreakdown = {
+  source?: string;
+  buildMode?: 'new' | 'renovation';
+  plotAreaSqft?: number | null;
+  builtUpAreaSqft?: number | null;
+  floors?: number | null;
+  bedrooms?: number | null;
+  budgetInr?: number | null;
+  wizardVersion?: string;
+  projectTypeKey?: string;
+};
+
+export type ConstructionProjectPhase = {
+  id: string;
+  name: string;
+  slug?: string | null;
+  sortOrder?: number | null;
+  status?: string | null;
+  plannedStart?: string | null;
+  plannedEnd?: string | null;
+  actualStart?: string | null;
+  actualEnd?: string | null;
+  notes?: string | null;
+};
+
+export type ConstructionProjectBoq = {
+  id: string;
+  name?: string | null;
+  version?: number | null;
+  status?: string | null;
+  currency?: string | null;
+  notes?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export type ConstructionProjectBudgetItem = {
+  id: string;
+  category?: string | null;
+  name: string;
+  plannedAmount?: number | string | null;
+  currency?: string | null;
+  notes?: string | null;
+  phaseId?: string | null;
+};
+
+export type ConstructionProjectExpense = {
+  id: string;
+  name?: string | null;
+  amount?: number | string | null;
+  currency?: string | null;
+  spentOn?: string | null;
+  notes?: string | null;
+  phaseId?: string | null;
+};
+
+export type ConstructionProjectDocument = {
+  id: string;
+  kind?: string | null;
+  title: string;
+  url?: string | null;
+  notes?: string | null;
+  createdAt?: string | null;
+};
+
+export type ConstructionProjectCalculation = {
+  id: string;
+  calculatorSlug?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type ConstructionProject = {
   id: string;
   name: string;
   projectType?: string | null;
+  status?: string | null;
   areaSqft?: number | string | null;
   region?: string | null;
+  quality?: string | null;
+  currency?: string | null;
   estimatedCost?: number | string | null;
   notes?: string | null;
-  breakdown?: Array<{ label: string; amount: number | string }> | null;
+  startedAt?: string | null;
+  targetEndAt?: string | null;
+  breakdown?:
+    | ConstructionProjectWizardBreakdown
+    | Array<{ label: string; amount: number | string }>
+    | Record<string, unknown>
+    | null;
   items?: ConstructionProjectItem[];
+  phases?: ConstructionProjectPhase[];
+  boqs?: ConstructionProjectBoq[];
+  budgetItems?: ConstructionProjectBudgetItem[];
+  expenses?: ConstructionProjectExpense[];
+  documents?: ConstructionProjectDocument[];
+  calculations?: ConstructionProjectCalculation[];
+  _count?: {
+    calculations?: number;
+    boqs?: number;
+    phases?: number;
+    budgetItems?: number;
+    expenses?: number;
+    documents?: number;
+    items?: number;
+  };
   createdAt?: string;
   updatedAt?: string;
 };
@@ -104,6 +201,11 @@ export type ConstructionSupplier = {
   description?: string | null;
   sponsored?: boolean;
   category?: string | null;
+  href?: string;
+  verified?: boolean;
+  brands?: string[];
+  lastUpdated?: string;
+  location?: { city?: string | null };
 };
 
 export type ConstructionChecklistSummary = {
@@ -112,21 +214,37 @@ export type ConstructionChecklistSummary = {
   description?: string | null;
   itemCount?: number;
   phase?: string | null;
+  category?: string | null;
+  href?: string;
+  qualification?: string;
 };
 
 export type ConstructionChecklistItem = {
   id?: string;
-  label: string;
+  title?: string;
+  label?: string;
   description?: string | null;
+  category?: string | null;
   phase?: string | null;
+  professionalReviewRequired?: boolean;
   sortOrder?: number | null;
 };
 
 export type ConstructionChecklist = {
+  id?: string | null;
   slug: string;
   title: string;
   description?: string | null;
+  phase?: string | null;
+  category?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   items: ConstructionChecklistItem[];
+  qualification?: string;
+  professionalReviewNote?: string;
+  neverCertifiesCompliance?: boolean;
+  href?: string;
+  updatedAt?: string | null;
 };
 
 export type ConstructionEstimateResult = {
@@ -169,7 +287,9 @@ function buildQs(options?: ListOptions) {
 
 export async function fetchConstructionDashboard() {
   try {
-    return await apiPublicFetch<ConstructionDashboard>('/construction/dashboard', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionDashboard>('/construction/dashboard', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: null };
   }
@@ -177,7 +297,9 @@ export async function fetchConstructionDashboard() {
 
 export async function fetchConstructionCategories() {
   try {
-    return await apiPublicFetch<ConstructionCategory[]>('/construction/categories', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionCategory[]>('/construction/categories', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as ConstructionCategory[] };
   }
@@ -185,16 +307,21 @@ export async function fetchConstructionCategories() {
 
 export async function fetchConstructionMaterials(options?: ListOptions) {
   try {
-    return await apiPublicFetch<ConstructionMaterial[]>(`/construction/materials?${buildQs(options)}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionMaterial[]>(
+      `/construction/materials?${buildQs(options)}`,
+      {
+        cache: 'no-store',
+      },
+    );
   } catch {
     return { data: [] as ConstructionMaterial[], meta: undefined };
   }
 }
 
 export async function fetchConstructionMaterial(id: string) {
-  return apiPublicFetch<ConstructionMaterial>(`/construction/materials/${id}`, { cache: 'no-store' });
+  return apiPublicFetch<ConstructionMaterial>(`/construction/materials/${id}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function fetchConstructionBrands(options?: ListOptions) {
@@ -209,7 +336,9 @@ export async function fetchConstructionBrands(options?: ListOptions) {
 
 export async function fetchConstructionBrandBySlug(slug: string) {
   try {
-    return await apiPublicFetch<ConstructionBrand>(`/construction/brands/slug/${slug}`, { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionBrand>(`/construction/brands/slug/${slug}`, {
+      cache: 'no-store',
+    });
   } catch {
     throw new Error('Brand not found');
   }
@@ -217,12 +346,16 @@ export async function fetchConstructionBrandBySlug(slug: string) {
 
 export async function fetchConstructionCompare(ids: string[]) {
   const qs = new URLSearchParams({ ids: ids.join(',') });
-  return apiPublicFetch<ConstructionMaterial[]>(`/construction/compare?${qs.toString()}`, { cache: 'no-store' });
+  return apiPublicFetch<ConstructionMaterial[]>(`/construction/compare?${qs.toString()}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function fetchConstructionCostTemplates() {
   try {
-    return await apiPublicFetch<ConstructionCostTemplate[]>('/construction/cost-templates', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionCostTemplate[]>('/construction/cost-templates', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as ConstructionCostTemplate[] };
   }
@@ -265,28 +398,44 @@ export async function fetchConstructionProjects(): Promise<{
 
 export async function fetchConstructionChecklists() {
   try {
-    return await apiPublicFetch<ConstructionChecklistSummary[]>('/construction/checklists', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionChecklistSummary[]>('/construction/checklists', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as ConstructionChecklistSummary[] };
   }
 }
 
 export async function fetchConstructionChecklist(slug: string) {
-  return apiPublicFetch<ConstructionChecklist>(`/construction/checklists/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<ConstructionChecklist>(`/construction/checklists/${slug}`, {
+    cache: 'no-store',
+  });
 }
 
-export async function fetchConstructionSuppliers() {
+export async function fetchConstructionSuppliers(params?: {
+  location?: string;
+  category?: string;
+  brand?: string;
+  verified?: string;
+}) {
   try {
-    const result = await apiPublicFetch<ConstructionSupplier[] | { businesses?: ConstructionSupplier[] }>(
-      '/construction/suppliers',
-      { cache: 'no-store' },
-    );
+    const sp = new URLSearchParams();
+    if (params?.location) sp.set('location', params.location);
+    if (params?.category) sp.set('category', params.category);
+    if (params?.brand) sp.set('brand', params.brand);
+    if (params?.verified) sp.set('verified', params.verified);
+    const qs = sp.toString();
+    const result = await apiPublicFetch<
+      | ConstructionSupplier[]
+      | { businesses?: ConstructionSupplier[]; listings?: ConstructionSupplier[] }
+    >(`/construction/suppliers${qs ? `?${qs}` : ''}`, { cache: 'no-store' });
     const data = result.data;
     if (Array.isArray(data)) {
       return { data };
     }
-    if (data && typeof data === 'object' && Array.isArray(data.businesses)) {
-      return { data: data.businesses };
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data.businesses)) return { data: data.businesses };
+      if (Array.isArray(data.listings)) return { data: data.listings };
     }
     return { data: [] as ConstructionSupplier[] };
   } catch {
@@ -294,11 +443,7 @@ export async function fetchConstructionSuppliers() {
   }
 }
 
-export async function createConstructionProject(body: {
-  name: string;
-  projectType?: string;
-  estimatedCost?: number;
-}) {
+export async function createConstructionProject(body: Record<string, unknown>) {
   const { apiServerFetch } = await import('@/lib/api');
   const result = await apiServerFetch<ConstructionProject>('/construction/projects', {
     method: 'POST',
@@ -308,6 +453,35 @@ export async function createConstructionProject(body: {
     throw new ApiError(result.error || 'Create project failed', result.status);
   }
   return { data: result.data };
+}
+
+export async function fetchConstructionProject(id: string): Promise<{
+  data: ConstructionProject | null;
+  unauthorized?: boolean;
+  notFound?: boolean;
+}> {
+  try {
+    const { apiServerFetch } = await import('@/lib/api');
+    const result = await apiServerFetch<ConstructionProject>(`/construction/projects/${id}`);
+    if (result.status === 401) {
+      return { data: null, unauthorized: true };
+    }
+    if (result.status === 404) {
+      return { data: null, notFound: true };
+    }
+    if (result.error || !result.data) {
+      return { data: null, notFound: true };
+    }
+    return { data: result.data };
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) {
+      return { data: null, unauthorized: true };
+    }
+    if (e instanceof ApiError && e.status === 404) {
+      return { data: null, notFound: true };
+    }
+    return { data: null, notFound: true };
+  }
 }
 
 export async function fetchConstructionGuides() {
@@ -380,11 +554,27 @@ export function parseMaterialGuideSteps(
 
 export function defaultConstructionTimeline(): ConstructionTimelinePhase[] {
   return [
-    { label: 'Planning & permits', durationWeeks: 2, description: 'Finalize plans, budgets, and approvals.' },
+    {
+      label: 'Planning & permits',
+      durationWeeks: 2,
+      description: 'Finalize plans, budgets, and approvals.',
+    },
     { label: 'Foundation', durationWeeks: 3, description: 'Excavation, footing, and plinth work.' },
     { label: 'Structure', durationWeeks: 8, description: 'Columns, beams, slabs, and masonry.' },
-    { label: 'MEP rough-in', durationWeeks: 4, description: 'Electrical, plumbing, and HVAC conduits.' },
-    { label: 'Finishes', durationWeeks: 6, description: 'Flooring, paint, fixtures, and interiors.' },
-    { label: 'Handover', durationWeeks: 1, description: 'Snagging, cleaning, and final inspection.' },
+    {
+      label: 'MEP rough-in',
+      durationWeeks: 4,
+      description: 'Electrical, plumbing, and HVAC conduits.',
+    },
+    {
+      label: 'Finishes',
+      durationWeeks: 6,
+      description: 'Flooring, paint, fixtures, and interiors.',
+    },
+    {
+      label: 'Handover',
+      durationWeeks: 1,
+      description: 'Snagging, cleaning, and final inspection.',
+    },
   ];
 }

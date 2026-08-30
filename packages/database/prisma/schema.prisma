@@ -87,6 +87,121 @@ enum CalculationStatus {
   @@map("calculation_status")
 }
 
+enum ConstructionProjectStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+  @@map("construction_project_status")
+}
+
+enum ConstructionLocationType {
+  COUNTRY
+  STATE
+  CITY
+  LOCALITY
+  @@map("construction_location_type")
+}
+
+enum ConstructionPriceFreshness {
+  LIVE
+  VERIFIED
+  ESTIMATED
+  STALE
+  @@map("construction_price_freshness")
+}
+
+enum ConstructionVcciPublicationStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  RETIRED
+  @@map("construction_vcci_publication_status")
+}
+
+enum ConstructionBoqStatus {
+  DRAFT
+  ACTIVE
+  FINALIZED
+  ARCHIVED
+  @@map("construction_boq_status")
+}
+
+enum ConstructionSeoAuditRunStatus {
+  QUEUED
+  RUNNING_FAST
+  RUNNING_DEFERRED
+  COMPLETED
+  FAILED
+  CANCELLED
+  @@map("construction_seo_audit_run_status")
+}
+
+enum ConstructionSeoAuditSeverity {
+  INFO
+  WARNING
+  CRITICAL
+  @@map("construction_seo_audit_severity")
+}
+
+enum ConstructionSeoAuditIssueStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+  @@map("construction_seo_audit_issue_status")
+}
+
+enum ConstructionPhaseStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  @@map("construction_phase_status")
+}
+
+enum ConstructionDocumentKind {
+  DRAWING
+  PERMIT
+  QUOTE
+  INVOICE
+  PHOTO
+  CONTRACT
+  OTHER
+  FLOOR_PLAN
+  STRUCTURAL
+  BOQ
+  RECEIPT
+  APPROVAL
+  WARRANTY
+  MATERIAL_BILL
+  @@map("construction_document_kind")
+}
+
+enum ConstructionAlertStatus {
+  ACTIVE
+  TRIGGERED
+  PAUSED
+  CANCELLED
+  @@map("construction_alert_status")
+}
+
+enum ConstructionAlertDirection {
+  BELOW
+  ABOVE
+  DROP_PCT
+  RISE_PCT
+  @@map("construction_alert_direction")
+}
+
+enum ConstructionCommunityPriceStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  FLAGGED
+  @@map("construction_community_price_status")
+}
+
 enum AiJobStatus {
   QUEUED
   RUNNING
@@ -1107,6 +1222,7 @@ model Calculator {
   history        CalculationHistory[]
   saved          SavedCalculation[]
   analytics      CalculatorAnalyticsEvent[]
+  constructionCalculations ConstructionCalculation[]
   @@index([status, slug])
   @@index([categoryId])
   @@index([illustrationMediaId])
@@ -1738,6 +1854,8 @@ model ConstructionBrand {
   createdBy      String?       @map("created_by") @db.Uuid
   updatedBy      String?       @map("updated_by") @db.Uuid
   materials      ConstructionMaterial[]
+  materialPrices ConstructionMaterialPrice[]
+  communityPriceReports ConstructionCommunityPriceReport[]
   @@index([status])
   @@map("construction_brands")
 }
@@ -1750,9 +1868,10 @@ model ConstructionMaterial {
   slug             String                @unique
   description      String?
   specifications   Json?
+  /// Canonical quantity unit (see CONSTRUCTION_UNITS in @varnarc/validation).
   unit             String
-  unitCost         Decimal?              @map("unit_cost") @db.Decimal(12, 2)
-  approximatePrice Decimal?              @map("approximate_price") @db.Decimal(12, 2)
+  unitCost         Decimal?              @map("unit_cost") @db.Decimal(14, 2)
+  approximatePrice Decimal?              @map("approximate_price") @db.Decimal(14, 2)
   availabilityRegion String?             @map("availability_region")
   affiliateUrl     String?               @map("affiliate_url")
   mediaId          String?               @map("media_id") @db.Uuid
@@ -1772,6 +1891,10 @@ model ConstructionMaterial {
   category         ConstructionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   brand            ConstructionBrand?    @relation(fields: [brandId], references: [id], onDelete: SetNull)
   projectItems     ConstructionProjectItem[]
+  prices           ConstructionMaterialPrice[]
+  priceAlerts      ConstructionPriceAlert[]
+  communityPriceReports ConstructionCommunityPriceReport[]
+  boqItems         ConstructionBoqItem[]
   @@index([status])
   @@index([categoryId])
   @@index([brandId])
@@ -1818,36 +1941,54 @@ model ConstructionEstimator {
 }
 
 model ConstructionProject {
-  id            String    @id @default(uuid()) @db.Uuid
-  userId        String    @map("user_id") @db.Uuid
+  id            String                    @id @default(uuid()) @db.Uuid
+  userId        String                    @map("user_id") @db.Uuid
   name          String
-  projectType   String    @map("project_type")
-  areaSqft      Decimal?  @map("area_sqft") @db.Decimal(12, 2)
+  projectType   String                    @map("project_type")
+  status        ConstructionProjectStatus @default(DRAFT)
+  areaSqft      Decimal?                  @map("area_sqft") @db.Decimal(12, 2)
   region        String?
-  estimatedCost Decimal?  @map("estimated_cost") @db.Decimal(14, 2)
+  locationId    String?                   @map("location_id") @db.Uuid
+  currency      String                    @default("INR") @db.Char(3)
+  quality       String?
+  estimatedCost Decimal?                  @map("estimated_cost") @db.Decimal(14, 2)
   breakdown     Json?
   notes         String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  startedAt     DateTime?                 @map("started_at")
+  targetEndAt   DateTime?                 @map("target_end_at")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+  deletedAt     DateTime?                 @map("deleted_at")
+  location      ConstructionLocation?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
   items         ConstructionProjectItem[]
+  calculations  ConstructionCalculation[]
+  boqs          ConstructionBoq[]
+  phases        ConstructionProjectPhase[]
+  budgetItems   ConstructionBudgetItem[]
+  expenses      ConstructionExpense[]
+  documents     ConstructionDocument[]
+  checklistProgress ConstructionProjectChecklistProgress[]
   @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([locationId])
   @@map("construction_projects")
 }
 
 model ConstructionProjectItem {
-  id            String               @id @default(uuid()) @db.Uuid
-  projectId     String               @map("project_id") @db.Uuid
-  materialId    String?              @map("material_id") @db.Uuid
+  id            String                @id @default(uuid()) @db.Uuid
+  projectId     String                @map("project_id") @db.Uuid
+  materialId    String?               @map("material_id") @db.Uuid
   name          String?
-  quantity      Decimal              @db.Decimal(14, 4)
-  unitCost      Decimal?             @map("unit_cost") @db.Decimal(12, 2)
-  estimatedCost Decimal?             @map("estimated_cost") @db.Decimal(14, 2)
-  createdAt     DateTime             @default(now()) @map("created_at")
-  updatedAt     DateTime             @updatedAt @map("updated_at")
-  project       ConstructionProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  unit          String?
+  quantity      Decimal               @db.Decimal(14, 4)
+  unitCost      Decimal?              @map("unit_cost") @db.Decimal(14, 2)
+  estimatedCost Decimal?              @map("estimated_cost") @db.Decimal(14, 2)
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+  project       ConstructionProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   material      ConstructionMaterial? @relation(fields: [materialId], references: [id], onDelete: SetNull)
   @@index([projectId])
+  @@index([materialId])
   @@map("construction_project_items")
 }
 
@@ -1898,8 +2039,28 @@ model ConstructionChecklist {
   deletedAt   DateTime?     @map("deleted_at")
   createdBy   String?       @map("created_by") @db.Uuid
   updatedBy   String?       @map("updated_by") @db.Uuid
+  projectProgress ConstructionProjectChecklistProgress[]
   @@index([status])
   @@map("construction_checklists")
+}
+
+/// Per-project progress for a published construction checklist (completed flags + notes).
+model ConstructionProjectChecklistProgress {
+  id             String               @id @default(uuid()) @db.Uuid
+  projectId      String               @map("project_id") @db.Uuid
+  checklistId    String?              @map("checklist_id") @db.Uuid
+  checklistSlug  String               @map("checklist_slug")
+  /// Map of itemId → { completed, notes, completedAt }
+  items          Json                 @default("{}")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  deletedAt      DateTime?            @map("deleted_at")
+  project        ConstructionProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  checklist      ConstructionChecklist? @relation(fields: [checklistId], references: [id], onDelete: SetNull)
+  @@unique([projectId, checklistSlug])
+  @@index([projectId])
+  @@index([checklistSlug])
+  @@map("construction_project_checklist_progress")
 }
 
 model ConstructionComparison {
@@ -1917,6 +2078,551 @@ model ConstructionComparison {
   updatedBy   String?       @map("updated_by") @db.Uuid
   @@index([status])
   @@map("construction_comparisons")
+}
+
+/// Geo hierarchy for price/rate scoping (country → state → city → locality).
+model ConstructionLocation {
+  id          String                   @id @default(uuid()) @db.Uuid
+  parentId    String?                  @map("parent_id") @db.Uuid
+  type        ConstructionLocationType
+  name        String
+  slug        String                   @unique
+  code        String?
+  latitude    Decimal?                 @db.Decimal(10, 7)
+  longitude   Decimal?                 @db.Decimal(10, 7)
+  timezone    String?
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+  deletedAt   DateTime?                @map("deleted_at")
+  parent      ConstructionLocation?    @relation("ConstructionLocationTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    ConstructionLocation[]   @relation("ConstructionLocationTree")
+  projects    ConstructionProject[]
+  materialPrices ConstructionMaterialPrice[]
+  costRates   ConstructionCostRate[]
+  priceAlerts ConstructionPriceAlert[]
+  communityPriceReports ConstructionCommunityPriceReport[]
+  vcciSnapshots ConstructionVcciSnapshot[]
+  @@index([type, name])
+  @@index([parentId])
+  @@map("construction_locations")
+}
+
+/// Time-series material prices with source/freshness metadata. Prefer this over approximatePrice for dated data.
+model ConstructionMaterialPrice {
+  id            String                     @id @default(uuid()) @db.Uuid
+  materialId    String                     @map("material_id") @db.Uuid
+  locationId    String?                    @map("location_id") @db.Uuid
+  brandId       String?                    @map("brand_id") @db.Uuid
+  unit          String
+  currency      String                     @default("INR") @db.Char(3)
+  price         Decimal                    @db.Decimal(14, 2)
+  minPrice      Decimal?                   @map("min_price") @db.Decimal(14, 2)
+  maxPrice      Decimal?                   @map("max_price") @db.Decimal(14, 2)
+  source        String?
+  sourceUrl     String?                    @map("source_url")
+  freshness     ConstructionPriceFreshness @default(ESTIMATED)
+  effectiveFrom DateTime                   @map("effective_from")
+  effectiveTo   DateTime?                  @map("effective_to")
+  verifiedAt    DateTime?                  @map("verified_at")
+  notes         String?
+  metadata      Json?
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+  deletedAt     DateTime?                  @map("deleted_at")
+  createdBy     String?                    @map("created_by") @db.Uuid
+  updatedBy     String?                    @map("updated_by") @db.Uuid
+  material      ConstructionMaterial       @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  location      ConstructionLocation?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  brand         ConstructionBrand?         @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  @@index([materialId, effectiveFrom])
+  @@index([locationId, effectiveFrom])
+  @@index([freshness, effectiveFrom])
+  @@map("construction_material_prices")
+}
+
+/// Internal Construction SEO audit run (admin). Expensive crawl phases run via queue/cron.
+model ConstructionSeoAuditRun {
+  id           String                        @id @default(uuid()) @db.Uuid
+  status       ConstructionSeoAuditRunStatus @default(QUEUED)
+  mode         String                        @default("FULL") @db.VarChar(20)
+  siteUrl      String                        @map("site_url") @db.VarChar(255)
+  triggeredBy  String?                       @map("triggered_by") @db.Uuid
+  summary      Json?
+  error        String?
+  startedAt    DateTime?                     @map("started_at")
+  finishedAt   DateTime?                     @map("finished_at")
+  createdAt    DateTime                      @default(now()) @map("created_at")
+  updatedAt    DateTime                      @updatedAt @map("updated_at")
+  issues       ConstructionSeoAuditIssue[]
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@map("construction_seo_audit_runs")
+}
+
+model ConstructionSeoAuditIssue {
+  id                 String                         @id @default(uuid()) @db.Uuid
+  runId              String                         @map("run_id") @db.Uuid
+  path               String                         @db.VarChar(500)
+  pageType           String                         @map("page_type") @db.VarChar(40)
+  issueType          String                         @map("issue_type") @db.VarChar(80)
+  severity           ConstructionSeoAuditSeverity   @default(WARNING)
+  status             ConstructionSeoAuditIssueStatus @default(OPEN)
+  message            String
+  recommendedAction  String                         @map("recommended_action")
+  evidence           Json?
+  httpStatus         Int?                           @map("http_status")
+  lcp                Float?
+  cls                Float?
+  inp                Float?
+  resolvedAt         DateTime?                      @map("resolved_at")
+  createdAt          DateTime                       @default(now()) @map("created_at")
+  run                ConstructionSeoAuditRun        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@index([runId, severity])
+  @@index([runId, issueType])
+  @@index([runId, pageType])
+  @@index([runId, status])
+  @@index([path])
+  @@map("construction_seo_audit_issues")
+}
+
+enum ConstructionSearchOpportunityStatus {
+  OPEN
+  PLANNED
+  IMPLEMENTED
+  IGNORED
+  @@map("construction_search_opportunity_status")
+}
+
+/// Privacy-safe construction search event — no userId/session; scrubbed display query only.
+model ConstructionSearchEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  queryHash      String   @map("query_hash") @db.VarChar(64)
+  displayQuery   String   @map("display_query") @db.VarChar(160)
+  surface        String   @db.VarChar(40)
+  intent         String   @db.VarChar(40)
+  resultCount    Int      @map("result_count")
+  clicked        Boolean  @default(false)
+  pathPrefix     String?  @map("path_prefix") @db.VarChar(120)
+  createdAt      DateTime @default(now()) @map("created_at")
+  @@index([queryHash, createdAt])
+  @@index([createdAt])
+  @@index([surface, createdAt])
+  @@index([intent, createdAt])
+  @@index([resultCount, createdAt])
+  @@map("construction_search_events")
+}
+
+/// Aggregated construction search opportunity for internal content/product planning.
+model ConstructionSearchOpportunity {
+  id                String                              @id @default(uuid()) @db.Uuid
+  queryHash         String                              @map("query_hash") @db.VarChar(64)
+  displayQuery      String                              @map("display_query") @db.VarChar(160)
+  intent            String                              @db.VarChar(40)
+  opportunityType   String                              @map("opportunity_type") @db.VarChar(60)
+  searchCount       Int                                 @map("search_count") @default(0)
+  zeroResultCount   Int                                 @map("zero_result_count") @default(0)
+  clickCount        Int                                 @map("click_count") @default(0)
+  avgResultCount    Float                               @map("avg_result_count") @default(0)
+  ctr               Float                               @default(0)
+  zeroResultRate    Float                               @map("zero_result_rate") @default(0)
+  windowDays        Int                                 @map("window_days") @default(30)
+  status            ConstructionSearchOpportunityStatus @default(OPEN)
+  notes             String?
+  evidence          Json?
+  firstSeenAt       DateTime                            @map("first_seen_at")
+  lastSeenAt        DateTime                            @map("last_seen_at")
+  statusUpdatedAt   DateTime?                           @map("status_updated_at")
+  statusUpdatedBy   String?                             @map("status_updated_by") @db.Uuid
+  createdAt         DateTime                            @default(now()) @map("created_at")
+  updatedAt         DateTime                            @updatedAt @map("updated_at")
+  @@unique([queryHash, windowDays])
+  @@index([status, searchCount])
+  @@index([opportunityType, searchCount])
+  @@index([intent, searchCount])
+  @@index([lastSeenAt])
+  @@map("construction_search_opportunities")
+}
+
+/// VCCI methodology version (baseline, weights, notes). Numeric indexes publish only via quality-gated snapshots.
+model ConstructionVcciMethodology {
+  id             String                     @id @default(uuid()) @db.Uuid
+  version        String                     @unique
+  label          String
+  baselineLabel  String                     @map("baseline_label")
+  baselineStart  DateTime                   @map("baseline_start") @db.Date
+  baselineEnd    DateTime                   @map("baseline_end") @db.Date
+  baselineIndex  Decimal                    @default(100) @map("baseline_index") @db.Decimal(10, 2)
+  weights        Json
+  notes          String?
+  isActive       Boolean                    @default(false) @map("is_active")
+  createdAt      DateTime                   @default(now()) @map("created_at")
+  updatedAt      DateTime                   @updatedAt @map("updated_at")
+  deletedAt      DateTime?                  @map("deleted_at")
+  snapshots      ConstructionVcciSnapshot[]
+  @@map("construction_vcci_methodologies")
+}
+
+/// Stored VCCI observation: location, component breakdown, sources, quality, methodology version.
+model ConstructionVcciSnapshot {
+  id                   String                          @id @default(uuid()) @db.Uuid
+  methodologyId        String                          @map("methodology_id") @db.Uuid
+  methodologyVersion   String                          @map("methodology_version")
+  scope                String
+  locationId           String?                         @map("location_id") @db.Uuid
+  componentKey         String?                         @map("component_key")
+  indexValue           Decimal                         @map("index_value") @db.Decimal(12, 2)
+  calculationDate      DateTime                        @map("calculation_date") @db.Date
+  componentIndexes     Json?                           @map("component_indexes")
+  componentWeights     Json?                           @map("component_weights")
+  sourceDatasets       Json?                           @map("source_datasets")
+  coverageRatio        Decimal?                        @map("coverage_ratio") @db.Decimal(6, 4)
+  qualityPassed        Boolean                         @default(false) @map("quality_passed")
+  qualityBlockers      Json?                           @map("quality_blockers")
+  status               ConstructionVcciPublicationStatus @default(DRAFT)
+  publishedAt          DateTime?                       @map("published_at")
+  notes                String?
+  metadata             Json?
+  createdAt            DateTime                        @default(now()) @map("created_at")
+  updatedAt            DateTime                        @updatedAt @map("updated_at")
+  deletedAt            DateTime?                       @map("deleted_at")
+  methodology          ConstructionVcciMethodology     @relation(fields: [methodologyId], references: [id], onDelete: Cascade)
+  location             ConstructionLocation?           @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  @@index([scope, calculationDate])
+  @@index([locationId, calculationDate])
+  @@index([componentKey, calculationDate])
+  @@index([status, calculationDate])
+  @@index([methodologyId, calculationDate])
+  @@map("construction_vcci_snapshots")
+}
+
+/// Labor / built-up / work-item rates by location (distinct from CostTemplate estimate packs).
+model ConstructionCostRate {
+  id                 String                @id @default(uuid()) @db.Uuid
+  locationId         String?               @map("location_id") @db.Uuid
+  workType           String                @map("work_type")
+  name               String?
+  unit               String
+  currency           String                @default("INR") @db.Char(3)
+  rate               Decimal               @db.Decimal(14, 2)
+  quality            String?
+  methodologyKey     String?               @map("methodology_key")
+  methodologyVersion Int                   @default(1) @map("methodology_version")
+  source             String?
+  sourceUrl          String?               @map("source_url")
+  effectiveFrom      DateTime              @map("effective_from")
+  effectiveTo        DateTime?             @map("effective_to")
+  verifiedAt         DateTime?             @map("verified_at")
+  metadata           Json?
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  deletedAt          DateTime?             @map("deleted_at")
+  createdBy          String?               @map("created_by") @db.Uuid
+  updatedBy          String?               @map("updated_by") @db.Uuid
+  location           ConstructionLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  @@index([workType, effectiveFrom])
+  @@index([locationId, workType])
+  @@index([methodologyKey, methodologyVersion])
+  @@map("construction_cost_rates")
+}
+
+/// Project-linked (or standalone) construction calculations with versioned methodology + assumptions.
+model ConstructionCalculation {
+  id                 String             @id @default(uuid()) @db.Uuid
+  projectId          String?            @map("project_id") @db.Uuid
+  userId             String             @map("user_id") @db.Uuid
+  calculatorSlug     String             @map("calculator_slug")
+  calculatorId       String?            @map("calculator_id") @db.Uuid
+  name               String?
+  methodologyKey     String             @map("methodology_key")
+  methodologyVersion Int                @default(1) @map("methodology_version")
+  inputs             Json
+  assumptions        Json?
+  outputs            Json?
+  unitSummary        Json?              @map("unit_summary")
+  currency           String             @default("INR") @db.Char(3)
+  status             CalculationStatus  @default(PENDING)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+  project            ConstructionProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  calculator         Calculator?        @relation(fields: [calculatorId], references: [id], onDelete: SetNull)
+  @@index([userId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([calculatorSlug, methodologyVersion])
+  @@map("construction_calculations")
+}
+
+model ConstructionBoq {
+  id        String               @id @default(uuid()) @db.Uuid
+  projectId String               @map("project_id") @db.Uuid
+  name      String
+  version   Int                  @default(1)
+  status    ConstructionBoqStatus @default(DRAFT)
+  currency  String               @default("INR") @db.Char(3)
+  notes     String?
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+  deletedAt DateTime?            @map("deleted_at")
+  createdBy String?              @map("created_by") @db.Uuid
+  updatedBy String?              @map("updated_by") @db.Uuid
+  project   ConstructionProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items     ConstructionBoqItem[]
+  documents ConstructionDocument[]
+  @@unique([projectId, name, version])
+  @@index([projectId, status])
+  @@map("construction_boqs")
+}
+
+model ConstructionBoqItem {
+  id             String                @id @default(uuid()) @db.Uuid
+  boqId          String                @map("boq_id") @db.Uuid
+  materialId     String?               @map("material_id") @db.Uuid
+  phaseId        String?               @map("phase_id") @db.Uuid
+  name           String
+  description    String?
+  unit           String
+  quantity       Decimal               @db.Decimal(14, 4)
+  unitRate       Decimal               @map("unit_rate") @db.Decimal(14, 2)
+  wastagePercent Decimal?              @map("wastage_percent") @db.Decimal(5, 2)
+  amount         Decimal               @db.Decimal(14, 2)
+  sortOrder      Int                   @default(0) @map("sort_order")
+  metadata       Json?
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+  deletedAt      DateTime?             @map("deleted_at")
+  boq            ConstructionBoq       @relation(fields: [boqId], references: [id], onDelete: Cascade)
+  material       ConstructionMaterial? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  phase          ConstructionProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  @@index([boqId, sortOrder])
+  @@index([materialId])
+  @@index([phaseId])
+  @@map("construction_boq_items")
+}
+
+model ConstructionProjectPhase {
+  id           String                 @id @default(uuid()) @db.Uuid
+  projectId    String                 @map("project_id") @db.Uuid
+  name         String
+  slug         String?
+  sortOrder    Int                    @default(0) @map("sort_order")
+  status       ConstructionPhaseStatus @default(PLANNED)
+  plannedStart DateTime?              @map("planned_start")
+  plannedEnd   DateTime?              @map("planned_end")
+  actualStart  DateTime?              @map("actual_start")
+  actualEnd    DateTime?              @map("actual_end")
+  notes        String?
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+  deletedAt    DateTime?              @map("deleted_at")
+  project      ConstructionProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  budgetItems  ConstructionBudgetItem[]
+  expenses     ConstructionExpense[]
+  boqItems     ConstructionBoqItem[]
+  documents    ConstructionDocument[]
+  @@index([projectId, sortOrder])
+  @@index([projectId, status])
+  @@map("construction_project_phases")
+}
+
+model ConstructionBudgetItem {
+  id            String                   @id @default(uuid()) @db.Uuid
+  projectId     String                   @map("project_id") @db.Uuid
+  phaseId       String?                  @map("phase_id") @db.Uuid
+  category      String
+  name          String
+  plannedAmount Decimal                  @map("planned_amount") @db.Decimal(14, 2)
+  currency      String                   @default("INR") @db.Char(3)
+  notes         String?
+  createdAt     DateTime                 @default(now()) @map("created_at")
+  updatedAt     DateTime                 @updatedAt @map("updated_at")
+  deletedAt     DateTime?                @map("deleted_at")
+  project       ConstructionProject      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase         ConstructionProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  expenses      ConstructionExpense[]
+  @@index([projectId])
+  @@index([phaseId])
+  @@map("construction_budget_items")
+}
+
+model ConstructionExpense {
+  id               String                    @id @default(uuid()) @db.Uuid
+  projectId        String                    @map("project_id") @db.Uuid
+  budgetItemId     String?                   @map("budget_item_id") @db.Uuid
+  phaseId          String?                   @map("phase_id") @db.Uuid
+  /// Optional link to directory Business (supplier/contractor) — no duplicate vendor table.
+  vendorBusinessId String?                   @map("vendor_business_id") @db.Uuid
+  name             String
+  amount           Decimal                   @db.Decimal(14, 2)
+  currency         String                    @default("INR") @db.Char(3)
+  spentOn          DateTime                  @map("spent_on")
+  notes            String?
+  receiptMediaId   String?                   @map("receipt_media_id") @db.Uuid
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+  deletedAt        DateTime?                 @map("deleted_at")
+  project          ConstructionProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  budgetItem       ConstructionBudgetItem?   @relation(fields: [budgetItemId], references: [id], onDelete: SetNull)
+  phase            ConstructionProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  documents        ConstructionDocument[]
+  @@index([projectId, spentOn])
+  @@index([budgetItemId])
+  @@index([phaseId])
+  @@index([vendorBusinessId])
+  @@map("construction_expenses")
+}
+
+model ConstructionPriceAlert {
+  id                 String                         @id @default(uuid()) @db.Uuid
+  userId             String                         @map("user_id") @db.Uuid
+  materialId         String                         @map("material_id") @db.Uuid
+  locationId         String?                        @map("location_id") @db.Uuid
+  name               String?
+  targetPrice        Decimal?                       @map("target_price") @db.Decimal(14, 2)
+  thresholdPercent   Decimal?                       @map("threshold_percent") @db.Decimal(8, 4)
+  baselinePrice      Decimal?                       @map("baseline_price") @db.Decimal(14, 2)
+  currency           String                         @default("INR") @db.Char(3)
+  direction          ConstructionAlertDirection     @default(BELOW)
+  status             ConstructionAlertStatus        @default(ACTIVE)
+  cooldownHours      Int                            @default(24) @map("cooldown_hours")
+  lastTriggeredAt    DateTime?                      @map("last_triggered_at")
+  lastNotifiedPrice  Decimal?                       @map("last_notified_price") @db.Decimal(14, 2)
+  lastNotificationId String?                        @map("last_notification_id") @db.Uuid
+  createdAt          DateTime                       @default(now()) @map("created_at")
+  updatedAt          DateTime                       @updatedAt @map("updated_at")
+  deletedAt          DateTime?                      @map("deleted_at")
+  material           ConstructionMaterial           @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  location           ConstructionLocation?          @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  triggers           ConstructionPriceAlertTrigger[]
+  @@index([userId, status])
+  @@index([materialId, status])
+  @@index([locationId])
+  @@index([status, deletedAt])
+  @@map("construction_price_alerts")
+}
+
+model ConstructionPriceAlertTrigger {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  alertId            String                     @map("alert_id") @db.Uuid
+  observedPrice      Decimal                    @map("observed_price") @db.Decimal(14, 2)
+  baselinePrice      Decimal?                   @map("baseline_price") @db.Decimal(14, 2)
+  targetPrice        Decimal?                   @map("target_price") @db.Decimal(14, 2)
+  thresholdPercent   Decimal?                   @map("threshold_percent") @db.Decimal(8, 4)
+  changePercent      Decimal?                   @map("change_percent") @db.Decimal(10, 4)
+  direction          ConstructionAlertDirection
+  currency           String                     @default("INR") @db.Char(3)
+  priceObservationId String?                    @map("price_observation_id") @db.Uuid
+  notificationId     String?                    @map("notification_id") @db.Uuid
+  suppressed         Boolean                    @default(false)
+  suppressReason     String?                    @map("suppress_reason")
+  notes              String?
+  metadata           Json?
+  triggeredAt        DateTime                   @default(now()) @map("triggered_at")
+  createdAt          DateTime                   @default(now()) @map("created_at")
+  alert              ConstructionPriceAlert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  @@index([alertId, triggeredAt])
+  @@index([triggeredAt])
+  @@map("construction_price_alert_triggers")
+}
+
+/// Moderated community price submissions. Never auto-promoted into construction_material_prices.
+model ConstructionCommunityPriceReport {
+  id                   String                            @id @default(uuid()) @db.Uuid
+  userId               String                            @map("user_id") @db.Uuid
+  materialId           String                            @map("material_id") @db.Uuid
+  locationId           String                            @map("location_id") @db.Uuid
+  brandId              String?                           @map("brand_id") @db.Uuid
+  brandName            String?                           @map("brand_name")
+  unit                 String
+  currency             String                            @default("INR") @db.Char(3)
+  price                Decimal                           @db.Decimal(14, 2)
+  purchaseDate         DateTime                          @map("purchase_date") @db.Date
+  supplierName         String?                           @map("supplier_name")
+  notes                String?
+  /// Always community_report — data-source labeling for aggregates.
+  sourceLabel          String                            @default("community_report") @map("source_label")
+  status               ConstructionCommunityPriceStatus  @default(PENDING)
+  trustScore           Int                               @default(40) @map("trust_score")
+  isOutlier            Boolean                           @default(false) @map("is_outlier")
+  outlierRatio         Decimal?                          @map("outlier_ratio") @db.Decimal(8, 4)
+  referenceMidPrice    Decimal?                          @map("reference_mid_price") @db.Decimal(14, 2)
+  isDuplicate          Boolean                           @default(false) @map("is_duplicate")
+  duplicateOfId        String?                           @map("duplicate_of_id") @db.Uuid
+  /// Private GCS object key — never returned on public APIs.
+  invoiceStorageKey    String?                           @map("invoice_storage_key")
+  invoiceMimeType      String?                           @map("invoice_mime_type")
+  invoiceOriginalName  String?                           @map("invoice_original_name")
+  invoiceByteSize      Int?                              @map("invoice_byte_size")
+  moderationNotes      String?                           @map("moderation_notes")
+  moderatedBy          String?                           @map("moderated_by") @db.Uuid
+  moderatedAt          DateTime?                         @map("moderated_at")
+  metadata             Json?
+  createdAt            DateTime                          @default(now()) @map("created_at")
+  updatedAt            DateTime                          @updatedAt @map("updated_at")
+  deletedAt            DateTime?                         @map("deleted_at")
+  material             ConstructionMaterial              @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  location             ConstructionLocation              @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  brand                ConstructionBrand?                @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  duplicateOf          ConstructionCommunityPriceReport? @relation("CommunityPriceDuplicates", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates           ConstructionCommunityPriceReport[] @relation("CommunityPriceDuplicates")
+  @@index([userId, createdAt])
+  @@index([materialId, locationId, status])
+  @@index([status, purchaseDate])
+  @@index([status, trustScore])
+  @@index([deletedAt])
+  @@map("construction_community_price_reports")
+}
+
+/// User-owned saved comparisons (CMS editorial comparisons remain in construction_comparisons).
+model ConstructionSavedComparison {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  title      String
+  entityType String    @default("materials") @map("entity_type")
+  entityIds  Json      @map("entity_ids")
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  @@index([userId, createdAt])
+  @@map("construction_saved_comparisons")
+}
+
+model ConstructionDocument {
+  id               String                   @id @default(uuid()) @db.Uuid
+  projectId        String                   @map("project_id") @db.Uuid
+  kind             ConstructionDocumentKind @default(OTHER)
+  title            String
+  mediaId          String?                  @map("media_id") @db.Uuid
+  /** GCS object key — never expose as a public browser URL */
+  storageKey       String?                  @map("storage_key")
+  originalFilename String?                  @map("original_filename")
+  mimeType         String?                  @map("mime_type")
+  sizeBytes        Int?                     @map("size_bytes")
+  /** Deprecated for vault files — prefer storageKey + private download */
+  url              String?
+  notes            String?
+  metadata         Json?
+  boqId            String?                  @map("boq_id") @db.Uuid
+  expenseId        String?                  @map("expense_id") @db.Uuid
+  phaseId          String?                  @map("phase_id") @db.Uuid
+  quoteDocumentId  String?                  @map("quote_document_id") @db.Uuid
+  uploadedBy       String?                  @map("uploaded_by") @db.Uuid
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
+  deletedAt        DateTime?                @map("deleted_at")
+  project          ConstructionProject      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  boq              ConstructionBoq?         @relation(fields: [boqId], references: [id], onDelete: SetNull)
+  expense          ConstructionExpense?     @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  phase            ConstructionProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  quoteDocument    ConstructionDocument?    @relation("DocumentQuoteLink", fields: [quoteDocumentId], references: [id], onDelete: SetNull)
+  linkedFromQuotes ConstructionDocument[]   @relation("DocumentQuoteLink")
+  @@index([projectId, kind])
+  @@index([mediaId])
+  @@index([boqId])
+  @@index([expenseId])
+  @@index([phaseId])
+  @@index([quoteDocumentId])
+  @@map("construction_documents")
 }
 
 model AutomobileManufacturer {
