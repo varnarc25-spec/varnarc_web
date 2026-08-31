@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { useEffect } from 'react';
 import { useCmpConsentAllowed } from '@/lib/cmp-consent-client';
 
 type PublicIntegrations = {
@@ -9,32 +10,29 @@ type PublicIntegrations = {
   plausibleDomain?: string | null;
 };
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 export function AnalyticsIntegrationsScripts({ config }: { config: PublicIntegrations }) {
   const analyticsAllowed = useCmpConsentAllowed('analytics');
   const gaId = config.googleAnalyticsId?.trim();
   const clarityId = config.microsoftClarityId?.trim();
   const plausibleDomain = config.plausibleDomain?.trim();
 
+  useEffect(() => {
+    if (!gaId || typeof window.gtag !== 'function') return;
+    window.gtag('consent', 'update', {
+      analytics_storage: analyticsAllowed ? 'granted' : 'denied',
+    });
+  }, [analyticsAllowed, gaId]);
+
   if (!analyticsAllowed) return null;
 
   return (
     <>
-      {gaId ? (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
-          />
-          <Script id="varnarc-ga" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaId}');
-            `}
-          </Script>
-        </>
-      ) : null}
       {clarityId ? (
         <Script id="varnarc-clarity" strategy="afterInteractive">
           {`
