@@ -10,6 +10,8 @@ import { AnalyticsPageBeaconRoot } from '@/components/analytics/analytics-page-b
 import { WebVitalsReporterRoot } from '@/components/performance/web-vitals-reporter-root';
 import { AnalyticsIntegrationsRoot } from '@/components/analytics/analytics-integrations-root';
 import { CmpSdkScript } from '@/components/consent/cmp-sdk-script';
+import { GoogleAnalyticsHead } from '@/components/analytics/google-analytics-head';
+import { fetchPublicGoogleAnalyticsId } from '@/lib/google-analytics';
 import { isCmpConfigured } from '@/lib/cmp-config';
 import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
 import { fetchAdsensePublicConfig, getAdsenseClientFromConfig } from '@/lib/adsense-config';
@@ -191,14 +193,16 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [headerUser, menuRes, footerRes, activeTheme, adsenseConfig, siteUrl] = await Promise.all([
-    loadHeaderUser(),
-    fetchMenuByLocation('header'),
-    fetchMenuByLocation('footer'),
-    fetchActiveTheme(),
-    fetchAdsensePublicConfig(),
-    getPublicSiteUrl(),
-  ]);
+  const [headerUser, menuRes, footerRes, activeTheme, adsenseConfig, siteUrl, gaId] =
+    await Promise.all([
+      loadHeaderUser(),
+      fetchMenuByLocation('header'),
+      fetchMenuByLocation('footer'),
+      fetchActiveTheme(),
+      fetchAdsensePublicConfig(),
+      getPublicSiteUrl(),
+      fetchPublicGoogleAnalyticsId(),
+    ]);
 
   const cmsNav =
     menuRes.data?.items
@@ -227,6 +231,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
+        {gaId ? <GoogleAnalyticsHead gaId={gaId} /> : null}
         {(() => {
           const runtimeEnvScript = getRuntimePublicEnvScript();
           return runtimeEnvScript ? (
