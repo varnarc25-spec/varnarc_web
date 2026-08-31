@@ -49,8 +49,27 @@ export function AdsenseSettingsForm({ initial }: { initial: AdsenseSettings }) {
           slots,
         }),
       });
-      const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
-      if (!res.ok) throw new Error(json.error?.message || 'Save failed');
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: { message?: string; details?: unknown };
+      };
+      if (!res.ok) {
+        const details = json.error?.details;
+        const detailText =
+          Array.isArray(details) && details.length
+            ? details
+                .map((issue) =>
+                  typeof issue === 'object' && issue && 'message' in issue
+                    ? String((issue as { message?: string }).message)
+                    : JSON.stringify(issue),
+                )
+                .join('; ')
+            : '';
+        throw new Error(
+          json.error?.message
+            ? `${json.error.message}${detailText ? ` ${detailText}` : ''}`
+            : `Save failed (${res.status})`,
+        );
+      }
       setMessage(
         'AdSense settings saved. The public site will pick them up within about a minute.',
       );

@@ -376,7 +376,18 @@ export class SettingsService {
       defaultSlot: parsed.defaultSlot?.trim() || null,
       slots: parsed.slots ?? {},
     };
-    await this.writeJson(SETTINGS_KEYS.adsense, merged, 'ads', actorId, 'settings.adsense.update');
+    await this.writeJson(
+      SETTINGS_KEYS.adsense,
+      {
+        enabled: merged.enabled,
+        client: merged.client ?? null,
+        defaultSlot: merged.defaultSlot ?? null,
+        slots: merged.slots ?? {},
+      },
+      'ads',
+      actorId,
+      'settings.adsense.update',
+    );
     return merged;
   }
 
