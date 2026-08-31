@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 import type { ConstructionChecklistSummary, ConstructionProject } from '@/services/construction';
 import { defaultConstructionTimeline } from '@/services/construction';
+import { estimateBreakdownRows } from '@/components/construction/project-dashboard/dashboard-metrics';
 import { trackProjectUpdated } from '@/lib/construction/analytics';
 
 const inputClass =
@@ -61,6 +62,7 @@ export function ConstructionProjectsClient({
         const draft = drafts[project.id] ?? { name: project.name, notes: project.notes ?? '' };
         const timeline = defaultConstructionTimeline();
         const checklist = checklists[0];
+        const breakdownRows = estimateBreakdownRows(project);
 
         return (
           <article
@@ -220,9 +222,9 @@ export function ConstructionProjectsClient({
                       }
                     />
                   </div>
-                  {project.breakdown?.length ? (
+                  {breakdownRows.length ? (
                     <ul className="mt-4 space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm">
-                      {project.breakdown.map((row) => (
+                      {breakdownRows.map((row) => (
                         <li key={row.label} className="flex justify-between text-slate-700">
                           <span>{row.label}</span>
                           <span>₹{row.amount}</span>
