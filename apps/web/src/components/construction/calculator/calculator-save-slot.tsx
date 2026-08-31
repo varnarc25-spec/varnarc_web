@@ -126,6 +126,3 @@ export function CalculatorSaveSlot() {
     </div>
   );
 }
-
-/** Call from calculator clients after a successful compute (and null on reset). */
-export { setConstructionSavePayload };

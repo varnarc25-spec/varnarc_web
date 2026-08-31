@@ -1,5 +1,5 @@
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { ConstructionQuickEstimator } from '@/components/construction/landing/quick-estimator-lazy';
 import { Suspense } from 'react';
 import { HubDisclaimer } from '@/components/hub/hub-disclaimer';
 import { ConstructionSeo } from '@/components/construction/construction-seo';
@@ -23,18 +23,6 @@ import { constructionHubBreadcrumbs } from '@/lib/construction/seo';
 import { CONSTRUCTION_PAGE_DEFAULTS } from '@/lib/construction/seo-pages';
 import { LANDING_FALLBACK_FAQS, LANDING_SEO_INTRO } from '@/lib/construction/landing';
 import { getModuleHubMeta } from '@/lib/module-hub-configs';
-
-/** Defer quick estimator JS until after the primary intent chrome is ready. */
-const ConstructionQuickEstimator = dynamic(
-  () =>
-    import('@/components/construction/landing/quick-estimator').then(
-      (m) => m.ConstructionQuickEstimator,
-    ),
-  {
-    loading: () => <LoadingState label="Loading estimator" variant="form" />,
-    ssr: false,
-  },
-);
 
 export type ConstructionLandingProps = {
   calculators: Array<{ label: string; href: string; description?: string | null }>;
