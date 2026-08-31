@@ -5,10 +5,15 @@ import { ComparisonCard } from '@/components/construction/comparison-card';
 import { cn, cx } from '@/components/construction/styles';
 
 export type RelatedComparisonItem = ConstructionLinkItem & {
-  leftLabel: string;
-  rightLabel: string;
+  leftLabel?: string;
+  rightLabel?: string;
   summary?: string;
 };
+
+function vsParts(title: string): [string, string] {
+  const parts = title.split(/\s+vs\.?\s+/i);
+  return [parts[0]?.trim() || title, parts[1]?.trim() || 'Compare'];
+}
 
 export function RelatedComparisons({
   items,
@@ -58,16 +63,19 @@ export function RelatedComparisons({
         </ul>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {items.map((item) => (
-            <ComparisonCard
-              key={item.href}
-              href={item.href}
-              title={item.label}
-              summary={item.summary ?? item.description ?? undefined}
-              leftLabel={item.leftLabel}
-              rightLabel={item.rightLabel}
-            />
-          ))}
+          {items.map((item) => {
+            const [leftName, rightName] = vsParts(item.label);
+            return (
+              <ComparisonCard
+                key={item.href}
+                href={item.href}
+                title={item.label}
+                summary={item.summary ?? item.description ?? undefined}
+                leftLabel={item.leftLabel ?? leftName}
+                rightLabel={item.rightLabel ?? rightName}
+              />
+            );
+          })}
         </div>
       )}
     </ConstructionSection>

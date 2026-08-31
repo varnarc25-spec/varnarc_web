@@ -43,6 +43,7 @@ export const CONSTRUCTION_PAGE_KEYS = [
   'professionals',
   'projects',
   'prices',
+  'calc',
   'price-alerts',
   'fair-price-checker',
   'price-position',

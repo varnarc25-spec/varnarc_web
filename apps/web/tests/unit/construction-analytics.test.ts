@@ -124,8 +124,9 @@ describe('trackConstructionEvent', () => {
         }),
       }),
     );
-    const meta = trackAnalyticsEvent.mock.calls[0][0].metadata;
-    expect(meta.email).toBeUndefined();
+    const meta = trackAnalyticsEvent.mock.calls[0]?.[0]?.metadata;
+    expect(meta).toBeDefined();
+    expect(meta!.email).toBeUndefined();
   });
 
   it('calculator_completed only sends safe metadata fields', () => {
@@ -136,7 +137,7 @@ describe('trackConstructionEvent', () => {
       result_range_category: 'mid',
       logged_in: true,
     });
-    const meta = trackAnalyticsEvent.mock.calls[0][0].metadata;
+    const meta = trackAnalyticsEvent.mock.calls[0]?.[0]?.metadata;
     expect(meta).toEqual({
       construction_event: 'calculator_completed',
       vertical: 'construction',
@@ -154,8 +155,9 @@ describe('trackConstructionEvent', () => {
       query_length_bucket: 'medium',
       result_count_bucket: 'few',
     });
-    const meta = trackAnalyticsEvent.mock.calls[0][0].metadata;
-    expect(meta.query).toBeUndefined();
-    expect(meta.query_length_bucket).toBe('medium');
+    const meta = trackAnalyticsEvent.mock.calls[0]?.[0]?.metadata;
+    expect(meta).toBeDefined();
+    expect(meta!.query).toBeUndefined();
+    expect(meta!.query_length_bucket).toBe('medium');
   });
 });
