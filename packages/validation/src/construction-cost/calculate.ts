@@ -24,7 +24,7 @@ import {
 } from '../reverse-calculator';
 import {
   constructionCostInputSchema,
-  type ConstructionCostInput,
+  type ConstructionCostInputRaw,
   type ConstructionCostResult,
   type CostBreakdownLine,
 } from './types';
@@ -49,7 +49,7 @@ function line(id: string, label: string, amount: number, total: number): CostBre
  * Flagship Construction Cost Calculator.
  * Forward: area → cost. Reverse: budget → approximate buildable area (same rate model).
  */
-export function calculateConstructionCost(raw: ConstructionCostInput): ConstructionCostResult {
+export function calculateConstructionCost(raw: ConstructionCostInputRaw): ConstructionCostResult {
   const input = constructionCostInputSchema.parse(raw);
   const locationKey = normalizeLocationKey(input.location);
   const locationMeta = LOCATION_MULTIPLIERS[locationKey] ?? LOCATION_MULTIPLIERS.default!;

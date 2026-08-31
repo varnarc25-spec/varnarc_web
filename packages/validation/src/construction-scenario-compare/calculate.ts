@@ -35,6 +35,7 @@ export function estimateScenarioMaterials(
 
 function computeOne(config: ScenarioConfig): ScenarioComputed {
   const cost = calculateConstructionCost({
+    mode: 'forward',
     location: config.location,
     propertyType: config.propertyType,
     builtUpArea: config.builtUpArea,

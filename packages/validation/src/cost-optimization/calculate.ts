@@ -28,6 +28,7 @@ function roundMoney(n: number): number {
 
 function toEngineInput(input: CostOptimizationInput): ConstructionCostInput {
   return {
+    mode: 'forward',
     location: input.location,
     propertyType: 'independent_house',
     builtUpArea: input.builtUpArea,
@@ -194,7 +195,9 @@ export function applyCostOptimizationLevers(
           ...patch,
           builtUpArea: Math.max(
             400,
-            Math.round(patch.builtUpArea * (1 - template.estimate.pct / 100)),
+            Math.round(
+              (patch.builtUpArea ?? input.builtUpArea) * (1 - template.estimate.pct / 100),
+            ),
           ),
         };
         break;
@@ -258,7 +261,7 @@ export function applyCostOptimizationLevers(
         label: 'Optimized plan',
         location: input.location,
         propertyType: 'independent_house',
-        builtUpArea: patch.builtUpArea,
+        builtUpArea: patch.builtUpArea ?? input.builtUpArea,
         areaUnit: input.areaUnit,
         floors: input.floors,
         quality: patch.quality,

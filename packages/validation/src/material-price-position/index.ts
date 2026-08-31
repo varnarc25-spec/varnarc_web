@@ -346,11 +346,11 @@ export function calculateMaterialPricePosition(
 
   return {
     ok: true,
+    ...baseMeta,
     materialKey: input.materialKey,
     locationSlug: input.locationSlug,
     currency: latest.o.currency ?? 'INR',
     unit: latest.o.unit,
-    windowDays,
     windowLabel: `Last ${windowDays} days`,
     windowStartIso: windowStart.toISOString(),
     windowEndIso: windowEnd.toISOString(),

@@ -35,6 +35,7 @@ export const DEFAULT_COST_SIMULATOR_STATE: CostSimulatorState = {
 
 export function simulatorStateToInput(state: CostSimulatorState): ConstructionCostInput {
   return {
+    mode: 'forward',
     location: state.location,
     propertyType: 'independent_house',
     builtUpArea: state.builtUpArea,

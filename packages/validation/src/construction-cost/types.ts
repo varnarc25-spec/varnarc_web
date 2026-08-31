@@ -79,6 +79,7 @@ export const constructionCostInputSchema = z
   });
 
 export type ConstructionCostInput = z.infer<typeof constructionCostInputSchema>;
+export type ConstructionCostInputRaw = z.input<typeof constructionCostInputSchema>;
 export type ConstructionCostQuality = z.infer<typeof constructionCostQualitySchema>;
 export type ConstructionCostPropertyType = z.infer<typeof constructionCostPropertyTypeSchema>;
 export type ConstructionCostInterior = z.infer<typeof constructionCostInteriorSchema>;
