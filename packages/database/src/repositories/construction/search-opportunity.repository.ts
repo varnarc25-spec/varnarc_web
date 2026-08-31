@@ -67,14 +67,15 @@ export class ConstructionSearchOpportunityRepository extends BaseRepository {
   }
 
   upsert(data: Prisma.ConstructionSearchOpportunityUncheckedCreateInput) {
+    const windowDays = data.windowDays ?? 30;
     return this.db.constructionSearchOpportunity.upsert({
       where: {
         queryHash_windowDays: {
           queryHash: data.queryHash,
-          windowDays: data.windowDays,
+          windowDays,
         },
       },
-      create: data,
+      create: { ...data, windowDays },
       update: {
         displayQuery: data.displayQuery,
         intent: data.intent,
