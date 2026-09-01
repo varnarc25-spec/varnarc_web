@@ -441,7 +441,7 @@ export class FinanceController {
   @Public()
   @Get('interest-rates')
   async rates(@Query(new ZodValidationPipe(financeListQuerySchema)) query: FinanceListQuery) {
-    return okCursor(await this.service.listRates(query));
+    return okCursor(await this.service.listRates(query, { publicOnly: true }));
   }
 
   @Get('admin/interest-rates')

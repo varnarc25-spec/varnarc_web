@@ -795,7 +795,8 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
     {
       slug: 'hra',
       name: 'HRA Calculator',
-      description: 'Estimate House Rent Allowance exemption under Indian tax rules (simplified).',
+      description:
+        'Estimate House Rent Allowance exemption under the old tax regime (Tax Year 2026–27). Metro cities use 50% of basic; others 40%. Not available under the default new regime.',
       categoryId: finance,
       formula: {
         outputs: {
@@ -803,8 +804,9 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           rentPaidAnnual: 'annualRent',
           tenPercentBasic: 'annualBasic * 0.1',
           excessRent: 'max(rentPaidAnnual - tenPercentBasic, 0)',
-          fortyPercentBasic: 'annualBasic * 0.4',
-          exemption: 'min(hraReceived, excessRent, fortyPercentBasic)',
+          cityShare: 'metro * 0.1 + 0.4',
+          cityCap: 'annualBasic * cityShare',
+          exemption: 'min(hraReceived, excessRent, cityCap)',
           taxableHra: 'hraReceived - exemption',
         },
       },
@@ -837,6 +839,14 @@ export async function seedExtendedCalculators(prisma: PrismaClient, cats: Catego
           fieldType: 'currency',
           sortOrder: 2,
           defaultValue: '240000',
+        },
+        {
+          key: 'metro',
+          label: 'Metro city (1 = yes, 0 = no)',
+          fieldType: 'number',
+          sortOrder: 3,
+          defaultValue: '0',
+          validation: { min: 0, max: 1, step: 1 },
         },
       ],
     },

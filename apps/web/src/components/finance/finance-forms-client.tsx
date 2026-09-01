@@ -62,6 +62,10 @@ export function EligibilityCheckForm() {
 
   return (
     <div className="max-w-xl space-y-4">
+      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+        This check is an educational estimate. It does not use a lender API or bureau data. Final
+        eligibility is decided by the lender.
+      </p>
       <form
         onSubmit={(e) => void submit(e)}
         className="space-y-3 rounded-xl border border-slate-200 bg-white p-5"
@@ -160,6 +164,9 @@ export function CreditScoreCheckForm() {
 
   return (
     <div className="max-w-xl space-y-4">
+      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+        This is not a CIBIL, Experian, CRIF, or Equifax score. The result is a demo estimate only.
+      </p>
       <form
         onSubmit={(e) => void submit(e)}
         className="space-y-3 rounded-xl border border-slate-200 bg-white p-5"

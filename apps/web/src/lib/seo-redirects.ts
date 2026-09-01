@@ -1,4 +1,4 @@
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
 type RedirectRow = {
   sourcePath: string;
@@ -13,7 +13,10 @@ async function loadRedirects(): Promise<Map<string, RedirectRow>> {
   if (cache && cache.expires > now) return cache.map;
 
   try {
-    const res = await fetch(`${apiUrl}/seo/redirects/active`, { next: { revalidate: 60 } });
+    const res = await fetch(`${getApiBaseUrl()}/seo/redirects/active`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(3_000),
+    });
     const json = (await res.json()) as { data?: RedirectRow[] };
     const map = new Map<string, RedirectRow>();
     for (const row of json.data ?? []) {

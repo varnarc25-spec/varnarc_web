@@ -257,6 +257,23 @@ export default function AboutPage() {
               tools together in one platform. Our mission is to simplify research and help you make
               confident, well-informed decisions every day.
             </p>
+            <p className="mt-4 max-w-xl rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+              Varnarc is not a bank, lender, or SEBI-registered advisor. Interest rates, loan
+              products, and calculator defaults are published from the admin catalog and must be
+              verified with the provider. See{' '}
+              <Link href="/methodology" className="font-semibold underline">
+                methodology
+              </Link>
+              ,{' '}
+              <Link href="/editorial-policy" className="font-semibold underline">
+                editorial policy
+              </Link>
+              , and{' '}
+              <Link href="/corrections" className="font-semibold underline">
+                corrections
+              </Link>
+              .
+            </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="#explore"

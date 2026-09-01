@@ -1,4 +1,4 @@
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+import { getApiBaseUrl } from '@/lib/runtime-public-env';
 
 type MaintenanceStatus = {
   active: boolean;
@@ -13,7 +13,10 @@ export async function getMaintenanceStatus(): Promise<MaintenanceStatus> {
   if (cache && cache.expires > now) return cache.status;
 
   try {
-    const res = await fetch(`${apiUrl}/settings/maintenance/status`, { next: { revalidate: 30 } });
+    const res = await fetch(`${getApiBaseUrl()}/settings/maintenance/status`, {
+      next: { revalidate: 30 },
+      signal: AbortSignal.timeout(3_000),
+    });
     const json = (await res.json()) as { data?: MaintenanceStatus };
     const status = json.data ?? { active: false };
     cache = { status, expires: now + 30_000 };

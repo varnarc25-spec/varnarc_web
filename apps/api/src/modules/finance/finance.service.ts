@@ -745,8 +745,11 @@ export class FinanceService {
   }
 
   // --- Rates ---
-  listRates(query: FinanceListQuery) {
-    return this.repos.interestRates.list(query);
+  listRates(query: FinanceListQuery, opts?: { publicOnly?: boolean }) {
+    return this.repos.interestRates.list({
+      ...query,
+      excludeMockSources: opts?.publicOnly,
+    });
   }
 
   async createRate(input: CreateInterestRateInput, actorId: string) {

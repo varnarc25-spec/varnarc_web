@@ -40,6 +40,8 @@ export { getApiBaseUrl };
 /**
  * Public (unauthenticated) API fetch — for articles, homepage, directory, etc.
  */
+const DEFAULT_FETCH_TIMEOUT_MS = 8_000;
+
 export async function apiPublicFetch<T>(
   path: string,
   init: RequestInit = {},
@@ -51,6 +53,7 @@ export async function apiPublicFetch<T>(
       'Content-Type': 'application/json',
       ...init.headers,
     },
+    signal: init.signal ?? AbortSignal.timeout(DEFAULT_FETCH_TIMEOUT_MS),
     next: init.cache === 'no-store' ? undefined : { revalidate: 60 },
   });
 

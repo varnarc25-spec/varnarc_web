@@ -5,6 +5,7 @@ import type { CursorPageParams } from '../../pagination';
 type ListParams = CursorPageParams & {
   status?: PublishStatus;
   search?: string;
+  excludeMockSources?: boolean;
   bankId?: string;
   categoryId?: string;
   categorySlug?: string;
@@ -569,6 +570,19 @@ export class InterestRateRepository extends BaseRepository {
     return listActiveWithCursor(this.db.interestRate, {
       ...params,
       where: {
+        ...(params.excludeMockSources
+          ? {
+              OR: [
+                { source: null },
+                {
+                  AND: [
+                    { NOT: { source: { equals: 'mock', mode: 'insensitive' } } },
+                    { NOT: { source: { startsWith: 'feed:mock', mode: 'insensitive' } } },
+                  ],
+                },
+              ],
+            }
+          : {}),
         ...(params.bankId ? { bankId: params.bankId } : {}),
         ...(params.productType ? { productType: params.productType } : {}),
         ...(params.search

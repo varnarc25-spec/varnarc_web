@@ -41,6 +41,14 @@ export default function MethodologyPage() {
             </p>
           </div>
           <p className="mt-4 text-sm leading-7 text-slate-700">
+            Interest-rate defaults and published rate tables come from{' '}
+            <strong className="text-slate-950">Admin → Finance → Interest rates</strong> (and linked
+            loan products). Calculator formulas, including income-tax slabs for Tax Year 2026–27,
+            are stored on each calculator record in the admin CMS and can be updated without a code
+            change. Illustrative EMI examples on loan pages are labelled as examples, not live
+            offers.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-slate-700">
             Default values for interest rates are sourced from RBI publications and major bank rate
             sheets. Each calculator page discloses the formula, data sources, and assumptions used.
           </p>

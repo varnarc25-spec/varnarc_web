@@ -21,10 +21,14 @@ function envSlotForPlacement(placementSlug: string): string | null {
   return process.env.NEXT_PUBLIC_ADSENSE_SLOT_DEFAULT?.trim() || null;
 }
 
-export async function fetchAdsensePublicConfig(): Promise<AdsensePublicConfig> {
+export async function fetchAdsensePublicConfig(
+  init: RequestInit = {},
+): Promise<AdsensePublicConfig> {
   try {
     const result = await apiPublicFetch<AdsensePublicConfig>('/settings/adsense/public', {
       next: { revalidate: 60 },
+      ...init,
+      signal: init.signal ?? AbortSignal.timeout(8_000),
     });
     return {
       enabled: result.data.enabled !== false,

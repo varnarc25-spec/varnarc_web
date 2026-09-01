@@ -941,30 +941,28 @@ async function main() {
   await upsertCalculator({
     slug: 'income-tax',
     name: 'Income Tax Calculator',
-    description: 'Quick tax estimate using a simplified new-regime style slab.',
+    description:
+      'Estimate income tax for Tax Year 2026–27 under the default new regime (Budget 2025 slabs, unchanged in Budget 2026). Includes Section 87A rebate up to ₹12 lakh and 4% health & education cess. Not a filing tool.',
     categoryId: finance.id,
     formula: {
       type: 'rules',
       rules: [
-        { when: 'income <= 300000', outputs: { tax: '0', taxable: 'income' } },
+        { when: 'income <= 400000', outputs: { tax: '0', taxable: 'income' } },
+        { when: 'income <= 1200000', outputs: { tax: '0', taxable: 'income' } },
         {
-          when: 'income <= 700000',
-          outputs: { tax: '(income - 300000) * 0.05', taxable: 'income' },
+          when: 'income <= 1600000',
+          outputs: { tax: '(60000 + (income - 1200000) * 0.15) * 1.04', taxable: 'income' },
         },
         {
-          when: 'income <= 1000000',
-          outputs: { tax: '20000 + (income - 700000) * 0.10', taxable: 'income' },
+          when: 'income <= 2000000',
+          outputs: { tax: '(120000 + (income - 1600000) * 0.20) * 1.04', taxable: 'income' },
         },
         {
-          when: 'income <= 1200000',
-          outputs: { tax: '50000 + (income - 1000000) * 0.15', taxable: 'income' },
-        },
-        {
-          when: 'income <= 1500000',
-          outputs: { tax: '80000 + (income - 1200000) * 0.20', taxable: 'income' },
+          when: 'income <= 2400000',
+          outputs: { tax: '(200000 + (income - 2000000) * 0.25) * 1.04', taxable: 'income' },
         },
       ],
-      outputs: { tax: '140000 + (income - 1500000) * 0.30', taxable: 'income' },
+      outputs: { tax: '(300000 + (income - 2400000) * 0.30) * 1.04', taxable: 'income' },
     },
     resultTemplate: {
       cards: [

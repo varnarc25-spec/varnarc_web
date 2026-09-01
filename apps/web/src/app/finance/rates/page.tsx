@@ -48,6 +48,11 @@ export default async function FinanceRatesPage() {
     >
       {chartData.length ? <RatesChart data={chartData} /> : null}
 
+      <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        Rates are loaded from Admin → Finance → Interest rates. Mock demo feeds are excluded. Always
+        confirm the current rate with the bank before you apply.
+      </p>
+
       {data.length ? (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full text-left text-sm">

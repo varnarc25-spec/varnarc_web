@@ -497,7 +497,7 @@ export function ClassicTrustNewsletterSection() {
                 icon={<Calculator className="h-5 w-5" strokeWidth={2.25} />}
                 color="bg-[#38bdf8]"
                 title="Free Calculators"
-                subtitle="100+ free tools to use"
+                subtitle="Free calculators and planning tools"
               />
               <TrustItem
                 icon={<Shield className="h-5 w-5" strokeWidth={2.25} />}

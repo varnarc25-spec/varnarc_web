@@ -486,12 +486,13 @@ const FALLBACK_FAQS = [
   },
 ];
 
-function formatRatesDate() {
+function formatRatesVerifiedOn(iso?: string | null) {
+  if (!iso) return null;
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date());
+  }).format(new Date(iso));
 }
 
 export default async function FinancePage() {
@@ -601,6 +602,15 @@ export default async function FinancePage() {
     icon: 'percent',
   }));
 
+  const latestRateAt = rates.reduce<string | null>((latest, row) => {
+    if (!row.effectiveFrom) return latest;
+    if (!latest || new Date(row.effectiveFrom) > new Date(latest)) return row.effectiveFrom;
+    return latest;
+  }, null);
+  const ratesFooter = formatRatesVerifiedOn(latestRateAt)
+    ? `Last verified ${formatRatesVerifiedOn(latestRateAt)} from Admin → Finance → Interest rates`
+    : 'No published rates yet. Add them in Admin → Finance → Interest rates.';
+
   const rateItems =
     apiRateItems.length > 0
       ? apiRateItems
@@ -678,7 +688,7 @@ export default async function FinancePage() {
             <HubRatesList
               title="Latest interest rates"
               items={rateItems}
-              footer={`Rates updated on ${formatRatesDate()}`}
+              footer={ratesFooter}
               viewAllHref="/finance/rates"
               variant="panel"
             />

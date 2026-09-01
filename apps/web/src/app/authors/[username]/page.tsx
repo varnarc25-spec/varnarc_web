@@ -55,13 +55,18 @@ export default async function AuthorProfilePage({ params }: Props) {
         description={data.bio || 'Contributor on Varnarc.'}
         breadcrumbs={[
           { label: 'Home', href: '/' },
-          { label: 'Authors', href: '/articles' },
+          { label: 'Authors', href: '/authors' },
           { label: data.displayName || username },
         ]}
       >
         {data.website ? (
           <p className="mb-6 text-sm">
-            <a href={data.website} className="text-[var(--varnarc-brand)] hover:underline" rel="noreferrer" target="_blank">
+            <a
+              href={data.website}
+              className="text-[var(--varnarc-brand)] hover:underline"
+              rel="noreferrer"
+              target="_blank"
+            >
               Website
             </a>
           </p>
@@ -81,12 +86,20 @@ export default async function AuthorProfilePage({ params }: Props) {
             <ul className="mt-4 space-y-4">
               {data.articles.map((article) => (
                 <li key={article.id} className="rounded-xl border border-slate-200 p-4">
-                  <Link href={`/articles/${article.slug}`} className="font-semibold text-[#0b1f3a] hover:underline">
+                  <Link
+                    href={`/articles/${article.slug}`}
+                    className="font-semibold text-[#0b1f3a] hover:underline"
+                  >
                     {article.title}
                   </Link>
-                  {article.excerpt ? <p className="mt-1 text-sm text-slate-500">{article.excerpt}</p> : null}
+                  {article.excerpt ? (
+                    <p className="mt-1 text-sm text-slate-500">{article.excerpt}</p>
+                  ) : null}
                   <p className="mt-2 text-xs text-slate-400">
-                    {[article.publishedAt ? formatDate(article.publishedAt) : null, article.readingTimeMinutes ? `${article.readingTimeMinutes} min read` : null]
+                    {[
+                      article.publishedAt ? formatDate(article.publishedAt) : null,
+                      article.readingTimeMinutes ? `${article.readingTimeMinutes} min read` : null,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
