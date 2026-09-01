@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageShell } from '@/components/layout/page-shell';
+import { AutomobileSeo } from '@/components/automobile/automobile-seo';
 import { AutomobileVehicleCard } from '@/components/automobile/vehicle-card';
-import {
-  fetchAutomobileManufacturerBySlug,
-  fetchAutomobileVehicles,
-} from '@/services/automobile';
-import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { fetchAutomobileManufacturerBySlug, fetchAutomobileVehicles } from '@/services/automobile';
+import { automobileHubBreadcrumbs, buildAutomobileMetadata } from '@/lib/automobile/seo';
 import { ApiError } from '@/services/api-client';
 import { notFound } from 'next/navigation';
 
@@ -16,16 +14,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const { data } = await fetchAutomobileManufacturerBySlug(slug);
-    return buildSeoMetadata({
+    return buildAutomobileMetadata({
       entityType: 'automobile_manufacturer',
       entityId: data.id,
       path: `/automobile/manufacturers/${slug}`,
-      title: data.seoTitle || data.name,
-      description: data.seoDescription || data.description || `${data.name} vehicles and lineup.`,
+      title: data.seoTitle || `${data.name} Cars & Lineup | Varnarc`,
+      description:
+        data.seoDescription || data.description || `${data.name} vehicles and lineup in India.`,
       image: data.logoUrl,
     });
   } catch {
-    return { title: 'Manufacturer', alternates: { canonical: `/automobile/manufacturers/${slug}` } };
+    return {
+      title: 'Manufacturer',
+      alternates: { canonical: `/automobile/manufacturers/${slug}` },
+    };
   }
 }
 
@@ -43,6 +45,7 @@ export default async function AutomobileManufacturerDetailPage({ params }: Props
 
   const vehiclesRes = await fetchAutomobileVehicles({ manufacturerId: manufacturer.id, limit: 12 });
   const vehicles = manufacturer.vehicles?.length ? manufacturer.vehicles : vehiclesRes.data;
+  const path = `/automobile/manufacturers/${slug}`;
 
   return (
     <PageShell
@@ -55,6 +58,32 @@ export default async function AutomobileManufacturerDetailPage({ params }: Props
         { label: manufacturer.name },
       ]}
     >
+      <AutomobileSeo
+        breadcrumbs={automobileHubBreadcrumbs([
+          { name: 'Manufacturers', path: '/automobile/manufacturers' },
+          { name: manufacturer.name, path },
+        ])}
+        organization={{
+          name: manufacturer.name,
+          description: manufacturer.description,
+          path,
+          url: manufacturer.website,
+          logo: manufacturer.logoUrl,
+        }}
+        itemList={
+          vehicles.length
+            ? {
+                name: `${manufacturer.name} vehicles`,
+                path,
+                items: vehicles.slice(0, 20).map((v) => ({
+                  name: v.name,
+                  path: `/automobile/vehicles/${v.slug}`,
+                })),
+              }
+            : undefined
+        }
+      />
+
       {manufacturer.website ? (
         <p className="mb-6">
           <a

@@ -160,7 +160,9 @@ function buildQs(options?: ListOptions) {
 
 export async function fetchAutomobileDashboard() {
   try {
-    return await apiPublicFetch<AutomobileDashboard>('/automobile/dashboard', { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileDashboard>('/automobile/dashboard', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: null };
   }
@@ -168,16 +170,21 @@ export async function fetchAutomobileDashboard() {
 
 export async function fetchAutomobileManufacturers(options?: ListOptions) {
   try {
-    return await apiPublicFetch<AutomobileManufacturer[]>(`/automobile/manufacturers?${buildQs(options)}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileManufacturer[]>(
+      `/automobile/manufacturers?${buildQs(options)}`,
+      {
+        cache: 'no-store',
+      },
+    );
   } catch {
     return { data: [] as AutomobileManufacturer[], meta: undefined };
   }
 }
 
 export async function fetchAutomobileManufacturerBySlug(slug: string) {
-  return apiPublicFetch<AutomobileManufacturer>(`/automobile/manufacturers/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileManufacturer>(`/automobile/manufacturers/slug/${slug}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function fetchAutomobileVehicles(options?: ListOptions) {
@@ -191,7 +198,9 @@ export async function fetchAutomobileVehicles(options?: ListOptions) {
 }
 
 export async function fetchAutomobileVehicleBySlug(slug: string) {
-  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/slug/${slug}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function fetchAutomobileVehicle(id: string) {
@@ -200,13 +209,17 @@ export async function fetchAutomobileVehicle(id: string) {
 
 export async function fetchAutomobileCompare(ids: string[]) {
   const qs = new URLSearchParams({ ids: ids.join(',') });
-  return apiPublicFetch<AutomobileVehicle[]>(`/automobile/compare?${qs.toString()}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileVehicle[]>(`/automobile/compare?${qs.toString()}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function fetchAutomobileMaintenance(vehicleId?: string) {
   try {
     const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
-    return await apiPublicFetch<AutomobileMaintenance[]>(`/automobile/maintenance${qs}`, { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileMaintenance[]>(`/automobile/maintenance${qs}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as AutomobileMaintenance[] };
   }
@@ -232,7 +245,9 @@ export async function fetchAutomobileDealers() {
 export async function fetchAutomobileReviews(vehicleId?: string) {
   try {
     const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
-    return await apiPublicFetch<AutomobileReview[]>(`/automobile/reviews${qs}`, { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileReview[]>(`/automobile/reviews${qs}`, {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as AutomobileReview[] };
   }
@@ -280,14 +295,18 @@ export type AutomobileSavedComparison = {
 
 export async function fetchAutomobileComparisons() {
   try {
-    return await apiPublicFetch<AutomobileSavedComparison[]>('/automobile/comparisons', { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileSavedComparison[]>('/automobile/comparisons', {
+      cache: 'no-store',
+    });
   } catch {
     return { data: [] as AutomobileSavedComparison[] };
   }
 }
 
 export async function fetchAutomobileComparisonBySlug(slug: string) {
-  return apiPublicFetch<AutomobileSavedComparison>(`/automobile/comparisons/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileSavedComparison>(`/automobile/comparisons/slug/${slug}`, {
+    cache: 'no-store',
+  });
 }
 
 export async function trackAutomobileAffiliateLead(input: {
@@ -308,16 +327,17 @@ export async function trackAutomobileAffiliateLead(input: {
       email: input.email,
       phone: input.phone,
       referrer: typeof document !== 'undefined' ? document.referrer || null : null,
-      sessionId: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : null,
+      sessionId:
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : null,
     }),
   });
 }
 
 export const AUTOMOBILE_CALCULATOR_LINKS = [
-  { href: '/calculators/car-loan', label: 'Car Loan Calculator' },
-  { href: '/calculators/fuel', label: 'Fuel Cost Calculator' },
-  { href: '/calculators/mileage', label: 'Mileage Calculator' },
-  { href: '/calculators/car-insurance', label: 'Car Insurance Estimator' },
-  { href: '/calculators/depreciation', label: 'Depreciation Calculator' },
-  { href: '/calculators/maintenance-cost', label: 'Maintenance Cost Estimator' },
+  { href: '/automobile/calculators/car-loan', label: 'Car Loan Calculator' },
+  { href: '/automobile/calculators/fuel', label: 'Fuel Cost Calculator' },
+  { href: '/automobile/calculators/mileage', label: 'Mileage Calculator' },
+  { href: '/automobile/calculators/car-insurance', label: 'Car Insurance Estimator' },
+  { href: '/automobile/calculators/depreciation', label: 'Depreciation Calculator' },
+  { href: '/automobile/calculators/maintenance-cost', label: 'Maintenance Cost Estimator' },
 ];

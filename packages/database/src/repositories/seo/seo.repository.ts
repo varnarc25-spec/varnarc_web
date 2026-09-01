@@ -1,5 +1,8 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
 import {
+  AUTOMOBILE_SITEMAP_SEGMENTS,
+  AUTOMOBILE_SITEMAP_STATIC_LASTMOD,
+  automobileSitemapChildLoc,
   buildGuideClusterLanding,
   canIndexConstructionCostCity,
   canIndexPriceLanding,
@@ -8,13 +11,16 @@ import {
   CONSTRUCTION_SITEMAP_STATIC_LASTMOD,
   constructionSitemapChildLoc,
   filterConstructionSitemapPaths,
+  isAutomobileSitemapSegment,
   isConstructionSitemapSegment,
+  listAutomobileSitemapStaticPaths,
   listConstructionCostCityProfileSlugs,
   listConstructionSitemapStaticPaths,
   listGuideClusters,
   listIndexableConstructionGlossaryTerms,
   listIndexableIntentCalcLandings,
   PRICE_HUB_CITIES,
+  type AutomobileSitemapSegment,
   type ConstructionSitemapSegment,
   type PriceFreshness,
 } from '@varnarc/validation';
@@ -193,6 +199,9 @@ export class SeoSitemapRepository extends BaseRepository {
   async entriesForType(type: string, siteUrl: string): Promise<SitemapEntry[]> {
     if (isConstructionSitemapSegment(type)) {
       return this.entriesForConstructionSegment(type, siteUrl);
+    }
+    if (isAutomobileSitemapSegment(type)) {
+      return this.entriesForAutomobileSegment(type, siteUrl);
     }
 
     const published = { status: 'PUBLISHED' as const, deletedAt: null };
@@ -394,41 +403,14 @@ export class SeoSitemapRepository extends BaseRepository {
         return this.dedupeSitemapEntries(parts.flat());
       }
       case 'automobile': {
-        const published = { deletedAt: null, status: 'PUBLISHED' as const };
-        const [vehicles, manufacturers, guides] = await Promise.all([
-          this.db.automobileVehicle.findMany({
-            where: published,
-            select: { slug: true, updatedAt: true },
-            take: 2000,
-          }),
-          this.db.automobileManufacturer.findMany({
-            where: published,
-            select: { slug: true, updatedAt: true },
-            take: 2000,
-          }),
-          this.db.automobileGuide.findMany({
-            where: published,
-            select: { slug: true, updatedAt: true },
-            take: 2000,
-          }),
-        ]);
-        const now = new Date();
-        const autoHubs = ['/automobile', '/automobile/faqs', '/automobile/guides'];
-        return [
-          ...autoHubs.map((path) => ({ loc: `${siteUrl}${path}`, lastmod: now })),
-          ...vehicles.map((r) => ({
-            loc: `${siteUrl}/automobile/vehicles/${r.slug}`,
-            lastmod: r.updatedAt,
-          })),
-          ...manufacturers.map((r) => ({
-            loc: `${siteUrl}/automobile/manufacturers/${r.slug}`,
-            lastmod: r.updatedAt,
-          })),
-          ...guides.map((r) => ({
-            loc: `${siteUrl}/automobile/guides/${r.slug}`,
-            lastmod: r.updatedAt,
-          })),
-        ];
+        // Union of all child segments (SEO audit / status counts). Nested XML
+        // index is built in SeoService — this path must stay complete.
+        const parts = await Promise.all(
+          AUTOMOBILE_SITEMAP_SEGMENTS.map((segment) =>
+            this.entriesForAutomobileSegment(segment, siteUrl),
+          ),
+        );
+        return this.dedupeSitemapEntries(parts.flat());
       }
       default:
         return [];
@@ -567,6 +549,110 @@ export class SeoSitemapRepository extends BaseRepository {
     return CONSTRUCTION_SITEMAP_SEGMENTS.map((segment) => ({
       loc: constructionSitemapChildLoc(siteUrl, segment),
       lastmod: CONSTRUCTION_SITEMAP_STATIC_LASTMOD,
+    }));
+  }
+
+  /** Child automobile sitemap segments (canonical indexable URLs only). */
+  async entriesForAutomobileSegment(
+    segment: AutomobileSitemapSegment,
+    siteUrl: string,
+  ): Promise<SitemapEntry[]> {
+    const base = siteUrl.replace(/\/+$/, '');
+    const staticLastmod = AUTOMOBILE_SITEMAP_STATIC_LASTMOD;
+    const published = { deletedAt: null, status: 'PUBLISHED' as const };
+
+    const staticEntries = (): SitemapEntry[] =>
+      listAutomobileSitemapStaticPaths(segment).map((path) => ({
+        loc: `${base}${path}`,
+        lastmod: staticLastmod,
+      }));
+
+    let entries: SitemapEntry[] = [];
+
+    switch (segment) {
+      case 'automobile-core': {
+        entries = staticEntries();
+        break;
+      }
+      case 'automobile-calculators': {
+        entries = staticEntries();
+        break;
+      }
+      case 'automobile-vehicles': {
+        const vehicles = await this.db.automobileVehicle.findMany({
+          where: published,
+          select: { slug: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          take: 5_000,
+        });
+        entries = [
+          { loc: `${base}/automobile/vehicles`, lastmod: staticLastmod },
+          ...vehicles.map((r) => ({
+            loc: `${base}/automobile/vehicles/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+        ];
+        break;
+      }
+      case 'automobile-manufacturers': {
+        const manufacturers = await this.db.automobileManufacturer.findMany({
+          where: published,
+          select: { slug: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          take: 2_000,
+        });
+        entries = [
+          { loc: `${base}/automobile/manufacturers`, lastmod: staticLastmod },
+          ...manufacturers.map((r) => ({
+            loc: `${base}/automobile/manufacturers/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+        ];
+        break;
+      }
+      case 'automobile-comparisons': {
+        const comparisons = await this.db.automobileComparison.findMany({
+          where: published,
+          select: { slug: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          take: 2_000,
+        });
+        entries = [
+          { loc: `${base}/automobile/comparisons`, lastmod: staticLastmod },
+          ...comparisons.map((r) => ({
+            loc: `${base}/automobile/comparisons/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+        ];
+        break;
+      }
+      case 'automobile-guides': {
+        const guides = await this.db.automobileGuide.findMany({
+          where: published,
+          select: { slug: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          take: 5_000,
+        });
+        entries = [
+          { loc: `${base}/automobile/guides`, lastmod: staticLastmod },
+          ...guides.map((r) => ({
+            loc: `${base}/automobile/guides/${r.slug}`,
+            lastmod: r.updatedAt,
+          })),
+        ];
+        break;
+      }
+      default:
+        entries = [];
+    }
+
+    return this.capSitemapEntries(this.dedupeSitemapEntries(entries));
+  }
+
+  automobileSitemapIndexEntries(siteUrl: string): Array<{ loc: string; lastmod: Date }> {
+    return AUTOMOBILE_SITEMAP_SEGMENTS.map((segment) => ({
+      loc: automobileSitemapChildLoc(siteUrl, segment),
+      lastmod: AUTOMOBILE_SITEMAP_STATIC_LASTMOD,
     }));
   }
 

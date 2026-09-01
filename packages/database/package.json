@@ -21,12 +21,14 @@
     "seed": "tsx --env-file=../../.env src/seed.ts",
     "seed:homepage": "tsx --env-file=../../.env src/seed-homepage-only.ts",
     "seed:age-calculator": "tsx --env-file=../../.env src/seed-age-calculator-only.ts",
-    "seed:calculator-articles": "tsx --env-file=../../.env src/seed-calculator-articles-only.ts"
+    "seed:calculator-articles": "tsx --env-file=../../.env src/seed-calculator-articles-only.ts",
+    "bootstrap-super-admin": "tsx --env-file=../../.env scripts/bootstrap-super-admin.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@varnarc/auth": "workspace:^",
-    "@varnarc/validation": "workspace:^"
+    "@varnarc/validation": "workspace:^",
+    "bcryptjs": "^3.0.3"
   },
   "devDependencies": {
     "prisma": "^6.19.3",

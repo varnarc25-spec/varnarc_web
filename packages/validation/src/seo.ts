@@ -73,3 +73,59 @@ export type SeoRedirectListQuery = z.infer<typeof seoRedirectListQuerySchema>;
 export type SeoAuditListQuery = z.infer<typeof seoAuditListQuerySchema>;
 export type SeoRobotsSettingsInput = z.infer<typeof seoRobotsSettingsSchema>;
 export type SeoIntegrationsInput = z.infer<typeof seoIntegrationsSchema>;
+
+/** Root sitemap types listed in `/sitemap.xml` (shared web + API). */
+export const SITEMAP_TYPES = [
+  'articles',
+  'pages',
+  'reviews',
+  'calculators',
+  'ai-tools',
+  'directory',
+  'comparisons',
+  'finance',
+  'construction',
+  'automobile',
+  'images',
+] as const;
+
+export type SitemapType = (typeof SITEMAP_TYPES)[number];
+
+/**
+ * Paths that must always be Disallowed for Google indexing (private / user-specific).
+ * Merged into robots.txt even if admin settings try to clear disallow.
+ */
+export const SEO_REQUIRED_DISALLOW_PATHS = [
+  '/profile',
+  '/bookmarks',
+  '/saved-calculations',
+  '/construction/projects',
+  '/construction/project/',
+  '/construction/saved-calculations',
+  '/construction/price-alerts',
+  '/construction/document-vault',
+  '/notifications',
+  '/preferences',
+  '/subscriptions',
+  '/membership',
+  '/activity',
+  '/reading-history',
+  '/api/',
+  '/newsletter/unsubscribe',
+  '/admin',
+] as const;
+
+export const SEO_DEFAULT_ALLOW_PATHS = ['/'] as const;
+
+/** Merge admin/custom disallow with required private paths (deduped, required always kept). */
+export function mergeSeoDisallowPaths(custom?: string[] | null): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const path of [...(custom ?? []), ...SEO_REQUIRED_DISALLOW_PATHS]) {
+    const p = path.trim();
+    if (!p || seen.has(p)) continue;
+    seen.add(p);
+    out.push(p);
+  }
+  return out;
+}

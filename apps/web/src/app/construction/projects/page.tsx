@@ -1,15 +1,13 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConstructionProjectsClient } from '@/components/construction/construction-projects-client';
 import { fetchConstructionChecklists, fetchConstructionProjects } from '@/services/construction';
+import { buildConstructionPageMetadata } from '@/lib/construction/seo';
 
-export const metadata: Metadata = {
-  title: 'My Construction Projects',
-  description: 'Save and revisit construction planning projects.',
-  alternates: { canonical: '/construction/projects' },
-};
+export async function generateMetadata() {
+  return buildConstructionPageMetadata('projects');
+}
 
 export default async function ConstructionProjectsPage() {
   const [{ data, unauthorized }, checklistsRes] = await Promise.all([

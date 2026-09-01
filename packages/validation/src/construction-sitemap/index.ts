@@ -25,10 +25,10 @@ export type ConstructionSitemapSegment = (typeof CONSTRUCTION_SITEMAP_SEGMENTS)[
  * Bump when static construction hub/calculator paths change so `<lastmod>`
  * stays meaningful without using request wall-clock time.
  */
-export const CONSTRUCTION_SITEMAP_CONTENT_VERSION = '2026.08.21';
+export const CONSTRUCTION_SITEMAP_CONTENT_VERSION = '2026.09.01';
 
 /** Reliable lastmod for curated static construction URLs. */
-export const CONSTRUCTION_SITEMAP_STATIC_LASTMOD = new Date('2026-08-21T00:00:00.000Z');
+export const CONSTRUCTION_SITEMAP_STATIC_LASTMOD = new Date('2026-09-01T00:00:00.000Z');
 
 /** Soft cap per child sitemap before splitting further (Google limit is 50k). */
 export const CONSTRUCTION_SITEMAP_MAX_URLS_PER_FILE = 45_000;
@@ -39,6 +39,7 @@ export const CONSTRUCTION_SITEMAP_EXCLUDED_PREFIXES = [
   '/construction/project/',
   '/construction/saved-calculations',
   '/construction/price-alerts',
+  '/construction/document-vault',
   '/admin',
 ] as const;
 
@@ -91,7 +92,6 @@ export const CONSTRUCTION_SITEMAP_CALCULATOR_PATHS = [
   '/construction/boq-generator',
   '/construction/timeline-planner',
   '/construction/budget-tracker',
-  '/construction/document-vault',
   '/construction/sand-calculator',
   '/construction/aggregate-calculator',
   '/construction/plaster-calculator',

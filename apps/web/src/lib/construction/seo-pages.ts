@@ -257,7 +257,7 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       description:
         'Store floor plans, drawings, BOQ files, quotations, invoices and site photos in a private project vault. Secure authorization and authenticated download — no public file URLs.',
       h1: 'Construction Project Document Vault',
-      indexable: true,
+      indexable: false,
     },
     'material-selector': {
       path: '/construction/material-selector',

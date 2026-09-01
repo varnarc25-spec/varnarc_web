@@ -13,9 +13,18 @@ import type {
   SeoRobotsSettingsInput,
   UpdateSeoRedirectInput,
 } from '@varnarc/validation';
-import { CONSTRUCTION_SITEMAP_SEGMENTS, isConstructionSitemapSegment } from '@varnarc/validation';
+import {
+  AUTOMOBILE_SITEMAP_SEGMENTS,
+  CONSTRUCTION_SITEMAP_SEGMENTS,
+  isAutomobileSitemapSegment,
+  isConstructionSitemapSegment,
+  mergeSeoDisallowPaths,
+  SEO_DEFAULT_ALLOW_PATHS,
+  SEO_REQUIRED_DISALLOW_PATHS,
+} from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
 import {
+  buildAutomobileSitemapIndexXml,
   buildConstructionSitemapIndexXml,
   buildRobotsTxt,
   buildSitemapIndexXml,
@@ -31,24 +40,8 @@ const SITEMAP_CACHE_TTL = 300_000;
 const META_CACHE_TTL = 120_000;
 
 const DEFAULT_ROBOTS: SeoRobotsSettingsInput = {
-  disallow: [
-    '/profile',
-    '/bookmarks',
-    '/saved-calculations',
-    '/construction/projects',
-    '/construction/project/',
-    '/construction/saved-calculations',
-    '/construction/price-alerts',
-    '/notifications',
-    '/preferences',
-    '/subscriptions',
-    '/membership',
-    '/activity',
-    '/reading-history',
-    '/api/',
-    '/newsletter/unsubscribe',
-  ],
-  allow: ['/'],
+  disallow: [...SEO_REQUIRED_DISALLOW_PATHS],
+  allow: [...SEO_DEFAULT_ALLOW_PATHS],
   crawlDelay: null,
 };
 
@@ -332,9 +325,19 @@ export class SeoService {
       return xml;
     }
 
+    // Nested index: automobile.xml → child automobile-* urlsets
+    if (type === 'automobile') {
+      const children = this.repos.seoSitemap.automobileSitemapIndexEntries(this.siteUrl());
+      const xml = buildAutomobileSitemapIndexXml(this.siteUrl(), children);
+      await this.cache.set(cacheKey, xml, SITEMAP_CACHE_TTL);
+      return xml;
+    }
+
     const entries = isConstructionSitemapSegment(type)
       ? await this.repos.seoSitemap.entriesForConstructionSegment(type, this.siteUrl())
-      : await this.repos.seoSitemap.entriesForType(type, this.siteUrl());
+      : isAutomobileSitemapSegment(type)
+        ? await this.repos.seoSitemap.entriesForAutomobileSegment(type, this.siteUrl())
+        : await this.repos.seoSitemap.entriesForType(type, this.siteUrl());
 
     const xml = buildUrlSetXml(
       entries.map((e) => ({
@@ -344,7 +347,13 @@ export class SeoService {
         priority: 0.7,
       })),
     );
-    await this.cache.set(cacheKey, xml, SITEMAP_CACHE_TTL);
+    // Do not cache empty urlsets for static segments — usually means a deploy/cache mismatch.
+    const isStaticAutomobile = type === 'automobile-core' || type === 'automobile-calculators';
+    const isStaticConstruction =
+      type === 'construction-core' || type === 'construction-calculators';
+    if (entries.length > 0 || !(isStaticAutomobile || isStaticConstruction)) {
+      await this.cache.set(cacheKey, xml, SITEMAP_CACHE_TTL);
+    }
     return xml;
   }
 
@@ -357,6 +366,23 @@ export class SeoService {
             CONSTRUCTION_SITEMAP_SEGMENTS.map(async (segment) => ({
               type: segment,
               count: (await this.repos.seoSitemap.entriesForConstructionSegment(segment, siteUrl))
+                .length,
+              url: `${siteUrl}/sitemap/${segment}.xml`,
+            })),
+          );
+          const total = segmentCounts.reduce((sum, s) => sum + s.count, 0);
+          return {
+            type,
+            count: total,
+            url: `${siteUrl}/sitemap/${type}.xml`,
+            segments: segmentCounts,
+          };
+        }
+        if (type === 'automobile') {
+          const segmentCounts = await Promise.all(
+            AUTOMOBILE_SITEMAP_SEGMENTS.map(async (segment) => ({
+              type: segment,
+              count: (await this.repos.seoSitemap.entriesForAutomobileSegment(segment, siteUrl))
                 .length,
               url: `${siteUrl}/sitemap/${segment}.xml`,
             })),
@@ -391,6 +417,9 @@ export class SeoService {
     for (const segment of CONSTRUCTION_SITEMAP_SEGMENTS) {
       await this.cache.del(`seo:sitemap:${segment}`).catch(() => undefined);
     }
+    for (const segment of AUTOMOBILE_SITEMAP_SEGMENTS) {
+      await this.cache.del(`seo:sitemap:${segment}`).catch(() => undefined);
+    }
     await this.cache.del('seo:sitemap:index').catch(() => undefined);
     return this.sitemapStatus();
   }
@@ -400,14 +429,25 @@ export class SeoService {
   async getRobotsSettings() {
     const row = await this.repos.settings.findByKey(ROBOTS_KEY).catch(() => null);
     if (!row?.value || typeof row.value !== 'object') return { ...DEFAULT_ROBOTS };
+    const value = row.value as Record<string, unknown>;
+    const customDisallow = Array.isArray(value.disallow)
+      ? (value.disallow as string[])
+      : DEFAULT_ROBOTS.disallow;
     return {
       ...DEFAULT_ROBOTS,
-      ...(row.value as Record<string, unknown>),
+      ...value,
+      disallow: mergeSeoDisallowPaths(customDisallow),
+      allow: Array.isArray(value.allow) ? (value.allow as string[]) : DEFAULT_ROBOTS.allow,
     } as SeoRobotsSettingsInput;
   }
 
   async setRobotsSettings(input: SeoRobotsSettingsInput, actorId?: string | null) {
-    const merged = { ...DEFAULT_ROBOTS, ...input };
+    const merged: SeoRobotsSettingsInput = {
+      ...DEFAULT_ROBOTS,
+      ...input,
+      disallow: mergeSeoDisallowPaths(input.disallow ?? DEFAULT_ROBOTS.disallow),
+      allow: input.allow?.length ? input.allow : [...SEO_DEFAULT_ALLOW_PATHS],
+    };
     await this.repos.settings.upsert(ROBOTS_KEY, merged as never, 'seo', actorId);
     await this.cache.del('seo:robots').catch(() => undefined);
     await this.audit('seo.robots.update', 'seo_settings', null, actorId);
@@ -424,7 +464,7 @@ export class SeoService {
     const settings = await this.getRobotsSettings();
     const txt = buildRobotsTxt({
       siteUrl: this.siteUrl(),
-      disallow: [...(settings.disallow ?? []), '/admin'],
+      disallow: mergeSeoDisallowPaths(settings.disallow),
       allow: settings.allow,
       crawlDelay: settings.crawlDelay,
     });

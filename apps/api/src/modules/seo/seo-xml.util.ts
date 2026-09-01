@@ -1,33 +1,31 @@
 /** XML helpers for SEO sitemaps and robots.txt */
 
-import { CONSTRUCTION_SITEMAP_SEGMENTS, isConstructionSitemapSegment } from '@varnarc/validation';
+import {
+  AUTOMOBILE_SITEMAP_SEGMENTS,
+  CONSTRUCTION_SITEMAP_SEGMENTS,
+  isAutomobileSitemapSegment,
+  isConstructionSitemapSegment,
+  SITEMAP_TYPES,
+  type SitemapType,
+} from '@varnarc/validation';
 
-export const SITEMAP_TYPES = [
-  'articles',
-  'pages',
-  'reviews',
-  'calculators',
-  'ai-tools',
-  'directory',
-  'comparisons',
-  'finance',
-  'construction',
-  'automobile',
-  'images',
-] as const;
+export { SITEMAP_TYPES, type SitemapType };
 
-export type SitemapType = (typeof SITEMAP_TYPES)[number];
-
-/** Root + construction child segments accepted by `/seo/sitemap/:type`. */
+/** Root + construction/automobile child segments accepted by `/seo/sitemap/:type`. */
 export const ALL_SITEMAP_ROUTE_TYPES = [
   ...SITEMAP_TYPES,
   ...CONSTRUCTION_SITEMAP_SEGMENTS,
+  ...AUTOMOBILE_SITEMAP_SEGMENTS,
 ] as const;
 
 export type SitemapRouteType = (typeof ALL_SITEMAP_ROUTE_TYPES)[number];
 
 export function isKnownSitemapRouteType(type: string): boolean {
-  return (SITEMAP_TYPES as readonly string[]).includes(type) || isConstructionSitemapSegment(type);
+  return (
+    (SITEMAP_TYPES as readonly string[]).includes(type) ||
+    isConstructionSitemapSegment(type) ||
+    isAutomobileSitemapSegment(type)
+  );
 }
 
 export function buildSitemapIndexXml(
@@ -56,6 +54,20 @@ export function buildConstructionSitemapIndexXml(
     }),
   ),
 ) {
+  return buildNestedSitemapIndexXml(children);
+}
+
+/** Nested automobile sitemap index pointing at segment urlsets. */
+export function buildAutomobileSitemapIndexXml(
+  siteUrl: string,
+  children: Array<{ loc: string; lastmod?: Date }> = AUTOMOBILE_SITEMAP_SEGMENTS.map((segment) => ({
+    loc: `${siteUrl.replace(/\/+$/, '')}/sitemap/${segment}.xml`,
+  })),
+) {
+  return buildNestedSitemapIndexXml(children);
+}
+
+function buildNestedSitemapIndexXml(children: Array<{ loc: string; lastmod?: Date }>) {
   const fallback = new Date().toISOString();
   const entries = children
     .map((c) => {

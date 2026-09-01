@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageShell } from '@/components/layout/page-shell';
+import { AutomobileSeo } from '@/components/automobile/automobile-seo';
 import {
   AffiliateCta,
   AutomobileDetailSection,
@@ -16,8 +17,7 @@ import {
   fetchAutomobileVehicleBySlug,
   fetchAutomobileVehicleOffers,
 } from '@/services/automobile';
-import { buildSeoMetadata } from '@/lib/seo-metadata';
-import { getPublicSiteUrlSync } from '@/lib/public-site-url';
+import { automobileHubBreadcrumbs, buildAutomobileMetadata } from '@/lib/automobile/seo';
 import { ApiError } from '@/services/api-client';
 import { notFound } from 'next/navigation';
 
@@ -27,12 +27,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const { data } = await fetchAutomobileVehicleBySlug(slug);
-    return buildSeoMetadata({
+    return buildAutomobileMetadata({
       entityType: 'automobile_vehicle',
       entityId: data.id,
       path: `/automobile/vehicles/${slug}`,
-      title: data.seoTitle || data.name,
-      description: data.seoDescription || data.description,
+      title: data.seoTitle || `${data.name} — Specs, Price & Ownership | Varnarc`,
+      description:
+        data.seoDescription ||
+        data.description ||
+        `Specs, indicative price and ownership tools for ${data.name}.`,
       image: data.imageUrl,
     });
   } catch {
@@ -64,51 +67,19 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
 
   const title = vehicle.seoTitle || vehicle.name;
   const description = vehicle.seoDescription || vehicle.description;
-  const siteUrl = getPublicSiteUrlSync();
+  const path = `/automobile/vehicles/${slug}`;
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
-          { '@type': 'ListItem', position: 2, name: 'Automobile', item: `${siteUrl}/automobile` },
-          {
-            '@type': 'ListItem',
-            position: 3,
-            name: 'Vehicles',
-            item: `${siteUrl}/automobile/vehicles`,
-          },
-          {
-            '@type': 'ListItem',
-            position: 4,
-            name: vehicle.name,
-            item: `${siteUrl}/automobile/vehicles/${slug}`,
-          },
-        ],
-      },
-      {
-        '@type': 'Product',
-        name: vehicle.name,
-        description: description || undefined,
-        brand: vehicle.manufacturer?.name
-          ? { '@type': 'Brand', name: vehicle.manufacturer.name }
-          : undefined,
-        category: vehicle.category ?? vehicle.bodyType ?? undefined,
-        ...(vehicle.exShowroomPrice != null
-          ? {
-              offers: {
-                '@type': 'Offer',
-                price: Number(vehicle.exShowroomPrice),
-                priceCurrency: 'INR',
-                availability: 'https://schema.org/InStock',
-              },
-            }
-          : {}),
-      },
-    ],
-  };
+  const ratingValues = linkedReviews
+    .map((r) => Number(r.rating))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const aggregateRating =
+    ratingValues.length >= 1
+      ? {
+          ratingValue:
+            Math.round((ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length) * 10) / 10,
+          reviewCount: ratingValues.length,
+        }
+      : null;
 
   const specs = [
     { label: 'Model', value: vehicle.model },
@@ -133,9 +104,21 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         { label: vehicle.name },
       ]}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <AutomobileSeo
+        breadcrumbs={automobileHubBreadcrumbs([
+          { name: 'Vehicles', path: '/automobile/vehicles' },
+          { name: vehicle.name, path },
+        ])}
+        product={{
+          name: vehicle.name,
+          description: description,
+          path,
+          image: vehicle.imageUrl,
+          brand: vehicle.manufacturer?.name,
+          price: vehicle.exShowroomPrice,
+          priceCurrency: 'INR',
+          aggregateRating,
+        }}
       />
 
       <VehicleGallery images={vehicle.images} fallbackUrl={vehicle.imageUrl} alt={vehicle.name} />

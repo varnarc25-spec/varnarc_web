@@ -1,20 +1,8 @@
 import { headers as nextHeaders } from 'next/headers';
+import { SITEMAP_TYPES } from '@varnarc/validation';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 const PROD_SITE_URL = 'https://varnarc.com';
-
-const SITEMAP_TYPES = [
-  'articles',
-  'pages',
-  'reviews',
-  'calculators',
-  'ai-tools',
-  'directory',
-  'comparisons',
-  'finance',
-  'construction',
-  'automobile',
-] as const;
 
 function resolvePublicUrl(requestHeaders: Headers): string {
   const host = requestHeaders.get('host');

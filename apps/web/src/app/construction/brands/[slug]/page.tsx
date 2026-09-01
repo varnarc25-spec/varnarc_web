@@ -4,7 +4,8 @@ import { PageShell } from '@/components/layout/page-shell';
 import { ConstructionMaterialCard } from '@/components/construction/construction-material-card';
 import { RelatedArticles } from '@/components/construction/related-articles';
 import { fetchConstructionBrandBySlug, fetchConstructionMaterials } from '@/services/construction';
-import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { buildConstructionMetadata, constructionHubBreadcrumbs } from '@/lib/construction/seo';
+import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { notFound } from 'next/navigation';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -13,13 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
     const { data } = await fetchConstructionBrandBySlug(slug);
-    return buildSeoMetadata({
-      entityType: 'construction_brand',
-      entityId: data.id,
-      path: `/construction/brands/${slug}`,
+    return buildConstructionMetadata({
       title: data.name,
       description: data.description || `${data.name} construction materials.`,
+      path: `/construction/brands/${slug}`,
       image: data.logoUrl,
+      entityType: 'construction_brand',
+      entityId: data.id,
     });
   } catch {
     return { title: 'Brand', alternates: { canonical: `/construction/brands/${slug}` } };
@@ -51,6 +52,29 @@ export default async function ConstructionBrandDetailPage({ params }: Props) {
         { label: brand.name },
       ]}
     >
+      <ConstructionSeo
+        breadcrumbs={constructionHubBreadcrumbs([
+          { name: 'Brands', path: '/construction/brands' },
+          { name: brand.name, path: `/construction/brands/${slug}` },
+        ])}
+        webPage={{
+          name: brand.name,
+          description: brand.description || `${brand.name} construction materials.`,
+          path: `/construction/brands/${slug}`,
+        }}
+        itemList={
+          materials.length
+            ? {
+                name: `${brand.name} materials`,
+                path: `/construction/brands/${slug}`,
+                items: materials.map((m) => ({
+                  name: m.name,
+                  path: `/construction/materials/${m.id}`,
+                })),
+              }
+            : undefined
+        }
+      />
       {brand.website ? (
         <p className="mb-6">
           <a
@@ -75,7 +99,10 @@ export default async function ConstructionBrandDetailPage({ params }: Props) {
         <section className="mb-10">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-extrabold text-[#0b1f3a]">Materials</h2>
-            <Link href={`/construction/materials?brandId=${brand.id}`} className="text-sm text-[#f97316] hover:underline">
+            <Link
+              href={`/construction/materials?brandId=${brand.id}`}
+              className="text-sm text-[#f97316] hover:underline"
+            >
               View all
             </Link>
           </div>

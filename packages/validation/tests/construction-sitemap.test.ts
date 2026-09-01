@@ -16,11 +16,12 @@ describe('construction-sitemap', () => {
     expect(isConstructionSitemapSegment('construction')).toBe(false);
   });
 
-  it('excludes private, saved, alert, and admin paths', () => {
+  it('excludes private, saved, alert, vault, and admin paths', () => {
     expect(isConstructionSitemapExcludedPath('/construction/projects')).toBe(true);
     expect(isConstructionSitemapExcludedPath('/construction/project/abc')).toBe(true);
     expect(isConstructionSitemapExcludedPath('/construction/saved-calculations')).toBe(true);
     expect(isConstructionSitemapExcludedPath('/construction/price-alerts')).toBe(true);
+    expect(isConstructionSitemapExcludedPath('/construction/document-vault')).toBe(true);
     expect(isConstructionSitemapExcludedPath('/admin/seo')).toBe(true);
     expect(isConstructionSitemapExcludedPath('/construction/cost-calculator')).toBe(false);
   });

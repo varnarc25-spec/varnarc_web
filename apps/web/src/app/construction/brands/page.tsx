@@ -1,30 +1,51 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ContentLayout } from '@/components/layout/content-layout';
+import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { EmptyState } from '@/components/shared/empty-state';
 import { fetchConstructionBrands } from '@/services/construction';
+import { buildConstructionPageMetadata, constructionHubBreadcrumbs } from '@/lib/construction/seo';
+import { CONSTRUCTION_PAGE_DEFAULTS } from '@/lib/construction/seo-pages';
 
-export const metadata: Metadata = {
-  title: 'Construction Brands',
-  description: 'Compare cement, steel, paint, and tile brands.',
-  alternates: { canonical: '/construction/brands' },
-};
+export async function generateMetadata() {
+  return buildConstructionPageMetadata('brands');
+}
 
 export const revalidate = 60;
 
 export default async function ConstructionBrandsPage() {
   const { data } = await fetchConstructionBrands({ limit: 48 });
+  const defaults = CONSTRUCTION_PAGE_DEFAULTS.brands;
 
   return (
     <ContentLayout
-      title="Brands"
-      description="Explore trusted construction material brands and their product lines."
+      title={defaults.h1}
+      description={defaults.description}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Construction', href: '/construction' },
         { label: 'Brands' },
       ]}
     >
+      <ConstructionSeo
+        breadcrumbs={constructionHubBreadcrumbs([{ name: 'Brands', path: '/construction/brands' }])}
+        webPage={{
+          name: defaults.title,
+          description: defaults.description,
+          path: '/construction/brands',
+        }}
+        itemList={
+          data.length
+            ? {
+                name: 'Construction material brands',
+                path: '/construction/brands',
+                items: data.map((b) => ({
+                  name: b.name,
+                  path: `/construction/brands/${b.slug}`,
+                })),
+              }
+            : undefined
+        }
+      />
       {data.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((brand) => (
@@ -38,7 +59,9 @@ export default async function ConstructionBrandsPage() {
                 <p className="mt-2 line-clamp-2 text-sm text-slate-600">{brand.description}</p>
               ) : null}
               {brand._count?.materials != null ? (
-                <p className="mt-2 text-xs font-medium text-slate-500">{brand._count.materials} materials</p>
+                <p className="mt-2 text-xs font-medium text-slate-500">
+                  {brand._count.materials} materials
+                </p>
               ) : null}
             </Link>
           ))}
