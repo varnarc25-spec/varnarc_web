@@ -1,8 +1,5 @@
 import { headers as nextHeaders } from 'next/headers';
 import {
-  AUTOMOBILE_SITEMAP_CALCULATOR_PATHS,
-  AUTOMOBILE_SITEMAP_CORE_PATHS,
-  AUTOMOBILE_SITEMAP_SEGMENTS,
   AUTOMOBILE_SITEMAP_STATIC_LASTMOD,
   buildGuideClusterLanding,
   CONSTRUCTION_SITEMAP_CALCULATOR_PATHS,
@@ -13,6 +10,7 @@ import {
   CONSTRUCTION_SITEMAP_STATIC_LASTMOD,
   isAutomobileSitemapSegment,
   isConstructionSitemapSegment,
+  listAllAutomobileSitemapStaticPaths,
   listGuideClusters,
   listIndexableConstructionGlossaryTerms,
   listIndexableIntentCalcLandings,
@@ -112,15 +110,16 @@ const STATIC_FALLBACK_URLS: Record<string, string[]> = {
     '/construction/cost-index',
     ...listPotentialConstructionCostCities().map((c) => c.path),
   ],
-  // Nested automobile segments — static hubs always available even if API is down / undeployed.
-  'automobile-core': [...AUTOMOBILE_SITEMAP_CORE_PATHS],
-  'automobile-calculators': [...AUTOMOBILE_SITEMAP_CALCULATOR_PATHS],
+  // Automobile — single flat sitemap (+ optional legacy segment fallbacks).
+  automobile: listAllAutomobileSitemapStaticPaths(),
+  'automobile-core': listAllAutomobileSitemapStaticPaths(),
+  'automobile-calculators': listAllAutomobileSitemapStaticPaths().filter((p) =>
+    p.startsWith('/automobile/calculators'),
+  ),
   'automobile-vehicles': ['/automobile/vehicles'],
   'automobile-manufacturers': ['/automobile/manufacturers'],
   'automobile-comparisons': ['/automobile/comparisons'],
   'automobile-guides': ['/automobile/guides'],
-  // Legacy flat automobile key (pre-nested). Prefer nested index once API is updated.
-  automobile: [...AUTOMOBILE_SITEMAP_CORE_PATHS, ...AUTOMOBILE_SITEMAP_CALCULATOR_PATHS],
 };
 
 function countXmlTags(xml: string, tag: 'url' | 'sitemap'): number {
@@ -159,15 +158,6 @@ function buildConstructionNestedIndexFallback(publicUrl: string) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
 }
 
-function buildAutomobileNestedIndexFallback(publicUrl: string) {
-  const lastmod = AUTOMOBILE_SITEMAP_STATIC_LASTMOD.toISOString();
-  const entries = AUTOMOBILE_SITEMAP_SEGMENTS.map(
-    (segment) =>
-      `  <sitemap>\n    <loc>${publicUrl}/sitemap/${segment}.xml</loc>\n    <lastmod>${lastmod}</lastmod>\n  </sitemap>`,
-  ).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
-}
-
 function ensureProductionUrls(xml: string, publicUrl: string) {
   return xml.replace(/https?:\/\/localhost:\d+/g, publicUrl);
 }
@@ -177,7 +167,9 @@ function shouldUseFallback(normalized: string, xml: string): boolean {
   if (isEmptyUrlSet(xml) || isEmptySitemapIndex(xml)) return true;
 
   if (normalized === 'construction' && !xml.includes('<sitemapindex')) return true;
-  if (normalized === 'automobile' && !xml.includes('<sitemapindex')) return true;
+  // Automobile is a flat urlset — reject nested indexes from old deploys.
+  if (normalized === 'automobile' && !xml.includes('<urlset')) return true;
+  if (normalized === 'automobile' && xml.includes('<sitemapindex')) return true;
   if (isConstructionSitemapSegment(normalized) && !xml.includes('<urlset')) return true;
   if (isAutomobileSitemapSegment(normalized) && !xml.includes('<urlset')) return true;
 
@@ -191,16 +183,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ type: s
   const publicUrl = resolvePublicUrl(reqHeaders);
   const respHeaders = {
     'Content-Type': 'application/xml; charset=utf-8',
-    // Avoid long-lived CDN/browser cache of empty/broken sitemaps during rollouts.
     'Cache-Control': 'public, max-age=60, s-maxage=300',
   };
 
   const fallback = () => {
     if (normalized === 'construction') {
       return buildConstructionNestedIndexFallback(publicUrl);
-    }
-    if (normalized === 'automobile') {
-      return buildAutomobileNestedIndexFallback(publicUrl);
     }
     return buildFallbackUrlSet(normalized, publicUrl);
   };

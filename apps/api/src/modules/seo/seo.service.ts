@@ -24,7 +24,6 @@ import {
 } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
 import {
-  buildAutomobileSitemapIndexXml,
   buildConstructionSitemapIndexXml,
   buildRobotsTxt,
   buildSitemapIndexXml,
@@ -325,14 +324,7 @@ export class SeoService {
       return xml;
     }
 
-    // Nested index: automobile.xml → child automobile-* urlsets
-    if (type === 'automobile') {
-      const children = this.repos.seoSitemap.automobileSitemapIndexEntries(this.siteUrl());
-      const xml = buildAutomobileSitemapIndexXml(this.siteUrl(), children);
-      await this.cache.set(cacheKey, xml, SITEMAP_CACHE_TTL);
-      return xml;
-    }
-
+    // Automobile is a single flat urlset (all hubs + calculators + published entities).
     const entries = isConstructionSitemapSegment(type)
       ? await this.repos.seoSitemap.entriesForConstructionSegment(type, this.siteUrl())
       : isAutomobileSitemapSegment(type)
@@ -348,7 +340,8 @@ export class SeoService {
       })),
     );
     // Do not cache empty urlsets for static segments — usually means a deploy/cache mismatch.
-    const isStaticAutomobile = type === 'automobile-core' || type === 'automobile-calculators';
+    const isStaticAutomobile =
+      type === 'automobile' || type === 'automobile-core' || type === 'automobile-calculators';
     const isStaticConstruction =
       type === 'construction-core' || type === 'construction-calculators';
     if (entries.length > 0 || !(isStaticAutomobile || isStaticConstruction)) {
@@ -379,20 +372,11 @@ export class SeoService {
           };
         }
         if (type === 'automobile') {
-          const segmentCounts = await Promise.all(
-            AUTOMOBILE_SITEMAP_SEGMENTS.map(async (segment) => ({
-              type: segment,
-              count: (await this.repos.seoSitemap.entriesForAutomobileSegment(segment, siteUrl))
-                .length,
-              url: `${siteUrl}/sitemap/${segment}.xml`,
-            })),
-          );
-          const total = segmentCounts.reduce((sum, s) => sum + s.count, 0);
+          const count = (await this.repos.seoSitemap.entriesForType(type, siteUrl)).length;
           return {
             type,
-            count: total,
+            count,
             url: `${siteUrl}/sitemap/${type}.xml`,
-            segments: segmentCounts,
           };
         }
         return {

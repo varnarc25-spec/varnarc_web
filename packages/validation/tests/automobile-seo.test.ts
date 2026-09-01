@@ -4,6 +4,7 @@ import {
   buildAutomobileJsonLdGraph,
   filterAutomobileSitemapPaths,
   isAutomobileSitemapSegment,
+  listAllAutomobileSitemapStaticPaths,
   listAutomobileCategories,
   listAutomobileSitemapStaticPaths,
   vehicleMatchesAutomobileCategory,
@@ -32,12 +33,11 @@ describe('automobile sitemap', () => {
     expect(isAutomobileSitemapSegment('automobile')).toBe(false);
   });
 
-  it('includes category hubs and calculator landings in static paths', () => {
-    const core = listAutomobileSitemapStaticPaths('automobile-core');
-    expect(core).toContain('/automobile/suv');
-    expect(core).toContain('/automobile/calculators');
-    const calcs = listAutomobileSitemapStaticPaths('automobile-calculators');
-    expect(calcs).toContain('/automobile/calculators/car-loan');
+  it('lists all static paths for the flat automobile.xml', () => {
+    const all = listAllAutomobileSitemapStaticPaths();
+    expect(all).toContain('/automobile/suv');
+    expect(all).toContain('/automobile/calculators/car-loan');
+    expect(all).toContain('/automobile/calculators');
   });
 
   it('filters query and non-automobile paths', () => {

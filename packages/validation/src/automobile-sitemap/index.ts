@@ -1,5 +1,7 @@
 /**
- * Automobile sitemap architecture — segments, static paths, exclusions.
+ * Automobile sitemap — flat `automobile.xml` contains all section URLs.
+ * Optional child segments (automobile-core, …) remain for compatibility /
+ * status tooling but the root automobile sitemap is the canonical Google target.
  */
 
 import { listAutomobileCategories } from '../automobile-categories';
@@ -78,6 +80,14 @@ export function filterAutomobileSitemapPaths(paths: readonly string[]): string[]
     out.push(p);
   }
   return out;
+}
+
+/** All static automobile paths for the single flat automobile.xml. */
+export function listAllAutomobileSitemapStaticPaths(): string[] {
+  return filterAutomobileSitemapPaths([
+    ...AUTOMOBILE_SITEMAP_CORE_PATHS,
+    ...AUTOMOBILE_SITEMAP_CALCULATOR_PATHS,
+  ]);
 }
 
 export function listAutomobileSitemapStaticPaths(segment: AutomobileSitemapSegment): string[] {

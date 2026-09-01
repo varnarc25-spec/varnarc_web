@@ -403,8 +403,7 @@ export class SeoSitemapRepository extends BaseRepository {
         return this.dedupeSitemapEntries(parts.flat());
       }
       case 'automobile': {
-        // Union of all child segments (SEO audit / status counts). Nested XML
-        // index is built in SeoService — this path must stay complete.
+        // Single flat automobile.xml — union of all segment URLs.
         const parts = await Promise.all(
           AUTOMOBILE_SITEMAP_SEGMENTS.map((segment) =>
             this.entriesForAutomobileSegment(segment, siteUrl),
