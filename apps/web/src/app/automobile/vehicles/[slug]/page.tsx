@@ -10,6 +10,7 @@ import {
   VehicleGallery,
   VehicleOfferCards,
   VehicleReviewsBlock,
+  formatAutomobileInr,
 } from '@/components/automobile/vehicle-card';
 import {
   AUTOMOBILE_CALCULATOR_LINKS,
@@ -149,7 +150,7 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-xs uppercase tracking-wide text-slate-500">Ex-showroom</div>
             <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">
-              ₹{vehicle.exShowroomPrice}
+              {formatAutomobileInr(vehicle.exShowroomPrice) ?? `₹${vehicle.exShowroomPrice}`}
             </div>
           </div>
         ) : null}
@@ -157,7 +158,8 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-xs uppercase tracking-wide text-slate-500">Est. on-road</div>
             <div className="mt-1 text-2xl font-extrabold text-[#0b1f3a]">
-              ₹{vehicle.estimatedOnRoadPrice}
+              {formatAutomobileInr(vehicle.estimatedOnRoadPrice) ??
+                `₹${vehicle.estimatedOnRoadPrice}`}
             </div>
           </div>
         ) : null}

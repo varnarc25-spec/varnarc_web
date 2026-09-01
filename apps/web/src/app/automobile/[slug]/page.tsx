@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   getAutomobileCategory,
-  isAutomobileCategorySlug,
   listAutomobileCategories,
   vehicleMatchesAutomobileCategory,
 } from '@varnarc/validation';
@@ -11,8 +10,8 @@ import { AutomobileVehicleCard, RelatedCalculators } from '@/components/automobi
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { HubFaqSection } from '@/components/hub/hub-faq-section';
-import { automobileHubBreadcrumbs, buildAutomobilePageMetadata } from '@/lib/automobile/seo';
-import { AUTOMOBILE_PAGE_DEFAULTS, type AutomobilePageKey } from '@/lib/automobile/seo-pages';
+import { automobileHubBreadcrumbs, buildAutomobileMetadata } from '@/lib/automobile/seo';
+import { AUTOMOBILE_PAGE_DEFAULTS, getAutomobileLandingDefaults } from '@/lib/automobile/seo-pages';
 import {
   AUTOMOBILE_CALCULATOR_LINKS,
   fetchAutomobileVehicles,
@@ -29,10 +28,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  if (!isAutomobileCategorySlug(slug)) return { title: 'Automobile' };
-  const pageKey = slug as AutomobilePageKey;
+  const defaults = getAutomobileLandingDefaults(slug);
+  if (!defaults) return { title: 'Automobile' };
   const vehicles = await loadCategoryVehicles(slug);
-  return buildAutomobilePageMetadata(pageKey, { forceNoIndex: vehicles.length === 0 });
+  return buildAutomobileMetadata({
+    title: defaults.title,
+    description: defaults.description,
+    path: defaults.path,
+    entityType: 'automobile_page',
+    forceNoIndex: vehicles.length === 0,
+  });
 }
 
 async function loadCategoryVehicles(slug: string): Promise<AutomobileVehicle[]> {
@@ -45,6 +50,11 @@ async function loadCategoryVehicles(slug: string): Promise<AutomobileVehicle[]> 
     fuelType?: string;
     category?: string;
   } = { limit: 48 };
+
+  if (category.filter.yearMode) {
+    const all = await fetchAutomobileVehicles({ limit: 48 });
+    return all.data.filter((v) => vehicleMatchesAutomobileCategory(v, category));
+  }
 
   if (category.filter.fuelType) options.fuelType = category.filter.fuelType;
   else if (category.filter.bodyType) options.bodyType = category.filter.bodyType;
@@ -67,7 +77,7 @@ export default async function AutomobileCategoryPage({ params }: Props) {
   const category = getAutomobileCategory(slug);
   if (!category) notFound();
 
-  const defaults = AUTOMOBILE_PAGE_DEFAULTS[slug as AutomobilePageKey];
+  const defaults = getAutomobileLandingDefaults(slug) ?? AUTOMOBILE_PAGE_DEFAULTS.vehicles;
   const vehicles = await loadCategoryVehicles(slug);
   const thin = vehicles.length === 0;
 
@@ -123,14 +133,8 @@ export default async function AutomobileCategoryPage({ params }: Props) {
             {vehicles.map((vehicle) => (
               <AutomobileVehicleCard
                 key={vehicle.id}
-                name={vehicle.name}
+                vehicle={vehicle}
                 href={`/automobile/vehicles/${vehicle.slug}`}
-                description={
-                  [vehicle.manufacturer?.name, vehicle.fuelType, vehicle.bodyType]
-                    .filter(Boolean)
-                    .join(' · ') || vehicle.description
-                }
-                price={vehicle.exShowroomPrice}
               />
             ))}
           </div>

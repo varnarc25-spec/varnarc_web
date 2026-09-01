@@ -6,7 +6,9 @@ import { PageShell } from '@/components/layout/page-shell';
 import { HubFaqSection } from '@/components/hub/hub-faq-section';
 import { CalculatorRunner } from '@/features/calculators/calculator-runner';
 import { automobileHubBreadcrumbs, buildAutomobilePageMetadata } from '@/lib/automobile/seo';
+import { AutomobileFormulaTool, AUTOMOBILE_FORMULA_TOOLS } from '@/components/automobile/formula-tool';
 import {
+  AUTOMOBILE_CALC_PATH_SLUG,
   AUTOMOBILE_CALC_TOOL_SLUG,
   AUTOMOBILE_PAGE_DEFAULTS,
   automobileCalcPageKeyFromSlug,
@@ -123,7 +125,7 @@ type CalculatorDetail = {
 };
 
 export function generateStaticParams() {
-  return Object.values(AUTOMOBILE_CALC_TOOL_SLUG).map((slug) => ({ slug }));
+  return Object.values(AUTOMOBILE_CALC_PATH_SLUG).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params, searchParams }: Props) {
@@ -144,15 +146,18 @@ export default async function AutomobileCalculatorLandingPage({ params, searchPa
   const sp = await searchParams;
   void sp;
 
+  const apiSlug = AUTOMOBILE_CALC_TOOL_SLUG[pageKey];
   let calc: CalculatorDetail | null = null;
   try {
-    const { data } = await apiPublicFetch<CalculatorDetail>(`/calculators/slug/${slug}`, {
+    const { data } = await apiPublicFetch<CalculatorDetail>(`/calculators/slug/${apiSlug}`, {
       cache: 'no-store',
     });
     calc = data;
   } catch {
     calc = null;
   }
+
+  const formulaTool = AUTOMOBILE_FORMULA_TOOLS[slug];
 
   const siblings = AUTOMOBILE_CALCULATOR_LINKS.filter((l) => l.href !== defaults.path).map((l) => ({
     label: l.label,
@@ -198,17 +203,25 @@ export default async function AutomobileCalculatorLandingPage({ params, searchPa
               }
             />
           </Suspense>
+        ) : formulaTool ? (
+          <AutomobileFormulaTool slug={slug} />
         ) : (
           <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
             This ownership calculator is temporarily unavailable.{' '}
             <Link
-              href={`/calculators/${slug}`}
+              href={`/calculators/${apiSlug}`}
               className="font-medium text-[#ea580c] hover:underline"
             >
               Try the main calculator page →
             </Link>
           </p>
         )}
+        {calc && formulaTool ? (
+          <section className="mt-8">
+            <h2 className="mb-3 text-lg font-extrabold text-[#0b1f3a]">Quick planner</h2>
+            <AutomobileFormulaTool slug={slug} />
+          </section>
+        ) : null}
 
         <HubFaqSection
           title="Ownership planning FAQs"

@@ -123,13 +123,8 @@ export default async function AutomobileManufacturerDetailPage({ params }: Props
             {vehicles.map((vehicle) => (
               <AutomobileVehicleCard
                 key={vehicle.id}
-                name={vehicle.name}
+                vehicle={vehicle}
                 href={`/automobile/vehicles/${vehicle.slug}`}
-                description={vehicle.description}
-                price={vehicle.exShowroomPrice}
-                featured={vehicle.featured}
-                sponsored={vehicle.sponsored}
-                meta={[vehicle.fuelType, vehicle.model].filter(Boolean).join(' · ') || null}
               />
             ))}
           </div>

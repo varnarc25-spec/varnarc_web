@@ -35,6 +35,10 @@ export const AUTOMOBILE_SITEMAP_CORE_PATHS = [
   '/automobile/dealers',
   '/automobile/reviews',
   '/automobile/calculators',
+  '/automobile/used-cars',
+  '/automobile/specifications',
+  '/automobile/prices',
+  '/automobile/safety',
   ...listAutomobileCategories().map((c) => c.path),
 ] as const;
 
@@ -46,6 +50,13 @@ export const AUTOMOBILE_SITEMAP_CALCULATOR_PATHS = [
   '/automobile/calculators/car-insurance',
   '/automobile/calculators/depreciation',
   '/automobile/calculators/maintenance-cost',
+  '/automobile/calculators/resale-value',
+  '/automobile/calculators/tco',
+  '/automobile/calculators/road-tax',
+  '/automobile/calculators/on-road-price',
+  '/automobile/calculators/charging-cost',
+  '/automobile/calculators/range',
+  '/automobile/calculators/ev-vs-petrol',
 ] as const;
 
 export function isAutomobileSitemapSegment(value: string): value is AutomobileSitemapSegment {

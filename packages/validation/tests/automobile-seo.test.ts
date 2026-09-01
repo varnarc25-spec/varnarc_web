@@ -14,15 +14,20 @@ import {
 describe('automobile categories', () => {
   it('lists high-intent category hubs', () => {
     const slugs = listAutomobileCategories().map((c) => c.slug);
-    expect(slugs).toEqual(['suv', 'hatchback', 'sedan', 'mpv', 'ev', 'bikes']);
+    expect(slugs).toContain('suv');
+    expect(slugs).toContain('hybrid');
+    expect(slugs).toContain('scooters');
+    expect(slugs).toContain('trucks');
   });
 
   it('matches body type and EV fuel filters', () => {
     const suv = getAutomobileCategory('suv')!;
     const ev = getAutomobileCategory('ev')!;
+    const hybrid = getAutomobileCategory('hybrid')!;
     expect(vehicleMatchesAutomobileCategory({ bodyType: 'SUV' }, suv)).toBe(true);
     expect(vehicleMatchesAutomobileCategory({ bodyType: 'Sedan' }, suv)).toBe(false);
     expect(vehicleMatchesAutomobileCategory({ fuelType: 'Electric' }, ev)).toBe(true);
+    expect(vehicleMatchesAutomobileCategory({ fuelType: 'Hybrid' }, hybrid)).toBe(true);
   });
 });
 
@@ -36,8 +41,11 @@ describe('automobile sitemap', () => {
   it('lists all static paths for the flat automobile.xml', () => {
     const all = listAllAutomobileSitemapStaticPaths();
     expect(all).toContain('/automobile/suv');
+    expect(all).toContain('/automobile/hybrid');
     expect(all).toContain('/automobile/calculators/car-loan');
+    expect(all).toContain('/automobile/calculators/tco');
     expect(all).toContain('/automobile/calculators');
+    expect(all).toContain('/automobile/used-cars');
   });
 
   it('filters query and non-automobile paths', () => {

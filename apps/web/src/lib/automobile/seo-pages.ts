@@ -1,4 +1,4 @@
-/** Static SEO defaults for Automobile public pages. */
+import { getAutomobileCategory } from '@varnarc/validation';
 
 export const AUTOMOBILE_PAGE_KEYS = [
   'hub',
@@ -18,12 +18,23 @@ export const AUTOMOBILE_PAGE_KEYS = [
   'mpv',
   'ev',
   'bikes',
+  'used-cars',
+  'specifications',
+  'prices',
+  'safety',
   'calc-car-loan',
   'calc-fuel',
   'calc-mileage',
   'calc-car-insurance',
   'calc-depreciation',
   'calc-maintenance-cost',
+  'calc-resale-value',
+  'calc-tco',
+  'calc-road-tax',
+  'calc-on-road-price',
+  'calc-charging-cost',
+  'calc-range',
+  'calc-ev-vs-petrol',
 ] as const;
 
 export type AutomobilePageKey = (typeof AUTOMOBILE_PAGE_KEYS)[number];
@@ -186,10 +197,46 @@ export const AUTOMOBILE_PAGE_DEFAULTS: Record<AutomobilePageKey, AutomobilePageS
   bikes: {
     path: '/automobile/bikes',
     label: 'Bikes',
-    title: 'Bikes & Scooters in India — Prices & Specs | Varnarc',
+    title: 'Bikes in India — Prices & Specs | Varnarc',
     description:
-      'Explore two-wheelers with indicative prices and ownership tools. Compare mileage and plan EMI.',
-    h1: 'Bikes and scooters in India',
+      'Explore motorcycles with indicative prices and ownership tools. Compare mileage and plan EMI.',
+    h1: 'Bikes in India',
+    indexable: true,
+  },
+  'used-cars': {
+    path: '/automobile/used-cars',
+    label: 'Used cars',
+    title: 'Used Cars — Dealers & Ownership Tools | Varnarc',
+    description:
+      'Varnarc is not a classifieds marketplace. Find used-car dealers in the directory and plan resale with ownership tools.',
+    h1: 'Used cars',
+    indexable: true,
+  },
+  specifications: {
+    path: '/automobile/specifications',
+    label: 'Specifications',
+    title: 'Car Specifications — Compare Model Specs | Varnarc',
+    description:
+      'Browse published vehicle specifications and open model pages for detailed specs. Educational catalogue only.',
+    h1: 'Vehicle specifications',
+    indexable: true,
+  },
+  prices: {
+    path: '/automobile/prices',
+    label: 'Prices',
+    title: 'Car Prices in India — Indicative Ex-Showroom | Varnarc',
+    description:
+      'Indicative ex-showroom and estimated on-road figures where published. Confirm city on-road price with a dealer.',
+    h1: 'Vehicle prices',
+    indexable: true,
+  },
+  safety: {
+    path: '/automobile/safety',
+    label: 'Safety',
+    title: 'Car Safety Ratings & Context | Varnarc',
+    description:
+      'Safety ratings when published on vehicle records. We do not invent NCAP scores — missing ratings stay blank.',
+    h1: 'Vehicle safety',
     indexable: true,
   },
   'calc-car-loan': {
@@ -246,9 +293,91 @@ export const AUTOMOBILE_PAGE_DEFAULTS: Record<AutomobilePageKey, AutomobilePageS
     h1: 'Maintenance cost estimator',
     indexable: true,
   },
+  'calc-resale-value': {
+    path: '/automobile/calculators/resale-value',
+    label: 'Resale value',
+    title: 'Car Resale Value Planner | Varnarc',
+    description:
+      'Estimate remaining value after depreciation for ownership planning. Markets vary — not an appraisal.',
+    h1: 'Resale value planner',
+    indexable: true,
+  },
+  'calc-tco': {
+    path: '/automobile/calculators/tco',
+    label: 'Total cost of ownership',
+    title: 'Car Total Cost of Ownership Calculator | Varnarc',
+    description:
+      'Combine EMI, fuel, insurance, service and resale for an indicative ownership cost. Educational only.',
+    h1: 'Total cost of ownership',
+    indexable: true,
+  },
+  'calc-road-tax': {
+    path: '/automobile/calculators/road-tax',
+    label: 'Road tax',
+    title: 'Car Road Tax Estimator | Varnarc',
+    description:
+      'Indicative road tax from ex-showroom price and a state rate you enter. Actual RTO slabs differ by state.',
+    h1: 'Road tax estimator',
+    indexable: true,
+  },
+  'calc-on-road-price': {
+    path: '/automobile/calculators/on-road-price',
+    label: 'On-road price',
+    title: 'On-road Price Calculator | Varnarc',
+    description:
+      'Add RTO, insurance and handling to ex-showroom for a planning on-road figure. Not a dealer quotation.',
+    h1: 'On-road price calculator',
+    indexable: true,
+  },
+  'calc-charging-cost': {
+    path: '/automobile/calculators/charging-cost',
+    label: 'Charging cost',
+    title: 'EV Charging Cost Calculator | Varnarc',
+    description:
+      'Estimate electricity spend from km, efficiency and tariff. Not a charging-station tariff quote.',
+    h1: 'EV charging cost calculator',
+    indexable: true,
+  },
+  'calc-range': {
+    path: '/automobile/calculators/range',
+    label: 'Range calculator',
+    title: 'EV Range Calculator | Varnarc',
+    description:
+      'Estimate driving range from usable battery and consumption. Real-world range varies with speed and climate.',
+    h1: 'EV range calculator',
+    indexable: true,
+  },
+  'calc-ev-vs-petrol': {
+    path: '/automobile/calculators/ev-vs-petrol',
+    label: 'EV vs petrol',
+    title: 'EV vs Petrol Running Cost | Varnarc',
+    description:
+      'Compare indicative monthly energy cost for EV vs petrol using your kilometres and local prices.',
+    h1: 'EV vs petrol running cost',
+    indexable: true,
+  },
 };
 
-/** Map ownership calculator page keys → underlying calculator slug. */
+export const AUTOMOBILE_CALC_PATH_SLUG: Record<
+  Extract<AutomobilePageKey, `calc-${string}`>,
+  string
+> = {
+  'calc-car-loan': 'car-loan',
+  'calc-fuel': 'fuel',
+  'calc-mileage': 'mileage',
+  'calc-car-insurance': 'car-insurance',
+  'calc-depreciation': 'depreciation',
+  'calc-maintenance-cost': 'maintenance-cost',
+  'calc-resale-value': 'resale-value',
+  'calc-tco': 'tco',
+  'calc-road-tax': 'road-tax',
+  'calc-on-road-price': 'on-road-price',
+  'calc-charging-cost': 'charging-cost',
+  'calc-range': 'range',
+  'calc-ev-vs-petrol': 'ev-vs-petrol',
+};
+
+/** API calculator slug when a seeded engine exists; landings may also use a built-in tool. */
 export const AUTOMOBILE_CALC_TOOL_SLUG: Record<
   Extract<AutomobilePageKey, `calc-${string}`>,
   string
@@ -259,11 +388,34 @@ export const AUTOMOBILE_CALC_TOOL_SLUG: Record<
   'calc-car-insurance': 'car-insurance',
   'calc-depreciation': 'depreciation',
   'calc-maintenance-cost': 'maintenance-cost',
+  'calc-resale-value': 'depreciation',
+  'calc-tco': 'tco',
+  'calc-road-tax': 'road-tax',
+  'calc-on-road-price': 'on-road-price',
+  'calc-charging-cost': 'charging-cost',
+  'calc-range': 'range',
+  'calc-ev-vs-petrol': 'ev-vs-petrol',
 };
+
+export function getAutomobileLandingDefaults(slug: string): AutomobilePageSeoDefaults | null {
+  if ((AUTOMOBILE_PAGE_KEYS as readonly string[]).includes(slug)) {
+    return AUTOMOBILE_PAGE_DEFAULTS[slug as AutomobilePageKey];
+  }
+  const category = getAutomobileCategory(slug);
+  if (!category) return null;
+  return {
+    path: category.path,
+    label: category.name,
+    title: category.title,
+    description: category.description,
+    h1: category.h1,
+    indexable: true,
+  };
+}
 
 export function automobileCalcPageKeyFromSlug(
   slug: string,
 ): Extract<AutomobilePageKey, `calc-${string}`> | null {
-  const entry = Object.entries(AUTOMOBILE_CALC_TOOL_SLUG).find(([, s]) => s === slug);
+  const entry = Object.entries(AUTOMOBILE_CALC_PATH_SLUG).find(([, s]) => s === slug);
   return (entry?.[0] as Extract<AutomobilePageKey, `calc-${string}`>) ?? null;
 }

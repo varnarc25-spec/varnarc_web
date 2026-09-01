@@ -7,52 +7,131 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@varnarc/ui';
 import { Car } from 'lucide-react';
 import { getApiBaseUrl } from '@/services/api-client';
 
-export function AutomobileVehicleCard({
-  name,
-  href,
-  description,
-  meta,
-  featured,
-  sponsored,
-  price,
-}: {
+export function formatAutomobileInr(value: number | string | null | undefined): string | null {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return `₹${value}`;
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+export type AutomobileVehicleCardData = {
   name: string;
-  href: string;
+  slug?: string | null;
+  model?: string | null;
+  variant?: string | null;
+  modelYear?: number | null;
+  category?: string | null;
+  bodyType?: string | null;
+  fuelType?: string | null;
+  transmission?: string | null;
+  mileage?: number | string | null;
+  seatingCapacity?: number | null;
+  safetyRating?: number | string | null;
+  engineCapacity?: string | null;
+  horsepower?: number | string | null;
   description?: string | null;
-  meta?: string | null;
+  imageUrl?: string | null;
   featured?: boolean;
   sponsored?: boolean;
-  price?: number | string | null;
+  exShowroomPrice?: number | string | null;
+  estimatedOnRoadPrice?: number | string | null;
+  manufacturer?: { name?: string | null } | null;
+  images?: Array<{ imageUrl?: string | null } | null> | null;
+};
+
+export function AutomobileVehicleCard({
+  vehicle,
+  href,
+}: {
+  vehicle: AutomobileVehicleCardData;
+  href: string;
 }) {
+  const image = vehicle.imageUrl || vehicle.images?.find((img) => img?.imageUrl)?.imageUrl || null;
+  const mileage =
+    vehicle.mileage != null && vehicle.mileage !== ''
+      ? `${vehicle.mileage} km/l`
+      : null;
+  const specs = [
+    vehicle.fuelType,
+    vehicle.bodyType,
+    vehicle.transmission,
+    mileage,
+    vehicle.seatingCapacity != null ? `${vehicle.seatingCapacity} seats` : null,
+    vehicle.engineCapacity,
+    vehicle.horsepower != null && vehicle.horsepower !== '' ? `${vehicle.horsepower} hp` : null,
+    vehicle.modelYear != null ? String(vehicle.modelYear) : null,
+  ].filter(Boolean) as string[];
+  const exShowroom = formatAutomobileInr(vehicle.exShowroomPrice);
+  const onRoad = formatAutomobileInr(vehicle.estimatedOnRoadPrice);
+  const subtitle = [vehicle.manufacturer?.name, vehicle.model, vehicle.variant]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <Link href={href} className="block transition hover:opacity-95">
-      <Card className="h-full">
-        <CardHeader>
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--varnarc-muted)] text-[#ea580c]">
-              <Car className="h-4 w-4" aria-hidden />
-            </div>
-            <div className="flex flex-wrap justify-end gap-1">
-              {sponsored ? (
-                <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
-                  Sponsored
-                </span>
-              ) : null}
-              {featured ? (
-                <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
-                  Featured
-                </span>
-              ) : null}
-            </div>
+      <Card className="h-full overflow-hidden">
+        {image ? (
+            <div className="aspect-video bg-slate-100">
+            <img src={image} alt="" className="h-full w-full object-cover" />
           </div>
-          <CardTitle className="text-lg">{name}</CardTitle>
-          {description ? (
-            <CardDescription className="line-clamp-2">{description}</CardDescription>
+        ) : (
+            <div className="flex aspect-video items-center justify-center bg-[var(--varnarc-muted)] text-[#ea580c]">
+            <Car className="h-8 w-8" aria-hidden />
+          </div>
+        )}
+        <CardHeader>
+          <div className="mb-2 flex flex-wrap justify-end gap-1">
+            {vehicle.sponsored ? (
+              <span className="rounded-full bg-[#ea580c] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+                Sponsored
+              </span>
+            ) : null}
+            {vehicle.featured ? (
+              <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+                Featured
+              </span>
+            ) : null}
+          </div>
+          <CardTitle className="text-lg">{vehicle.name}</CardTitle>
+          {subtitle ? <p className="mt-1 text-xs font-medium text-slate-600">{subtitle}</p> : null}
+          {vehicle.description ? (
+            <CardDescription className="mt-2 line-clamp-2">{vehicle.description}</CardDescription>
           ) : null}
-          {meta ? <p className="mt-2 text-xs font-medium text-slate-600">{meta}</p> : null}
-          {price != null ? (
-            <p className="mt-2 text-sm font-semibold text-[#0b1f3a]">₹{price}</p>
+          {specs.length ? (
+            <dl className="mt-3 grid grid-cols-2 gap-2">
+              {specs.slice(0, 8).map((spec) => (
+                <div
+                  key={spec}
+                  className="rounded-md border border-slate-100 bg-slate-50 px-2 py-1.5 text-xs font-medium text-[#0b1f3a]"
+                >
+                  {spec}
+                </div>
+              ))}
+            </dl>
           ) : null}
+          <div className="mt-3 space-y-0.5">
+            {exShowroom ? (
+              <p className="text-sm font-semibold text-[#0b1f3a]">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Ex-showroom{' '}
+                </span>
+                {exShowroom}
+              </p>
+            ) : null}
+            {onRoad ? (
+              <p className="text-sm text-slate-700">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Est. on-road{' '}
+                </span>
+                {onRoad}
+              </p>
+            ) : null}
+          </div>
+          <p className="mt-3 text-sm font-medium text-[#ea580c]">View details →</p>
         </CardHeader>
       </Card>
     </Link>

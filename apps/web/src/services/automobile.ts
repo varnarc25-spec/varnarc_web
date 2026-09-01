@@ -40,6 +40,8 @@ export type AutomobileVehicle = {
   mileage?: number | string | null;
   seatingCapacity?: number | null;
   safetyRating?: number | string | null;
+  engineCapacity?: string | null;
+  horsepower?: number | string | null;
   exShowroomPrice?: number | string | null;
   estimatedOnRoadPrice?: number | string | null;
   warranty?: string | null;
@@ -339,5 +341,12 @@ export const AUTOMOBILE_CALCULATOR_LINKS = [
   { href: '/automobile/calculators/mileage', label: 'Mileage Calculator' },
   { href: '/automobile/calculators/car-insurance', label: 'Car Insurance Estimator' },
   { href: '/automobile/calculators/depreciation', label: 'Depreciation Calculator' },
+  { href: '/automobile/calculators/resale-value', label: 'Resale Value Planner' },
   { href: '/automobile/calculators/maintenance-cost', label: 'Maintenance Cost Estimator' },
+  { href: '/automobile/calculators/tco', label: 'Total Cost of Ownership' },
+  { href: '/automobile/calculators/road-tax', label: 'Road Tax Estimator' },
+  { href: '/automobile/calculators/on-road-price', label: 'On-road Price' },
+  { href: '/automobile/calculators/charging-cost', label: 'EV Charging Cost' },
+  { href: '/automobile/calculators/range', label: 'EV Range Calculator' },
+  { href: '/automobile/calculators/ev-vs-petrol', label: 'EV vs Petrol' },
 ];

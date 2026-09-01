@@ -7,7 +7,7 @@ import { HubFeaturedStack } from '@/components/hub/hub-featured-stack';
 import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
 import { HubFaqSection } from '@/components/hub/hub-faq-section';
 import { AutomobileSeo } from '@/components/automobile/automobile-seo';
-import { listAutomobileCategories } from '@varnarc/validation';
+import { AUTOMOBILE_IA } from '@varnarc/validation';
 import { automobileHubBreadcrumbs, buildAutomobilePageMetadata } from '@/lib/automobile/seo';
 import { AUTOMOBILE_PAGE_DEFAULTS } from '@/lib/automobile/seo-pages';
 import {
@@ -66,11 +66,14 @@ const productLinks = [
   },
 ];
 
-const categoryLinks = listAutomobileCategories().map((c) => ({
-  label: c.name,
-  href: c.path,
-  description: 'Category hub',
-  icon: 'car' as const,
+const iaSections = AUTOMOBILE_IA.map((group) => ({
+  title: group.title,
+  items: group.items.map((item) => ({
+    label: item.label,
+    href: item.href,
+    description: group.title,
+    icon: 'car' as const,
+  })),
 }));
 
 const popularLinks = [
@@ -154,9 +157,9 @@ export default async function AutomobilePage() {
           faqs?.length ? faqs.map((f) => ({ question: f.question, answer: f.answer })) : undefined
         }
         itemList={{
-          name: 'Browse by category',
+          name: 'Browse automobile',
           path: '/automobile',
-          items: categoryLinks.map((c) => ({ name: c.label, path: c.href })),
+          items: AUTOMOBILE_IA.flatMap((g) => g.items).map((c) => ({ name: c.label, path: c.href })),
         }}
       />
       <ModuleHubShell
@@ -175,10 +178,12 @@ export default async function AutomobilePage() {
           <HubIconGrid items={relatedCalculators} columns={4} />
         </section>
 
-        <section>
-          <HubSectionHeader title="Browse by body type & fuel" viewAllHref="/automobile/vehicles" />
-          <HubIconGrid items={categoryLinks} columns={3} />
-        </section>
+        {iaSections.map((section) => (
+          <section key={section.title}>
+            <HubSectionHeader title={section.title} viewAllHref="/automobile/vehicles" />
+            <HubIconGrid items={section.items} columns={4} />
+          </section>
+        ))}
 
         <section>
           <HubSectionHeader

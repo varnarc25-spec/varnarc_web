@@ -2798,6 +2798,66 @@ model AutomobileComparison {
   @@map("automobile_comparisons")
 }
 
+model Car {
+  id                         String    @id @default(uuid()) @db.Uuid
+  make                       String
+  model                      String
+  variant                    String    @default("")
+  yearFrom                   Int?      @map("year_from")
+  yearTo                     Int?      @map("year_to")
+  bodyType                   String?   @map("body_type")
+  doors                      Int?
+  seats                      Int?
+  engineCode                 String?   @map("engine_code")
+  engineDisplacement         Decimal?  @map("engine_displacement") @db.Decimal(14, 4)
+  engineCylinders            Int?      @map("engine_cylinders")
+  engineValves               Int?      @map("engine_valves")
+  engineFuelType             String?   @map("engine_fuel_type")
+  enginePowerBhp             Decimal?  @map("engine_power_bhp") @db.Decimal(14, 4)
+  enginePowerKw              Decimal?  @map("engine_power_kw") @db.Decimal(14, 4)
+  engineTorqueNm             Decimal?  @map("engine_torque_nm") @db.Decimal(14, 4)
+  engineAspiration           String?   @map("engine_aspiration")
+  enginePosition             String?   @map("engine_position")
+  gearboxType                String?   @map("gearbox_type")
+  gears                      Int?
+  drivetrain                 String?
+  acceleration0100           Decimal?  @map("acceleration_0_100") @db.Decimal(14, 4)
+  topSpeedKph                Decimal?  @map("top_speed_kph") @db.Decimal(14, 4)
+  topSpeedMph                Decimal?  @map("top_speed_mph") @db.Decimal(14, 4)
+  fuelEconomyCombinedMpg     Decimal?  @map("fuel_economy_combined_mpg") @db.Decimal(14, 4)
+  fuelEconomyCombinedL100    Decimal?  @map("fuel_economy_combined_l100") @db.Decimal(14, 4)
+  fuelEconomyUrbanL100       Decimal?  @map("fuel_economy_urban_l100") @db.Decimal(14, 4)
+  fuelEconomyExtraUrbanL100  Decimal?  @map("fuel_economy_extra_urban_l100") @db.Decimal(14, 4)
+  fuelTankLitres             Decimal?  @map("fuel_tank_litres") @db.Decimal(14, 4)
+  co2Gkm                     Decimal?  @map("co2_gkm") @db.Decimal(14, 4)
+  emissionsStandard          String?   @map("emissions_standard")
+  noxMgkm                    Decimal?  @map("nox_mgkm") @db.Decimal(14, 4)
+  lengthMm                   Decimal?  @map("length_mm") @db.Decimal(14, 4)
+  widthMm                    Decimal?  @map("width_mm") @db.Decimal(14, 4)
+  heightMm                   Decimal?  @map("height_mm") @db.Decimal(14, 4)
+  wheelbaseMm                Decimal?  @map("wheelbase_mm") @db.Decimal(14, 4)
+  weightKg                   Decimal?  @map("weight_kg") @db.Decimal(14, 4)
+  grossWeightKg              Decimal?  @map("gross_weight_kg") @db.Decimal(14, 4)
+  bootLitres                 Decimal?  @map("boot_litres") @db.Decimal(14, 4)
+  bootLitresMax              Decimal?  @map("boot_litres_max") @db.Decimal(14, 4)
+  tyreFront                  String?   @map("tyre_front")
+  tyreRear                   String?   @map("tyre_rear")
+  brakeFront                 String?   @map("brake_front")
+  brakeRear                  String?   @map("brake_rear")
+  batteryKwh                 Decimal?  @map("battery_kwh") @db.Decimal(14, 4)
+  electricRangeKm            Decimal?  @map("electric_range_km") @db.Decimal(14, 4)
+  chargingKw                 Decimal?  @map("charging_kw") @db.Decimal(14, 4)
+  sourceFile                 String?   @map("source_file")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  @@index([make])
+  @@index([make, model])
+  @@index([engineFuelType])
+  @@index([yearFrom])
+  @@map("cars")
+}
+
 model Product {
   id          String    @id @default(uuid()) @db.Uuid
   name        String

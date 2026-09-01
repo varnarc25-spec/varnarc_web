@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AutomobileSeo } from '@/components/automobile/automobile-seo';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { EmptyState } from '@/components/shared/empty-state';
 import { AutomobileVehicleCard, RelatedCalculators } from '@/components/automobile/vehicle-card';
+import { automobileHubBreadcrumbs, buildAutomobilePageMetadata } from '@/lib/automobile/seo';
+import { AUTOMOBILE_PAGE_DEFAULTS } from '@/lib/automobile/seo-pages';
 import { AUTOMOBILE_CALCULATOR_LINKS, fetchAutomobileVehicles } from '@/services/automobile';
 
-export const metadata: Metadata = {
-  title: 'Vehicles',
-  description: 'Browse cars, SUVs, two-wheelers, and commercial vehicles with specs and prices.',
-  alternates: { canonical: '/automobile/vehicles' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildAutomobilePageMetadata('vehicles');
+}
 
 export const revalidate = 60;
 
@@ -36,16 +37,39 @@ export default async function AutomobileVehiclesPage({ searchParams }: Props) {
 
   const fuelFilters = ['Petrol', 'Diesel', 'Electric', 'CNG', 'Hybrid'];
 
+  const defaults = AUTOMOBILE_PAGE_DEFAULTS.vehicles;
+
   return (
-    <ContentLayout
-      title="Vehicles"
-      description="Compare specifications, prices, and ownership costs."
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Automobile', href: '/automobile' },
-        { label: 'Vehicles' },
-      ]}
-    >
+    <>
+      <AutomobileSeo
+        breadcrumbs={automobileHubBreadcrumbs([{ name: 'Vehicles', path: '/automobile/vehicles' }])}
+        webPage={{
+          name: defaults.h1,
+          description: defaults.description,
+          path: defaults.path,
+        }}
+        itemList={
+          data.length
+            ? {
+                name: 'Vehicles',
+                path: '/automobile/vehicles',
+                items: data.slice(0, 20).map((v) => ({
+                  name: v.name,
+                  path: `/automobile/vehicles/${v.slug}`,
+                })),
+              }
+            : undefined
+        }
+      />
+      <ContentLayout
+        title={defaults.h1}
+        description={defaults.description}
+        breadcrumbs={[
+          { label: 'Home', href: '/' },
+          { label: 'Automobile', href: '/automobile' },
+          { label: 'Vehicles' },
+        ]}
+      >
       <div className="mb-6 flex flex-wrap gap-2">
         <Link
           href="/automobile/vehicles"
@@ -69,13 +93,8 @@ export default async function AutomobileVehiclesPage({ searchParams }: Props) {
           {data.map((vehicle) => (
             <AutomobileVehicleCard
               key={vehicle.id}
-              name={vehicle.name}
+              vehicle={vehicle}
               href={`/automobile/vehicles/${vehicle.slug}`}
-              description={vehicle.description}
-              meta={[vehicle.manufacturer?.name, vehicle.fuelType].filter(Boolean).join(' · ') || null}
-              featured={vehicle.featured}
-              sponsored={vehicle.sponsored}
-              price={vehicle.exShowroomPrice}
             />
           ))}
         </div>
@@ -84,6 +103,7 @@ export default async function AutomobileVehiclesPage({ searchParams }: Props) {
       )}
 
       <RelatedCalculators links={AUTOMOBILE_CALCULATOR_LINKS} />
-    </ContentLayout>
+      </ContentLayout>
+    </>
   );
 }
