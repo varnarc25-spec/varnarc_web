@@ -12,6 +12,7 @@ type ListParams = CursorPageParams & {
   loanType?: string;
   productType?: string;
   featured?: boolean;
+  excludeOwnBrand?: boolean;
   sponsored?: boolean;
   needsRateReview?: boolean;
   rateMin?: number;
@@ -458,6 +459,16 @@ export class InsuranceProductRepository extends BaseRepository {
         ...(params.status ? { status: params.status } : {}),
         ...(params.categoryId ? { categoryId: params.categoryId } : {}),
         ...(params.featured != null ? { featured: params.featured } : {}),
+        ...(params.excludeOwnBrand
+          ? {
+              NOT: {
+                OR: [
+                  { providerName: { contains: 'Varnarc', mode: 'insensitive' } },
+                  { name: { contains: 'Varnarc', mode: 'insensitive' } },
+                ],
+              },
+            }
+          : {}),
         ...(params.search
           ? {
               OR: [

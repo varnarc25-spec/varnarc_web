@@ -537,7 +537,9 @@ export default async function FinancePage() {
 
   const loans = loansRes.data ?? [];
   const cards = cardsRes.data ?? [];
-  const insurance = insuranceRes.data ?? [];
+  const insurance = (insuranceRes.data ?? []).filter(
+    (item) => !/varnarc/i.test(item.providerName ?? '') && !/varnarc/i.test(item.name ?? ''),
+  );
   const rates = ratesRes.data ?? [];
 
   const homeLoans = loans.filter((l) => /home/i.test(l.loanType));

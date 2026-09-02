@@ -51,6 +51,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Calculators',
     items: [
       { href: '/calculators', label: 'All calculators', permission: PERMISSIONS.CALCULATOR_VIEW },
+      {
+        href: '/calculators/new',
+        label: 'New calculator',
+        permission: PERMISSIONS.CALCULATOR_CREATE,
+      },
+      {
+        href: '/calculators/categories',
+        label: 'Categories',
+        permission: PERMISSIONS.CALCULATOR_VIEW,
+      },
+      {
+        href: '/calculators/analytics',
+        label: 'Analytics',
+        permission: PERMISSIONS.CALCULATOR_VIEW,
+      },
     ],
   },
   {
@@ -60,6 +75,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { href: '/finance', label: 'Overview', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/seo', label: 'Page SEO', permission: PERMISSIONS.FINANCE_EDIT },
       { href: '/finance/categories', label: 'Categories', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/banks', label: 'Banks', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/loans', label: 'Loans', permission: PERMISSIONS.FINANCE_VIEW },
+      {
+        href: '/finance/credit-cards',
+        label: 'Credit cards',
+        permission: PERMISSIONS.FINANCE_VIEW,
+      },
+      { href: '/finance/insurance', label: 'Insurance', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/investments', label: 'Investments', permission: PERMISSIONS.FINANCE_VIEW },
+      { href: '/finance/rates', label: 'Interest rates', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/guides', label: 'Guides', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/affiliates', label: 'Affiliates', permission: PERMISSIONS.FINANCE_VIEW },
       { href: '/finance/comparisons', label: 'Comparisons', permission: PERMISSIONS.FINANCE_VIEW },
@@ -79,6 +104,31 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         permission: PERMISSIONS.CONSTRUCTION_VIEW,
       },
       {
+        href: '/construction/brands',
+        label: 'Brands',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/materials',
+        label: 'Materials',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/cost-templates',
+        label: 'Cost templates',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/projects',
+        label: 'Projects',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/comparisons',
+        label: 'Comparisons',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
         href: '/construction/checklists',
         label: 'Checklists',
         permission: PERMISSIONS.CONSTRUCTION_VIEW,
@@ -86,6 +136,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       {
         href: '/construction/suppliers',
         label: 'Suppliers',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
+        href: '/construction/reports',
+        label: 'Reports',
         permission: PERMISSIONS.CONSTRUCTION_VIEW,
       },
       {
@@ -114,9 +169,19 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       { href: '/automobile/vehicles', label: 'Vehicles', permission: PERMISSIONS.AUTOMOBILE_VIEW },
       {
+        href: '/automobile/comparisons',
+        label: 'Comparisons',
+        permission: PERMISSIONS.AUTOMOBILE_VIEW,
+      },
+      {
         href: '/automobile/import',
         label: 'CSV import',
         permission: PERMISSIONS.AUTOMOBILE_CREATE,
+      },
+      {
+        href: '/automobile/reports',
+        label: 'Reports',
+        permission: PERMISSIONS.AUTOMOBILE_VIEW,
       },
       {
         href: '/automobile/maintenance',
