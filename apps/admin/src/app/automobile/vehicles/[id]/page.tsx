@@ -16,6 +16,7 @@ type VehicleDetail = {
   fuelType?: string | null;
   category?: string | null;
   imageUrl?: string | null;
+  brochureUrl?: string | null;
   brochureMediaId?: string | null;
   images?: Array<{ mediaId?: string | null; imageUrl?: string | null }>;
   exShowroomPrice?: number | string | null;
@@ -50,7 +51,10 @@ export default async function AutomobileVehicleEditPage({
         title="Edit vehicle"
         description={vehicle?.name ?? 'Vehicle'}
         actions={
-          <Link href="/automobile/vehicles" className="text-sm text-[var(--varnarc-brand)] hover:underline">
+          <Link
+            href="/automobile/vehicles"
+            className="text-sm text-[var(--varnarc-brand)] hover:underline"
+          >
             ← Back to vehicles
           </Link>
         }
@@ -81,6 +85,7 @@ export default async function AutomobileVehicleEditPage({
               fuelType: vehicle.fuelType,
               category: vehicle.category,
               imageUrl: vehicle.imageUrl,
+              brochureUrl: vehicle.brochureUrl,
               brochureMediaId: vehicle.brochureMediaId,
               galleryItems: (vehicle.images ?? []).map((img) => ({
                 mediaId: img.mediaId,

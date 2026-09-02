@@ -10,7 +10,10 @@ const inputClass =
   'h-10 w-full rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] px-3 text-sm';
 
 function slugify(value: string) {
-  return value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  return value
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 }
 
 function AutomobileFormShell({
@@ -82,7 +85,13 @@ export function AutomobilePublishButton({
   }
 
   return (
-    <Button type="button" variant="secondary" size="sm" disabled={loading} onClick={() => void publish()}>
+    <Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      disabled={loading}
+      onClick={() => void publish()}
+    >
       {loading ? 'Publishing…' : 'Publish'}
     </Button>
   );
@@ -107,13 +116,23 @@ export function AutomobileDuplicateButton({ id }: { id: string }) {
   }
 
   return (
-    <Button type="button" variant="secondary" size="sm" disabled={loading} onClick={() => void duplicate()}>
+    <Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      disabled={loading}
+      onClick={() => void duplicate()}
+    >
       {loading ? 'Duplicating…' : 'Duplicate'}
     </Button>
   );
 }
 
-type GalleryItem = { mediaId?: string | null; imageUrl?: string | null; previewUrl?: string | null };
+type GalleryItem = {
+  mediaId?: string | null;
+  imageUrl?: string | null;
+  previewUrl?: string | null;
+};
 
 function AutomobileGalleryEditor({
   items,
@@ -124,12 +143,21 @@ function AutomobileGalleryEditor({
 }) {
   return (
     <div className="md:col-span-2 lg:col-span-3 space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">Gallery (Media Library)</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+        Gallery (library, file, or URL)
+      </p>
       <div className="flex flex-wrap gap-2">
         {items.map((item, index) => (
-          <div key={`${item.mediaId ?? item.imageUrl ?? index}`} className="relative rounded border p-2">
+          <div
+            key={`${item.mediaId ?? item.imageUrl ?? index}`}
+            className="relative rounded border p-2"
+          >
             {item.previewUrl || item.imageUrl ? (
-              <img src={item.previewUrl || item.imageUrl || ''} alt="" className="h-16 w-16 rounded object-cover" />
+              <img
+                src={item.previewUrl || item.imageUrl || ''}
+                alt=""
+                className="h-16 w-16 rounded object-cover"
+              />
             ) : null}
             <button
               type="button"
@@ -144,8 +172,11 @@ function AutomobileGalleryEditor({
       <MediaPicker
         value={null}
         onChange={(mediaId, previewUrl) => {
-          if (!mediaId) return;
-          onChange([...items, { mediaId, imageUrl: previewUrl ?? null, previewUrl: previewUrl ?? null }]);
+          if (!mediaId && !previewUrl) return;
+          onChange([
+            ...items,
+            { mediaId, imageUrl: previewUrl ?? null, previewUrl: previewUrl ?? null },
+          ]);
         }}
       />
     </div>
@@ -160,7 +191,9 @@ export function AutomobileVehicleReviewLinker({
   initialReviewIds: string[];
 }) {
   const router = useRouter();
-  const [options, setOptions] = useState<Array<{ id: string; title: string; slug: string; product?: { name?: string | null } }>>([]);
+  const [options, setOptions] = useState<
+    Array<{ id: string; title: string; slug: string; product?: { name?: string | null } }>
+  >([]);
   const [selected, setSelected] = useState<string[]>(initialReviewIds);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -210,14 +243,24 @@ export function AutomobileVehicleReviewLinker({
             <span>
               {review.title}
               {review.product?.name ? (
-                <span className="ml-1 text-xs text-[var(--varnarc-subtle)]">({review.product.name})</span>
+                <span className="ml-1 text-xs text-[var(--varnarc-subtle)]">
+                  ({review.product.name})
+                </span>
               ) : null}
             </span>
           </label>
         ))}
-        {!options.length ? <p className="text-sm text-[var(--varnarc-subtle)]">No published reviews found.</p> : null}
+        {!options.length ? (
+          <p className="text-sm text-[var(--varnarc-subtle)]">No published reviews found.</p>
+        ) : null}
       </div>
-      <FormActions loading={loading} disabled={false} onSave={() => void save()} label="Save review links" loadingLabel="Saving…" />
+      <FormActions
+        loading={loading}
+        disabled={false}
+        onSave={() => void save()}
+        label="Save review links"
+        loadingLabel="Saving…"
+      />
     </AutomobileFormShell>
   );
 }
@@ -263,10 +306,30 @@ export function AutomobileManufacturerForm() {
   return (
     <AutomobileFormShell title="New manufacturer" message={message}>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <input className={inputClass} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className={inputClass} placeholder="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
-        <input className={inputClass} placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} />
-        <input className={inputClass} placeholder="Website URL" value={website} onChange={(e) => setWebsite(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Website URL"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
       </div>
       <FormActions loading={loading} disabled={!name} onSave={() => void save()} />
     </AutomobileFormShell>
@@ -333,23 +396,49 @@ export function AutomobileManufacturerEditForm({
   return (
     <AutomobileFormShell title="Edit manufacturer" message={message}>
       <div className="grid gap-3 md:grid-cols-2">
-        <input className={inputClass} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className={inputClass} placeholder="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
-        <input className={inputClass} placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} />
-        <input className={inputClass} placeholder="Website URL" value={website} onChange={(e) => setWebsite(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Website URL"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
         <div className="md:col-span-2">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">Logo</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+            Logo
+          </p>
           <MediaPicker
             value={logoMediaId}
             previewUrl={logoUrl}
             onChange={(mediaId, previewUrl) => {
               setLogoMediaId(mediaId);
-              if (previewUrl) setLogoUrl(previewUrl);
+              setLogoUrl(previewUrl ?? '');
             }}
           />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+          />
           Featured
         </label>
         <textarea
@@ -359,7 +448,13 @@ export function AutomobileManufacturerEditForm({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <FormActions loading={loading} disabled={!name} onSave={() => void save()} label="Save changes" loadingLabel="Saving…" />
+      <FormActions
+        loading={loading}
+        disabled={!name}
+        onSave={() => void save()}
+        label="Save changes"
+        loadingLabel="Saving…"
+      />
     </AutomobileFormShell>
   );
 }
@@ -426,7 +521,11 @@ export function AutomobileVehicleForm({
   return (
     <AutomobileFormShell title="New vehicle" message={message}>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <select className={inputClass} value={manufacturerId} onChange={(e) => setManufacturerId(e.target.value)}>
+        <select
+          className={inputClass}
+          value={manufacturerId}
+          onChange={(e) => setManufacturerId(e.target.value)}
+        >
           <option value="">Select manufacturer</option>
           {manufacturers.map((m) => (
             <option key={m.id} value={m.id}>
@@ -434,10 +533,30 @@ export function AutomobileVehicleForm({
             </option>
           ))}
         </select>
-        <input className={inputClass} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className={inputClass} placeholder="Model" value={model} onChange={(e) => setModel(e.target.value)} />
-        <input className={inputClass} placeholder="Variant" value={variant} onChange={(e) => setVariant(e.target.value)} />
-        <input className={inputClass} placeholder="Fuel type" value={fuelType} onChange={(e) => setFuelType(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Model"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Variant"
+          value={variant}
+          onChange={(e) => setVariant(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Fuel type"
+          value={fuelType}
+          onChange={(e) => setFuelType(e.target.value)}
+        />
         <input
           className={inputClass}
           placeholder="Ex-showroom price (₹)"
@@ -457,15 +576,27 @@ export function AutomobileVehicleForm({
           onChange={(e) => setAffiliateUrl(e.target.value)}
         />
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+          />
           Featured
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={sponsored} onChange={(e) => setSponsored(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={sponsored}
+            onChange={(e) => setSponsored(e.target.checked)}
+          />
           Sponsored
         </label>
       </div>
-      <FormActions loading={loading} disabled={!name || !model || !manufacturerId} onSave={() => void save()} />
+      <FormActions
+        loading={loading}
+        disabled={!name || !model || !manufacturerId}
+        onSave={() => void save()}
+      />
     </AutomobileFormShell>
   );
 }
@@ -486,6 +617,7 @@ export function AutomobileVehicleEditForm({
     category?: string | null;
     imageUrl?: string | null;
     imageMediaId?: string | null;
+    brochureUrl?: string | null;
     brochureMediaId?: string | null;
     galleryItems?: GalleryItem[];
     reviewIds?: string[];
@@ -506,7 +638,10 @@ export function AutomobileVehicleEditForm({
   const [category, setCategory] = useState(initial.category ?? '');
   const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? '');
   const [imageMediaId, setImageMediaId] = useState<string | null>(initial.imageMediaId ?? null);
-  const [brochureMediaId, setBrochureMediaId] = useState<string | null>(initial.brochureMediaId ?? null);
+  const [brochureUrl, setBrochureUrl] = useState(initial.brochureUrl ?? '');
+  const [brochureMediaId, setBrochureMediaId] = useState<string | null>(
+    initial.brochureMediaId ?? null,
+  );
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(initial.galleryItems ?? []);
   const [exShowroomPrice, setExShowroomPrice] = useState(
     initial.exShowroomPrice != null ? String(initial.exShowroomPrice) : '',
@@ -540,7 +675,8 @@ export function AutomobileVehicleEditForm({
           variant: variant || '',
           fuelType: fuelType || undefined,
           category: category || undefined,
-          imageUrl: imageUrl || undefined,
+          imageUrl: imageUrl || '',
+          brochureUrl: brochureUrl || '',
           brochureMediaId,
           galleryImages,
           exShowroomPrice: exShowroomPrice ? Number(exShowroomPrice) : undefined,
@@ -565,7 +701,11 @@ export function AutomobileVehicleEditForm({
   return (
     <AutomobileFormShell title="Edit vehicle" message={message}>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <select className={inputClass} value={manufacturerId} onChange={(e) => setManufacturerId(e.target.value)}>
+        <select
+          className={inputClass}
+          value={manufacturerId}
+          onChange={(e) => setManufacturerId(e.target.value)}
+        >
           <option value="">Select manufacturer</option>
           {manufacturers.map((m) => (
             <option key={m.id} value={m.id}>
@@ -573,11 +713,36 @@ export function AutomobileVehicleEditForm({
             </option>
           ))}
         </select>
-        <input className={inputClass} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className={inputClass} placeholder="Model" value={model} onChange={(e) => setModel(e.target.value)} />
-        <input className={inputClass} placeholder="Variant" value={variant} onChange={(e) => setVariant(e.target.value)} />
-        <input className={inputClass} placeholder="Fuel type" value={fuelType} onChange={(e) => setFuelType(e.target.value)} />
-        <input className={inputClass} placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Model"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Variant"
+          value={variant}
+          onChange={(e) => setVariant(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Fuel type"
+          value={fuelType}
+          onChange={(e) => setFuelType(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
         <input
           className={inputClass}
           placeholder="Ex-showroom price (₹)"
@@ -591,21 +756,32 @@ export function AutomobileVehicleEditForm({
           onChange={(e) => setEstimatedOnRoadPrice(e.target.value)}
         />
         <div className="md:col-span-2 lg:col-span-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">Primary image</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+            Primary image
+          </p>
           <MediaPicker
             value={imageMediaId}
             previewUrl={imageUrl}
+            label="Primary image"
             onChange={(mediaId, previewUrl) => {
               setImageMediaId(mediaId);
-              if (previewUrl) setImageUrl(previewUrl);
+              setImageUrl(previewUrl ?? '');
             }}
           />
         </div>
         <div className="md:col-span-2 lg:col-span-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">Brochure PDF/image</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+            Brochure PDF/image
+          </p>
           <MediaPicker
             value={brochureMediaId}
-            onChange={(mediaId) => setBrochureMediaId(mediaId)}
+            previewUrl={brochureUrl}
+            label="Brochure"
+            accept="image/*,.pdf,application/pdf"
+            onChange={(mediaId, previewUrl) => {
+              setBrochureMediaId(mediaId);
+              setBrochureUrl(previewUrl ?? '');
+            }}
           />
         </div>
         <AutomobileGalleryEditor items={galleryItems} onChange={setGalleryItems} />
@@ -616,11 +792,19 @@ export function AutomobileVehicleEditForm({
           onChange={(e) => setAffiliateUrl(e.target.value)}
         />
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+          />
           Featured
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={sponsored} onChange={(e) => setSponsored(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={sponsored}
+            onChange={(e) => setSponsored(e.target.checked)}
+          />
           Sponsored
         </label>
         <textarea
@@ -630,7 +814,13 @@ export function AutomobileVehicleEditForm({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <FormActions loading={loading} disabled={!name || !model} onSave={() => void save()} label="Save changes" loadingLabel="Saving…" />
+      <FormActions
+        loading={loading}
+        disabled={!name || !model}
+        onSave={() => void save()}
+        label="Save changes"
+        loadingLabel="Saving…"
+      />
     </AutomobileFormShell>
   );
 }
@@ -682,7 +872,11 @@ export function AutomobileMaintenanceForm({
   return (
     <AutomobileFormShell title="New maintenance schedule" message={message}>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <select className={inputClass} value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
+        <select
+          className={inputClass}
+          value={vehicleId}
+          onChange={(e) => setVehicleId(e.target.value)}
+        >
           <option value="">Select vehicle</option>
           {vehicles.map((v) => (
             <option key={v.id} value={v.id}>
@@ -690,7 +884,12 @@ export function AutomobileMaintenanceForm({
             </option>
           ))}
         </select>
-        <input className={inputClass} placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
         <input
           className={inputClass}
           placeholder="Service interval (e.g. 10,000 km / 12 months)"
@@ -751,7 +950,12 @@ export function AutomobileFaqForm() {
   return (
     <AutomobileFormShell title="New FAQ" message={message}>
       <div className="grid gap-3">
-        <input className={inputClass} placeholder="Question" value={question} onChange={(e) => setQuestion(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+        />
         <textarea
           className={`${inputClass} min-h-24 py-2`}
           placeholder="Answer"
@@ -805,8 +1009,18 @@ export function AutomobileGuideForm() {
   return (
     <AutomobileFormShell title="New guide" message={message}>
       <div className="grid gap-3 md:grid-cols-2">
-        <input className={inputClass} placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <input className={inputClass} placeholder="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          className={inputClass}
+          placeholder="Slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        />
         <textarea
           className={`${inputClass} min-h-20 py-2 md:col-span-2`}
           placeholder="Summary"
@@ -864,7 +1078,12 @@ export function AutomobileComparisonForm() {
   return (
     <AutomobileFormShell title="New comparison" message={message}>
       <div className="grid gap-3 md:grid-cols-2">
-        <input className={inputClass} placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
         <input
           className={inputClass}
           placeholder="Vehicle IDs (comma-separated)"
@@ -885,7 +1104,12 @@ export function AutomobileVersionHistory({
   entityId: string;
 }) {
   const [rows, setRows] = useState<
-    Array<{ id: string; action: string; createdAt: string; user?: { email?: string | null } | null }>
+    Array<{
+      id: string;
+      action: string;
+      createdAt: string;
+      user?: { email?: string | null } | null;
+    }>
   >([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -894,7 +1118,12 @@ export function AutomobileVersionHistory({
       try {
         const res = await fetch(`/api/admin/automobile/history/${entity}/${entityId}`);
         const json = (await res.json()) as {
-          data?: Array<{ id: string; action: string; createdAt: string; user?: { email?: string | null } | null }>;
+          data?: Array<{
+            id: string;
+            action: string;
+            createdAt: string;
+            user?: { email?: string | null } | null;
+          }>;
           error?: { message?: string };
         };
         if (!res.ok) throw new Error(json.error?.message || 'Failed to load history');
