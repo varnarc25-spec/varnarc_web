@@ -24,6 +24,7 @@
     "db:migrate": "pnpm --filter @varnarc/database migrate:dev",
     "db:seed": "pnpm --filter @varnarc/database seed",
     "db:seed:homepage": "pnpm --filter @varnarc/database seed:homepage",
+    "db:seed:calculators": "pnpm --filter @varnarc/database seed:calculators",
     "db:seed:calculator-articles": "pnpm --filter @varnarc/database seed:calculator-articles",
     "catalog:import": "tsx scripts/catalog/import.ts",
     "catalog:reindex": "pnpm --filter @varnarc/database exec tsx scripts/reindex-search.ts",
