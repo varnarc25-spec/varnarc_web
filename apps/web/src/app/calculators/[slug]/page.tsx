@@ -1,14 +1,20 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
-import { AdBanner } from '@/components/business/ad-banner';
 import { CalculatorRunner } from '@/features/calculators/calculator-runner';
 import {
   CalculatorRelatedArticles,
   type RelatedArticle,
 } from '@/features/calculators/calculator-related-articles';
-import { CalculatorInfoPanel } from '@/features/calculators/calculator-info-panel';
+import { CalculatorWorkspace } from '@/features/calculators/calculator-workspace';
+import { CalculatorHeroIllustration } from '@/components/calculators/calculator-hero-illustration';
 import { BookmarkButton } from '@/components/bookmark-button';
+import { AUTOMOBILE_CALCULATOR_FAQS } from '@/lib/automobile/calculator-faqs';
+import {
+  automobileCalcPageKeyFromSlug,
+  AUTOMOBILE_PAGE_DEFAULTS,
+} from '@/lib/automobile/seo-pages';
+import { AUTOMOBILE_CALCULATOR_LINKS } from '@/services/automobile';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { apiPublicFetch, ApiError } from '@/services/api-client';
 import { RecordContentView } from '@/components/record-content-view';
@@ -155,15 +161,37 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
     }
   }
 
-  const name = calc?.name || titleFromSlug(slug);
-  const description = calc?.description ?? undefined;
-  const defaultFaq = [
-    {
-      q: `How does the ${name} work?`,
-      a: description || 'Enter your inputs and click Calculate to see instant results.',
-    },
-  ];
+  const autoPageKey = automobileCalcPageKeyFromSlug(slug);
+  const autoDefaults = autoPageKey ? AUTOMOBILE_PAGE_DEFAULTS[autoPageKey] : null;
+  const name = autoDefaults?.h1 || calc?.name || titleFromSlug(slug);
+  const description = autoDefaults?.description ?? calc?.description ?? undefined;
+  const autoFaqs = (AUTOMOBILE_CALCULATOR_FAQS[slug] ?? []).map((item) => ({
+    q: item.question,
+    a: item.answer,
+  }));
+  const defaultFaq = autoFaqs.length
+    ? autoFaqs
+    : [
+        {
+          q: `How does the ${name} work?`,
+          a: description || 'Enter your inputs and click Calculate to see instant results.',
+        },
+      ];
   const faq = normalizeFaq(calc?.settings?.faq, defaultFaq);
+  const relatedFromAuto = autoDefaults
+    ? AUTOMOBILE_CALCULATOR_LINKS.filter((l) => l.href !== autoDefaults.path).map((l) => ({
+        name: l.label,
+        slug: l.href.split('/').pop() || l.href,
+        href: l.href,
+      }))
+    : [];
+  const relatedMerged = [
+    ...relatedCalcs.map((c) => ({ name: c.name, slug: c.slug })),
+    ...relatedFromAuto,
+  ].filter(
+    (item, index, list) =>
+      list.findIndex((x) => (x.href ?? x.slug) === (item.href ?? item.slug)) === index,
+  );
 
   const singlePageSlugs = new Set(['loan', 'emi', 'age']);
   const useWizard =
@@ -219,6 +247,7 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
       description={
         description ?? 'Interactive calculator powered by the Varnarc Calculator Engine.'
       }
+      illustration={<CalculatorHeroIllustration slug={slug} />}
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Calculators', href: '/calculators' },
@@ -236,112 +265,100 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="space-y-8">
-        <div className="grid gap-8 lg:grid-cols-5 lg:items-start">
-          <div className="space-y-4 lg:col-span-3">
-            {calc?.id ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <BookmarkButton entityType="calculator" entityId={calc.id} />
-              </div>
-            ) : null}
-            {contextNotice ? (
-              <p className="rounded-xl border border-slate-200 bg-[#f8fafc] px-4 py-3 text-xs leading-relaxed text-slate-600">
-                {contextNotice}
-              </p>
-            ) : null}
-            {(() => {
-              const categorySlug =
-                parsedQuery.category && isLoanHubCategorySlug(parsedQuery.category)
-                  ? parsedQuery.category
-                  : null;
-              const categoryByCalc: Record<string, { href: string; label: string }> = {
-                'personal-loan-emi': {
-                  href: '/finance/loans/personal-loan',
-                  label: 'Compare Personal Loans',
-                },
-                'home-loan-emi': { href: '/finance/loans/home-loan', label: 'Compare Home Loans' },
-                'car-loan': { href: '/finance/loans/car-loan', label: 'Compare Car Loans' },
-                'education-loan-emi': {
-                  href: '/finance/loans/education-loan',
-                  label: 'Compare Education Loans',
-                },
-                'business-loan-emi': {
-                  href: '/finance/loans/business-loan',
-                  label: 'Compare Business Loans',
-                },
-                'gold-loan-emi': { href: '/finance/loans/gold-loan', label: 'Compare Gold Loans' },
-                'bike-loan-emi': {
-                  href: '/finance/loans/two-wheeler-loan',
-                  label: 'Compare Two-Wheeler Loans',
-                },
-                'loan-against-property-emi': {
-                  href: '/finance/loans/loan-against-property',
-                  label: 'Compare Loan Against Property',
-                },
-                emi: { href: '/finance/loans', label: 'Browse all loans' },
-              };
-              const related = categorySlug
-                ? {
-                    href: loansHubPath({ categorySlug }),
-                    label: `Compare ${categorySlug.replace(/-/g, ' ')} →`,
-                  }
-                : categoryByCalc[slug];
-              if (!related) return null;
-              return (
-                <p className="text-sm">
-                  <Link
-                    href={related.href}
-                    className="font-semibold text-[#0b1f3a] underline-offset-2 hover:text-[#f97316] hover:underline"
-                  >
-                    {related.label.endsWith('→') ? related.label : `${related.label} →`}
-                  </Link>
-                </p>
-              );
-            })()}
-            {calc?.id ? (
-              <SectionErrorBoundary>
-                <Suspense
-                  fallback={
-                    <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
-                      Loading calculator…
-                    </div>
-                  }
-                >
-                  <CalculatorRunner
-                    calculatorId={calc.id}
-                    name={name}
-                    calculatorSlug={slug}
-                    fields={calc.fields ?? []}
-                    resultTemplate={calc.resultTemplate}
-                    settings={calculatorSettings}
-                  />
-                </Suspense>
-              </SectionErrorBoundary>
-            ) : (
-              <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                Calculator not found or API unavailable.
-              </p>
-            )}
-          </div>
-
-          {calc?.id ? (
-            <div className="space-y-5 lg:col-span-2">
-              <AdBanner slot="calculator-sidebar" />
-              <CalculatorInfoPanel
-                name={name}
-                slug={slug}
-                description={description}
-                faq={faq}
-                relatedCalculators={relatedCalcs}
-                relatedArticles={relatedArticles}
-              />
-            </div>
-          ) : null}
-        </div>
-
-        <AdBanner slot="calculator-bottom" />
-
+      <CalculatorWorkspace
+        name={name}
+        slug={slug}
+        description={description}
+        faq={faq}
+        relatedCalculators={relatedMerged}
+        relatedArticles={relatedArticles}
+      >
         {calc?.id ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <BookmarkButton entityType="calculator" entityId={calc.id} />
+          </div>
+        ) : null}
+        {contextNotice ? (
+          <p className="rounded-xl border border-slate-200 bg-[#f8fafc] px-4 py-3 text-xs leading-relaxed text-slate-600">
+            {contextNotice}
+          </p>
+        ) : null}
+        {(() => {
+          const categorySlug =
+            parsedQuery.category && isLoanHubCategorySlug(parsedQuery.category)
+              ? parsedQuery.category
+              : null;
+          const categoryByCalc: Record<string, { href: string; label: string }> = {
+            'personal-loan-emi': {
+              href: '/finance/loans/personal-loan',
+              label: 'Compare Personal Loans',
+            },
+            'home-loan-emi': { href: '/finance/loans/home-loan', label: 'Compare Home Loans' },
+            'car-loan': { href: '/finance/loans/car-loan', label: 'Compare Car Loans' },
+            'education-loan-emi': {
+              href: '/finance/loans/education-loan',
+              label: 'Compare Education Loans',
+            },
+            'business-loan-emi': {
+              href: '/finance/loans/business-loan',
+              label: 'Compare Business Loans',
+            },
+            'gold-loan-emi': { href: '/finance/loans/gold-loan', label: 'Compare Gold Loans' },
+            'bike-loan-emi': {
+              href: '/finance/loans/two-wheeler-loan',
+              label: 'Compare Two-Wheeler Loans',
+            },
+            'loan-against-property-emi': {
+              href: '/finance/loans/loan-against-property',
+              label: 'Compare Loan Against Property',
+            },
+            emi: { href: '/finance/loans', label: 'Browse all loans' },
+          };
+          const related = categorySlug
+            ? {
+                href: loansHubPath({ categorySlug }),
+                label: `Compare ${categorySlug.replace(/-/g, ' ')} →`,
+              }
+            : categoryByCalc[slug];
+          if (!related) return null;
+          return (
+            <p className="text-sm">
+              <Link
+                href={related.href}
+                className="font-semibold text-[#0b1f3a] underline-offset-2 hover:text-[#f97316] hover:underline"
+              >
+                {related.label.endsWith('→') ? related.label : `${related.label} →`}
+              </Link>
+            </p>
+          );
+        })()}
+        {calc?.id ? (
+          <SectionErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
+                  Loading calculator…
+                </div>
+              }
+            >
+              <CalculatorRunner
+                calculatorId={calc.id}
+                name={name}
+                calculatorSlug={slug}
+                fields={calc.fields ?? []}
+                resultTemplate={calc.resultTemplate}
+                settings={calculatorSettings}
+              />
+            </Suspense>
+          </SectionErrorBoundary>
+        ) : (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Calculator not found or API unavailable.
+          </p>
+        )}
+      </CalculatorWorkspace>
+      {calc?.id ? (
+        <div className="mt-8">
           <SectionErrorBoundary>
             <CalculatorRelatedArticles
               calculatorId={calc.id}
@@ -351,8 +368,8 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
               defaultTopic={defaultLoanTopic}
             />
           </SectionErrorBoundary>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </PageShell>
   );
 }

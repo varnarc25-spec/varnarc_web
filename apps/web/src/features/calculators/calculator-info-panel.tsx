@@ -16,6 +16,11 @@ const CALCULATOR_TIPS: Record<string, string[]> = {
     'SIP returns are illustrative — actual mutual fund returns vary with market conditions.',
     'Start early to benefit from compounding over longer horizons.',
   ],
+  'car-loan': [
+    'Results are educational estimates, not a bank offer.',
+    'Use estimated on-road price for your city — ex-showroom understates the financed amount.',
+    'Most lenders require 10–20% down payment on the on-road price.',
+  ],
 };
 
 type FaqItem = { q: string; a: string };
@@ -32,7 +37,7 @@ export function CalculatorInfoPanel({
   slug: string;
   description?: string | null;
   faq: FaqItem[];
-  relatedCalculators: Array<{ name: string; slug: string }>;
+  relatedCalculators: Array<{ name: string; slug: string; href?: string }>;
   relatedArticles: RelatedArticle[];
 }) {
   const tips = CALCULATOR_TIPS[slug] ?? [
@@ -46,7 +51,8 @@ export function CalculatorInfoPanel({
       <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <h2 className="text-sm font-bold text-[#0b1f3a]">About this calculator</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          {description || `Use the ${name} to plan your finances with quick, transparent estimates.`}
+          {description ||
+            `Use the ${name} to plan your finances with quick, transparent estimates.`}
         </p>
       </section>
 
@@ -107,7 +113,7 @@ export function CalculatorInfoPanel({
             {relatedCalculators.slice(0, 6).map((c) => (
               <li key={c.slug}>
                 <Link
-                  href={`/calculators/${c.slug}`}
+                  href={c.href ?? `/calculators/${c.slug}`}
                   className="text-sm font-medium text-[#f97316] hover:underline"
                 >
                   {c.name}
