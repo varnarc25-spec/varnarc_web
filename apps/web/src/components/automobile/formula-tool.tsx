@@ -22,6 +22,11 @@ function inr(n: number) {
   }).format(n);
 }
 
+function num(values: Record<string, number>, key: string, fallback = 0): number {
+  const value = values[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
 export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
   tco: {
     fields: [
@@ -34,11 +39,15 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'resale', label: 'Expected resale (₹)', defaultValue: 550000 },
     ],
     compute: (v) => {
-      const years = Math.max(v.years, 0.1);
+      const years = Math.max(num(v, 'years', 5), 0.1);
       const spent =
-        v.purchasePrice +
-        (v.emiAnnual + v.fuelAnnual + v.insuranceAnnual + v.serviceAnnual) * years;
-      const tco = spent - v.resale;
+        num(v, 'purchasePrice') +
+        (num(v, 'emiAnnual') +
+          num(v, 'fuelAnnual') +
+          num(v, 'insuranceAnnual') +
+          num(v, 'serviceAnnual')) *
+          years;
+      const tco = spent - num(v, 'resale');
       return [
         { label: 'Indicative TCO', value: inr(tco) },
         { label: 'Cost per year', value: inr(tco / years) },
@@ -50,7 +59,9 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'exShowroom', label: 'Ex-showroom (₹)', defaultValue: 1000000 },
       { key: 'rate', label: 'State tax rate (%)', defaultValue: 10 },
     ],
-    compute: (v) => [{ label: 'Indicative road tax', value: inr(v.exShowroom * (v.rate / 100)) }],
+    compute: (v) => [
+      { label: 'Indicative road tax', value: inr(num(v, 'exShowroom') * (num(v, 'rate') / 100)) },
+    ],
   },
   'on-road-price': {
     fields: [
@@ -62,7 +73,7 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
     compute: (v) => [
       {
         label: 'Indicative on-road',
-        value: inr(v.exShowroom + v.rto + v.insurance + v.handling),
+        value: inr(num(v, 'exShowroom') + num(v, 'rto') + num(v, 'insurance') + num(v, 'handling')),
       },
     ],
   },
@@ -73,10 +84,10 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'tariff', label: 'Tariff (₹ / kWh)', defaultValue: 8 },
     ],
     compute: (v) => {
-      const kwh = (v.km / 100) * v.kwhPer100;
+      const kwh = (num(v, 'km') / 100) * num(v, 'kwhPer100');
       return [
         { label: 'Monthly energy', value: `${kwh.toFixed(1)} kWh` },
-        { label: 'Monthly cost', value: inr(kwh * v.tariff) },
+        { label: 'Monthly cost', value: inr(kwh * num(v, 'tariff')) },
       ];
     },
   },
@@ -86,7 +97,8 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'kwhPer100', label: 'kWh / 100 km', defaultValue: 15 },
     ],
     compute: (v) => {
-      const km = v.kwhPer100 > 0 ? (v.battery / v.kwhPer100) * 100 : 0;
+      const kwhPer100 = num(v, 'kwhPer100');
+      const km = kwhPer100 > 0 ? (num(v, 'battery') / kwhPer100) * 100 : 0;
       return [{ label: 'Indicative range', value: `${km.toFixed(0)} km` }];
     },
   },
@@ -99,8 +111,10 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'tariff', label: 'Electricity (₹/kWh)', defaultValue: 8 },
     ],
     compute: (v) => {
-      const petrolCost = v.mileage > 0 ? (v.km / v.mileage) * v.petrol : 0;
-      const evCost = (v.km / 100) * v.kwhPer100 * v.tariff;
+      const mileage = num(v, 'mileage');
+      const km = num(v, 'km');
+      const petrolCost = mileage > 0 ? (km / mileage) * num(v, 'petrol') : 0;
+      const evCost = (km / 100) * num(v, 'kwhPer100') * num(v, 'tariff');
       return [
         { label: 'Petrol / month', value: inr(petrolCost) },
         { label: 'EV / month', value: inr(evCost) },
@@ -115,10 +129,12 @@ export const AUTOMOBILE_FORMULA_TOOLS: Record<string, FormulaToolConfig> = {
       { key: 'years', label: 'Years owned', defaultValue: 5 },
     ],
     compute: (v) => {
-      const remaining = v.purchasePrice * Math.pow(1 - v.rate / 100, Math.max(v.years, 0));
+      const purchasePrice = num(v, 'purchasePrice');
+      const remaining =
+        purchasePrice * Math.pow(1 - num(v, 'rate') / 100, Math.max(num(v, 'years'), 0));
       return [
         { label: 'Indicative resale', value: inr(remaining) },
-        { label: 'Value lost', value: inr(v.purchasePrice - remaining) },
+        { label: 'Value lost', value: inr(purchasePrice - remaining) },
       ];
     },
   },
@@ -137,26 +153,26 @@ export function AutomobileFormulaTool({ slug }: { slug: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="grid gap-4 sm:grid-cols-2">
-        {config.fields.map((field) => (
-          <label key={field.key} className="block text-sm font-medium text-slate-700">
-            {field.label}
-            <input
-              type="number"
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-[#0b1f3a]"
-              value={Number.isFinite(values[field.key]) ? values[field.key] : ''}
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, [field.key]: Number(e.target.value) }))
-              }
-            />
-          </label>
-        ))}
+        {config.fields.map((field) => {
+          const current = values[field.key];
+          return (
+            <label key={field.key} className="block text-sm font-medium text-slate-700">
+              {field.label}
+              <input
+                type="number"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-[#0b1f3a]"
+                value={typeof current === 'number' && Number.isFinite(current) ? current : ''}
+                onChange={(e) =>
+                  setValues((prev) => ({ ...prev, [field.key]: Number(e.target.value) }))
+                }
+              />
+            </label>
+          );
+        })}
       </div>
       <ul className="mt-5 grid gap-2 sm:grid-cols-2">
         {results.map((row) => (
-          <li
-            key={row.label}
-            className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700"
-          >
+          <li key={row.label} className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
             <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
               {row.label}
             </span>
