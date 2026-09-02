@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Storage } from '@google-cloud/storage';
 import { randomUUID } from 'crypto';
 import {
@@ -45,7 +45,58 @@ type ResolvedGcs = {
  */
 @Injectable()
 export class GcsStorageService {
+  private readonly logger = new Logger(GcsStorageService.name);
+
   constructor(private readonly settings: SettingsService) {}
+
+  private throwUploadError(err: unknown, bucket: string): never {
+    const raw = err as { message?: string; code?: number | string; errors?: { reason?: string }[] };
+    const msg = (raw.message ?? String(err))
+      .replace(/-----BEGIN[\s\S]*?-----END[^-]+-----/g, '[redacted]')
+      .slice(0, 800);
+    this.logger.error(
+      `GCS upload failed (bucket=${bucket} code=${String(raw.code ?? '')}): ${msg}`,
+    );
+
+    const lower = msg.toLowerCase();
+    let message =
+      `Could not write to Google Cloud Storage bucket "${bucket}". ` +
+      'Confirm the Cloud Run service account has Storage Object Admin on that bucket.';
+
+    if (
+      lower.includes('could not load the default credentials') ||
+      lower.includes('no such file')
+    ) {
+      message =
+        'Google Cloud credentials are not available on this API. On Cloud Run, attach a runtime service account (no JSON key). Locally, run gcloud auth application-default login.';
+    } else if (raw.code === 404 || lower.includes('notfound') || lower.includes('not found')) {
+      message = `GCS bucket "${bucket}" was not found. Check the bucket name and GCP project ID in Admin → Settings → Cloud Storage.`;
+    } else if (
+      raw.code === 403 ||
+      lower.includes('forbidden') ||
+      lower.includes('access denied') ||
+      lower.includes('permission')
+    ) {
+      message = `The Cloud Run service account is not allowed to write to bucket "${bucket}". Grant Storage Object Admin on that bucket to the varmarc-api runtime service account.`;
+    } else if (raw.code === 401 || lower.includes('unauthenticated')) {
+      message =
+        'GCS rejected authentication. Use Application Default Credentials on Cloud Run; leave the private key empty in Admin.';
+    }
+
+    throw new BadRequestException({
+      success: false,
+      error: {
+        code: 'GCS_UPLOAD_FAILED',
+        message,
+        details: {
+          bucket: bucket || null,
+          providerCode: raw.code ?? null,
+          providerReason: raw.errors?.[0]?.reason ?? null,
+          providerMessage: msg,
+        },
+      },
+    });
+  }
 
   private envConfig(): ResolvedGcs | null {
     const bucket = process.env.GCS_BUCKET?.trim() ?? '';
@@ -165,7 +216,18 @@ export class GcsStorageService {
     file: Express.Multer.File,
     options: MediaUploadOptions = {},
   ): Promise<MediaUploadPayload> {
-    const { cfg, storage } = await this.requireClient();
+    let bucketName = '';
+    let cfg: ResolvedGcs;
+    let storage: Storage;
+    try {
+      const client = await this.requireClient();
+      cfg = client.cfg;
+      storage = client.storage;
+      bucketName = cfg.bucket;
+    } catch (err) {
+      if (err instanceof BadRequestException) throw err;
+      this.throwUploadError(err, bucketName || 'unknown');
+    }
     const { mime, resourceType } = this.validateUpload(file);
 
     const ext = file.originalname.includes('.')
@@ -190,17 +252,21 @@ export class GcsStorageService {
     const bucket = storage.bucket(cfg.bucket);
     const gcsFile = bucket.file(publicId);
 
-    await gcsFile.save(file.buffer, {
-      resumable: false,
-      contentType: mime,
-      metadata: {
-        cacheControl: 'public, max-age=31536000, immutable',
+    try {
+      await gcsFile.save(file.buffer, {
+        resumable: false,
+        contentType: mime,
         metadata: {
-          originalName: file.originalname,
-          resourceType,
+          cacheControl: 'public, max-age=31536000, immutable',
+          metadata: {
+            originalName: file.originalname,
+            resourceType,
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      this.throwUploadError(err, cfg.bucket);
+    }
 
     if (cfg.makePublic) {
       await gcsFile.makePublic().catch(() => undefined);

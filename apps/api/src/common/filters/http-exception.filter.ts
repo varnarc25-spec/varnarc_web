@@ -13,6 +13,84 @@ import type { CurrentUser } from '@varnarc/types';
 import type { RequestWithMeta } from '../middleware/request-id.middleware';
 import { SecurityEventsService } from '../../modules/security/security-events.service';
 
+function sanitizeProviderMessage(raw: string): string {
+  return raw.replace(/-----BEGIN[\s\S]*?-----END[^-]+-----/g, '[redacted]').slice(0, 800);
+}
+
+function mapUnknownException(exception: unknown): {
+  status: number;
+  code: string;
+  message: string;
+  details?: unknown;
+} {
+  const raw = exception as {
+    message?: string;
+    code?: unknown;
+    meta?: unknown;
+    errors?: { reason?: string }[];
+  };
+  const prismaCode = typeof raw.code === 'string' && /^P\d{4}$/.test(raw.code) ? raw.code : null;
+  if (prismaCode === 'P2002') {
+    const meta = raw.meta as { target?: string[] } | undefined;
+    return {
+      status: HttpStatus.CONFLICT,
+      code: 'DUPLICATE_SLUG',
+      message: 'A record with this slug already exists.',
+      details: meta?.target?.length ? { fields: meta.target } : undefined,
+    };
+  }
+  if (prismaCode === 'P2023') {
+    return { status: HttpStatus.BAD_REQUEST, code: 'INVALID_ID', message: 'Invalid identifier.' };
+  }
+  if (prismaCode === 'P2022') {
+    return {
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      code: 'SCHEMA_MISMATCH',
+      message: raw.message ?? 'Database column is missing.',
+      details: { prismaCode },
+    };
+  }
+  if (prismaCode) {
+    return {
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      code: 'DATABASE_ERROR',
+      message: raw.message ?? 'A database error occurred.',
+      details: { prismaCode },
+    };
+  }
+
+  const providerMessage = sanitizeProviderMessage(raw.message ?? String(exception));
+  const lower = providerMessage.toLowerCase();
+  const numericCode = typeof raw.code === 'number' ? raw.code : Number(raw.code);
+  const looksGcs =
+    (Number.isFinite(numericCode) && numericCode >= 400 && numericCode < 600) ||
+    lower.includes('google') ||
+    lower.includes('storage.googleapis') ||
+    lower.includes('does not have storage.') ||
+    lower.includes('default credentials') ||
+    lower.includes('@google-cloud/storage');
+
+  if (looksGcs) {
+    return {
+      status: HttpStatus.BAD_REQUEST,
+      code: 'GCS_UPLOAD_FAILED',
+      message: providerMessage || 'Google Cloud Storage request failed.',
+      details: {
+        providerCode: raw.code ?? null,
+        providerReason: raw.errors?.[0]?.reason ?? null,
+        providerMessage,
+      },
+    };
+  }
+
+  return {
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    code: 'INTERNAL_ERROR',
+    message: providerMessage || 'An unexpected error occurred.',
+    details: { name: exception instanceof Error ? exception.name : undefined },
+  };
+}
+
 @Injectable()
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -50,39 +128,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
         code = obj.error ?? HttpStatus[status] ?? code;
         if (Array.isArray(obj.message)) details = obj.message;
       }
-    } else if (exception && typeof exception === 'object' && 'code' in exception) {
-      const prismaCode = (exception as { code?: string }).code;
-      if (prismaCode === 'P2002') {
-        status = HttpStatus.CONFLICT;
-        code = 'DUPLICATE_SLUG';
-        message = 'A record with this slug already exists.';
-        const meta = (exception as { meta?: { target?: string[] } }).meta;
-        if (meta?.target?.length) {
-          details = { fields: meta.target };
-        }
-      } else if (prismaCode === 'P2023') {
-        status = HttpStatus.BAD_REQUEST;
-        code = 'INVALID_ID';
-        message = 'Invalid identifier.';
-      } else if (prismaCode === 'P2022') {
-        status = HttpStatus.INTERNAL_SERVER_ERROR;
-        code = 'SCHEMA_MISMATCH';
-        message =
-          process.env.NODE_ENV === 'production'
-            ? 'An unexpected error occurred.'
-            : ((exception as { message?: string }).message ?? 'Database column is missing.');
-        this.logger.error(exception instanceof Error ? exception.stack : String(exception));
-      } else if (exception instanceof Error) {
-        message =
-          process.env.NODE_ENV === 'production'
-            ? 'An unexpected error occurred.'
-            : exception.message;
-        this.logger.error(exception.message, exception.stack);
-      }
-    } else if (exception instanceof Error) {
-      message =
-        process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : exception.message;
-      this.logger.error(exception.message, exception.stack);
+    } else {
+      const mapped = mapUnknownException(exception);
+      status = mapped.status;
+      code = mapped.code;
+      message = mapped.message;
+      details = mapped.details;
+      this.logger.error(
+        exception instanceof Error ? exception.message : String(exception),
+        exception instanceof Error ? exception.stack : undefined,
+      );
     }
 
     if (!(exception instanceof HttpException) || status >= 500) {
