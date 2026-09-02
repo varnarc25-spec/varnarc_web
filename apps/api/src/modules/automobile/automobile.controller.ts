@@ -23,6 +23,7 @@ import {
   automobileAffiliateLeadSchema,
   automobileCompareQuerySchema,
   automobileListQuerySchema,
+  automobileRefreshPricesSchema,
   createAutomobileComparisonSchema,
   createAutomobileMaintenanceSchema,
   createAutomobileManufacturerSchema,
@@ -34,6 +35,7 @@ import {
   type AutomobileAffiliateLeadInput,
   type AutomobileCompareQuery,
   type AutomobileListQuery,
+  type AutomobileRefreshPricesInput,
   type CreateAutomobileComparisonInput,
   type CreateAutomobileMaintenanceInput,
   type CreateAutomobileManufacturerInput,
@@ -49,12 +51,16 @@ import { CurrentUserDecorator } from '../../auth/decorators/current-user.decorat
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { ok, okCursor } from '../../common/utils/response';
 import { AutomobileService } from './automobile.service';
+import { AutomobilePriceAiService } from './automobile-price-ai.service';
 
 @ApiTags('automobile')
 @ApiBearerAuth()
 @Controller('automobile')
 export class AutomobileController {
-  constructor(private readonly service: AutomobileService) {}
+  constructor(
+    private readonly service: AutomobileService,
+    private readonly priceAi: AutomobilePriceAiService,
+  ) {}
 
   @Public()
   @Get('status')
@@ -162,6 +168,16 @@ export class AutomobileController {
     @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
   ) {
     return okCursor(await this.service.listVehicles(query));
+  }
+
+  @Post('admin/vehicles/refresh-prices')
+  @RequirePermissions(PERMISSIONS.AUTOMOBILE_EDIT)
+  @ApiOperation({ summary: 'AI indicative India ex-showroom price estimates' })
+  async refreshVehiclePrices(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(automobileRefreshPricesSchema)) body: AutomobileRefreshPricesInput,
+  ) {
+    return ok(await this.priceAi.refreshPrices(body, user.id));
   }
 
   @Public()

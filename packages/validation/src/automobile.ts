@@ -163,6 +163,12 @@ export const createAutomobileComparisonSchema = z
     message: 'At least two vehicle IDs are required.',
   });
 
+export const automobileRefreshPricesSchema = z.object({
+  ids: z.array(uuidSchema).max(25).optional(),
+  missingOnly: z.boolean().optional().default(true),
+  limit: z.coerce.number().int().min(1).max(20).optional().default(10),
+});
+
 export type CreateAutomobileManufacturerInput = z.infer<typeof createAutomobileManufacturerSchema>;
 export type UpdateAutomobileManufacturerInput = z.infer<typeof updateAutomobileManufacturerSchema>;
 export type CreateAutomobileVehicleInput = z.infer<typeof createAutomobileVehicleSchema>;
@@ -175,3 +181,4 @@ export type CreateAutomobileComparisonInput = z.infer<typeof createAutomobileCom
 export type AutomobileAffiliateClickInput = z.infer<typeof automobileAffiliateClickSchema>;
 export type AutomobileAffiliateLeadInput = z.infer<typeof automobileAffiliateLeadSchema>;
 export type AutomobileGalleryImageInput = z.infer<typeof automobileGalleryImageSchema>;
+export type AutomobileRefreshPricesInput = z.infer<typeof automobileRefreshPricesSchema>;
