@@ -20,10 +20,17 @@ type AffiliateStats = {
   totalClicks?: number;
   totalLeads?: number;
   conversionRate?: number;
-  vehicles?: Array<{ id: string; name: string; clicks: number; leads: number; ctr: number; affiliateUrl?: string | null }>;
+  vehicles?: Array<{
+    id: string;
+    name: string;
+    clicks: number;
+    leads: number;
+    ctr: number;
+    affiliateUrl?: string | null;
+  }>;
 };
 
-const exportEntities = ['manufacturers', 'vehicles'] as const;
+const exportEntities = ['manufacturers', 'vehicles', 'vehicle-images', 'vehicle-reviews'] as const;
 
 export default async function AutomobileReportsAdminPage() {
   const [result, affiliateResult] = await Promise.all([
@@ -59,8 +66,14 @@ export default async function AutomobileReportsAdminPage() {
               { label: 'FAQs', value: stats?.faqs ?? 0 },
               { label: 'Saved comparisons', value: stats?.comparisons ?? 0 },
               { label: 'Linked dealers', value: stats?.dealersLinked ?? 0 },
-              { label: 'Affiliate clicks', value: stats?.affiliateClicks ?? affiliate?.totalClicks ?? 0 },
-              { label: 'Affiliate leads', value: stats?.affiliateLeads ?? affiliate?.totalLeads ?? 0 },
+              {
+                label: 'Affiliate clicks',
+                value: stats?.affiliateClicks ?? affiliate?.totalClicks ?? 0,
+              },
+              {
+                label: 'Affiliate leads',
+                value: stats?.affiliateLeads ?? affiliate?.totalLeads ?? 0,
+              },
               { label: 'Lead conversion %', value: affiliate?.conversionRate ?? 0 },
             ].map((item) => (
               <div
@@ -75,7 +88,9 @@ export default async function AutomobileReportsAdminPage() {
 
           {affiliate?.vehicles?.length ? (
             <section className="mb-8">
-              <h2 className="mb-3 text-sm font-semibold text-[var(--varnarc-brand)]">Affiliate click leaders</h2>
+              <h2 className="mb-3 text-sm font-semibold text-[var(--varnarc-brand)]">
+                Affiliate click leaders
+              </h2>
               <div className="overflow-x-auto rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)]">
                 <table className="min-w-full text-left text-sm">
                   <thead className="border-b border-[var(--varnarc-border)] bg-[var(--varnarc-muted)]">

@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getApiAccessToken } from '@/lib/api';
+import { getApiAccessToken, getApiBaseUrl } from '@/lib/api';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
-
-const ENTITY_EXPORT_PATH: Record<string, string> = {
-  manufacturers: '/automobile/admin/export/manufacturers',
-  vehicles: '/automobile/admin/export/vehicles',
-};
-
-const ENTITY_IMPORT_PATH: Record<string, string> = {
-  manufacturers: '/automobile/admin/import/manufacturers',
-  vehicles: '/automobile/admin/import/vehicles',
-};
+const ENTITY_PATHS = [
+  'manufacturers',
+  'vehicles',
+  'specs',
+  'vehicle-images',
+  'vehicle-reviews',
+] as const;
 
 export async function proxyAutomobile(
   path: string,
@@ -24,6 +20,7 @@ export async function proxyAutomobile(
     return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
   }
 
+  const apiUrl = getApiBaseUrl();
   let url = `${apiUrl}${path.startsWith('/') ? path : `/${path}`}`;
   if (request && method === 'GET') {
     const qs = new URL(request.url).searchParams.toString();
@@ -50,12 +47,11 @@ export async function proxyAutomobileExport(entity: string) {
     return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
   }
 
-  const path = ENTITY_EXPORT_PATH[entity];
-  if (!path) {
+  if (!ENTITY_PATHS.includes(entity as (typeof ENTITY_PATHS)[number])) {
     return NextResponse.json({ error: { message: 'Unknown entity' } }, { status: 400 });
   }
 
-  const res = await fetch(`${apiUrl}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}/automobile/admin/export/${entity}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
@@ -81,15 +77,50 @@ export async function proxyAutomobileImport(entity: string, formData: FormData) 
     return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
   }
 
-  const path = ENTITY_IMPORT_PATH[entity];
-  if (!path) {
+  if (!ENTITY_PATHS.includes(entity as (typeof ENTITY_PATHS)[number])) {
     return NextResponse.json({ error: { message: 'Unknown entity' } }, { status: 400 });
   }
 
-  const res = await fetch(`${apiUrl}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}/automobile/admin/import/${entity}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
+    cache: 'no-store',
+  });
+
+  const json = await res.json().catch(() => ({}));
+  return NextResponse.json(json, { status: res.status });
+}
+
+export async function proxyAutomobileImportMerge(formData: FormData) {
+  const token = await getApiAccessToken();
+  if (!token) {
+    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  }
+
+  const res = await fetch(`${getApiBaseUrl()}/automobile/admin/import-merge`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+    cache: 'no-store',
+  });
+
+  const json = await res.json().catch(() => ({}));
+  return NextResponse.json(json, { status: res.status });
+}
+
+export async function proxyAutomobileImportFromCars() {
+  const token = await getApiAccessToken();
+  if (!token) {
+    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
+  }
+
+  const res = await fetch(`${getApiBaseUrl()}/automobile/admin/import-from-cars`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
     cache: 'no-store',
   });
 

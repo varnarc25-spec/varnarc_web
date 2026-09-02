@@ -11,16 +11,21 @@ if (existsSync(rootEnv)) {
 
 const nextConfig: NextConfig = withSecurityHeaders(
   withPerformanceDefaults({
-  transpilePackages: [
-    '@varnarc/ui',
-    '@varnarc/hooks',
-    '@varnarc/config',
-    '@varnarc/types',
-    '@varnarc/auth',
-    '@varnarc/validation',
-  ],
-  output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '../..'),
+    transpilePackages: [
+      '@varnarc/ui',
+      '@varnarc/hooks',
+      '@varnarc/config',
+      '@varnarc/types',
+      '@varnarc/auth',
+      '@varnarc/validation',
+    ],
+    experimental: {
+      serverActions: {
+        bodySizeLimit: '50mb',
+      },
+    },
+    output: 'standalone',
+    outputFileTracingRoot: path.join(__dirname, '../..'),
   }),
 );
 

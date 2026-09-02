@@ -14,6 +14,7 @@ type DashboardData = {
 const sections = [
   { href: '/automobile/manufacturers', label: 'Manufacturers' },
   { href: '/automobile/vehicles', label: 'Vehicles' },
+  { href: '/automobile/import', label: 'CSV import' },
   { href: '/automobile/maintenance', label: 'Maintenance' },
   { href: '/automobile/dealers', label: 'Dealers' },
   { href: '/automobile/comparisons', label: 'Comparisons' },
@@ -69,7 +70,9 @@ export default async function AutomobileAdminDashboardPage() {
                 className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4 hover:bg-[var(--varnarc-muted)]"
               >
                 <div className="font-medium text-[var(--varnarc-brand)]">{section.label}</div>
-                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">Manage {section.label.toLowerCase()}</div>
+                <div className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+                  Manage {section.label.toLowerCase()}
+                </div>
               </Link>
             ))}
           </div>

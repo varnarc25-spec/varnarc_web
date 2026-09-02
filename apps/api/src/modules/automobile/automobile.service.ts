@@ -22,6 +22,13 @@ import type {
   UpdateAutomobileVehicleInput,
 } from '@varnarc/validation';
 import { PRISMA, REPOS } from '../../database/database.module';
+import {
+  detectAutomobileCsvEntity,
+  MERGE_IMPORT_ORDER,
+  parseCsv,
+  slugify,
+  type CsvRow,
+} from './automobile-csv.util';
 
 const CACHE_TTL = 60_000;
 
@@ -77,7 +84,8 @@ export class AutomobileService {
       const url = await this.mediaUrl(brochureMediaId);
       if (url) row.brochureUrl = url;
     }
-    const images = row.images as Array<{ mediaId?: string | null; imageUrl?: string | null }> | undefined;
+    const images = row.images as
+      Array<{ mediaId?: string | null; imageUrl?: string | null }> | undefined;
     if (images?.length) {
       for (const img of images) {
         if (img.mediaId && !img.imageUrl) {
@@ -86,7 +94,8 @@ export class AutomobileService {
         }
       }
     }
-    const manufacturer = row.manufacturer as { logoMediaId?: string | null; logoUrl?: string | null } | null | undefined;
+    const manufacturer = row.manufacturer as
+      { logoMediaId?: string | null; logoUrl?: string | null } | null | undefined;
     if (manufacturer?.logoMediaId && !manufacturer.logoUrl) {
       const url = await this.mediaUrl(manufacturer.logoMediaId);
       if (url) manufacturer.logoUrl = url;
@@ -137,7 +146,13 @@ export class AutomobileService {
     }
   }
 
-  private async audit(actorId: string, action: string, entity: string, entityId: string, newValue?: object) {
+  private async audit(
+    actorId: string,
+    action: string,
+    entity: string,
+    entityId: string,
+    newValue?: object,
+  ) {
     await this.repos.auditLogs.create({
       userId: actorId,
       action,
@@ -180,7 +195,10 @@ export class AutomobileService {
         { slug: 'depreciation', name: 'Depreciation Calculator' },
         { slug: 'maintenance-cost', name: 'Maintenance Cost Estimator' },
       ],
-      dealerDirectory: { href: '/directory?vertical=automobile', label: 'Find dealers & service centers' },
+      dealerDirectory: {
+        href: '/directory?vertical=automobile',
+        label: 'Find dealers & service centers',
+      },
     };
     await this.cache.set('automobile:dashboard', data, CACHE_TTL);
     return data;
@@ -204,7 +222,11 @@ export class AutomobileService {
 
   async createManufacturer(input: CreateAutomobileManufacturerInput, actorId: string) {
     const clash = await this.repos.automobileManufacturers.findBySlug(input.slug);
-    if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug exists.' } });
+    if (clash)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug exists.' },
+      });
     const row = await this.repos.automobileManufacturers.create({
       name: input.name,
       slug: input.slug,
@@ -221,7 +243,13 @@ export class AutomobileService {
       createdBy: actorId,
       updatedBy: actorId,
     });
-    await this.audit(actorId, 'automobile.manufacturer.create', 'automobile_manufacturer', row.id, row);
+    await this.audit(
+      actorId,
+      'automobile.manufacturer.create',
+      'automobile_manufacturer',
+      row.id,
+      row,
+    );
     await this.bust();
     return row;
   }
@@ -278,7 +306,11 @@ export class AutomobileService {
 
   async createVehicle(input: CreateAutomobileVehicleInput, actorId: string) {
     const clash = await this.repos.automobileVehicles.findBySlug(input.slug);
-    if (clash) throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug exists.' } });
+    if (clash)
+      throw new ConflictException({
+        success: false,
+        error: { code: 'CONFLICT', message: 'Slug exists.' },
+      });
     const mfr = await this.repos.automobileManufacturers.findById(input.manufacturerId);
     if (!mfr) throw this.notFound('Manufacturer not found.');
     const variant = this.normalizeVariant(input.variant);
@@ -326,7 +358,13 @@ export class AutomobileService {
     });
     await this.applyVehicleExtras(row.id, input);
     const full = await this.repos.automobileVehicles.findById(row.id);
-    await this.audit(actorId, 'automobile.vehicle.create', 'automobile_vehicle', row.id, full ?? row);
+    await this.audit(
+      actorId,
+      'automobile.vehicle.create',
+      'automobile_vehicle',
+      row.id,
+      full ?? row,
+    );
     await this.bust();
     return full ?? row;
   }
@@ -348,7 +386,10 @@ export class AutomobileService {
     if (input.slug && input.slug !== existing.slug) {
       const clash = await this.repos.automobileVehicles.findBySlug(input.slug);
       if (clash) {
-        throw new ConflictException({ success: false, error: { code: 'CONFLICT', message: 'Slug exists.' } });
+        throw new ConflictException({
+          success: false,
+          error: { code: 'CONFLICT', message: 'Slug exists.' },
+        });
       }
     }
     await this.repos.automobileVehicles.update(id, {
@@ -371,24 +412,33 @@ export class AutomobileService {
       ...(input.bootSpace !== undefined ? { bootSpace: input.bootSpace } : {}),
       ...(input.safetyRating !== undefined ? { safetyRating: input.safetyRating } : {}),
       ...(input.exShowroomPrice !== undefined ? { exShowroomPrice: input.exShowroomPrice } : {}),
-      ...(input.estimatedOnRoadPrice !== undefined ? { estimatedOnRoadPrice: input.estimatedOnRoadPrice } : {}),
+      ...(input.estimatedOnRoadPrice !== undefined
+        ? { estimatedOnRoadPrice: input.estimatedOnRoadPrice }
+        : {}),
       ...(input.warranty !== undefined ? { warranty: input.warranty } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
-      ...(input.specifications !== undefined ? { specifications: input.specifications as never } : {}),
+      ...(input.specifications !== undefined
+        ? { specifications: input.specifications as never }
+        : {}),
       ...(input.pros !== undefined ? { pros: input.pros as never } : {}),
       ...(input.cons !== undefined ? { cons: input.cons as never } : {}),
       ...(input.imageUrl !== undefined ? { imageUrl: this.emptyUrl(input.imageUrl) } : {}),
       ...(input.brochureUrl !== undefined ? { brochureUrl: this.emptyUrl(input.brochureUrl) } : {}),
       ...(input.brochureMediaId !== undefined ? { brochureMediaId: input.brochureMediaId } : {}),
       ...(input.videoUrl !== undefined ? { videoUrl: this.emptyUrl(input.videoUrl) } : {}),
-      ...(input.affiliateUrl !== undefined ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) } : {}),
+      ...(input.affiliateUrl !== undefined
+        ? { affiliateUrl: this.emptyUrl(input.affiliateUrl) }
+        : {}),
       ...(input.expertRating !== undefined ? { expertRating: input.expertRating } : {}),
       ...(input.featured != null ? { featured: input.featured } : {}),
       ...(input.sponsored != null ? { sponsored: input.sponsored } : {}),
       ...(input.status != null
         ? {
             status: input.status,
-            publishedAt: input.status === 'PUBLISHED' ? existing.publishedAt ?? new Date() : existing.publishedAt,
+            publishedAt:
+              input.status === 'PUBLISHED'
+                ? (existing.publishedAt ?? new Date())
+                : existing.publishedAt,
           }
         : {}),
       ...(input.seoTitle !== undefined ? { seoTitle: input.seoTitle } : {}),
@@ -397,7 +447,13 @@ export class AutomobileService {
     });
     await this.applyVehicleExtras(id, input);
     const full = await this.repos.automobileVehicles.findById(id);
-    await this.audit(actorId, 'automobile.vehicle.update', 'automobile_vehicle', id, full ?? undefined);
+    await this.audit(
+      actorId,
+      'automobile.vehicle.update',
+      'automobile_vehicle',
+      id,
+      full ?? undefined,
+    );
     await this.bust();
     return full;
   }
@@ -514,12 +570,20 @@ export class AutomobileService {
       createdBy: actorId,
       updatedBy: actorId,
     });
-    await this.audit(actorId, 'automobile.maintenance.create', 'automobile_maintenance', row.id, row);
+    await this.audit(
+      actorId,
+      'automobile.maintenance.create',
+      'automobile_maintenance',
+      row.id,
+      row,
+    );
     return row;
   }
 
   async updateMaintenance(id: string, input: UpdateAutomobileMaintenanceInput, actorId: string) {
-    const existing = await this.db.automobileMaintenanceSchedule.findFirst({ where: { id, deletedAt: null } });
+    const existing = await this.db.automobileMaintenanceSchedule.findFirst({
+      where: { id, deletedAt: null },
+    });
     if (!existing) throw this.notFound('Maintenance schedule not found.');
     const row = await this.repos.automobileMaintenance.update(id, {
       ...(input.title != null ? { title: input.title } : {}),
@@ -873,8 +937,15 @@ export class AutomobileService {
 
   async affiliateStats() {
     const automobileTypes = ['automobile_vehicle', 'automobile_loan', 'automobile_insurance'];
-    const [clicksByType, vehicleClicks, vehiclesWithAffiliate, leadsByType, vehicleLeads, totalClicks, totalLeads] =
-      await Promise.all([
+    const [
+      clicksByType,
+      vehicleClicks,
+      vehiclesWithAffiliate,
+      leadsByType,
+      vehicleLeads,
+      totalClicks,
+      totalLeads,
+    ] = await Promise.all([
       this.db.affiliateClick.groupBy({
         by: ['entityType'],
         where: { entityType: { in: automobileTypes } },
@@ -953,10 +1024,14 @@ export class AutomobileService {
         select: { id: true },
       }),
       this.db.affiliateClick.count({
-        where: { entityType: { in: ['automobile_vehicle', 'automobile_loan', 'automobile_insurance'] } },
+        where: {
+          entityType: { in: ['automobile_vehicle', 'automobile_loan', 'automobile_insurance'] },
+        },
       }),
       this.db.affiliateLead.count({
-        where: { entityType: { in: ['automobile_vehicle', 'automobile_loan', 'automobile_insurance'] } },
+        where: {
+          entityType: { in: ['automobile_vehicle', 'automobile_loan', 'automobile_insurance'] },
+        },
       }),
     ]);
     const dealersLinked = dealerCats.length
@@ -1006,7 +1081,9 @@ export class AutomobileService {
       id: row.id,
       action: row.action,
       createdAt: row.createdAt,
-      user: row.user ? { id: row.user.id, email: row.user.email, displayName: row.user.displayName } : null,
+      user: row.user
+        ? { id: row.user.id, email: row.user.email, displayName: row.user.displayName }
+        : null,
     }));
   }
 
@@ -1018,108 +1095,167 @@ export class AutomobileService {
     if (entity === 'manufacturers') {
       const rows = await this.db.automobileManufacturer.findMany({ where: { deletedAt: null } });
       return [
-        'id,name,slug,country,website,status,featured',
-        ...rows.map((r) => [r.id, r.name, r.slug, r.country, r.website, r.status, r.featured].map(esc).join(',')),
+        'name,slug,country,website,status,featured',
+        ...rows.map((r) =>
+          [r.name, r.slug, r.country, r.website, r.status, r.featured].map(esc).join(','),
+        ),
       ].join('\n');
     }
-    if (entity === 'vehicles') {
+    if (entity === 'vehicles' || entity === 'specs') {
       const rows = await this.db.automobileVehicle.findMany({
         where: { deletedAt: null },
         include: { manufacturer: { select: { slug: true } } },
       });
       return [
-        'id,name,slug,manufacturerSlug,model,variant,fuelType,exShowroomPrice,status',
+        'name,slug,manufacturerSlug,model,variant,fuelType,bodyType,modelYear,exShowroomPrice,status,engineCapacity,horsepower,torque,mileage,seatingCapacity',
         ...rows.map((r) =>
-          [r.id, r.name, r.slug, r.manufacturer.slug, r.model, r.variant, r.fuelType, r.exShowroomPrice, r.status]
+          [
+            r.name,
+            r.slug,
+            r.manufacturer.slug,
+            r.model,
+            r.variant,
+            r.fuelType,
+            r.bodyType,
+            r.modelYear,
+            r.exShowroomPrice,
+            r.status,
+            r.engineCapacity,
+            r.horsepower,
+            r.torque,
+            r.mileage,
+            r.seatingCapacity,
+          ]
             .map(esc)
             .join(','),
         ),
       ].join('\n');
     }
-    throw new BadRequestException({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Unknown entity.' } });
+    if (entity === 'vehicle-images') {
+      const rows = await this.db.automobileVehicleImage.findMany({
+        where: { deletedAt: null },
+        include: { vehicle: { select: { slug: true } } },
+      });
+      return [
+        'vehicleSlug,imageUrl,altText,displayOrder',
+        ...rows.map((r) =>
+          [r.vehicle.slug, r.imageUrl, r.altText, r.displayOrder].map(esc).join(','),
+        ),
+      ].join('\n');
+    }
+    if (entity === 'vehicle-reviews') {
+      const rows = await this.db.automobileVehicleReview.findMany({
+        include: { vehicle: { select: { slug: true } }, review: { select: { slug: true } } },
+      });
+      return [
+        'vehicleSlug,reviewSlug',
+        ...rows.map((r) => [r.vehicle.slug, r.review.slug].map(esc).join(',')),
+      ].join('\n');
+    }
+    throw new BadRequestException({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'Unknown entity.' },
+    });
+  }
+
+  async importMergeFiles(files: Array<{ originalName: string; text: string }>, actorId: string) {
+    if (!files.length) {
+      throw new BadRequestException({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Upload at least one CSV file.' },
+      });
+    }
+    const parsed = files.map((file) => {
+      const rows = parseCsv(file.text);
+      const headers = rows[0] ? Object.keys(rows[0]) : [];
+      return {
+        entity: detectAutomobileCsvEntity(file.originalName, headers),
+        rows,
+        name: file.originalName,
+      };
+    });
+    parsed.sort(
+      (a, b) =>
+        MERGE_IMPORT_ORDER.indexOf(a.entity as (typeof MERGE_IMPORT_ORDER)[number]) -
+        MERGE_IMPORT_ORDER.indexOf(b.entity as (typeof MERGE_IMPORT_ORDER)[number]),
+    );
+    const summary: Record<string, number> = {};
+    for (const item of parsed) {
+      const result = await this.importParsedRows(item.entity, item.rows, actorId);
+      summary[item.entity] = (summary[item.entity] ?? 0) + result.imported;
+    }
+    await this.bust();
+    return { imported: Object.values(summary).reduce((sum, n) => sum + n, 0), byEntity: summary };
+  }
+
+  async mergeFromCarsTable(actorId: string) {
+    const cars = await this.db.car.findMany({ orderBy: [{ make: 'asc' }, { model: 'asc' }] });
+    const rows: CsvRow[] = cars.map((car) => ({
+      make: car.make,
+      model: car.model,
+      variant: car.variant ?? '',
+      yearFrom: car.yearFrom != null ? String(car.yearFrom) : '',
+      bodyType: car.bodyType ?? '',
+      engineFuelType: car.engineFuelType ?? '',
+      engineDisplacement: car.engineDisplacement != null ? String(car.engineDisplacement) : '',
+      enginePowerBhp: car.enginePowerBhp != null ? String(car.enginePowerBhp) : '',
+      engineTorqueNm: car.engineTorqueNm != null ? String(car.engineTorqueNm) : '',
+      seats: car.seats != null ? String(car.seats) : '',
+      bootLitres: car.bootLitres != null ? String(car.bootLitres) : '',
+      fuelEconomyCombinedL100:
+        car.fuelEconomyCombinedL100 != null ? String(car.fuelEconomyCombinedL100) : '',
+      sourceFile: car.sourceFile ?? '',
+    }));
+    const result = await this.importParsedRows('specs', rows, actorId);
+    await this.bust();
+    return result;
   }
 
   async importCsv(entity: string, csvText: string, actorId: string) {
-    const lines = csvText
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean);
-    if (lines.length < 2) {
-      throw new BadRequestException({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Empty CSV.' } });
-    }
-    const headers = lines[0]!.split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-    const rows = lines.slice(1).map((line) => {
-      const cols = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
-      const row: Record<string, string> = {};
-      headers.forEach((h, i) => {
-        row[h] = cols[i] ?? '';
+    const rows = parseCsv(csvText);
+    if (!rows.length) {
+      throw new BadRequestException({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Empty CSV.' },
       });
-      return row;
-    });
+    }
+    const result = await this.importParsedRows(entity, rows, actorId);
+    await this.bust();
+    return result;
+  }
+
+  private async importParsedRows(entity: string, rows: CsvRow[], actorId: string) {
     let imported = 0;
+    let skipped = 0;
     if (entity === 'manufacturers') {
       for (const row of rows) {
-        if (!row.name || !row.slug) continue;
-        await this.db.automobileManufacturer.upsert({
-          where: { slug: row.slug },
-          update: {
-            name: row.name,
-            country: row.country || null,
-            website: row.website || null,
-            status: (row.status as 'DRAFT' | 'PUBLISHED') || 'DRAFT',
-            updatedBy: actorId,
-          },
-          create: {
-            name: row.name,
-            slug: row.slug,
-            country: row.country || null,
-            website: row.website || null,
-            status: (row.status as 'DRAFT' | 'PUBLISHED') || 'DRAFT',
-            createdBy: actorId,
-            updatedBy: actorId,
-          },
-        });
-        imported += 1;
+        const ok = await this.upsertManufacturerRow(row, actorId);
+        if (ok) imported += 1;
+        else skipped += 1;
       }
     } else if (entity === 'vehicles') {
       for (const row of rows) {
-        if (!row.name || !row.slug || !row.model) continue;
-        const manufacturerSlug = row.manufacturerSlug || row.manufacturerId;
-        if (!manufacturerSlug) continue;
-        const manufacturer = await this.db.automobileManufacturer.findFirst({
-          where: {
-            deletedAt: null,
-            OR: [{ slug: manufacturerSlug }, { id: manufacturerSlug }],
-          },
-          select: { id: true },
-        });
-        if (!manufacturer) continue;
-        await this.db.automobileVehicle.upsert({
-          where: { slug: row.slug },
-          update: {
-            name: row.name,
-            manufacturerId: manufacturer.id,
-            model: row.model,
-            variant: row.variant || '',
-            fuelType: row.fuelType || null,
-            exShowroomPrice: row.exShowroomPrice ? Number(row.exShowroomPrice) : null,
-            status: (row.status as 'DRAFT' | 'PUBLISHED') || 'DRAFT',
-            updatedBy: actorId,
-          },
-          create: {
-            name: row.name,
-            slug: row.slug,
-            manufacturerId: manufacturer.id,
-            model: row.model,
-            variant: row.variant || '',
-            fuelType: row.fuelType || null,
-            exShowroomPrice: row.exShowroomPrice ? Number(row.exShowroomPrice) : null,
-            status: (row.status as 'DRAFT' | 'PUBLISHED') || 'DRAFT',
-            createdBy: actorId,
-            updatedBy: actorId,
-          },
-        });
-        imported += 1;
+        const ok = await this.upsertVehicleRow(row, actorId);
+        if (ok) imported += 1;
+        else skipped += 1;
+      }
+    } else if (entity === 'specs') {
+      for (const row of rows) {
+        const ok = await this.upsertSpecRow(row, actorId);
+        if (ok) imported += 1;
+        else skipped += 1;
+      }
+    } else if (entity === 'vehicle-images') {
+      for (const row of rows) {
+        const ok = await this.upsertImageRow(row);
+        if (ok) imported += 1;
+        else skipped += 1;
+      }
+    } else if (entity === 'vehicle-reviews') {
+      for (const row of rows) {
+        const ok = await this.upsertReviewLinkRow(row);
+        if (ok) imported += 1;
+        else skipped += 1;
       }
     } else {
       throw new BadRequestException({
@@ -1127,7 +1263,217 @@ export class AutomobileService {
         error: { code: 'VALIDATION_ERROR', message: `Import for ${entity} not supported yet.` },
       });
     }
-    await this.bust();
-    return { imported };
+    return { imported, skipped };
+  }
+
+  private async upsertManufacturerRow(row: CsvRow, actorId: string) {
+    const name = row.name || row.make;
+    if (!name) return false;
+    const slug = row.slug || slugify(name);
+    await this.db.automobileManufacturer.upsert({
+      where: { slug },
+      update: {
+        name,
+        country: row.country || null,
+        website: row.website || null,
+        status: (row.status as 'DRAFT' | 'PUBLISHED') || 'PUBLISHED',
+        updatedBy: actorId,
+        deletedAt: null,
+      },
+      create: {
+        name,
+        slug,
+        country: row.country || null,
+        website: row.website || null,
+        status: (row.status as 'DRAFT' | 'PUBLISHED') || 'PUBLISHED',
+        createdBy: actorId,
+        updatedBy: actorId,
+      },
+    });
+    return true;
+  }
+
+  private async ensureManufacturer(name: string, actorId: string) {
+    const slug = slugify(name);
+    return this.db.automobileManufacturer.upsert({
+      where: { slug },
+      update: { deletedAt: null, updatedBy: actorId },
+      create: {
+        name,
+        slug,
+        status: 'PUBLISHED',
+        createdBy: actorId,
+        updatedBy: actorId,
+      },
+    });
+  }
+
+  private async upsertVehicleRow(row: CsvRow, actorId: string) {
+    const name = row.name;
+    const model = row.model;
+    const manufacturerSlug = row.manufacturerSlug || row.manufacturerId;
+    if (!name || !model || !manufacturerSlug) return false;
+    const manufacturer = await this.db.automobileManufacturer.findFirst({
+      where: { deletedAt: null, OR: [{ slug: manufacturerSlug }, { id: manufacturerSlug }] },
+    });
+    if (!manufacturer) return false;
+    const variant = row.variant || '';
+    const slug = row.slug || slugify(`${manufacturer.slug}-${model}-${variant}`);
+    await this.saveVehicle({
+      slug,
+      manufacturerId: manufacturer.id,
+      model,
+      variant,
+      data: {
+        name,
+        fuelType: row.fuelType || null,
+        bodyType: row.bodyType || null,
+        modelYear: row.modelYear ? Number(row.modelYear) : null,
+        engineCapacity: row.engineCapacity || null,
+        horsepower: row.horsepower ? Number(row.horsepower) : null,
+        torque: row.torque ? Number(row.torque) : null,
+        mileage: row.mileage ? Number(row.mileage) : null,
+        seatingCapacity: row.seatingCapacity ? Number(row.seatingCapacity) : null,
+        exShowroomPrice: row.exShowroomPrice ? Number(row.exShowroomPrice) : null,
+        status: (row.status as 'DRAFT' | 'PUBLISHED') || 'PUBLISHED',
+        updatedBy: actorId,
+        deletedAt: null,
+      },
+      createBy: actorId,
+    });
+    return true;
+  }
+
+  private async upsertSpecRow(row: CsvRow, actorId: string) {
+    const make = row.make || row.manufacturer || row.name;
+    const model = row.model;
+    if (!make || !model) return false;
+    const manufacturer = await this.ensureManufacturer(make, actorId);
+    const variant =
+      [row.variant, row.yearFrom, row.engineDisplacement].filter(Boolean).join(' · ').trim() || '';
+    const slug = slugify(
+      `${make}-${model}-${row.variant || ''}-${row.yearFrom || ''}-${row.engineDisplacement || ''}`,
+    );
+    const name = [make, model, row.variant].filter(Boolean).join(' ');
+    await this.saveVehicle({
+      slug,
+      manufacturerId: manufacturer.id,
+      model,
+      variant,
+      data: {
+        name,
+        fuelType: row.engineFuelType || row.fuelType || null,
+        bodyType: row.bodyType || null,
+        modelYear: row.yearFrom ? Number(row.yearFrom) : null,
+        engineCapacity: row.engineDisplacement || row.engineCapacity || null,
+        horsepower: row.enginePowerBhp ? Number(row.enginePowerBhp) : null,
+        torque: row.engineTorqueNm ? Number(row.engineTorqueNm) : null,
+        mileage: row.fuelEconomyCombinedL100 ? Number(row.fuelEconomyCombinedL100) : null,
+        seatingCapacity: row.seats ? Number(row.seats) : null,
+        bootSpace: row.bootLitres ? Number(row.bootLitres) : null,
+        specifications: row as never,
+        status: 'PUBLISHED',
+        updatedBy: actorId,
+        deletedAt: null,
+      },
+      createBy: actorId,
+    });
+    return true;
+  }
+
+  private async saveVehicle(input: {
+    slug: string;
+    manufacturerId: string;
+    model: string;
+    variant: string;
+    data: Record<string, unknown>;
+    createBy: string;
+  }) {
+    const existing =
+      (await this.db.automobileVehicle.findUnique({ where: { slug: input.slug } })) ??
+      (await this.db.automobileVehicle.findUnique({
+        where: {
+          manufacturerId_model_variant: {
+            manufacturerId: input.manufacturerId,
+            model: input.model,
+            variant: input.variant,
+          },
+        },
+      }));
+    if (existing) {
+      await this.db.automobileVehicle.update({
+        where: { id: existing.id },
+        data: {
+          ...input.data,
+          manufacturerId: input.manufacturerId,
+          model: input.model,
+          variant: input.variant,
+        },
+      });
+      return;
+    }
+    await this.db.automobileVehicle.create({
+      data: {
+        ...input.data,
+        name: String(input.data.name ?? input.model),
+        slug: input.slug,
+        manufacturerId: input.manufacturerId,
+        model: input.model,
+        variant: input.variant,
+        createdBy: input.createBy,
+      } as never,
+    });
+  }
+
+  private async upsertImageRow(row: CsvRow) {
+    const vehicleSlug = row.vehicleSlug || row.slug;
+    const imageUrl = row.imageUrl || row.image_url;
+    if (!vehicleSlug || !imageUrl) return false;
+    const vehicle = await this.db.automobileVehicle.findFirst({
+      where: { slug: vehicleSlug, deletedAt: null },
+    });
+    if (!vehicle) return false;
+    const existing = await this.db.automobileVehicleImage.findFirst({
+      where: { vehicleId: vehicle.id, imageUrl, deletedAt: null },
+    });
+    if (existing) {
+      await this.db.automobileVehicleImage.update({
+        where: { id: existing.id },
+        data: {
+          altText: row.altText || row.alt_text || existing.altText,
+          displayOrder: row.displayOrder ? Number(row.displayOrder) : existing.displayOrder,
+        },
+      });
+      return true;
+    }
+    await this.db.automobileVehicleImage.create({
+      data: {
+        vehicleId: vehicle.id,
+        imageUrl,
+        altText: row.altText || row.alt_text || vehicle.name,
+        displayOrder: row.displayOrder ? Number(row.displayOrder) : 0,
+      },
+    });
+    return true;
+  }
+
+  private async upsertReviewLinkRow(row: CsvRow) {
+    const vehicleSlug = row.vehicleSlug;
+    const reviewKey = row.reviewSlug || row.reviewId;
+    if (!vehicleSlug || !reviewKey) return false;
+    const vehicle = await this.db.automobileVehicle.findFirst({
+      where: { slug: vehicleSlug, deletedAt: null },
+    });
+    if (!vehicle) return false;
+    const review = await this.db.review.findFirst({
+      where: { deletedAt: null, OR: [{ slug: reviewKey }, { id: reviewKey }] },
+    });
+    if (!review) return false;
+    await this.db.automobileVehicleReview.upsert({
+      where: { vehicleId_reviewId: { vehicleId: vehicle.id, reviewId: review.id } },
+      update: {},
+      create: { vehicleId: vehicle.id, reviewId: review.id },
+    });
+    return true;
   }
 }

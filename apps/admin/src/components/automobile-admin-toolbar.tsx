@@ -84,9 +84,15 @@ export function AutomobileCsvToolbar({ entity }: { entity: string }) {
         method: 'POST',
         body: formData,
       });
-      const json = (await res.json()) as { error?: { message?: string } };
+      const json = (await res.json()) as {
+        data?: { imported?: number; skipped?: number };
+        error?: { message?: string };
+      };
       if (!res.ok) throw new Error(json.error?.message || 'Import failed');
-      setMessage('Import completed');
+      setMessage(
+        `Imported ${json.data?.imported ?? 0} rows` +
+          (json.data?.skipped ? ` (${json.data.skipped} skipped)` : ''),
+      );
       setFile(null);
       router.refresh();
     } catch (err) {
@@ -111,9 +117,21 @@ export function AutomobileCsvToolbar({ entity }: { entity: string }) {
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="text-sm"
         />
-        <Button type="button" variant="secondary" size="sm" disabled={!file || loading} onClick={() => void importCsv()}>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={!file || loading}
+          onClick={() => void importCsv()}
+        >
           {loading ? 'Importing…' : 'Import CSV'}
         </Button>
+        <a
+          href="/automobile/import"
+          className="inline-flex h-10 items-center text-sm font-medium text-[var(--varnarc-brand)] hover:underline"
+        >
+          Merge all tables
+        </a>
       </div>
       {message ? <span className="text-sm text-[var(--varnarc-subtle)]">{message}</span> : null}
     </div>

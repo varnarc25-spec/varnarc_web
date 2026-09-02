@@ -48,10 +48,15 @@ export default async function CatalogOpsPage() {
           ))}
         </ul>
         <p className="mt-4">
-          CLI: <code className="rounded bg-slate-100 px-1">pnpm catalog:import -- --vertical finance --entity loans --file ./data/loans.csv</code>
+          CLI:{' '}
+          <code className="rounded bg-slate-100 px-1">
+            pnpm catalog:import -- --vertical finance --entity loans --file ./data/loans.csv
+          </code>
         </p>
         <p className="mt-2">
-          Templates: see <code className="rounded bg-slate-100 px-1">data/catalog-templates/README.md</code> in the repo.
+          Templates: see{' '}
+          <code className="rounded bg-slate-100 px-1">data/catalog-templates/README.md</code> in the
+          repo.
         </p>
         <p className="mt-2">
           Per-vertical tools:{' '}
@@ -63,8 +68,8 @@ export default async function CatalogOpsPage() {
             Construction
           </Link>
           ,{' '}
-          <Link href="/automobile" className="text-[var(--varnarc-brand)] hover:underline">
-            Automobile
+          <Link href="/automobile/import" className="text-[var(--varnarc-brand)] hover:underline">
+            Automobile CSV merge
           </Link>
         </p>
       </section>

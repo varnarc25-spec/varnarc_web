@@ -11,9 +11,10 @@ import {
   Query,
   StreamableFile,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PERMISSIONS } from '@varnarc/auth';
@@ -72,14 +73,20 @@ export class AutomobileController {
   @Public()
   @Get('manufacturers')
   @ApiOperation({ summary: 'List published manufacturers' })
-  async manufacturers(@Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery) {
-    return okCursor(await this.service.listManufacturers({ ...query, status: query.status ?? 'PUBLISHED' }));
+  async manufacturers(
+    @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
+  ) {
+    return okCursor(
+      await this.service.listManufacturers({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/manufacturers')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_VIEW)
   @ApiOperation({ summary: 'Admin list manufacturers' })
-  async adminManufacturers(@Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery) {
+  async adminManufacturers(
+    @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
+  ) {
     return okCursor(await this.service.listManufacturers(query));
   }
 
@@ -101,7 +108,8 @@ export class AutomobileController {
   @ApiOperation({ summary: 'Create manufacturer' })
   async createManufacturer(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(createAutomobileManufacturerSchema)) body: CreateAutomobileManufacturerInput,
+    @Body(new ZodValidationPipe(createAutomobileManufacturerSchema))
+    body: CreateAutomobileManufacturerInput,
   ) {
     return ok(await this.service.createManufacturer(body, user.id));
   }
@@ -111,27 +119,37 @@ export class AutomobileController {
   async updateManufacturer(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(updateAutomobileManufacturerSchema)) body: UpdateAutomobileManufacturerInput,
+    @Body(new ZodValidationPipe(updateAutomobileManufacturerSchema))
+    body: UpdateAutomobileManufacturerInput,
   ) {
     return ok(await this.service.updateManufacturer(id, body, user.id));
   }
 
   @Post('manufacturers/:id/publish')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_PUBLISH)
-  async publishManufacturer(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
+  async publishManufacturer(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+  ) {
     return ok(await this.service.publishManufacturer(id, user.id));
   }
 
   @Public()
   @Get('vehicles')
   @ApiOperation({ summary: 'List published vehicles' })
-  async vehicles(@Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery) {
-    return okCursor(await this.service.listVehicles({ ...query, status: query.status ?? 'PUBLISHED' }));
+  async vehicles(
+    @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
+  ) {
+    return okCursor(
+      await this.service.listVehicles({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
   }
 
   @Get('admin/vehicles')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_VIEW)
-  async adminVehicles(@Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery) {
+  async adminVehicles(
+    @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
+  ) {
     return okCursor(await this.service.listVehicles(query));
   }
 
@@ -179,19 +197,28 @@ export class AutomobileController {
 
   @Post('vehicles/:id/publish')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_PUBLISH)
-  async publishVehicle(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
+  async publishVehicle(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+  ) {
     return ok(await this.service.publishVehicle(id, user.id));
   }
 
   @Post('vehicles/:id/duplicate')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
-  async duplicateVehicle(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
+  async duplicateVehicle(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+  ) {
     return ok(await this.service.duplicateVehicle(id, user.id));
   }
 
   @Delete('vehicles/:id')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_DELETE)
-  async deleteVehicle(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
+  async deleteVehicle(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+  ) {
     return ok(await this.service.deleteVehicle(id, user.id));
   }
 
@@ -212,7 +239,9 @@ export class AutomobileController {
   @Public()
   @Get('compare')
   @ApiOperation({ summary: 'Compare vehicles by ids' })
-  async compare(@Query(new ZodValidationPipe(automobileCompareQuerySchema)) query: AutomobileCompareQuery) {
+  async compare(
+    @Query(new ZodValidationPipe(automobileCompareQuerySchema)) query: AutomobileCompareQuery,
+  ) {
     return ok(await this.service.compare(query));
   }
 
@@ -233,7 +262,8 @@ export class AutomobileController {
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
   async createMaintenance(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(createAutomobileMaintenanceSchema)) body: CreateAutomobileMaintenanceInput,
+    @Body(new ZodValidationPipe(createAutomobileMaintenanceSchema))
+    body: CreateAutomobileMaintenanceInput,
   ) {
     return ok(await this.service.createMaintenance(body, user.id));
   }
@@ -243,14 +273,18 @@ export class AutomobileController {
   async updateMaintenance(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(updateAutomobileMaintenanceSchema)) body: UpdateAutomobileMaintenanceInput,
+    @Body(new ZodValidationPipe(updateAutomobileMaintenanceSchema))
+    body: UpdateAutomobileMaintenanceInput,
   ) {
     return ok(await this.service.updateMaintenance(id, body, user.id));
   }
 
   @Delete('maintenance/:id')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_DELETE)
-  async deleteMaintenance(@Param('id', ParseUUIDPipe) id: string, @CurrentUserDecorator() user: CurrentUser) {
+  async deleteMaintenance(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserDecorator() user: CurrentUser,
+  ) {
     return ok(await this.service.deleteMaintenance(id, user.id));
   }
 
@@ -278,7 +312,8 @@ export class AutomobileController {
   @Post('affiliate/click')
   @ApiOperation({ summary: 'Track automobile affiliate click' })
   async affiliateClick(
-    @Body(new ZodValidationPipe(automobileAffiliateClickSchema)) body: AutomobileAffiliateClickInput,
+    @Body(new ZodValidationPipe(automobileAffiliateClickSchema))
+    body: AutomobileAffiliateClickInput,
   ) {
     return ok(await this.service.trackAffiliateClick(body));
   }
@@ -362,7 +397,8 @@ export class AutomobileController {
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
   async createComparison(
     @CurrentUserDecorator() user: CurrentUser,
-    @Body(new ZodValidationPipe(createAutomobileComparisonSchema)) body: CreateAutomobileComparisonInput,
+    @Body(new ZodValidationPipe(createAutomobileComparisonSchema))
+    body: CreateAutomobileComparisonInput,
   ) {
     return ok(await this.service.createComparison(body, user.id));
   }
@@ -389,7 +425,9 @@ export class AutomobileController {
 
   @Post('admin/import/:entity')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
-  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }),
+  )
   async importCsv(
     @Param('entity') entity: string,
     @CurrentUserDecorator() user: CurrentUser,
@@ -397,5 +435,32 @@ export class AutomobileController {
   ) {
     if (!file?.buffer) return ok({ imported: 0 });
     return ok(await this.service.importCsv(entity, file.buffer.toString('utf8'), user.id));
+  }
+
+  @Post('admin/import-merge')
+  @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
+  @UseInterceptors(
+    FilesInterceptor('files', 40, {
+      storage: memoryStorage(),
+      limits: { fileSize: 50 * 1024 * 1024 },
+    }),
+  )
+  async importMergeCsv(
+    @CurrentUserDecorator() user: CurrentUser,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    const csvFiles = (files ?? [])
+      .filter((file) => file?.buffer)
+      .map((file) => ({
+        originalName: file.originalname || 'upload.csv',
+        text: file.buffer.toString('utf8'),
+      }));
+    return ok(await this.service.importMergeFiles(csvFiles, user.id));
+  }
+
+  @Post('admin/import-from-cars')
+  @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
+  async importFromCars(@CurrentUserDecorator() user: CurrentUser) {
+    return ok(await this.service.mergeFromCarsTable(user.id));
   }
 }

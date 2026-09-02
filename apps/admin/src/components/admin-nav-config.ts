@@ -114,6 +114,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       { href: '/automobile/vehicles', label: 'Vehicles', permission: PERMISSIONS.AUTOMOBILE_VIEW },
       {
+        href: '/automobile/import',
+        label: 'CSV import',
+        permission: PERMISSIONS.AUTOMOBILE_CREATE,
+      },
+      {
         href: '/automobile/maintenance',
         label: 'Maintenance',
         permission: PERMISSIONS.AUTOMOBILE_VIEW,

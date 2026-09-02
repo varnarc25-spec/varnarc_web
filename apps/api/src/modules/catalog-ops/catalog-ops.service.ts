@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { PrismaClient } from '@varnarc/database';
 import {
   CATALOG_ENTITIES,
@@ -48,25 +43,48 @@ export class CatalogOpsService {
 
   async counts() {
     const where = { deletedAt: null };
-    const [banks, loans, creditCards, insurance, investments, materials, brands, manufacturers, vehicles] =
-      await Promise.all([
-        this.db.bank.count({ where }),
-        this.db.loan.count({ where }),
-        this.db.creditCard.count({ where }),
-        this.db.insuranceProduct.count({ where }),
-        this.db.investmentProduct.count({ where }),
-        this.db.constructionMaterial.count({ where }),
-        this.db.constructionBrand.count({ where }),
-        this.db.automobileManufacturer.count({ where }),
-        this.db.automobileVehicle.count({ where }),
-      ]);
+    const [
+      banks,
+      loans,
+      creditCards,
+      insurance,
+      investments,
+      materials,
+      brands,
+      manufacturers,
+      vehicles,
+      vehicleImages,
+      vehicleReviews,
+    ] = await Promise.all([
+      this.db.bank.count({ where }),
+      this.db.loan.count({ where }),
+      this.db.creditCard.count({ where }),
+      this.db.insuranceProduct.count({ where }),
+      this.db.investmentProduct.count({ where }),
+      this.db.constructionMaterial.count({ where }),
+      this.db.constructionBrand.count({ where }),
+      this.db.automobileManufacturer.count({ where }),
+      this.db.automobileVehicle.count({ where }),
+      this.db.automobileVehicleImage.count({ where }),
+      this.db.automobileVehicleReview.count(),
+    ]);
 
     return {
       finance: { banks, loans, creditCards, insurance, investments },
       construction: { brands, materials },
-      automobile: { manufacturers, vehicles },
+      automobile: { manufacturers, vehicles, vehicleImages, vehicleReviews },
       total:
-        banks + loans + creditCards + insurance + investments + materials + brands + manufacturers + vehicles,
+        banks +
+        loans +
+        creditCards +
+        insurance +
+        investments +
+        materials +
+        brands +
+        manufacturers +
+        vehicles +
+        vehicleImages +
+        vehicleReviews,
     };
   }
 
@@ -142,7 +160,12 @@ export class CatalogOpsService {
     }
   }
 
-  private importChunk(vertical: CatalogVertical, entity: string, csvChunk: string, actorId: string) {
+  private importChunk(
+    vertical: CatalogVertical,
+    entity: string,
+    csvChunk: string,
+    actorId: string,
+  ) {
     if (vertical === 'finance') {
       return this.financeGap.importCsv(entity, csvChunk, actorId);
     }

@@ -5,7 +5,7 @@ export const catalogVerticalSchema = z.enum(['finance', 'construction', 'automob
 export const CATALOG_ENTITIES: Record<z.infer<typeof catalogVerticalSchema>, string[]> = {
   finance: ['banks', 'loans', 'credit-cards', 'insurance', 'investments', 'interest-rates'],
   construction: ['brands', 'materials'],
-  automobile: ['manufacturers', 'vehicles'],
+  automobile: ['manufacturers', 'vehicles', 'specs', 'vehicle-images', 'vehicle-reviews'],
 };
 
 export const catalogImportQuerySchema = z.object({
@@ -20,7 +20,9 @@ export const catalogImportQuerySchema = z.object({
 
 export const catalogReindexSchema = z.object({
   modules: z
-    .array(z.enum(['finance', 'construction', 'automobile', 'directory', 'ai-tools', 'calculators']))
+    .array(
+      z.enum(['finance', 'construction', 'automobile', 'directory', 'ai-tools', 'calculators']),
+    )
     .optional(),
 });
 
