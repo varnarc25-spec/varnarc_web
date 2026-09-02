@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   adsenseSettingsSchema,
+  gcsSettingsSchema,
   generalSettingsSchema,
   maintenanceSettingsSchema,
   securitySettingsSchema,
@@ -43,6 +44,20 @@ describe('adsenseSettingsSchema', () => {
 
   it('rejects an invalid publisher ID', () => {
     expect(() => adsenseSettingsSchema.parse({ client: 'pub-123' })).toThrow();
+  });
+});
+
+describe('gcsSettingsSchema', () => {
+  it('accepts bucket credentials and empty private key', () => {
+    const parsed = gcsSettingsSchema.parse({
+      enabled: true,
+      bucket: 'varnarc-media',
+      clientEmail: 'media@project.iam.gserviceaccount.com',
+      privateKey: '',
+    });
+    expect(parsed.enabled).toBe(true);
+    expect(parsed.bucket).toBe('varnarc-media');
+    expect(parsed.privateKey).toBe('');
   });
 });
 

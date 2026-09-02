@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -19,6 +20,7 @@ import type {
 } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
 import { GcsStorageService } from './gcs-storage.service';
+import { appMediaPublicUrl, extFromUpload, imageDims } from './app-media-storage';
 
 type UsageRef = {
   entityType: string;
@@ -102,6 +104,18 @@ export class MediaService {
     return row;
   }
 
+  async getPublicFile(id: string) {
+    const row = await this.repos.mediaAssets.findById(id);
+    if (!row) throw this.notFound();
+    const blob = await this.repos.mediaAssets.findBlob(id);
+    if (!blob) throw this.notFound('File is not stored on this API.');
+    return {
+      data: Buffer.from(blob.data),
+      mimeType: row.mimeType || 'application/octet-stream',
+      fileName: row.fileName || row.originalName || 'file',
+    };
+  }
+
   async create(input: CreateMediaAssetInput, actorId: string) {
     const existing = await this.repos.mediaAssets.findByPublicId(input.publicId);
     if (existing) {
@@ -157,50 +171,104 @@ export class MediaService {
     }
 
     const folderPath = await this.folderPath(options.folderId);
-    const uploaded = await this.storage.upload(file, { folderPath });
+    const { mime, resourceType } = this.storage.validateUpload(file);
+    const useGcs = await this.storage.isConfigured();
 
-    const duplicate = await this.repos.mediaAssets.findByPublicId(uploaded.publicId);
-    if (duplicate) {
-      await this.storage.destroy(uploaded.publicId, uploaded.resourceType).catch(() => undefined);
-      throw new ConflictException({
-        success: false,
-        error: { code: 'DUPLICATE_PUBLIC_ID', message: 'This file was already uploaded.' },
+    if (useGcs) {
+      const uploaded = await this.storage.upload(file, { folderPath });
+      const duplicate = await this.repos.mediaAssets.findByPublicId(uploaded.publicId);
+      if (duplicate) {
+        await this.storage.destroy(uploaded.publicId, uploaded.resourceType).catch(() => undefined);
+        throw new ConflictException({
+          success: false,
+          error: { code: 'DUPLICATE_PUBLIC_ID', message: 'This file was already uploaded.' },
+        });
+      }
+      const asset = await this.repos.mediaAssets.create({
+        publicId: uploaded.publicId,
+        url: uploaded.url,
+        secureUrl: uploaded.secureUrl,
+        resourceType: uploaded.resourceType,
+        originalName: file.originalname,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        format: uploaded.format ?? null,
+        bytes: uploaded.bytes ?? null,
+        width: uploaded.width ?? null,
+        height: uploaded.height ?? null,
+        duration: uploaded.duration ?? null,
+        thumbnailUrl: uploaded.thumbnailUrl ?? null,
+        alt: options.alt ?? null,
+        ...(options.folderId ? { folder: { connect: { id: options.folderId } } } : {}),
+        versions: {
+          create: uploaded.versions.map((v) => ({
+            url: v.url,
+            width: v.width ?? null,
+            height: v.height ?? null,
+            label: v.label,
+          })),
+        },
+        createdBy: actorId,
+        updatedBy: actorId,
       });
+      await this.audit(actorId, 'media.upload', asset.id, undefined, {
+        publicId: asset.publicId,
+        bytes: asset.bytes,
+      });
+      return asset;
     }
 
+    const ext = extFromUpload(file, mime);
+    const dims = imageDims(file, mime, resourceType);
+    const publicId = `app/${randomUUID()}.${ext}`;
     const asset = await this.repos.mediaAssets.create({
-      publicId: uploaded.publicId,
-      url: uploaded.url,
-      secureUrl: uploaded.secureUrl,
-      resourceType: uploaded.resourceType,
+      publicId,
+      url: 'pending',
+      secureUrl: 'pending',
+      resourceType,
       originalName: file.originalname,
       fileName: file.originalname,
       mimeType: file.mimetype,
-      format: uploaded.format ?? null,
-      bytes: uploaded.bytes ?? null,
-      width: uploaded.width ?? null,
-      height: uploaded.height ?? null,
-      duration: uploaded.duration ?? null,
-      thumbnailUrl: uploaded.thumbnailUrl ?? null,
+      format: ext,
+      bytes: file.size,
+      width: dims?.width ?? null,
+      height: dims?.height ?? null,
+      duration: null,
+      thumbnailUrl: null,
       alt: options.alt ?? null,
       ...(options.folderId ? { folder: { connect: { id: options.folderId } } } : {}),
       versions: {
-        create: uploaded.versions.map((v) => ({
-          url: v.url,
-          width: v.width ?? null,
-          height: v.height ?? null,
-          label: v.label,
-        })),
+        create: [
+          {
+            url: 'pending',
+            width: dims?.width ?? null,
+            height: dims?.height ?? null,
+            label: 'original',
+          },
+        ],
       },
       createdBy: actorId,
       updatedBy: actorId,
     });
-
-    await this.audit(actorId, 'media.upload', asset.id, undefined, {
-      publicId: asset.publicId,
-      bytes: asset.bytes,
+    await this.repos.mediaAssets.putBlob(asset.id, file.buffer);
+    const publicUrl = appMediaPublicUrl(asset.id);
+    const saved = await this.repos.mediaAssets.update(asset.id, {
+      url: publicUrl,
+      secureUrl: publicUrl,
+      thumbnailUrl: resourceType === 'IMAGE' ? publicUrl : null,
+      versions: {
+        updateMany: {
+          where: { label: 'original' },
+          data: { url: publicUrl },
+        },
+      },
     });
-    return asset;
+    await this.audit(actorId, 'media.upload', asset.id, undefined, {
+      publicId,
+      bytes: file.size,
+      storage: 'app',
+    });
+    return saved;
   }
 
   async update(id: string, input: UpdateMediaAssetInput, actorId: string) {
@@ -302,7 +370,7 @@ export class MediaService {
       });
     }
 
-    if (this.storage.isConfigured()) {
+    if (await this.storage.isConfigured()) {
       await this.storage.destroy(asset.publicId, asset.resourceType).catch(() => undefined);
     }
 

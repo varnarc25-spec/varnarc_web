@@ -3,11 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -37,6 +39,7 @@ import {
 import type { CurrentUser } from '@varnarc/types';
 import { RequirePermissions } from '../../auth/decorators/permissions.decorator';
 import { CurrentUserDecorator } from '../../auth/decorators/current-user.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { ok, okCursor } from '../../common/utils/response';
 import { MediaService } from './media.service';
@@ -58,6 +61,18 @@ export class MediaController {
   @RequirePermissions(PERMISSIONS.MEDIA_VIEW)
   async search(@Query(new ZodValidationPipe(mediaSearchQuerySchema)) query: MediaSearchQuery) {
     return okCursor(await this.service.search(query));
+  }
+
+  @Get('public/:id')
+  @Public()
+  @Header('Cache-Control', 'public, max-age=31536000, immutable')
+  @Header('Cross-Origin-Resource-Policy', 'cross-origin')
+  async publicFile(@Param('id', ParseUUIDPipe) id: string) {
+    const file = await this.service.getPublicFile(id);
+    return new StreamableFile(file.data, {
+      type: file.mimeType,
+      disposition: `inline; filename="${file.fileName.replace(/"/g, '')}"`,
+    });
   }
 
   @Get(':id')

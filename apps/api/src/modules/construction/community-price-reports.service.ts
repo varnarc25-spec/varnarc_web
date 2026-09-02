@@ -372,7 +372,7 @@ export class CommunityPriceReportsService {
 
     if (file) {
       this.storage.validateUpload(file);
-      this.storage.assertConfigured();
+      await this.storage.assertConfigured();
       const safeName = sanitizeDocumentFilename(file.originalname);
       const uploaded = await this.storage.upload(
         { ...file, originalname: safeName },
@@ -489,7 +489,7 @@ export class CommunityPriceReportsService {
     if (!admin && row.userId !== uid) {
       throw new ForbiddenException('You cannot access this invoice.');
     }
-    this.storage.assertConfigured();
+    await this.storage.assertConfigured();
     const downloaded = await this.storage.downloadBuffer(row.invoiceStorageKey);
     return {
       buffer: downloaded.buffer,

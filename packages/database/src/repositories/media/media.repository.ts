@@ -57,9 +57,7 @@ export class MediaAssetRepository extends BaseRepository {
       where: {
         ...(params.folderId !== undefined ? { folderId: params.folderId } : {}),
         ...(params.resourceType ? { resourceType: params.resourceType } : {}),
-        ...(params.tagId
-          ? { tags: { some: { tagId: params.tagId } } }
-          : {}),
+        ...(params.tagId ? { tags: { some: { tagId: params.tagId } } } : {}),
         ...(params.search
           ? {
               OR: [
@@ -102,6 +100,18 @@ export class MediaAssetRepository extends BaseRepository {
   countInFolder(folderId: string) {
     return this.db.mediaAsset.count({ where: { folderId, deletedAt: null } });
   }
+
+  putBlob(assetId: string, data: Buffer) {
+    return this.db.mediaAssetBlob.upsert({
+      where: { assetId },
+      create: { assetId, data },
+      update: { data },
+    });
+  }
+
+  findBlob(assetId: string) {
+    return this.db.mediaAssetBlob.findUnique({ where: { assetId } });
+  }
 }
 
 export class MediaFolderRepository extends BaseRepository {
@@ -122,8 +132,7 @@ export class MediaFolderRepository extends BaseRepository {
   list(params: CursorPageParams & { parentId?: string | null } = {}) {
     return listActiveWithCursor(this.db.mediaFolder, {
       ...params,
-      where:
-        params.parentId !== undefined ? { parentId: params.parentId } : undefined,
+      where: params.parentId !== undefined ? { parentId: params.parentId } : undefined,
       include: { parent: true },
     });
   }

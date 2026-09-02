@@ -11,9 +11,11 @@ import {
   securitySettingsSchema,
   seoDefaultsSettingsSchema,
   adsenseSettingsSchema,
+  gcsSettingsSchema,
   upsertFeatureFlagSchema,
   upsertSettingSchema,
   type AdsenseSettingsInput,
+  type GcsSettingsInput,
   type CmsDefaultsSettingsInput,
   type ContactSettingsInput,
   type CreateThemeInput,
@@ -179,6 +181,21 @@ export class SettingsController {
     @Body(new ZodValidationPipe(adsenseSettingsSchema)) body: AdsenseSettingsInput,
   ) {
     return ok(await this.service.setAdsense(body, user.id));
+  }
+
+  @Get('gcs')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async gcs() {
+    return ok(await this.service.getGcs());
+  }
+
+  @Put('gcs')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async updateGcs(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(gcsSettingsSchema)) body: GcsSettingsInput,
+  ) {
+    return ok(await this.service.setGcs(body, user.id));
   }
 
   @Public()

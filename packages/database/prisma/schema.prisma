@@ -737,6 +737,7 @@ model MediaAsset {
   albums      MediaAlbumAsset[]
   tags        MediaAssetTag[]
   usage       MediaUsage[]
+  blob        MediaAssetBlob?
   articlesFeatured Article[]     @relation("ArticleFeaturedImage")
   articlesHero     Article[]     @relation("ArticleHeroImage")
   articlesOg       Article[]     @relation("ArticleOgImage")
@@ -744,6 +745,13 @@ model MediaAsset {
   @@index([folderId])
   @@index([resourceType])
   @@map("media_assets")
+}
+
+model MediaAssetBlob {
+  assetId String     @id @map("asset_id") @db.Uuid
+  data    Bytes
+  asset   MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@map("media_asset_blobs")
 }
 
 model MediaUsage {

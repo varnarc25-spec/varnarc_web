@@ -5,6 +5,7 @@ const links = [
   { href: '/settings/general', label: 'General' },
   { href: '/settings/contact', label: 'Contact email' },
   { href: '/settings/adsense', label: 'Google AdSense' },
+  { href: '/settings/gcs', label: 'Cloud Storage' },
   { href: '/settings/contact-messages', label: 'Contact inbox' },
   { href: '/settings/maintenance', label: 'Maintenance' },
   { href: '/settings/security', label: 'Security' },

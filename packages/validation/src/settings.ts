@@ -72,6 +72,17 @@ export const adsenseSettingsSchema = z.object({
   slots: z.record(z.string().min(1).max(80), z.string().max(40).regex(/^\d+$/)).default({}),
 });
 
+export const gcsSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  bucket: z.string().max(222).optional().nullable(),
+  projectId: z.string().max(128).optional().nullable(),
+  clientEmail: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
+  /** Empty string keeps the stored key; send a new PEM to replace. */
+  privateKey: z.string().max(12000).optional().nullable(),
+  publicBaseUrl: optionalUrl,
+  makePublic: z.boolean().default(false),
+});
+
 export const upsertSettingSchema = z.object({
   key: z.string().min(1).max(120),
   value: jsonValueSchema,
@@ -118,6 +129,7 @@ export type SecuritySettingsInput = z.infer<typeof securitySettingsSchema>;
 export type CmsDefaultsSettingsInput = z.infer<typeof cmsDefaultsSettingsSchema>;
 export type SeoDefaultsSettingsInput = z.infer<typeof seoDefaultsSettingsSchema>;
 export type AdsenseSettingsInput = z.infer<typeof adsenseSettingsSchema>;
+export type GcsSettingsInput = z.infer<typeof gcsSettingsSchema>;
 export type UpsertSettingInput = z.infer<typeof upsertSettingSchema>;
 export type UpsertFeatureFlagInput = z.infer<typeof upsertFeatureFlagSchema>;
 export type CreateHomepageLayoutInput = z.infer<typeof createHomepageLayoutSchema>;

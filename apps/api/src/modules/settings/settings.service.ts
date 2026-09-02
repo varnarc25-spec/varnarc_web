@@ -12,11 +12,13 @@ import type {
   SecuritySettingsInput,
   SeoDefaultsSettingsInput,
   AdsenseSettingsInput,
+  GcsSettingsInput,
   UpsertFeatureFlagInput,
   UpsertSettingInput,
 } from '@varnarc/validation';
 import {
   adsenseSettingsSchema,
+  gcsSettingsSchema,
   cmsDefaultsSettingsSchema,
   contactSettingsSchema,
   generalSettingsSchema,
@@ -28,6 +30,15 @@ import { REPOS } from '../../database/database.module';
 
 const CACHE_TTL = 60_000;
 
+function redactSettingSecrets(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const next = { ...(value as Record<string, unknown>) };
+  if (typeof next.privateKey === 'string' && next.privateKey.trim()) {
+    next.privateKey = '[redacted]';
+  }
+  return next;
+}
+
 export const SETTINGS_KEYS = {
   general: 'settings.general',
   maintenance: 'settings.maintenance',
@@ -36,6 +47,7 @@ export const SETTINGS_KEYS = {
   seoDefaults: 'settings.seo-defaults',
   contact: 'settings.contact',
   adsense: 'settings.adsense',
+  gcs: 'settings.gcs',
 } as const;
 
 const DEFAULT_GENERAL: GeneralSettingsInput = {
@@ -99,11 +111,14 @@ const DEFAULT_CONTACT: ContactSettingsInput = {
   resendApiKey: null,
 };
 
-const DEFAULT_ADSENSE: AdsenseSettingsInput = {
-  enabled: true,
-  client: 'ca-pub-6274053387170397',
-  defaultSlot: null,
-  slots: {},
+const DEFAULT_GCS: GcsSettingsInput = {
+  enabled: false,
+  bucket: null,
+  projectId: null,
+  clientEmail: null,
+  privateKey: null,
+  publicBaseUrl: null,
+  makePublic: false,
 };
 
 @Injectable()
@@ -165,8 +180,8 @@ export class SettingsService {
     const row = await this.repos.settings.upsert(key, value as never, group, actorId);
     await this.invalidate(key);
     await this.audit(action, key, actorId, {
-      previous: previous?.value ?? null,
-      next: value,
+      previous: redactSettingSecrets(previous?.value ?? null),
+      next: redactSettingSecrets(value),
     });
     return row.value as T;
   }
@@ -389,6 +404,64 @@ export class SettingsService {
       'settings.adsense.update',
     );
     return merged;
+  }
+
+  async getGcsRaw(): Promise<GcsSettingsInput> {
+    return this.readJson(SETTINGS_KEYS.gcs, DEFAULT_GCS);
+  }
+
+  async getGcs() {
+    const raw = await this.getGcsRaw();
+    const envBucket = Boolean(process.env.GCS_BUCKET?.trim());
+    const dbReady = Boolean(raw.enabled && raw.bucket?.trim());
+    return {
+      enabled: raw.enabled,
+      bucket: raw.bucket ?? null,
+      projectId: raw.projectId ?? null,
+      clientEmail: raw.clientEmail ?? null,
+      publicBaseUrl: raw.publicBaseUrl ?? null,
+      makePublic: Boolean(raw.makePublic),
+      privateKeyConfigured: Boolean(raw.privateKey?.trim()),
+      envBucketConfigured: envBucket,
+      activeSource: dbReady
+        ? ('database' as const)
+        : envBucket
+          ? ('environment' as const)
+          : ('none' as const),
+    };
+  }
+
+  async setGcs(input: GcsSettingsInput, actorId: string) {
+    const parsed = gcsSettingsSchema.parse(input);
+    const current = await this.getGcsRaw();
+    const nextKey =
+      parsed.privateKey === undefined || parsed.privateKey === null
+        ? current.privateKey
+        : parsed.privateKey.trim() === ''
+          ? current.privateKey
+          : parsed.privateKey.replace(/\\n/g, '\n').trim();
+
+    const merged: GcsSettingsInput = {
+      enabled: parsed.enabled,
+      bucket: parsed.bucket?.trim() || null,
+      projectId: parsed.projectId?.trim() || null,
+      clientEmail: parsed.clientEmail?.trim() || null,
+      privateKey: nextKey,
+      publicBaseUrl: parsed.publicBaseUrl?.trim() || null,
+      makePublic: Boolean(parsed.makePublic),
+    };
+
+    await this.writeJson(
+      SETTINGS_KEYS.gcs,
+      {
+        ...merged,
+        privateKey: merged.privateKey,
+      },
+      'media',
+      actorId,
+      'settings.gcs.update',
+    );
+    return this.getGcs();
   }
 
   async isFeatureEnabled(key: string) {

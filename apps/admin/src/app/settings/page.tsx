@@ -35,6 +35,11 @@ export default async function SettingsHubPage() {
       description: 'Publisher ID and ad unit slots for the public website.',
     },
     {
+      href: '/settings/gcs',
+      title: 'Cloud Storage',
+      description: 'Google Cloud Storage bucket and credentials for media uploads.',
+    },
+    {
       href: '/settings/contact-messages',
       title: 'Contact inbox',
       description: 'Stored contact form submissions and delivery status.',

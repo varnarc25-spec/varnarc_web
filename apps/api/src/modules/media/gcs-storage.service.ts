@@ -12,6 +12,7 @@ import type {
   MediaUploadPayload,
 } from './media-storage.types';
 import { probeImageDimensions } from './image-dimensions';
+import { SettingsService } from '../settings/settings.service';
 
 const MIME_TO_RESOURCE: Record<string, MediaResourceType> = {
   'image/jpeg': 'IMAGE',
@@ -29,62 +30,92 @@ const MIME_TO_RESOURCE: Record<string, MediaResourceType> = {
   'video/webm': 'VIDEO',
 };
 
+type ResolvedGcs = {
+  bucket: string;
+  projectId?: string;
+  clientEmail?: string;
+  privateKey?: string;
+  publicBaseUrl: string | null;
+  makePublic: boolean;
+};
+
 /**
  * Google Cloud Storage backend for the Media Library.
- * Image resize / WebP / AVIF / on-the-fly transforms are deferred —
- * see docs/12-Media-Image-Transforms-FUTURE.md
+ * Admin Settings (database) take precedence over environment variables.
  */
 @Injectable()
 export class GcsStorageService {
-  private readonly configured: boolean;
-  private readonly bucketName: string;
-  private readonly publicBaseUrl: string | null;
-  private readonly storage: Storage | null;
+  constructor(private readonly settings: SettingsService) {}
 
-  constructor() {
-    this.bucketName = process.env.GCS_BUCKET?.trim() ?? '';
-    this.publicBaseUrl = process.env.GCS_PUBLIC_BASE_URL?.trim() || null;
-
-    const projectId = process.env.GCS_PROJECT_ID?.trim() || undefined;
-    const clientEmail = process.env.GCS_CLIENT_EMAIL?.trim();
-    const privateKey = process.env.GCS_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
-
-    this.configured = Boolean(this.bucketName);
-
-    if (!this.configured) {
-      this.storage = null;
-      return;
-    }
-
-    if (clientEmail && privateKey) {
-      this.storage = new Storage({
-        projectId,
-        credentials: { client_email: clientEmail, private_key: privateKey },
-      });
-    } else if (keyFilename) {
-      this.storage = new Storage({ projectId, keyFilename });
-    } else {
-      // Application Default Credentials (Cloud Run / gcloud auth)
-      this.storage = new Storage({ projectId });
-    }
+  private envConfig(): ResolvedGcs | null {
+    const bucket = process.env.GCS_BUCKET?.trim() ?? '';
+    if (!bucket) return null;
+    return {
+      bucket,
+      projectId: process.env.GCS_PROJECT_ID?.trim() || undefined,
+      clientEmail: process.env.GCS_CLIENT_EMAIL?.trim() || undefined,
+      privateKey: process.env.GCS_PRIVATE_KEY?.replace(/\\n/g, '\n') || undefined,
+      publicBaseUrl: process.env.GCS_PUBLIC_BASE_URL?.trim() || null,
+      makePublic: process.env.GCS_MAKE_PUBLIC === 'true',
+    };
   }
 
-  isConfigured() {
-    return this.configured && Boolean(this.storage);
+  async resolveConfig(): Promise<ResolvedGcs | null> {
+    const db = await this.settings.getGcsRaw().catch(() => null);
+    if (db?.enabled && db.bucket?.trim()) {
+      return {
+        bucket: db.bucket.trim(),
+        projectId: db.projectId?.trim() || undefined,
+        clientEmail: db.clientEmail?.trim() || undefined,
+        privateKey: db.privateKey?.replace(/\\n/g, '\n') || undefined,
+        publicBaseUrl: db.publicBaseUrl?.trim() || null,
+        makePublic: Boolean(db.makePublic),
+      };
+    }
+    return this.envConfig();
   }
 
-  assertConfigured() {
-    if (!this.isConfigured()) {
+  async isConfigured() {
+    return Boolean(await this.resolveConfig());
+  }
+
+  async assertConfigured() {
+    if (!(await this.isConfigured())) {
       throw new BadRequestException({
         success: false,
         error: {
           code: 'GCS_NOT_CONFIGURED',
           message:
-            'Google Cloud Storage is not configured. Set GCS_BUCKET (and credentials via GCS_CLIENT_EMAIL/GCS_PRIVATE_KEY, GOOGLE_APPLICATION_CREDENTIALS, or ADC).',
+            'Google Cloud Storage is not configured. Add it under Admin → Settings → Cloud Storage, or set GCS_BUCKET in the environment.',
         },
       });
     }
+  }
+
+  private createClient(cfg: ResolvedGcs) {
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
+    if (cfg.clientEmail && cfg.privateKey) {
+      return new Storage({
+        projectId: cfg.projectId,
+        credentials: { client_email: cfg.clientEmail, private_key: cfg.privateKey },
+      });
+    }
+    if (keyFilename) {
+      return new Storage({ projectId: cfg.projectId, keyFilename });
+    }
+    return new Storage({ projectId: cfg.projectId });
+  }
+
+  private async requireClient() {
+    const cfg = await this.resolveConfig();
+    if (!cfg) {
+      await this.assertConfigured();
+      throw new BadRequestException({
+        success: false,
+        error: { code: 'GCS_NOT_CONFIGURED', message: 'Google Cloud Storage is not configured.' },
+      });
+    }
+    return { cfg, storage: this.createClient(cfg) };
   }
 
   validateUpload(file: Express.Multer.File) {
@@ -134,8 +165,7 @@ export class GcsStorageService {
     file: Express.Multer.File,
     options: MediaUploadOptions = {},
   ): Promise<MediaUploadPayload> {
-    this.assertConfigured();
-    const storage = this.storage!;
+    const { cfg, storage } = await this.requireClient();
     const { mime, resourceType } = this.validateUpload(file);
 
     const ext = file.originalname.includes('.')
@@ -157,7 +187,7 @@ export class GcsStorageService {
     const objectId = options.publicId ?? `${folder}/${safeName}-${randomUUID().slice(0, 8)}.${ext}`;
     const publicId = objectId.replace(/^\/+/, '');
 
-    const bucket = storage.bucket(this.bucketName);
+    const bucket = storage.bucket(cfg.bucket);
     const gcsFile = bucket.file(publicId);
 
     await gcsFile.save(file.buffer, {
@@ -172,12 +202,11 @@ export class GcsStorageService {
       },
     });
 
-    const makePublic = process.env.GCS_MAKE_PUBLIC === 'true';
-    if (makePublic) {
+    if (cfg.makePublic) {
       await gcsFile.makePublic().catch(() => undefined);
     }
 
-    const secureUrl = this.buildPublicUrl(publicId);
+    const secureUrl = this.buildPublicUrl(publicId, cfg);
     const format = ext || null;
     const dims = resourceType === 'IMAGE' ? probeImageDimensions(file.buffer, mime) : null;
 
@@ -204,9 +233,8 @@ export class GcsStorageService {
   }
 
   async destroy(publicId: string, _resourceType: MediaResourceType) {
-    this.assertConfigured();
-    const storage = this.storage!;
-    await storage.bucket(this.bucketName).file(publicId).delete({ ignoreNotFound: true });
+    const { cfg, storage } = await this.requireClient();
+    await storage.bucket(cfg.bucket).file(publicId).delete({ ignoreNotFound: true });
   }
 
   /**
@@ -214,10 +242,9 @@ export class GcsStorageService {
    * Prefer streaming via Nest after auth for construction vault downloads.
    */
   async getSignedUrl(publicId: string, expiresMinutes = 15): Promise<string> {
-    this.assertConfigured();
-    const storage = this.storage!;
+    const { cfg, storage } = await this.requireClient();
     const [url] = await storage
-      .bucket(this.bucketName)
+      .bucket(cfg.bucket)
       .file(publicId.replace(/^\/+/, ''))
       .getSignedUrl({
         version: 'v4',
@@ -228,9 +255,8 @@ export class GcsStorageService {
   }
 
   async downloadBuffer(publicId: string): Promise<{ buffer: Buffer; contentType?: string }> {
-    this.assertConfigured();
-    const storage = this.storage!;
-    const file = storage.bucket(this.bucketName).file(publicId.replace(/^\/+/, ''));
+    const { cfg, storage } = await this.requireClient();
+    const file = storage.bucket(cfg.bucket).file(publicId.replace(/^\/+/, ''));
     const [buffer] = await file.download();
     const [metadata] = await file.getMetadata().catch(() => [null]);
     return {
@@ -239,11 +265,13 @@ export class GcsStorageService {
     };
   }
 
-  buildPublicUrl(publicId: string) {
+  buildPublicUrl(publicId: string, cfg?: ResolvedGcs | null) {
     const path = publicId.replace(/^\/+/, '');
-    if (this.publicBaseUrl) {
-      return `${this.publicBaseUrl.replace(/\/+$/, '')}/${path}`;
+    const publicBaseUrl = (cfg?.publicBaseUrl ?? process.env.GCS_PUBLIC_BASE_URL?.trim()) || null;
+    const bucket = cfg?.bucket ?? process.env.GCS_BUCKET?.trim() ?? '';
+    if (publicBaseUrl) {
+      return `${publicBaseUrl.replace(/\/+$/, '')}/${path}`;
     }
-    return `https://storage.googleapis.com/${this.bucketName}/${path}`;
+    return `https://storage.googleapis.com/${bucket}/${path}`;
   }
 }
