@@ -101,11 +101,13 @@ export class MediaAssetRepository extends BaseRepository {
     return this.db.mediaAsset.count({ where: { folderId, deletedAt: null } });
   }
 
-  putBlob(assetId: string, data: Buffer) {
+  putBlob(assetId: string, data: Uint8Array) {
+    const bytes = new Uint8Array(data.byteLength);
+    bytes.set(data);
     return this.db.mediaAssetBlob.upsert({
       where: { assetId },
-      create: { assetId, data },
-      update: { data },
+      create: { assetId, data: bytes },
+      update: { data: bytes },
     });
   }
 
