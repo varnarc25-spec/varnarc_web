@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getApiAccessToken } from '@/lib/api';
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+import { getApiAccessToken, getApiBaseUrl } from '@/lib/api';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+function fetchErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return 'Upload proxy failed';
+  const cause = (err as Error & { cause?: { message?: string; code?: string } }).cause;
+  const detail = cause?.message || cause?.code;
+  if (err.message === 'fetch failed' && detail) {
+    return `Could not reach the media API (${detail}).`;
+  }
+  return err.message;
+}
 
 async function readJsonSafe(res: Response): Promise<{
   payload: Record<string, unknown>;
@@ -14,7 +22,7 @@ async function readJsonSafe(res: Response): Promise<{
   if (!text.trim()) {
     return {
       payload: {},
-      parseError: `Upload failed (${res.status}) with an empty response. Try a smaller file or paste a URL.`,
+      parseError: `Upload failed (${res.status}) with an empty response.`,
     };
   }
   try {
@@ -33,24 +41,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
   }
 
+  const apiUrl = getApiBaseUrl();
+
   try {
-    const contentType = request.headers.get('content-type');
-    if (!contentType?.includes('multipart/form-data')) {
-      return NextResponse.json(
-        { error: { message: 'Expected a multipart file upload.' } },
-        { status: 400 },
-      );
+    const incoming = await request.formData();
+    const file = incoming.get('file');
+    if (!(file instanceof Blob) || file.size === 0) {
+      return NextResponse.json({ error: { message: 'No file uploaded.' } }, { status: 400 });
     }
+
+    const bytes = await file.arrayBuffer();
+    const name = file instanceof File && file.name ? file.name : 'upload.bin';
+    const type = file.type || 'application/octet-stream';
+    const rebuilt = new File([bytes], name, { type });
+
+    const outgoing = new FormData();
+    outgoing.append('file', rebuilt, name);
+    const folderId = incoming.get('folderId');
+    if (typeof folderId === 'string' && folderId) outgoing.append('folderId', folderId);
+    const alt = incoming.get('alt');
+    if (typeof alt === 'string' && alt) outgoing.append('alt', alt);
 
     const res = await fetch(`${apiUrl}/media/upload`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': contentType,
-      },
-      body: request.body,
-      duplex: 'half',
-    } as RequestInit);
+      headers: { Authorization: `Bearer ${token}` },
+      body: outgoing,
+      cache: 'no-store',
+    });
 
     const { payload, parseError } = await readJsonSafe(res);
     if (parseError && !payload.error) {
@@ -61,7 +78,6 @@ export async function POST(request: Request) {
     }
     return NextResponse.json(payload, { status: res.status });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Upload proxy failed';
-    return NextResponse.json({ error: { message } }, { status: 502 });
+    return NextResponse.json({ error: { message: fetchErrorMessage(err) } }, { status: 502 });
   }
 }
