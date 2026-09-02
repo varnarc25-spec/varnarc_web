@@ -111,6 +111,13 @@ const DEFAULT_CONTACT: ContactSettingsInput = {
   resendApiKey: null,
 };
 
+const DEFAULT_ADSENSE: AdsenseSettingsInput = {
+  enabled: true,
+  client: null,
+  defaultSlot: null,
+  slots: {},
+};
+
 const DEFAULT_GCS: GcsSettingsInput = {
   enabled: false,
   bucket: null,
