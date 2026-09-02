@@ -11,6 +11,9 @@ export const nextPerformanceDefaults = {
       { protocol: 'https' as const, hostname: '**.googleusercontent.com' },
       { protocol: 'https' as const, hostname: 'res.cloudinary.com' },
       { protocol: 'https' as const, hostname: '**.cloudinary.com' },
+      { protocol: 'https' as const, hostname: 'upload.wikimedia.org' },
+      { protocol: 'https' as const, hostname: 'commons.wikimedia.org' },
+      { protocol: 'https' as const, hostname: 'images.pexels.com' },
     ],
   },
   experimental: {

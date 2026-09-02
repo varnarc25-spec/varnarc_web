@@ -2677,6 +2677,19 @@ model AutomobileVehicle {
   pros                 Json?
   cons                 Json?
   imageUrl             String?       @map("image_url")
+  imageSource          String?       @map("image_source")
+  imageSourcePage      String?       @map("image_source_page")
+  imageAuthor          String?       @map("image_author")
+  imageLicense         String?       @map("image_license")
+  imageAttribution     String?       @map("image_attribution")
+  imageLastVerifiedAt  DateTime?     @map("image_last_verified_at")
+  imageConfidence      Decimal?      @map("image_confidence") @db.Decimal(4, 2)
+  sourceUrl            String?       @map("source_url")
+  sourceName           String?       @map("source_name")
+  lastVerifiedAt       DateTime?     @map("last_verified_at")
+  safetyAgency         String?       @map("safety_agency")
+  safetySourceUrl      String?       @map("safety_source_url")
+  launchStatus         String?       @map("launch_status")
   brochureUrl          String?       @map("brochure_url")
   brochureMediaId      String?       @map("brochure_media_id") @db.Uuid
   videoUrl             String?       @map("video_url")
@@ -2702,7 +2715,31 @@ model AutomobileVehicle {
   @@index([manufacturerId])
   @@index([category])
   @@index([fuelType])
+  @@index([seatingCapacity])
+  @@index([exShowroomPrice])
+  @@index([manufacturerId, model])
   @@map("automobile_vehicles")
+}
+
+model AutomobileImageCache {
+  id              String    @id @default(uuid()) @db.Uuid
+  cacheKey        String    @unique @map("cache_key")
+  status          String
+  provider        String?
+  imageUrl        String?   @map("image_url")
+  sourcePage      String?   @map("source_page")
+  author          String?
+  license         String?
+  attribution     String?
+  photoId         String?   @map("photo_id")
+  queryUsed       String?   @map("query_used")
+  confidence      Decimal?  @db.Decimal(4, 2)
+  lastVerifiedAt  DateTime  @map("last_verified_at")
+  expiresAt       DateTime  @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  @@index([expiresAt])
+  @@map("automobile_image_cache")
 }
 
 model AutomobileVehicleImage {

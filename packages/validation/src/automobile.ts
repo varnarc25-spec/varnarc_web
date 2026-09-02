@@ -107,22 +107,45 @@ export const createAutomobileMaintenanceSchema = z.object({
   sortOrder: z.number().int().nonnegative().default(0),
 });
 
-export const updateAutomobileMaintenanceSchema = createAutomobileMaintenanceSchema.partial().omit({ vehicleId: true });
+export const updateAutomobileMaintenanceSchema = createAutomobileMaintenanceSchema
+  .partial()
+  .omit({ vehicleId: true });
 
 export const automobileListQuerySchema = cursorPaginationQuerySchema.extend({
   status: publishStatusSchema.optional(),
   manufacturerId: uuidSchema.optional(),
+  manufacturerSlug: z.string().max(120).optional(),
   category: z.string().max(80).optional(),
   fuelType: z.string().max(80).optional(),
   featured: z.coerce.boolean().optional(),
   bodyType: z.string().max(80).optional(),
+  transmission: z.string().max(80).optional(),
+  minSeats: z.coerce.number().int().min(1).max(60).optional(),
+  maxSeats: z.coerce.number().int().min(1).max(60).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  minMileage: z.coerce.number().min(0).optional(),
+  minSafety: z.coerce.number().min(0).max(5).optional(),
+  minGroundClearance: z.coerce.number().min(0).optional(),
+  minEngineCc: z.coerce.number().min(0).optional(),
+  maxEngineCc: z.coerce.number().min(0).optional(),
+  modelYearFrom: z.coerce.number().int().min(1950).max(2100).optional(),
+  launchMode: z.enum(['current', 'upcoming', 'launches']).optional(),
+  groupByModel: z.coerce.boolean().optional(),
+  sort: z.enum(['featured', 'price_asc', 'price_desc', 'mileage', 'newest']).optional(),
+  page: z.coerce.number().int().min(1).optional(),
 });
 
 export const automobileCompareQuerySchema = z.object({
   ids: z
     .string()
     .min(1)
-    .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean))
+    .transform((v) =>
+      v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    )
     .pipe(z.array(uuidSchema).min(2).max(6)),
 });
 

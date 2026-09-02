@@ -21,6 +21,7 @@ import {
 import { automobileHubBreadcrumbs, buildAutomobileMetadata } from '@/lib/automobile/seo';
 import { ApiError } from '@/services/api-client';
 import { notFound } from 'next/navigation';
+import { AUTOMOBILE_ONROAD_CITIES, formatAutomobileMileage } from '@varnarc/validation';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -88,9 +89,15 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
     { label: 'Year', value: vehicle.modelYear },
     { label: 'Fuel', value: vehicle.fuelType },
     { label: 'Transmission', value: vehicle.transmission },
-    { label: 'Mileage', value: vehicle.mileage != null ? `${vehicle.mileage} km/l` : null },
+    { label: 'Mileage', value: formatAutomobileMileage(vehicle.mileage) },
     { label: 'Seating', value: vehicle.seatingCapacity },
-    { label: 'Safety rating', value: vehicle.safetyRating },
+    {
+      label: 'Safety rating',
+      value:
+        vehicle.safetyRating != null && Number(vehicle.safetyRating) > 0
+          ? `${vehicle.safetyRating}${vehicle.safetyAgency ? ` · ${vehicle.safetyAgency}` : ''}`
+          : null,
+    },
     { label: 'Warranty', value: vehicle.warranty },
   ].filter((row) => row.value != null && row.value !== '');
 
@@ -124,6 +131,21 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
 
       <VehicleGallery images={vehicle.images} fallbackUrl={vehicle.imageUrl} alt={vehicle.name} />
 
+      <nav className="mb-6 flex flex-wrap gap-2 text-sm" aria-label="On this page">
+        {[
+          ['Overview', '#overview'],
+          ['Price', '#price'],
+          ['Specifications', '#specifications'],
+          ['Safety', '#safety'],
+          ['EMI', '/automobile/calculators/car-loan'],
+          ['On-road price', `/automobile/vehicles/${slug}/on-road-price/bangalore`],
+        ].map(([label, href]) => (
+          <a key={label} href={href} className="min-h-11 rounded-full border px-3 py-2">
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <div className="mb-6 flex flex-wrap gap-2">
         {vehicle.featured ? (
           <span className="rounded-full bg-[#0b1f3a] px-2 py-0.5 text-xs font-semibold uppercase text-white">
@@ -145,7 +167,7 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
         ) : null}
       </div>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2" id="price">
         {vehicle.exShowroomPrice != null ? (
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="text-xs uppercase tracking-wide text-slate-500">Ex-showroom</div>
@@ -166,24 +188,42 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
       </div>
 
       {specs.length ? (
-        <AutomobileDetailSection title="Specifications">
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {specs.map((row) => (
-              <div
-                key={row.label}
-                className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
-              >
-                <dt className="text-xs uppercase tracking-wide text-slate-500">{row.label}</dt>
-                <dd className="mt-0.5 font-medium text-[#0b1f3a]">{String(row.value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </AutomobileDetailSection>
+        <div id="specifications">
+          <AutomobileDetailSection title="Specifications">
+            <dl className="grid gap-3 sm:grid-cols-2">
+              {specs.map((row) => (
+                <div
+                  key={row.label}
+                  className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                >
+                  <dt className="text-xs uppercase tracking-wide text-slate-500">{row.label}</dt>
+                  <dd className="mt-0.5 font-medium text-[#0b1f3a]">{String(row.value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </AutomobileDetailSection>
+        </div>
       ) : null}
 
       {vehicle.description ? (
-        <AutomobileDetailSection title="Overview">{vehicle.description}</AutomobileDetailSection>
+        <div id="overview">
+          <AutomobileDetailSection title="Overview">{vehicle.description}</AutomobileDetailSection>
+        </div>
       ) : null}
+
+      <div id="safety" className="mt-6 text-sm text-slate-600">
+        {vehicle.safetyRating != null && Number(vehicle.safetyRating) > 0 ? (
+          <p>
+            Published safety figure: {String(vehicle.safetyRating)}
+            {vehicle.safetyAgency
+              ? ` (${vehicle.safetyAgency})`
+              : ' — testing agency not stored, not compared across NCAP programmes'}
+            .
+          </p>
+        ) : (
+          <p>No verified crash-test rating is stored for this record.</p>
+        )}
+      </div>
 
       <VehicleReviewsBlock reviews={linkedReviews} />
       <VehicleOfferCards loans={offers.loans} insurance={offers.insurance} />
@@ -196,12 +236,65 @@ export default async function AutomobileVehicleDetailPage({ params }: Props) {
           Compare
         </Link>
         <Link
+          href="/automobile/calculators/car-loan"
+          className="rounded-lg bg-[#0b1f3a] px-4 py-2 text-sm font-medium text-white"
+        >
+          Calculate EMI
+        </Link>
+        <Link
+          href={`/automobile/vehicles/${slug}/on-road-price/bangalore`}
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#0b1f3a] hover:border-[#ea580c]"
+        >
+          Get on-road price
+        </Link>
+        <Link
           href={`/automobile/maintenance?vehicleId=${vehicle.id}`}
           className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#0b1f3a] hover:border-[#ea580c]"
         >
           Maintenance schedule
         </Link>
       </div>
+
+      <section className="mt-10 text-sm">
+        <h2 className="font-extrabold text-[#0b1f3a]">Research next</h2>
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {vehicle.bodyType ? (
+            <li>
+              <Link
+                className="text-[#ea580c] underline"
+                href={`/automobile/${vehicle.bodyType.toLowerCase().includes('suv') ? 'suv' : vehicle.bodyType.toLowerCase().includes('hatch') ? 'hatchback' : 'sedan'}`}
+              >
+                Similar body type
+              </Link>
+            </li>
+          ) : null}
+          {vehicle.manufacturer ? (
+            <li>
+              <Link
+                className="text-[#ea580c] underline"
+                href={`/automobile/manufacturers/${vehicle.manufacturer.slug}`}
+              >
+                {vehicle.manufacturer.name} cars
+              </Link>
+            </li>
+          ) : null}
+          <li>
+            <Link className="text-[#ea580c] underline" href="/automobile/calculators/fuel">
+              Running cost
+            </Link>
+          </li>
+          {AUTOMOBILE_ONROAD_CITIES.slice(0, 4).map((c) => (
+            <li key={c.slug}>
+              <Link
+                className="text-[#ea580c] underline"
+                href={`/automobile/vehicles/${slug}/on-road-price/${c.slug}`}
+              >
+                {c.name} price
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {vehicle.affiliateUrl ? (
         <div className="mt-8">

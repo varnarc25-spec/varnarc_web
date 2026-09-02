@@ -145,6 +145,17 @@ export class AutomobileController {
     );
   }
 
+  @Public()
+  @Get('vehicles/models')
+  @ApiOperation({ summary: 'List published vehicles grouped by manufacturer + model' })
+  async vehicleModels(
+    @Query(new ZodValidationPipe(automobileListQuerySchema)) query: AutomobileListQuery,
+  ) {
+    return ok(
+      await this.service.listVehicleModels({ ...query, status: query.status ?? 'PUBLISHED' }),
+    );
+  }
+
   @Get('admin/vehicles')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_VIEW)
   async adminVehicles(
@@ -166,6 +177,13 @@ export class AutomobileController {
   async vehicleOffers(@Param('id', ParseUUIDPipe) id: string) {
     await this.service.getVehicle(id);
     return ok(await this.service.vehicleOffers(id));
+  }
+
+  @Public()
+  @Get('vehicles/:id/image')
+  @ApiOperation({ summary: 'Resolve a cached vehicle image (Wikimedia/Pexels fallback)' })
+  async vehicleImage(@Param('id', ParseUUIDPipe) id: string) {
+    return ok(await this.service.getVehicleImage(id));
   }
 
   @Public()
@@ -440,7 +458,7 @@ export class AutomobileController {
   @Post('admin/import-merge')
   @RequirePermissions(PERMISSIONS.AUTOMOBILE_CREATE)
   @UseInterceptors(
-    FilesInterceptor('files', 40, {
+    FilesInterceptor('files', 200, {
       storage: memoryStorage(),
       limits: { fileSize: 50 * 1024 * 1024 },
     }),

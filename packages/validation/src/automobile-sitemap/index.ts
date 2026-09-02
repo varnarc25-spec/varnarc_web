@@ -5,6 +5,7 @@
  */
 
 import { listAutomobileCategories } from '../automobile-categories';
+import { listAutomobileDiscoveryPaths } from '../automobile-discovery';
 
 export const AUTOMOBILE_SITEMAP_SEGMENTS = [
   'automobile-core',
@@ -40,6 +41,7 @@ export const AUTOMOBILE_SITEMAP_CORE_PATHS = [
   '/automobile/prices',
   '/automobile/safety',
   ...listAutomobileCategories().map((c) => c.path),
+  ...listAutomobileDiscoveryPaths(),
 ] as const;
 
 /** Ownership calculator landings under /automobile/calculators/{slug}. */

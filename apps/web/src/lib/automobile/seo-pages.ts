@@ -62,10 +62,10 @@ export const AUTOMOBILE_PAGE_DEFAULTS: Record<AutomobilePageKey, AutomobilePageS
   vehicles: {
     path: '/automobile/vehicles',
     label: 'Vehicles',
-    title: 'Vehicles in India — Specs, Prices & Ownership | Varnarc',
+    title: 'Find Cars in India — Specs, Prices & Ownership | Varnarc',
     description:
-      'Browse cars, SUVs, sedans, EVs and two-wheelers with indicative prices and specs. Compare models and plan EMI — educational only.',
-    h1: 'Vehicles',
+      'Compare cars by price, mileage, safety, features and ownership cost. Indicative India catalogue — not a dealer quote.',
+    h1: 'Find Cars in India',
     indexable: true,
   },
   manufacturers: {

@@ -76,6 +76,7 @@ export * from './construction-sitemap';
 export * from './seo-json-ld';
 export * from './construction-json-ld';
 export * from './automobile-categories';
+export * from './automobile-discovery';
 export * from './automobile-ia';
 export * from './automobile-sitemap';
 export * from './automobile-json-ld';

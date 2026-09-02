@@ -29,6 +29,7 @@ import {
   slugify,
   type CsvRow,
 } from './automobile-csv.util';
+import { VehicleImageProvider } from './vehicle-image.provider';
 
 const CACHE_TTL = 60_000;
 
@@ -290,6 +291,32 @@ export class AutomobileService {
 
   listVehicles(query: AutomobileListQuery) {
     return this.repos.automobileVehicles.list(query);
+  }
+
+  listVehicleModels(query: AutomobileListQuery) {
+    return this.repos.automobileVehicles.searchModels({
+      ...query,
+      status: query.status ?? 'PUBLISHED',
+      limit: query.limit ?? 12,
+      page: query.page ?? 1,
+      sort: query.sort,
+    });
+  }
+
+  async getVehicleImage(id: string) {
+    const row = await this.repos.automobileVehicles.findById(id);
+    if (!row) throw this.notFound('Vehicle not found.');
+    const manufacturer = (row as { manufacturer?: { name?: string; logoUrl?: string | null } })
+      .manufacturer;
+    const provider = new VehicleImageProvider(this.db);
+    return provider.resolve({
+      vehicleId: row.id,
+      make: manufacturer?.name || 'car',
+      model: row.model,
+      year: row.modelYear,
+      existingUrl: row.imageUrl,
+      manufacturerLogo: manufacturer?.logoUrl ?? null,
+    });
   }
 
   async getVehicle(id: string) {
