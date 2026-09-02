@@ -185,8 +185,8 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
         href: l.href,
       }))
     : [];
-  const relatedMerged = [
-    ...relatedCalcs.map((c) => ({ name: c.name, slug: c.slug })),
+  const relatedMerged: Array<{ name: string; slug: string; href?: string }> = [
+    ...relatedCalcs.map((c) => ({ name: c.name, slug: c.slug, href: `/calculators/${c.slug}` })),
     ...relatedFromAuto,
   ].filter(
     (item, index, list) =>
