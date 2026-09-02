@@ -29,9 +29,19 @@ export function MediaUploadZone({
         if (folderId) form.append('folderId', folderId);
         try {
           const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
+          const text = await res.text();
           if (!res.ok) {
-            const json = (await res.json()) as { error?: { message?: string } };
-            throw new Error(json.error?.message || 'Upload failed');
+            let message = 'Upload failed';
+            try {
+              const json = JSON.parse(text) as { error?: { message?: string } };
+              message = json.error?.message || message;
+            } catch {
+              message =
+                res.status === 413
+                  ? 'File is too large for the upload endpoint.'
+                  : text.slice(0, 180) || `Upload failed (${res.status})`;
+            }
+            throw new Error(message);
           }
           ok += 1;
         } catch {

@@ -143,10 +143,15 @@ export function MediaPicker({
     setUploading(true);
     setError(null);
     try {
+      const maxBytes = 50 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        throw new Error('File exceeds 50 MB. Compress the image or use a URL.');
+      }
       const form = new FormData();
       form.append('file', file);
       const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
-      const json = (await res.json()) as {
+      const text = await res.text();
+      let json: {
         data?: {
           id?: string;
           url?: string;
@@ -158,7 +163,24 @@ export function MediaPicker({
           height?: number | null;
         };
         error?: { message?: string };
-      };
+      } = {};
+      if (text.trim()) {
+        try {
+          json = JSON.parse(text) as typeof json;
+        } catch {
+          throw new Error(
+            res.status === 413
+              ? 'File is too large for the upload endpoint. Use a smaller PNG/WebP or paste a URL.'
+              : `Upload failed (${res.status}).`,
+          );
+        }
+      } else if (!res.ok) {
+        throw new Error(
+          res.status === 413
+            ? 'File is too large for the upload endpoint. Use a smaller PNG/WebP or paste a URL.'
+            : `Upload failed (${res.status}) with an empty response.`,
+        );
+      }
       if (!res.ok) throw new Error(json.error?.message || 'Upload failed');
       const asset = json.data;
       const url = asset?.secureUrl || asset?.url || null;
