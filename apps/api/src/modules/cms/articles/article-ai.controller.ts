@@ -25,8 +25,8 @@ export class ArticleAiController {
 
   @Get('status')
   @RequirePermissions(PERMISSIONS.ARTICLE_CREATE)
-  aiStatus() {
-    return ok(this.articleAi.configured());
+  async aiStatus() {
+    return ok(await this.articleAi.configured());
   }
 
   @Post('generate-draft')

@@ -1,7 +1,8 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Repositories } from '@varnarc/database';
 import { REPOS } from '../../database/database.module';
-import { llmChatCompletion, type LlmMessage } from './llm.client';
+import type { LlmMessage } from './llm.client';
+import { LlmProviderService } from './llm-provider.service';
 
 function interpolateTemplate(template: string, vars: Record<string, unknown>) {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {
@@ -12,7 +13,10 @@ function interpolateTemplate(template: string, vars: Record<string, unknown>) {
 
 @Injectable()
 export class AiJobProcessor {
-  constructor(@Inject(REPOS) private readonly repos: Repositories) {}
+  constructor(
+    @Inject(REPOS) private readonly repos: Repositories,
+    private readonly llm: LlmProviderService,
+  ) {}
 
   async run(jobId: string) {
     const job = await this.repos.aiJobs.findById(jobId);
@@ -43,7 +47,7 @@ export class AiJobProcessor {
         job.prompt?.model?.slug ??
         (typeof input.model === 'string' ? input.model : undefined);
 
-      const content = await llmChatCompletion(messages, {
+      const content = await this.llm.chatCompletion(messages, {
         model: modelSlug,
         json: useJson,
         temperature: typeof input.temperature === 'number' ? input.temperature : undefined,

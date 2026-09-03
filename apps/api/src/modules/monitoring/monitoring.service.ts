@@ -4,7 +4,7 @@ import type { Repositories } from '@varnarc/database';
 import { REPOS } from '../../database/database.module';
 import { HealthService } from '../../health/health.service';
 import { PerformanceService } from '../performance/performance.service';
-import { isLlmConfigured } from '../ai/llm.client';
+import { LlmProviderService } from '../ai/llm-provider.service';
 
 @Injectable()
 export class MonitoringService {
@@ -12,6 +12,7 @@ export class MonitoringService {
     @Inject(REPOS) private readonly repos: Repositories,
     private readonly healthService: HealthService,
     private readonly performanceService: PerformanceService,
+    private readonly llm: LlmProviderService,
   ) {}
 
   private since24h() {
@@ -22,7 +23,7 @@ export class MonitoringService {
     const since = this.since24h();
     const hasRedis = Boolean(process.env.REDIS_URL?.trim());
 
-    const [readiness, latency, aiJobs, webhooks, newsletter, notifications] =
+    const [readiness, latency, aiJobs, webhooks, newsletter, notifications, aiConfigured] =
       await Promise.all([
         this.healthService.getReadiness(),
         this.repos.apiRequestLogs.summary(since).catch(() => ({
@@ -53,6 +54,7 @@ export class MonitoringService {
           templateCount: 0,
           unreadCount: 0,
         })),
+        this.llm.isConfigured().catch(() => false),
       ]);
 
     const cache = hasRedis ? readiness.redis : 'memory';
@@ -77,7 +79,8 @@ export class MonitoringService {
         cache,
         auth0: readiness.auth0,
         redis: readiness.redis,
-        prometheus: process.env.PROMETHEUS_ENABLED === 'true' || process.env.NODE_ENV === 'production',
+        prometheus:
+          process.env.PROMETHEUS_ENABLED === 'true' || process.env.NODE_ENV === 'production',
         openTelemetry: Boolean(
           process.env.OTEL_ENABLED === 'true' || process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
         ),
@@ -95,9 +98,19 @@ export class MonitoringService {
         { key: 'database', label: 'Database', status: readiness.database },
         { key: 'cache', label: 'Cache', status: cache },
         { key: 'auth0', label: 'Auth0', status: readiness.auth0 },
-        { key: 'ai', label: 'AI / LLM', status: isLlmConfigured() ? 'up' : 'unconfigured' },
-        { key: 'newsletter', label: 'Newsletter', status: 'up', meta: `${newsletter.subscribed ?? 0} subscribers` },
-        { key: 'notifications', label: 'Notifications', status: 'up', meta: `${notifications.unreadCount ?? 0} unread` },
+        { key: 'ai', label: 'AI / LLM', status: aiConfigured ? 'up' : 'unconfigured' },
+        {
+          key: 'newsletter',
+          label: 'Newsletter',
+          status: 'up',
+          meta: `${newsletter.subscribed ?? 0} subscribers`,
+        },
+        {
+          key: 'notifications',
+          label: 'Notifications',
+          status: 'up',
+          meta: `${notifications.unreadCount ?? 0} unread`,
+        },
         { key: 'search', label: 'Search', status: 'up' },
         { key: 'analytics', label: 'Analytics', status: 'up' },
       ],

@@ -3,7 +3,8 @@ import type { Repositories } from '@varnarc/database';
 import type { SearchAiQueryInput } from '@varnarc/validation';
 import { searchEntityTypes } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
-import { isLlmConfigured, llmChatCompletion, parseJsonResponse } from '../ai/llm.client';
+import { parseJsonResponse } from '../ai/llm.client';
+import { LlmProviderService } from '../ai/llm-provider.service';
 import { SearchService } from './search.service';
 
 type ParsedAiSearch = {
@@ -19,6 +20,7 @@ export class SearchAiService {
   constructor(
     @Inject(REPOS) private readonly repos: Repositories,
     private readonly searchService: SearchService,
+    private readonly llm: LlmProviderService,
   ) {}
 
   private async ensureEnabled() {
@@ -29,10 +31,10 @@ export class SearchAiService {
         error: { code: 'FEATURE_DISABLED', message: 'AI search is not enabled.' },
       });
     }
-    if (!isLlmConfigured()) {
+    if (!(await this.llm.isConfigured())) {
       throw new BadRequestException({
         success: false,
-        error: { code: 'AI_NOT_CONFIGURED', message: 'AI search requires OPENAI_API_KEY.' },
+        error: { code: 'AI_NOT_CONFIGURED', message: 'AI search requires a configured provider.' },
       });
     }
   }
@@ -40,7 +42,7 @@ export class SearchAiService {
   async run(input: SearchAiQueryInput, userId?: string | null) {
     await this.ensureEnabled();
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',

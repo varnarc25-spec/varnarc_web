@@ -2,7 +2,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { PrismaClient } from '@varnarc/database';
 import type { AutomobileRefreshPricesInput } from '@varnarc/validation';
 import { PRISMA } from '../../database/database.module';
-import { isLlmConfigured, llmChatCompletion, parseJsonResponse } from '../ai/llm.client';
+import { parseJsonResponse } from '../ai/llm.client';
+import { LlmProviderService } from '../ai/llm-provider.service';
 
 type PriceGuess = {
   id: string;
@@ -13,15 +14,18 @@ type PriceGuess = {
 
 @Injectable()
 export class AutomobilePriceAiService {
-  constructor(@Inject(PRISMA) private readonly db: PrismaClient) {}
+  constructor(
+    @Inject(PRISMA) private readonly db: PrismaClient,
+    private readonly llm: LlmProviderService,
+  ) {}
 
   async refreshPrices(input: AutomobileRefreshPricesInput, actorId: string) {
-    if (!isLlmConfigured()) {
+    if (!(await this.llm.isConfigured())) {
       throw new BadRequestException({
         success: false,
         error: {
           code: 'AI_NOT_CONFIGURED',
-          message: 'Set OPENAI_API_KEY on the API to fetch indicative prices.',
+          message: 'Configure an enabled AI provider to fetch indicative prices.',
         },
       });
     }
@@ -56,7 +60,7 @@ export class AutomobilePriceAiService {
       body: row.bodyType,
     }));
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',

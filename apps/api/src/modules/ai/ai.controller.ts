@@ -13,20 +13,24 @@ import { ApiTags } from '@nestjs/swagger';
 import { PERMISSIONS } from '@varnarc/auth';
 import {
   aiJobListQuerySchema,
+  createAiProviderSchema,
   createAiJobSchema,
   createAiModelSchema,
   createAiPromptSchema,
   cursorPaginationQuerySchema,
   runAiPromptTestSchema,
+  updateAiProviderSchema,
   updateAiModelSchema,
   updateAiPromptSchema,
   type AiJobListQuery,
+  type CreateAiProviderInput,
   type CreateAiJobInput,
   type CreateAiModelInput,
   type CreateAiPromptInput,
   type CursorPaginationQuery,
   type RunAiPromptTestInput,
   type UpdateAiModelInput,
+  type UpdateAiProviderInput,
   type UpdateAiPromptInput,
 } from '@varnarc/validation';
 import type { CurrentUser } from '@varnarc/types';
@@ -56,12 +60,51 @@ export class AiController {
   @Get('settings')
   @RequirePermissions(PERMISSIONS.AI_OPS_VIEW)
   async settings() {
-    return ok(this.service.getSettings());
+    return ok(await this.service.getSettings());
+  }
+
+  @Get('providers')
+  @RequirePermissions(PERMISSIONS.AI_OPS_VIEW)
+  async providers() {
+    return ok(await this.service.listProviders());
+  }
+
+  @Post('providers')
+  @RequirePermissions(PERMISSIONS.AI_OPS_MANAGE)
+  async createProvider(
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(createAiProviderSchema)) body: CreateAiProviderInput,
+  ) {
+    return ok(await this.service.createProvider(body, user.id));
+  }
+
+  @Put('providers/:slug')
+  @RequirePermissions(PERMISSIONS.AI_OPS_MANAGE)
+  async updateProvider(
+    @Param('slug') slug: string,
+    @CurrentUserDecorator() user: CurrentUser,
+    @Body(new ZodValidationPipe(updateAiProviderSchema)) body: UpdateAiProviderInput,
+  ) {
+    return ok(await this.service.updateProvider(slug, body, user.id));
+  }
+
+  @Delete('providers/:slug')
+  @RequirePermissions(PERMISSIONS.AI_OPS_MANAGE)
+  async deleteProvider(@Param('slug') slug: string, @CurrentUserDecorator() user: CurrentUser) {
+    return ok(await this.service.deleteProvider(slug, user.id));
+  }
+
+  @Post('providers/:slug/default')
+  @RequirePermissions(PERMISSIONS.AI_OPS_MANAGE)
+  async setDefaultProvider(@Param('slug') slug: string, @CurrentUserDecorator() user: CurrentUser) {
+    return ok(await this.service.setDefaultProvider(slug, user.id));
   }
 
   @Get('models')
   @RequirePermissions(PERMISSIONS.AI_OPS_VIEW)
-  async models(@Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery) {
+  async models(
+    @Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery,
+  ) {
     return okCursor(await this.service.listModels(query));
   }
 
@@ -88,7 +131,9 @@ export class AiController {
 
   @Get('prompts')
   @RequirePermissions(PERMISSIONS.AI_OPS_VIEW)
-  async prompts(@Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery) {
+  async prompts(
+    @Query(new ZodValidationPipe(cursorPaginationQuerySchema)) query: CursorPaginationQuery,
+  ) {
     return okCursor(await this.service.listPrompts(query));
   }
 

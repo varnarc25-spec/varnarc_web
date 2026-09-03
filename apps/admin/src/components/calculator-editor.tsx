@@ -41,11 +41,11 @@ async function readApiResponse<T>(response: Response): Promise<ApiResponse<T>> {
   }
 }
 
-function illustrationDimension(settings: unknown, key: 'width' | 'height', fallback: number) {
+function illustrationWidthSetting(settings: unknown, fallback: number) {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return fallback;
   const display = (settings as Record<string, unknown>).illustrationDisplay;
   if (!display || typeof display !== 'object' || Array.isArray(display)) return fallback;
-  const value = Number((display as Record<string, unknown>)[key]);
+  const value = Number((display as Record<string, unknown>).width);
   return Number.isFinite(value) ? value : fallback;
 }
 
@@ -114,10 +114,7 @@ export function CalculatorEditor({
     ),
   );
   const [illustrationWidth, setIllustrationWidth] = useState(
-    String(illustrationDimension(initial?.settings, 'width', 380)),
-  );
-  const [illustrationHeight, setIllustrationHeight] = useState(
-    String(illustrationDimension(initial?.settings, 'height', 320)),
+    String(illustrationWidthSetting(initial?.settings, 380)),
   );
   const [seoTitle, setSeoTitle] = useState(initial?.seoTitle || '');
   const [seoDescription, setSeoDescription] = useState(initial?.seoDescription || '');
@@ -191,7 +188,6 @@ export function CalculatorEditor({
           ...(parsedSettings as Record<string, unknown>),
           illustrationDisplay: {
             width: clampDimension(illustrationWidth, 380),
-            height: clampDimension(illustrationHeight, 320),
           },
         },
         seoTitle: seoTitle || null,
@@ -364,7 +360,7 @@ export function CalculatorEditor({
         showTitle
         showDescription
       />
-      <div className="grid max-w-md gap-3 sm:grid-cols-2">
+      <div className="max-w-xs">
         <label className="text-xs text-[var(--varnarc-subtle)]">
           Website image width (px)
           <input
@@ -377,18 +373,9 @@ export function CalculatorEditor({
             onChange={(event) => setIllustrationWidth(event.target.value)}
           />
         </label>
-        <label className="text-xs text-[var(--varnarc-subtle)]">
-          Website image height (px)
-          <input
-            type="number"
-            min={120}
-            max={800}
-            step={10}
-            className="mt-1 h-9 w-full rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
-            value={illustrationHeight}
-            onChange={(event) => setIllustrationHeight(event.target.value)}
-          />
-        </label>
+        <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+          Height is calculated automatically from the image aspect ratio.
+        </p>
       </div>
 
       <div>

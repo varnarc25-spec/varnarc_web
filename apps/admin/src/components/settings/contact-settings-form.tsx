@@ -16,7 +16,13 @@ export type ContactSettings = {
   envApiKeyConfigured?: boolean;
 };
 
-export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
+export function ContactSettingsForm({
+  initial,
+  mode = 'contact',
+}: {
+  initial: ContactSettings;
+  mode?: 'contact' | 'ai-alerts';
+}) {
   const [form, setForm] = useState({
     emailEnabled: initial.emailEnabled !== false,
     fromEmail: initial.fromEmail ?? '',
@@ -62,7 +68,9 @@ export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
       const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
       setForm((prev) => ({ ...prev, resendApiKey: '' }));
-      setMessage('Contact email settings saved.');
+      setMessage(
+        mode === 'ai-alerts' ? 'AI alert email settings saved.' : 'Contact email settings saved.',
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -75,8 +83,9 @@ export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
   return (
     <div className="space-y-4 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
       <p className="text-sm text-[var(--varnarc-subtle)]">
-        Configure where contact form enquiries are delivered. Messages are always stored in the
-        database first, then emailed when delivery is enabled and configured.
+        {mode === 'ai-alerts'
+          ? 'Configure Resend delivery for AI provider failure alerts. Alerts are deduplicated for one hour.'
+          : 'Configure where contact form enquiries are delivered. Messages are always stored in the database first, then emailed when delivery is enabled and configured.'}
       </p>
 
       <label className="flex items-center gap-2 text-sm">
@@ -85,7 +94,9 @@ export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
           checked={form.emailEnabled}
           onChange={(e) => update('emailEnabled', e.target.checked)}
         />
-        Send email after storing the enquiry
+        {mode === 'ai-alerts'
+          ? 'Enable operational email delivery'
+          : 'Send email after storing the enquiry'}
       </label>
 
       <div className="rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] px-3 py-2 text-sm text-[var(--varnarc-subtle)]">
@@ -107,60 +118,69 @@ export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
             onChange={(e) => update('fromEmail', e.target.value)}
           />
         </label>
+        {mode === 'contact' ? (
+          <label className="block text-sm">
+            General enquiries
+            <input
+              type="email"
+              className={inputClass}
+              value={form.toGeneral}
+              onChange={(e) => update('toGeneral', e.target.value)}
+            />
+          </label>
+        ) : null}
+        {mode === 'contact' ? (
+          <label className="block text-sm">
+            Content corrections (editorial)
+            <input
+              type="email"
+              className={inputClass}
+              value={form.toEditorial}
+              onChange={(e) => update('toEditorial', e.target.value)}
+            />
+          </label>
+        ) : null}
         <label className="block text-sm">
-          General enquiries
-          <input
-            type="email"
-            className={inputClass}
-            value={form.toGeneral}
-            onChange={(e) => update('toGeneral', e.target.value)}
-          />
-        </label>
-        <label className="block text-sm">
-          Content corrections (editorial)
-          <input
-            type="email"
-            className={inputClass}
-            value={form.toEditorial}
-            onChange={(e) => update('toEditorial', e.target.value)}
-          />
-        </label>
-        <label className="block text-sm">
-          Business &amp; partnerships
+          {mode === 'ai-alerts' ? 'AI failure alert recipient' : 'Business & partnerships'}
           <input
             type="email"
             className={inputClass}
             value={form.toBusiness}
+            placeholder={mode === 'ai-alerts' ? 'business@varnarc.com' : undefined}
             onChange={(e) => update('toBusiness', e.target.value)}
           />
         </label>
-        <label className="block text-sm">
-          Technical support
-          <input
-            type="email"
-            className={inputClass}
-            value={form.toSupport}
-            onChange={(e) => update('toSupport', e.target.value)}
-          />
-        </label>
-        <label className="block text-sm">
-          Privacy requests
-          <input
-            type="email"
-            className={inputClass}
-            value={form.toPrivacy}
-            onChange={(e) => update('toPrivacy', e.target.value)}
-          />
-        </label>
-        <label className="block text-sm">
-          Public contact email (optional display)
-          <input
-            type="email"
-            className={inputClass}
-            value={form.publicContactEmail}
-            onChange={(e) => update('publicContactEmail', e.target.value)}
-          />
-        </label>
+        {mode === 'contact' ? (
+          <>
+            <label className="block text-sm">
+              Technical support
+              <input
+                type="email"
+                className={inputClass}
+                value={form.toSupport}
+                onChange={(e) => update('toSupport', e.target.value)}
+              />
+            </label>
+            <label className="block text-sm">
+              Privacy requests
+              <input
+                type="email"
+                className={inputClass}
+                value={form.toPrivacy}
+                onChange={(e) => update('toPrivacy', e.target.value)}
+              />
+            </label>
+            <label className="block text-sm">
+              Public contact email (optional display)
+              <input
+                type="email"
+                className={inputClass}
+                value={form.publicContactEmail}
+                onChange={(e) => update('publicContactEmail', e.target.value)}
+              />
+            </label>
+          </>
+        ) : null}
         <label className="block text-sm md:col-span-2">
           Resend API key (leave blank to keep existing)
           <input
@@ -184,7 +204,11 @@ export function ContactSettingsForm({ initial }: { initial: ContactSettings }) {
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <Button type="button" onClick={() => void save()} disabled={saving}>
-        {saving ? 'Saving…' : 'Save contact settings'}
+        {saving
+          ? 'Saving…'
+          : mode === 'ai-alerts'
+            ? 'Save alert email settings'
+            : 'Save contact settings'}
       </Button>
     </div>
   );

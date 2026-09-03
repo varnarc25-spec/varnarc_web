@@ -7,23 +7,26 @@ import type {
   CreateAiPromptInput,
   CursorPaginationQuery,
   RunAiPromptTestInput,
+  CreateAiProviderInput,
+  UpdateAiProviderInput,
   UpdateAiModelInput,
   UpdateAiPromptInput,
 } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
-import { getLlmConfig } from './llm.client';
 import { AiJobProcessor } from './ai-job.processor';
+import { LlmProviderService } from './llm-provider.service';
 
 @Injectable()
 export class AiService {
   constructor(
     @Inject(REPOS) private readonly repos: Repositories,
     private readonly processor: AiJobProcessor,
+    private readonly llm: LlmProviderService,
   ) {}
 
   getOverview() {
     return Promise.all([
-      getLlmConfig(),
+      this.llm.getConfigSummary(),
       this.repos.aiJobs.getStats(),
       this.repos.aiPrompts.countActive(),
       this.repos.aiModels.countActive(),
@@ -36,13 +39,39 @@ export class AiService {
     }));
   }
 
-  getSettings() {
-    const config = getLlmConfig();
+  async getSettings() {
+    const config = await this.llm.getConfigSummary();
     return {
       ...config,
       hasApiKey: config.configured,
-      envVars: ['OPENAI_API_KEY', 'AI_BASE_URL', 'AI_DEFAULT_MODEL', 'AI_DAILY_JOB_LIMIT'],
+      envVars: [
+        'OPENAI_API_KEY',
+        'AI_BASE_URL',
+        'AI_DEFAULT_MODEL',
+        'AI_IMAGE_MODEL',
+        'AI_DAILY_JOB_LIMIT',
+      ],
     };
+  }
+
+  listProviders() {
+    return this.llm.listProviders();
+  }
+
+  createProvider(input: CreateAiProviderInput, actorId: string) {
+    return this.llm.createProvider(input, actorId);
+  }
+
+  updateProvider(slug: string, input: UpdateAiProviderInput, actorId: string) {
+    return this.llm.updateProvider(slug, input, actorId);
+  }
+
+  deleteProvider(slug: string, actorId: string) {
+    return this.llm.deleteProvider(slug, actorId);
+  }
+
+  setDefaultProvider(slug: string, actorId: string) {
+    return this.llm.setDefaultProvider(slug, actorId);
   }
 
   getUsage() {

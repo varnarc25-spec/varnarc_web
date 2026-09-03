@@ -31,8 +31,8 @@ export class AiFeaturesController {
   @Public()
   @Get('status')
   @ApiOperation({ summary: 'AI feature availability' })
-  status() {
-    return ok(this.service.status());
+  async status() {
+    return ok(await this.service.status());
   }
 
   @Public()

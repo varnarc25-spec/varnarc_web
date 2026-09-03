@@ -9,7 +9,8 @@ import type {
   SummarizeContentInput,
 } from '@varnarc/validation';
 import { REPOS } from '../../database/database.module';
-import { isLlmConfigured, llmChatCompletion, parseJsonResponse } from './llm.client';
+import { parseJsonResponse } from './llm.client';
+import { LlmProviderService } from './llm-provider.service';
 import { AiService } from './ai.service';
 
 function stripHtml(value: string) {
@@ -23,13 +24,14 @@ function stripHtml(value: string) {
 export class AiFeaturesService {
   constructor(
     private readonly aiOps: AiService,
+    private readonly llm: LlmProviderService,
     @Inject(REPOS) private readonly repos: Repositories,
   ) {}
 
-  status() {
+  async status() {
     const dailyLimit = Number(process.env.AI_DAILY_JOB_LIMIT ?? 0) || null;
     return {
-      configured: isLlmConfigured(),
+      configured: await this.llm.isConfigured(),
       features: [
         'summarize',
         'summarize-batch',
@@ -42,13 +44,13 @@ export class AiFeaturesService {
     };
   }
 
-  private ensureConfigured() {
-    if (!isLlmConfigured()) {
+  private async ensureConfigured() {
+    if (!(await this.llm.isConfigured())) {
       throw new BadRequestException({
         success: false,
         error: {
           code: 'AI_NOT_CONFIGURED',
-          message: 'Set OPENAI_API_KEY (and optional AI_BASE_URL) on the API server.',
+          message: 'Configure an enabled AI provider and its API key environment variable.',
         },
       });
     }
@@ -77,7 +79,7 @@ export class AiFeaturesService {
     input: unknown,
     fn: () => Promise<T>,
   ): Promise<T> {
-    this.ensureConfigured();
+    await this.ensureConfigured();
     await this.ensureQuota();
     try {
       const result = await fn();
@@ -205,7 +207,7 @@ export class AiFeaturesService {
           ? 'Return JSON: { "summary": string (one cohesive paragraph) }'
           : `Return JSON: { "summary": string (${input.maxSentences} sentences max) }`;
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',
@@ -232,7 +234,7 @@ export class AiFeaturesService {
 
   private async runSeo(input: GenerateAiSeoInput) {
     const body = stripHtml(input.content || input.excerpt || '').slice(0, 8000);
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',
@@ -294,7 +296,7 @@ export class AiFeaturesService {
 
   private async runImageMetadata(input: GenerateImageMetadataInput) {
     const context = stripHtml(input.content || '').slice(0, 8000);
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',
@@ -345,7 +347,7 @@ export class AiFeaturesService {
       content: msg.content,
     }));
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         {
           role: 'system',

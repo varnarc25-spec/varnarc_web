@@ -1,5 +1,3 @@
-import { ServiceUnavailableException } from '@nestjs/common';
-
 export type LlmMessage = {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -12,43 +10,50 @@ export type LlmChatOptions = {
   model?: string;
 };
 
-function resolveConfig(modelOverride?: string) {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const baseUrl = (process.env.AI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
-  const model = modelOverride?.trim() || process.env.AI_DEFAULT_MODEL?.trim() || 'gpt-4o-mini';
-  return { apiKey, baseUrl, model };
+export type LlmRequestConfig = {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+};
+
+export class LlmProviderError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+    readonly code = 'AI_PROVIDER_ERROR',
+  ) {
+    super(message);
+    this.name = 'LlmProviderError';
+  }
 }
 
-export function isLlmConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY?.trim());
-}
-
-export function getLlmConfig() {
-  const { baseUrl, model } = resolveConfig();
-  return {
-    configured: isLlmConfigured(),
-    baseUrl,
-    defaultModel: model,
-    imageModel: process.env.AI_IMAGE_MODEL?.trim() || 'gpt-image-1',
-    provider: 'openai-compatible',
-  };
+function providerErrorMessage(payload: unknown, fallback: string): string {
+  if (Array.isArray(payload)) {
+    const messages = payload
+      .map((item) => providerErrorMessage(item, ''))
+      .filter((message) => message.length > 0);
+    return messages.join('; ') || fallback;
+  }
+  if (typeof payload === 'string') return payload.trim() || fallback;
+  if (payload && typeof payload === 'object') {
+    const record = payload as Record<string, unknown>;
+    for (const key of ['message', 'detail', 'error', 'errors']) {
+      if (record[key] !== undefined) {
+        const message = providerErrorMessage(record[key], '');
+        if (message) return message;
+      }
+    }
+  }
+  return fallback;
 }
 
 export async function llmChatCompletion(
   messages: LlmMessage[],
+  config: LlmRequestConfig,
   options: LlmChatOptions = {},
 ): Promise<string> {
-  const { apiKey, baseUrl, model } = resolveConfig(options.model);
-  if (!apiKey) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: {
-        code: 'AI_NOT_CONFIGURED',
-        message:
-          'AI is not configured. Set OPENAI_API_KEY in the API environment (Cursor Pro does not provide an in-app API key).',
-      },
-    });
-  }
+  const { apiKey, baseUrl } = config;
+  const model = options.model?.trim() || config.model;
 
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -67,25 +72,19 @@ export async function llmChatCompletion(
 
   const json = (await res.json().catch(() => ({}))) as {
     choices?: Array<{ message?: { content?: string } }>;
-    error?: { message?: string };
+    error?: unknown;
   };
 
   if (!res.ok) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: {
-        code: 'AI_PROVIDER_ERROR',
-        message: json.error?.message || `LLM request failed (${res.status})`,
-      },
-    });
+    throw new LlmProviderError(
+      providerErrorMessage(json.error ?? json, `LLM request failed (${res.status})`),
+      res.status,
+    );
   }
 
   const content = json.choices?.[0]?.message?.content?.trim();
   if (!content) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: { code: 'AI_EMPTY_RESPONSE', message: 'LLM returned an empty response.' },
-    });
+    throw new LlmProviderError('LLM returned an empty response.', res.status, 'AI_EMPTY_RESPONSE');
   }
 
   return content;
@@ -103,24 +102,14 @@ export type LlmImageResult = {
  */
 export async function llmImageGeneration(
   prompt: string,
+  config: LlmRequestConfig,
   options: {
     size?: '1024x1024' | '1536x1024' | '1024x1536' | '1792x1024' | '1024x1792';
     model?: string;
   } = {},
 ): Promise<LlmImageResult> {
-  const { apiKey, baseUrl } = resolveConfig();
-  if (!apiKey) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: {
-        code: 'AI_NOT_CONFIGURED',
-        message:
-          'AI is not configured. Set OPENAI_API_KEY in the API environment to generate images.',
-      },
-    });
-  }
-
-  const model = options.model?.trim() || process.env.AI_IMAGE_MODEL?.trim() || 'gpt-image-1';
+  const { apiKey, baseUrl } = config;
+  const model = options.model?.trim() || config.model;
   const size = options.size ?? '1536x1024';
 
   const res = await fetch(`${baseUrl}/images/generations`, {
@@ -140,25 +129,24 @@ export async function llmImageGeneration(
 
   const json = (await res.json().catch(() => ({}))) as {
     data?: Array<{ b64_json?: string; url?: string; revised_prompt?: string }>;
-    error?: { message?: string };
+    error?: unknown;
   };
 
   if (!res.ok) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: {
-        code: 'AI_IMAGE_PROVIDER_ERROR',
-        message: json.error?.message || `Image generation failed (${res.status})`,
-      },
-    });
+    throw new LlmProviderError(
+      providerErrorMessage(json.error ?? json, `Image generation failed (${res.status})`),
+      res.status,
+      'AI_IMAGE_PROVIDER_ERROR',
+    );
   }
 
   const item = json.data?.[0];
   if (!item) {
-    throw new ServiceUnavailableException({
-      success: false,
-      error: { code: 'AI_EMPTY_RESPONSE', message: 'Image provider returned no image data.' },
-    });
+    throw new LlmProviderError(
+      'Image provider returned no image data.',
+      res.status,
+      'AI_EMPTY_RESPONSE',
+    );
   }
 
   if (item.b64_json) {
@@ -172,13 +160,11 @@ export async function llmImageGeneration(
   if (item.url) {
     const imgRes = await fetch(item.url);
     if (!imgRes.ok) {
-      throw new ServiceUnavailableException({
-        success: false,
-        error: {
-          code: 'AI_IMAGE_DOWNLOAD_FAILED',
-          message: `Failed to download generated image (${imgRes.status})`,
-        },
-      });
+      throw new LlmProviderError(
+        `Failed to download generated image (${imgRes.status})`,
+        imgRes.status,
+        'AI_IMAGE_DOWNLOAD_FAILED',
+      );
     }
     const arrayBuffer = await imgRes.arrayBuffer();
     const contentType = imgRes.headers.get('content-type')?.toLowerCase() ?? 'image/png';
@@ -194,10 +180,11 @@ export async function llmImageGeneration(
     };
   }
 
-  throw new ServiceUnavailableException({
-    success: false,
-    error: { code: 'AI_EMPTY_RESPONSE', message: 'Image provider returned neither b64 nor URL.' },
-  });
+  throw new LlmProviderError(
+    'Image provider returned neither b64 nor URL.',
+    res.status,
+    'AI_EMPTY_RESPONSE',
+  );
 }
 
 export function parseJsonResponse<T>(raw: string): T {

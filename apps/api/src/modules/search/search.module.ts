@@ -8,10 +8,7 @@ import { SearchIndexerService } from './search-indexer.service';
 import { SearchCacheService } from './search-cache.service';
 import { PostgresFtsSearchAdapter } from './postgres-fts.adapter';
 import { SEARCH_ENGINE_ADAPTER } from './search-engine.adapter';
-import {
-  DualWriteSearchAdapter,
-  OpenSearchSearchAdapter,
-} from './opensearch.adapter';
+import { DualWriteSearchAdapter, OpenSearchSearchAdapter } from './opensearch.adapter';
 import {
   getOpenSearchConfig,
   isOpenSearchReadEnabled,
@@ -22,6 +19,7 @@ import {
 import { OpenSearchQueryService } from './opensearch.query';
 import { OpenSearchBootstrapService } from './opensearch.bootstrap';
 import { getOpenSearchEnv } from '@varnarc/config';
+import { AiModule } from '../ai/ai.module';
 
 const osConfig = getOpenSearchConfig();
 const openSearchProviders = osConfig
@@ -32,6 +30,7 @@ const openSearchProviders = osConfig
   : [];
 
 @Module({
+  imports: [AiModule],
   controllers: [SearchController],
   providers: [
     SearchService,

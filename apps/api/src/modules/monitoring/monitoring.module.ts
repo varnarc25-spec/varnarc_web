@@ -4,9 +4,10 @@ import { HealthModule } from '../../health/health.module';
 import { PerformanceModule } from '../performance/performance.module';
 import { MonitoringController } from './monitoring.controller';
 import { MonitoringService } from './monitoring.service';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
-  imports: [DatabaseModule, HealthModule, PerformanceModule],
+  imports: [DatabaseModule, HealthModule, PerformanceModule, AiModule],
   controllers: [MonitoringController],
   providers: [MonitoringService],
   exports: [MonitoringService],

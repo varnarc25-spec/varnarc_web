@@ -5,13 +5,8 @@ import type {
   ImproveArticleInput,
   SuggestRelatedArticlesInput,
 } from '@varnarc/validation';
-import {
-  getLlmConfig,
-  isLlmConfigured,
-  llmChatCompletion,
-  llmImageGeneration,
-  parseJsonResponse,
-} from '../../ai/llm.client';
+import { parseJsonResponse } from '../../ai/llm.client';
+import { LlmProviderService } from '../../ai/llm-provider.service';
 import { AiService } from '../../ai/ai.service';
 import { MediaService } from '../../media/media.service';
 
@@ -40,12 +35,13 @@ type DraftResponse = {
 export class ArticleAiService {
   constructor(
     private readonly aiOps: AiService,
+    private readonly llm: LlmProviderService,
     private readonly media: MediaService,
   ) {}
 
-  configured() {
+  async configured() {
     try {
-      const cfg = getLlmConfig();
+      const cfg = await this.llm.getConfigSummary();
       return {
         configured: cfg.configured,
         provider: cfg.provider,
@@ -147,18 +143,18 @@ export class ArticleAiService {
   }
 
   private async runGenerateImage(input: GenerateArticleImageInput, userId: string) {
-    if (!isLlmConfigured()) {
+    if (!(await this.llm.isConfigured())) {
       throw new BadRequestException({
         success: false,
         error: {
           code: 'AI_NOT_CONFIGURED',
-          message: 'AI is not configured. Set OPENAI_API_KEY to generate article images.',
+          message: 'AI is not configured for image generation.',
         },
       });
     }
 
     const prompt = this.buildEditorialImagePrompt(input);
-    const generated = await llmImageGeneration(prompt, { size: '1536x1024' });
+    const generated = await this.llm.imageGeneration(prompt, { size: '1536x1024' });
 
     const ext =
       generated.mimeType === 'image/jpeg'
@@ -228,7 +224,7 @@ export class ArticleAiService {
       .filter(Boolean)
       .join('\n');
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         { role: 'system', content: system },
         { role: 'user', content: user },
@@ -268,7 +264,7 @@ export class ArticleAiService {
           : 'Return JSON: { content: string (full markdown), excerpt?: string }',
     ].join('\n');
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         { role: 'system', content: system },
         { role: 'user', content: user },
@@ -294,7 +290,7 @@ export class ArticleAiService {
       `Return JSON: { topics: string[] } with exactly ${input.limit} concise article titles.`,
     ].join('\n');
 
-    const raw = await llmChatCompletion(
+    const raw = await this.llm.chatCompletion(
       [
         { role: 'system', content: system },
         { role: 'user', content: user },

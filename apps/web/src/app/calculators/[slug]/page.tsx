@@ -66,7 +66,7 @@ type CalculatorDetail = {
   settings?: {
     mode?: string;
     layout?: string;
-    illustrationDisplay?: { width?: number; height?: number };
+    illustrationDisplay?: { width?: number };
     steps?: Array<{ title: string; fields: string[] }>;
     fieldVisibility?: Record<string, Record<string, string[]>>;
     faq?: Array<{ q: string; a: string }>;
@@ -256,7 +256,6 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
           src={calc?.illustrationUrl}
           alt={calc?.illustrationAlt}
           displayWidth={calc?.settings?.illustrationDisplay?.width}
-          displayHeight={calc?.settings?.illustrationDisplay?.height}
         />
       }
       breadcrumbs={[
