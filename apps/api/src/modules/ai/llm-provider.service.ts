@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import nodemailer from 'nodemailer';
 import type { Repositories } from '@varnarc/database';
 import {
   aiProvidersSchema,
@@ -243,28 +244,61 @@ export class LlmProviderService {
       .catch(() => null);
     const contact = (contactSetting?.value ?? {}) as {
       emailEnabled?: boolean;
+      emailProvider?: 'resend' | 'smtp';
       resendApiKey?: string;
       fromEmail?: string;
       toBusiness?: string;
+      smtpHost?: string;
+      smtpPort?: number;
+      smtpSecure?: boolean;
+      smtpUsername?: string;
+      smtpPassword?: string;
     };
     if (contact.emailEnabled === false) return;
-    const apiKey = process.env.RESEND_API_KEY?.trim() || contact.resendApiKey?.trim();
     const from = process.env.EMAIL_FROM?.trim() || contact.fromEmail?.trim();
     const recipient = contact.toBusiness?.trim() || 'business@varnarc.com';
-    if (!apiKey || !from) return;
+    if (!from) return;
     const safeMessage = message.replace(/[<>]/g, '');
+    const subject = `AI provider failure: ${provider.name}`;
+    const html = `<p><strong>Provider:</strong> ${provider.name}</p><p><strong>Status:</strong> ${
+      status ?? 'network error'
+    }</p><p><strong>Message:</strong> ${safeMessage}</p><p><strong>Failover remains:</strong> ${
+      failoverRemains ? 'yes' : 'no'
+    }</p>`;
+
+    if (contact.emailProvider === 'smtp') {
+      const host = process.env.SMTP_HOST?.trim() || contact.smtpHost?.trim();
+      if (!host) return;
+      await nodemailer
+        .createTransport({
+          host,
+          port: Number(process.env.SMTP_PORT || contact.smtpPort || 587),
+          secure:
+            process.env.SMTP_SECURE !== undefined
+              ? process.env.SMTP_SECURE === 'true'
+              : (contact.smtpSecure ?? false),
+          auth: {
+            user: process.env.SMTP_USERNAME?.trim() || contact.smtpUsername?.trim(),
+            pass: process.env.SMTP_PASSWORD?.trim() || contact.smtpPassword?.trim(),
+          },
+        })
+        .sendMail({ from, to: recipient, subject, html })
+        .catch((error: unknown) =>
+          this.logger.warn(`Failed to send AI provider SMTP alert: ${String(error)}`),
+        );
+      return;
+    }
+
+    const apiKey = process.env.RESEND_API_KEY?.trim() || contact.resendApiKey?.trim();
+    if (!apiKey) return;
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from,
         to: [recipient],
-        subject: `AI provider failure: ${provider.name}`,
-        html: `<p><strong>Provider:</strong> ${provider.name}</p><p><strong>Status:</strong> ${
-          status ?? 'network error'
-        }</p><p><strong>Message:</strong> ${safeMessage}</p><p><strong>Failover remains:</strong> ${
-          failoverRemains ? 'yes' : 'no'
-        }</p>`,
+        subject,
+        html,
       }),
     }).catch((error: unknown) => {
       this.logger.warn(`Failed to send AI provider alert: ${String(error)}`);

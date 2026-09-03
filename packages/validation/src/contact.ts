@@ -5,6 +5,7 @@ const optionalEmail = z.union([z.string().email(), z.literal(''), z.null()]).opt
 
 export const contactSettingsSchema = z.object({
   emailEnabled: z.boolean().default(true),
+  emailProvider: z.enum(['resend', 'smtp']).default('resend'),
   fromEmail: z.string().max(200).optional().nullable(),
   toGeneral: optionalEmail,
   toEditorial: optionalEmail,
@@ -14,13 +15,20 @@ export const contactSettingsSchema = z.object({
   publicContactEmail: optionalEmail,
   /** Write-only on PUT. Never returned in GET payloads. */
   resendApiKey: z.string().max(200).optional().nullable(),
+  smtpHost: z.string().max(255).optional().nullable(),
+  smtpPort: z.coerce.number().int().min(1).max(65535).default(587),
+  smtpSecure: z.boolean().default(false),
+  smtpUsername: z.string().max(255).optional().nullable(),
+  /** Write-only on PUT. Never returned in GET payloads. */
+  smtpPassword: z.string().max(500).optional().nullable(),
 });
 
 export const contactSettingsPublicSchema = contactSettingsSchema
-  .omit({ resendApiKey: true })
+  .omit({ resendApiKey: true, smtpPassword: true })
   .extend({
     resendApiKeyConfigured: z.boolean().default(false),
     envApiKeyConfigured: z.boolean().default(false),
+    smtpPasswordConfigured: z.boolean().default(false),
   });
 
 export const createContactMessageSchema = z.object({

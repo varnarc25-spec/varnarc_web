@@ -102,6 +102,7 @@ const DEFAULT_SEO_DEFAULTS: SeoDefaultsSettingsInput = {
 
 const DEFAULT_CONTACT: ContactSettingsInput = {
   emailEnabled: true,
+  emailProvider: 'resend',
   fromEmail: null,
   toGeneral: null,
   toEditorial: null,
@@ -110,6 +111,11 @@ const DEFAULT_CONTACT: ContactSettingsInput = {
   toPrivacy: null,
   publicContactEmail: null,
   resendApiKey: null,
+  smtpHost: null,
+  smtpPort: 587,
+  smtpSecure: false,
+  smtpUsername: null,
+  smtpPassword: null,
 };
 
 const DEFAULT_ADSENSE: AdsenseSettingsInput = {
@@ -324,6 +330,7 @@ export class SettingsService {
     const dbKey = raw.resendApiKey?.trim();
     return {
       emailEnabled: raw.emailEnabled,
+      emailProvider: raw.emailProvider,
       fromEmail: raw.fromEmail ?? null,
       toGeneral: raw.toGeneral ?? null,
       toEditorial: raw.toEditorial ?? null,
@@ -333,6 +340,13 @@ export class SettingsService {
       publicContactEmail: raw.publicContactEmail ?? null,
       resendApiKeyConfigured: Boolean(dbKey) || envApiKeyConfigured,
       envApiKeyConfigured,
+      smtpHost: raw.smtpHost ?? null,
+      smtpPort: raw.smtpPort,
+      smtpSecure: raw.smtpSecure,
+      smtpUsername: raw.smtpUsername ?? null,
+      smtpPasswordConfigured: Boolean(
+        process.env.SMTP_PASSWORD?.trim() || raw.smtpPassword?.trim(),
+      ),
     };
   }
 
@@ -345,9 +359,16 @@ export class SettingsService {
         : parsed.resendApiKey.trim() === ''
           ? null
           : parsed.resendApiKey.trim();
+    const nextSmtpPassword =
+      parsed.smtpPassword === undefined || parsed.smtpPassword === null
+        ? current.smtpPassword
+        : parsed.smtpPassword.trim() === ''
+          ? null
+          : parsed.smtpPassword.trim();
 
     const merged: ContactSettingsInput = {
       emailEnabled: parsed.emailEnabled,
+      emailProvider: parsed.emailProvider,
       fromEmail: parsed.fromEmail?.trim() || null,
       toGeneral: parsed.toGeneral?.trim() || null,
       toEditorial: parsed.toEditorial?.trim() || null,
@@ -356,6 +377,11 @@ export class SettingsService {
       toPrivacy: parsed.toPrivacy?.trim() || null,
       publicContactEmail: parsed.publicContactEmail?.trim() || null,
       resendApiKey: nextKey,
+      smtpHost: parsed.smtpHost?.trim() || null,
+      smtpPort: parsed.smtpPort,
+      smtpSecure: parsed.smtpSecure,
+      smtpUsername: parsed.smtpUsername?.trim() || null,
+      smtpPassword: nextSmtpPassword,
     };
 
     await this.writeJson(

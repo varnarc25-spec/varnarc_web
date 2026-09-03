@@ -5,6 +5,7 @@ import { Button } from '@varnarc/ui';
 
 export type ContactSettings = {
   emailEnabled?: boolean;
+  emailProvider?: 'resend' | 'smtp';
   fromEmail?: string | null;
   toGeneral?: string | null;
   toEditorial?: string | null;
@@ -14,6 +15,11 @@ export type ContactSettings = {
   publicContactEmail?: string | null;
   resendApiKeyConfigured?: boolean;
   envApiKeyConfigured?: boolean;
+  smtpHost?: string | null;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+  smtpUsername?: string | null;
+  smtpPasswordConfigured?: boolean;
 };
 
 export function ContactSettingsForm({
@@ -25,6 +31,7 @@ export function ContactSettingsForm({
 }) {
   const [form, setForm] = useState({
     emailEnabled: initial.emailEnabled !== false,
+    emailProvider: initial.emailProvider ?? 'resend',
     fromEmail: initial.fromEmail ?? '',
     toGeneral: initial.toGeneral ?? '',
     toEditorial: initial.toEditorial ?? '',
@@ -33,6 +40,11 @@ export function ContactSettingsForm({
     toPrivacy: initial.toPrivacy ?? '',
     publicContactEmail: initial.publicContactEmail ?? '',
     resendApiKey: '',
+    smtpHost: initial.smtpHost ?? '',
+    smtpPort: initial.smtpPort ?? 587,
+    smtpSecure: initial.smtpSecure ?? false,
+    smtpUsername: initial.smtpUsername ?? '',
+    smtpPassword: '',
   });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +61,7 @@ export function ContactSettingsForm({
     try {
       const body: Record<string, unknown> = {
         emailEnabled: form.emailEnabled,
+        emailProvider: form.emailProvider,
         fromEmail: form.fromEmail || null,
         toGeneral: form.toGeneral || null,
         toEditorial: form.toEditorial || null,
@@ -56,9 +69,16 @@ export function ContactSettingsForm({
         toSupport: form.toSupport || null,
         toPrivacy: form.toPrivacy || null,
         publicContactEmail: form.publicContactEmail || null,
+        smtpHost: form.smtpHost || null,
+        smtpPort: form.smtpPort,
+        smtpSecure: form.smtpSecure,
+        smtpUsername: form.smtpUsername || null,
       };
       if (form.resendApiKey.trim()) {
         body.resendApiKey = form.resendApiKey.trim();
+      }
+      if (form.smtpPassword.trim()) {
+        body.smtpPassword = form.smtpPassword.trim();
       }
       const res = await fetch('/api/admin/settings/contact', {
         method: 'PUT',
@@ -67,7 +87,7 @@ export function ContactSettingsForm({
       });
       const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
       if (!res.ok) throw new Error(json.error?.message || 'Save failed');
-      setForm((prev) => ({ ...prev, resendApiKey: '' }));
+      setForm((prev) => ({ ...prev, resendApiKey: '', smtpPassword: '' }));
       setMessage(
         mode === 'ai-alerts' ? 'AI alert email settings saved.' : 'Contact email settings saved.',
       );
@@ -84,7 +104,7 @@ export function ContactSettingsForm({
     <div className="space-y-4 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
       <p className="text-sm text-[var(--varnarc-subtle)]">
         {mode === 'ai-alerts'
-          ? 'Configure Resend delivery for AI provider failure alerts. Alerts are deduplicated for one hour.'
+          ? 'Configure email delivery for AI provider failure alerts. Alerts are deduplicated for one hour.'
           : 'Configure where contact form enquiries are delivered. Messages are always stored in the database first, then emailed when delivery is enabled and configured.'}
       </p>
 
@@ -99,13 +119,31 @@ export function ContactSettingsForm({
           : 'Send email after storing the enquiry'}
       </label>
 
+      <label className="block text-sm">
+        Email provider
+        <select
+          className={inputClass}
+          value={form.emailProvider}
+          onChange={(e) => update('emailProvider', e.target.value as 'resend' | 'smtp')}
+        >
+          <option value="resend">Resend</option>
+          <option value="smtp">SMTP</option>
+        </select>
+      </label>
+
       <div className="rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] px-3 py-2 text-sm text-[var(--varnarc-subtle)]">
-        Resend API key:{' '}
-        {initial.envApiKeyConfigured
-          ? 'configured via environment (preferred)'
-          : initial.resendApiKeyConfigured
-            ? 'configured in admin settings'
-            : 'not configured'}
+        {form.emailProvider === 'smtp' ? (
+          <>SMTP password: {initial.smtpPasswordConfigured ? 'configured' : 'not configured'}</>
+        ) : (
+          <>
+            Resend API key:{' '}
+            {initial.envApiKeyConfigured
+              ? 'configured via environment (preferred)'
+              : initial.resendApiKeyConfigured
+                ? 'configured in admin settings'
+                : 'not configured'}
+          </>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -181,23 +219,78 @@ export function ContactSettingsForm({
             </label>
           </>
         ) : null}
-        <label className="block text-sm md:col-span-2">
-          Resend API key (leave blank to keep existing)
-          <input
-            type="password"
-            autoComplete="new-password"
-            className={inputClass}
-            placeholder={
-              initial.resendApiKeyConfigured || initial.envApiKeyConfigured ? '••••••••' : 're_...'
-            }
-            value={form.resendApiKey}
-            onChange={(e) => update('resendApiKey', e.target.value)}
-          />
-          <span className="mt-1 block text-xs text-[var(--varnarc-subtle)]">
-            Prefer setting <code>RESEND_API_KEY</code> in environment for production. Admin-stored
-            keys are a fallback.
-          </span>
-        </label>
+        {form.emailProvider === 'resend' ? (
+          <label className="block text-sm md:col-span-2">
+            Resend API key (leave blank to keep existing)
+            <input
+              type="password"
+              autoComplete="new-password"
+              className={inputClass}
+              placeholder={
+                initial.resendApiKeyConfigured || initial.envApiKeyConfigured
+                  ? '••••••••'
+                  : 're_...'
+              }
+              value={form.resendApiKey}
+              onChange={(e) => update('resendApiKey', e.target.value)}
+            />
+            <span className="mt-1 block text-xs text-[var(--varnarc-subtle)]">
+              Prefer setting <code>RESEND_API_KEY</code> in environment for production. Admin-stored
+              keys are a fallback.
+            </span>
+          </label>
+        ) : (
+          <>
+            <label className="block text-sm">
+              SMTP host
+              <input
+                className={inputClass}
+                placeholder="smtp.example.com"
+                value={form.smtpHost}
+                onChange={(e) => update('smtpHost', e.target.value)}
+              />
+            </label>
+            <label className="block text-sm">
+              SMTP port
+              <input
+                type="number"
+                min={1}
+                max={65535}
+                className={inputClass}
+                value={form.smtpPort}
+                onChange={(e) => update('smtpPort', Number(e.target.value))}
+              />
+            </label>
+            <label className="block text-sm">
+              SMTP username
+              <input
+                className={inputClass}
+                autoComplete="username"
+                value={form.smtpUsername}
+                onChange={(e) => update('smtpUsername', e.target.value)}
+              />
+            </label>
+            <label className="block text-sm">
+              SMTP password (leave blank to keep existing)
+              <input
+                type="password"
+                autoComplete="new-password"
+                className={inputClass}
+                placeholder={initial.smtpPasswordConfigured ? '••••••••' : undefined}
+                value={form.smtpPassword}
+                onChange={(e) => update('smtpPassword', e.target.value)}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.smtpSecure}
+                onChange={(e) => update('smtpSecure', e.target.checked)}
+              />
+              Use implicit TLS (normally enabled for port 465; leave off for STARTTLS on port 587)
+            </label>
+          </>
+        )}
       </div>
 
       {message ? <p className="text-sm text-emerald-700">{message}</p> : null}

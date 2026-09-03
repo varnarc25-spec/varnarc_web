@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import nodemailer from 'nodemailer';
 import type { Repositories } from '@varnarc/database';
 import {
   contactDestinationForTopic,
@@ -74,13 +75,25 @@ export class ContactService {
       'Varnarc <onboarding@resend.dev>';
 
     const apiKey = process.env.RESEND_API_KEY?.trim() || contact.resendApiKey?.trim() || null;
+    const provider = contact.emailProvider ?? 'resend';
 
     return {
       emailEnabled: contact.emailEnabled !== false,
+      provider,
       destination,
       to,
       from,
       apiKey,
+      smtp: {
+        host: process.env.SMTP_HOST?.trim() || contact.smtpHost?.trim() || null,
+        port: Number(process.env.SMTP_PORT || contact.smtpPort || 587),
+        secure:
+          process.env.SMTP_SECURE !== undefined
+            ? process.env.SMTP_SECURE === 'true'
+            : (contact.smtpSecure ?? false),
+        username: process.env.SMTP_USERNAME?.trim() || contact.smtpUsername?.trim() || null,
+        password: process.env.SMTP_PASSWORD?.trim() || contact.smtpPassword?.trim() || null,
+      },
     };
   }
 
@@ -124,10 +137,12 @@ export class ContactService {
       return { ok: true, id: row.id, stored: true, emailed: false };
     }
 
-    if (!delivery.apiKey || !delivery.to) {
+    const providerConfigured =
+      delivery.provider === 'smtp' ? Boolean(delivery.smtp.host) : Boolean(delivery.apiKey);
+    if (!providerConfigured || !delivery.to) {
       await this.repos.contactMessages.updateStatus(row.id, {
         status: 'FAILED',
-        emailError: 'Email is not configured (missing API key or recipient).',
+        emailError: 'Email is not configured (missing provider credentials or recipient).',
       });
       return {
         ok: false,
@@ -140,8 +155,7 @@ export class ContactService {
     }
 
     try {
-      const sent = await this.sendViaResend({
-        apiKey: delivery.apiKey,
+      const message = {
         from: delivery.from,
         to: delivery.to,
         replyTo: input.email,
@@ -150,7 +164,11 @@ export class ContactService {
         ),
         html: this.buildHtml(input, destination),
         text: this.buildText(input),
-      });
+      };
+      const sent =
+        delivery.provider === 'smtp'
+          ? await this.sendViaSmtp({ ...message, ...delivery.smtp })
+          : await this.sendViaResend({ ...message, apiKey: delivery.apiKey! });
 
       if (!sent.ok) {
         await this.repos.contactMessages.updateStatus(row.id, {
@@ -260,6 +278,47 @@ export class ContactService {
       return { ok: false as const, error: body.slice(0, 500) || `HTTP ${res.status}` };
     }
     return { ok: true as const };
+  }
+
+  private async sendViaSmtp(input: {
+    host: string | null;
+    port: number;
+    secure: boolean;
+    username: string | null;
+    password: string | null;
+    from: string;
+    to: string;
+    replyTo: string;
+    subject: string;
+    html: string;
+    text: string;
+  }) {
+    if (!input.host) return { ok: false as const, error: 'SMTP host is missing' };
+    const transporter = nodemailer.createTransport({
+      host: input.host,
+      port: input.port,
+      secure: input.secure,
+      auth:
+        input.username && input.password
+          ? { user: input.username, pass: input.password }
+          : undefined,
+    });
+    try {
+      await transporter.sendMail({
+        from: input.from,
+        to: input.to,
+        replyTo: input.replyTo,
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+      });
+      return { ok: true as const, error: null };
+    } catch (error) {
+      return {
+        ok: false as const,
+        error: error instanceof Error ? error.message.slice(0, 500) : 'SMTP delivery failed',
+      };
+    }
   }
 
   list(query: ContactMessageListQuery) {
