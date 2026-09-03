@@ -24,7 +24,12 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
     privateKey: '',
     publicBaseUrl: initial.publicBaseUrl ?? '',
     makePublic: Boolean(initial.makePublic),
+    clearPrivateKey: false,
   });
+  const [activeSource, setActiveSource] = useState(initial.activeSource ?? 'none');
+  const [privateKeyConfigured, setPrivateKeyConfigured] = useState(
+    Boolean(initial.privateKeyConfigured),
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,21 +46,29 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
           enabled: form.enabled,
           bucket: form.bucket.trim() || null,
           projectId: form.projectId.trim() || null,
-          clientEmail: form.clientEmail.trim() || null,
+          clientEmail: form.clearPrivateKey ? null : form.clientEmail.trim() || null,
           privateKey: form.privateKey.trim() ? form.privateKey : '',
+          clearPrivateKey: form.clearPrivateKey,
           publicBaseUrl: form.publicBaseUrl.trim() || null,
           makePublic: form.makePublic,
         }),
       });
       const json = (await res.json().catch(() => ({}))) as {
+        data?: GcsSettingsView;
         error?: { message?: string; details?: unknown };
       };
       if (!res.ok) {
         throw new Error(json.error?.message || `Save failed (${res.status})`);
       }
-      setForm((prev) => ({ ...prev, privateKey: '' }));
+      const saved = json.data;
+      if (saved?.activeSource) setActiveSource(saved.activeSource);
+      setPrivateKeyConfigured(Boolean(saved?.privateKeyConfigured));
+      setForm((prev) => ({ ...prev, privateKey: '', clearPrivateKey: false }));
+      const source = saved?.activeSource ?? activeSource;
       setMessage(
-        'Cloud Storage settings saved. New media uploads will use this configuration immediately.',
+        source === 'database'
+          ? 'Saved. New uploads will go to Google Cloud Storage.'
+          : 'Saved, but GCS is not active yet. Turn the checkbox on and set a bucket, then save again.',
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
@@ -66,9 +79,9 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
 
   const inputClass = 'mt-1 block h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3';
   const sourceLabel =
-    initial.activeSource === 'database'
+    activeSource === 'database'
       ? 'Database (this page)'
-      : initial.activeSource === 'environment'
+      : activeSource === 'environment'
         ? 'Environment variables'
         : 'Not configured (files stored in the API database)';
 
@@ -82,6 +95,11 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
       <p className="text-sm">
         Active source: <strong>{sourceLabel}</strong>
         {initial.envBucketConfigured ? ' (GCS_BUCKET is also set in the environment.)' : null}
+      </p>
+      <p className="text-sm text-[var(--varnarc-subtle)]">
+        On Cloud Run, leave the private key empty. The API uses the attached service account
+        (Application Default Credentials). Pasting a JSON key is not required and often breaks
+        uploads.
       </p>
 
       <label className="flex items-center gap-2 text-sm">
@@ -113,10 +131,10 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
           />
         </label>
         <label className="block text-sm md:col-span-2">
-          Service account email
+          Service account email (optional; leave empty to use Cloud Run ADC)
           <input
             className={inputClass}
-            placeholder="media-uploader@project.iam.gserviceaccount.com"
+            placeholder="Leave empty to use the Cloud Run service account"
             value={form.clientEmail}
             onChange={(e) => setForm((prev) => ({ ...prev, clientEmail: e.target.value }))}
           />
@@ -126,9 +144,9 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
           <textarea
             className="mt-1 min-h-28 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 font-mono text-xs"
             placeholder={
-              initial.privateKeyConfigured
-                ? 'A key is already stored. Paste a new PEM only to replace it.'
-                : '-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----'
+              privateKeyConfigured
+                ? 'A JSON key is stored. Leave blank to keep it, or check “clear key” below to use ADC.'
+                : 'Leave empty. Do not paste a PEM when using Cloud Run.'
             }
             value={form.privateKey}
             onChange={(e) => setForm((prev) => ({ ...prev, privateKey: e.target.value }))}
@@ -144,6 +162,17 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
           />
         </label>
       </div>
+
+      {privateKeyConfigured ? (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.clearPrivateKey}
+            onChange={(e) => setForm((prev) => ({ ...prev, clearPrivateKey: e.target.checked }))}
+          />
+          Clear stored private key and use Cloud Run ADC
+        </label>
+      ) : null}
 
       <label className="flex items-center gap-2 text-sm">
         <input

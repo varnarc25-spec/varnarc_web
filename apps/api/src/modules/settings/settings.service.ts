@@ -441,8 +441,9 @@ export class SettingsService {
   async setGcs(input: GcsSettingsInput, actorId: string) {
     const parsed = gcsSettingsSchema.parse(input);
     const current = await this.getGcsRaw();
-    const nextKey =
-      parsed.privateKey === undefined || parsed.privateKey === null
+    const nextKey = parsed.clearPrivateKey
+      ? null
+      : parsed.privateKey === undefined || parsed.privateKey === null
         ? current.privateKey
         : parsed.privateKey.trim() === ''
           ? current.privateKey

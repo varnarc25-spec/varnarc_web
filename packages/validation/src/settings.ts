@@ -79,6 +79,8 @@ export const gcsSettingsSchema = z.object({
   clientEmail: z.union([z.string().email(), z.literal(''), z.null()]).optional(),
   /** Empty string keeps the stored key; send a new PEM to replace. */
   privateKey: z.string().max(12000).optional().nullable(),
+  /** When true, wipe the stored PEM and use Cloud Run ADC. */
+  clearPrivateKey: z.boolean().optional(),
   publicBaseUrl: optionalUrl,
   makePublic: z.boolean().default(false),
 });
