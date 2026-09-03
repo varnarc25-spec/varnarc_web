@@ -31,6 +31,8 @@ type CalculatorDetail = {
   name: string;
   description?: string | null;
   slug: string;
+  illustrationUrl?: string | null;
+  illustrationAlt?: string | null;
   settings?: {
     mode?: string;
     layout?: string;
@@ -115,7 +117,13 @@ export default async function AutomobileCalculatorLandingPage({ params, searchPa
       <PageShell
         title={defaults.h1}
         description={defaults.description}
-        illustration={<CalculatorHeroIllustration slug={slug} />}
+        illustration={
+          <CalculatorHeroIllustration
+            slug={slug}
+            src={calc?.illustrationUrl}
+            alt={calc?.illustrationAlt}
+          />
+        }
         breadcrumbs={[
           { label: 'Home', href: '/' },
           { label: 'Automobile', href: '/automobile' },

@@ -61,6 +61,8 @@ type CalculatorDetail = {
   seoTitle?: string | null;
   seoDescription?: string | null;
   slug: string;
+  illustrationUrl?: string | null;
+  illustrationAlt?: string | null;
   settings?: {
     mode?: string;
     layout?: string;
@@ -247,7 +249,13 @@ export default async function CalculatorDetailPage({ params, searchParams }: Pro
       description={
         description ?? 'Interactive calculator powered by the Varnarc Calculator Engine.'
       }
-      illustration={<CalculatorHeroIllustration slug={slug} />}
+      illustration={
+        <CalculatorHeroIllustration
+          slug={slug}
+          src={calc?.illustrationUrl}
+          alt={calc?.illustrationAlt}
+        />
+      }
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Calculators', href: '/calculators' },

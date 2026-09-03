@@ -208,17 +208,26 @@ function TypeArt({ type }: { type: CalculatorIllustrationType }) {
   );
 }
 
-export function CalculatorHeroIllustration({ slug }: { slug: string }) {
-  const custom = calculatorIllustrationSrc(slug);
+export function CalculatorHeroIllustration({
+  slug,
+  src,
+  alt,
+}: {
+  slug: string;
+  /** Uploaded illustration from admin (preferred over built-in SVG art). */
+  src?: string | null;
+  alt?: string | null;
+}) {
+  const custom = (src?.trim() || calculatorIllustrationSrc(slug) || '').trim() || null;
   const type = illustrationTypeForCalculatorSlug(slug);
   if (custom) {
     return (
       <img
         src={custom}
-        alt=""
+        alt={alt?.trim() || LABEL[type]}
         width={CALCULATOR_ILLUSTRATION_WIDTH}
         height={CALCULATOR_ILLUSTRATION_HEIGHT}
-        className="h-auto w-full max-w-[280px] rounded-[28px]"
+        className="h-auto w-full max-w-[280px] rounded-[28px] object-contain bg-[#f7f9fc]"
       />
     );
   }

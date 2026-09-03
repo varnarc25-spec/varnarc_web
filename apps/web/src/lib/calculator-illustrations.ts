@@ -12,6 +12,9 @@
  * Save custom files as:
  *   apps/web/public/calculators/illustrations/{slug}.svg
  * then add the slug to CUSTOM_CALCULATOR_ILLUSTRATIONS.
+ *
+ * Preferred: upload via Admin → Calculators → Optional illustration.
+ * The public calculator pages use `illustrationUrl` from the API first.
  */
 
 export const CALCULATOR_ILLUSTRATION_WIDTH = 480;
