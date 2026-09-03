@@ -116,9 +116,8 @@ export class CalculatorRepository extends BaseRepository {
     }>,
   ) {
     await this.db.$transaction([
-      this.db.calculatorField.updateMany({
-        where: { calculatorId, deletedAt: null },
-        data: { deletedAt: new Date() },
+      this.db.calculatorField.deleteMany({
+        where: { calculatorId },
       }),
       ...fields.map((f) =>
         this.db.calculatorField.create({
