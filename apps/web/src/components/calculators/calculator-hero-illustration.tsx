@@ -212,22 +212,29 @@ export function CalculatorHeroIllustration({
   slug,
   src,
   alt,
+  displayWidth,
+  displayHeight,
 }: {
   slug: string;
   /** Uploaded illustration from admin (preferred over built-in SVG art). */
   src?: string | null;
   alt?: string | null;
+  displayWidth?: number | null;
+  displayHeight?: number | null;
 }) {
   const custom = (src?.trim() || calculatorIllustrationSrc(slug) || '').trim() || null;
   const type = illustrationTypeForCalculatorSlug(slug);
   if (custom) {
+    const width = Math.min(800, Math.max(120, displayWidth ?? 380));
+    const height = Math.min(800, Math.max(120, displayHeight ?? 320));
     return (
       <img
         src={custom}
         alt={alt?.trim() || LABEL[type]}
-        width={CALCULATOR_ILLUSTRATION_WIDTH}
-        height={CALCULATOR_ILLUSTRATION_HEIGHT}
-        className="h-auto w-full max-w-[280px] object-contain"
+        width={width}
+        height={height}
+        className="max-w-full object-contain"
+        style={{ width, height }}
       />
     );
   }

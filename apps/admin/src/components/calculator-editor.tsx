@@ -41,6 +41,19 @@ async function readApiResponse<T>(response: Response): Promise<ApiResponse<T>> {
   }
 }
 
+function illustrationDimension(settings: unknown, key: 'width' | 'height', fallback: number) {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return fallback;
+  const display = (settings as Record<string, unknown>).illustrationDisplay;
+  if (!display || typeof display !== 'object' || Array.isArray(display)) return fallback;
+  const value = Number((display as Record<string, unknown>)[key]);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function clampDimension(value: string, fallback: number) {
+  const parsed = Number(value);
+  return Math.min(800, Math.max(120, Number.isFinite(parsed) ? Math.round(parsed) : fallback));
+}
+
 export function CalculatorEditor({
   initial,
   categories,
@@ -100,6 +113,12 @@ export function CalculatorEditor({
       2,
     ),
   );
+  const [illustrationWidth, setIllustrationWidth] = useState(
+    String(illustrationDimension(initial?.settings, 'width', 380)),
+  );
+  const [illustrationHeight, setIllustrationHeight] = useState(
+    String(illustrationDimension(initial?.settings, 'height', 320)),
+  );
   const [seoTitle, setSeoTitle] = useState(initial?.seoTitle || '');
   const [seoDescription, setSeoDescription] = useState(initial?.seoDescription || '');
   const [fields, setFields] = useState<FieldDraft[]>(
@@ -149,6 +168,10 @@ export function CalculatorEditor({
       if (formula.trim().startsWith('{')) {
         parseJsonField('formula', formula);
       }
+      const parsedSettings = parseJsonField('settings', settings);
+      if (!parsedSettings || typeof parsedSettings !== 'object' || Array.isArray(parsedSettings)) {
+        throw new Error('Settings JSON must be an object');
+      }
       const body = {
         name,
         slug:
@@ -164,7 +187,13 @@ export function CalculatorEditor({
         illustrationAlt: illustration.alt || null,
         formula,
         resultTemplate: parseJsonField('result template', resultTemplate),
-        settings: parseJsonField('settings', settings),
+        settings: {
+          ...(parsedSettings as Record<string, unknown>),
+          illustrationDisplay: {
+            width: clampDimension(illustrationWidth, 380),
+            height: clampDimension(illustrationHeight, 320),
+          },
+        },
         seoTitle: seoTitle || null,
         seoDescription: seoDescription || null,
         fields: fields.map((f, i) => ({
@@ -335,6 +364,32 @@ export function CalculatorEditor({
         showTitle
         showDescription
       />
+      <div className="grid max-w-md gap-3 sm:grid-cols-2">
+        <label className="text-xs text-[var(--varnarc-subtle)]">
+          Website image width (px)
+          <input
+            type="number"
+            min={120}
+            max={800}
+            step={10}
+            className="mt-1 h-9 w-full rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
+            value={illustrationWidth}
+            onChange={(event) => setIllustrationWidth(event.target.value)}
+          />
+        </label>
+        <label className="text-xs text-[var(--varnarc-subtle)]">
+          Website image height (px)
+          <input
+            type="number"
+            min={120}
+            max={800}
+            step={10}
+            className="mt-1 h-9 w-full rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
+            value={illustrationHeight}
+            onChange={(event) => setIllustrationHeight(event.target.value)}
+          />
+        </label>
+      </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">

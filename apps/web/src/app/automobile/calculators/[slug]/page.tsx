@@ -36,6 +36,7 @@ type CalculatorDetail = {
   settings?: {
     mode?: string;
     layout?: string;
+    illustrationDisplay?: { width?: number; height?: number };
     steps?: Array<{ title: string; fields: string[] }>;
     fieldVisibility?: Record<string, Record<string, string[]>>;
     faq?: Array<{ q: string; a: string }>;
@@ -122,6 +123,8 @@ export default async function AutomobileCalculatorLandingPage({ params, searchPa
             slug={slug}
             src={calc?.illustrationUrl}
             alt={calc?.illustrationAlt}
+            displayWidth={calc?.settings?.illustrationDisplay?.width}
+            displayHeight={calc?.settings?.illustrationDisplay?.height}
           />
         }
         breadcrumbs={[
