@@ -26,6 +26,21 @@ const defaultResultTemplate = {
   recommendations: true,
 };
 
+type ApiResponse<T> = {
+  data?: T;
+  error?: { message?: string };
+};
+
+async function readApiResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  const text = await response.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text) as ApiResponse<T>;
+  } catch {
+    return {};
+  }
+}
+
 export function CalculatorEditor({
   initial,
   categories,
@@ -131,6 +146,9 @@ export function CalculatorEditor({
     setLoading(true);
     setMessage(null);
     try {
+      if (formula.trim().startsWith('{')) {
+        parseJsonField('formula', formula);
+      }
       const body = {
         name,
         slug:
@@ -164,14 +182,33 @@ export function CalculatorEditor({
           body: JSON.stringify(body),
         },
       );
-      const json = (await res.json()) as { data?: { id: string }; error?: { message?: string } };
-      if (!res.ok) throw new Error(json.error?.message || 'Save failed');
+      const json = await readApiResponse<{ id: string }>(res);
+      if (!res.ok) {
+        throw new Error(json.error?.message || `Save failed (${res.status})`);
+      }
 
       const id = json.data?.id || initial?.id;
+      if (illustration.mediaId) {
+        const mediaRes = await fetch(`/api/admin/media/${illustration.mediaId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            alt: illustration.alt || null,
+            title: illustration.title || null,
+            description: illustration.description || null,
+          }),
+        });
+        const mediaJson = await readApiResponse<unknown>(mediaRes);
+        if (!mediaRes.ok) {
+          throw new Error(
+            mediaJson.error?.message || `Image metadata save failed (${mediaRes.status})`,
+          );
+        }
+      }
       if (publish && id) {
         const pub = await fetch(`/api/admin/calculators/${id}/publish`, { method: 'POST' });
         if (!pub.ok) {
-          const pj = (await pub.json()) as { error?: { message?: string } };
+          const pj = await readApiResponse<unknown>(pub);
           throw new Error(pj.error?.message || 'Publish failed');
         }
       }
@@ -195,7 +232,7 @@ export function CalculatorEditor({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
-      const json = (await res.json()) as { data?: { id: string }; error?: { message?: string } };
+      const json = await readApiResponse<{ id: string }>(res);
       if (!res.ok) throw new Error(json.error?.message || 'Clone failed');
       if (json.data?.id) router.push(`/calculators/${json.data.id}`);
     } catch (err) {
@@ -250,11 +287,20 @@ export function CalculatorEditor({
         slug={slug}
         description={description}
         formula={formula}
+        imageUrl={illustration.url}
         onApplyDescription={setDescription}
         onApplySeo={({ seoTitle: t, seoDescription: d }) => {
           setSeoTitle(t);
           setSeoDescription(d);
         }}
+        onApplyImageMetadata={(metadata) =>
+          setIllustration((current) => ({
+            ...current,
+            alt: metadata.alt,
+            title: metadata.title,
+            description: metadata.description,
+          }))
+        }
       />
 
       <label className="block text-sm">
@@ -287,6 +333,7 @@ export function CalculatorEditor({
         value={illustration}
         onChange={setIllustration}
         showTitle
+        showDescription
       />
 
       <div>

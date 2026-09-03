@@ -5,11 +5,13 @@ import {
   calculatorAssistSchema,
   editorialEnrichSchema,
   generateAiSeoSchema,
+  generateImageMetadataSchema,
   summarizeBatchSchema,
   summarizeContentSchema,
   type CalculatorAssistInput,
   type EditorialEnrichInput,
   type GenerateAiSeoInput,
+  type GenerateImageMetadataInput,
   type SummarizeBatchInput,
   type SummarizeContentInput,
 } from '@varnarc/validation';
@@ -71,6 +73,16 @@ export class AiFeaturesController {
     @Body(new ZodValidationPipe(generateAiSeoSchema)) body: GenerateAiSeoInput,
   ) {
     return ok(await this.service.generateSeo(body, user?.id ?? null));
+  }
+
+  @Public()
+  @Post('image-metadata')
+  @ApiOperation({ summary: 'Generate accessible image metadata from content context' })
+  async imageMetadata(
+    @CurrentUserDecorator() user: CurrentUser | undefined,
+    @Body(new ZodValidationPipe(generateImageMetadataSchema)) body: GenerateImageMetadataInput,
+  ) {
+    return ok(await this.service.generateImageMetadata(body, user?.id ?? null));
   }
 
   @Public()

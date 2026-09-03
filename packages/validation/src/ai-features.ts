@@ -36,6 +36,16 @@ export const generateAiSeoSchema = z.object({
   locale: z.string().max(12).default('en-IN'),
 });
 
+export const generateImageMetadataSchema = z.object({
+  title: z.string().min(1).max(300),
+  content: z.string().max(10000).optional().nullable(),
+  imageUrl: z.string().url().max(2000).optional().nullable(),
+  entityType: z
+    .enum(['article', 'page', 'calculator', 'guide', 'product', 'review', 'general'])
+    .default('general'),
+  locale: z.string().max(12).default('en-IN'),
+});
+
 export const calculatorAssistMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string().min(1).max(2000),
@@ -54,4 +64,5 @@ export type SummarizeContentInput = z.infer<typeof summarizeContentSchema>;
 export type SummarizeBatchInput = z.infer<typeof summarizeBatchSchema>;
 export type EditorialEnrichInput = z.infer<typeof editorialEnrichSchema>;
 export type GenerateAiSeoInput = z.infer<typeof generateAiSeoSchema>;
+export type GenerateImageMetadataInput = z.infer<typeof generateImageMetadataSchema>;
 export type CalculatorAssistInput = z.infer<typeof calculatorAssistSchema>;

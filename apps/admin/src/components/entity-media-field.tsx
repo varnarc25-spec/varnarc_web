@@ -8,6 +8,7 @@ export type EntityMediaValue = {
   alt: string;
   title?: string;
   caption?: string;
+  description?: string;
 };
 
 /**
@@ -22,6 +23,7 @@ export function EntityMediaField({
   onChange,
   showCaption = false,
   showTitle = false,
+  showDescription = false,
 }: {
   label: string;
   help?: string;
@@ -29,6 +31,7 @@ export function EntityMediaField({
   onChange: (next: EntityMediaValue) => void;
   showCaption?: boolean;
   showTitle?: boolean;
+  showDescription?: boolean;
 }) {
   function applySelection(selection: MediaPickerSelection) {
     onChange({
@@ -89,6 +92,18 @@ export function EntityMediaField({
             onChange={(e) => onChange({ ...value, caption: e.target.value })}
             placeholder="Optional caption"
             maxLength={500}
+          />
+        </label>
+      ) : null}
+      {showDescription ? (
+        <label className="block text-xs text-[var(--varnarc-subtle)]">
+          Image description
+          <textarea
+            className="mt-1 min-h-20 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 text-sm"
+            value={value.description ?? ''}
+            onChange={(e) => onChange({ ...value, description: e.target.value })}
+            placeholder="Editorial description of the image and its purpose"
+            maxLength={2000}
           />
         </label>
       ) : null}
