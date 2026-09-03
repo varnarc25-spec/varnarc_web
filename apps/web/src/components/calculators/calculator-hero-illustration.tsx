@@ -227,7 +227,7 @@ export function CalculatorHeroIllustration({
         alt={alt?.trim() || LABEL[type]}
         width={CALCULATOR_ILLUSTRATION_WIDTH}
         height={CALCULATOR_ILLUSTRATION_HEIGHT}
-        className="h-auto w-full max-w-[280px] rounded-[28px] object-contain bg-[#f7f9fc]"
+        className="h-auto w-full max-w-[280px] object-contain"
       />
     );
   }
