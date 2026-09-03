@@ -4,6 +4,26 @@ import { jsonValueSchema, publishStatusSchema, slugSchema, uuidSchema } from './
 const optionalUrl = z.union([z.string().url(), z.literal(''), z.null()]).optional();
 const optionalEmail = z.union([z.string().email(), z.literal(''), z.null()]).optional();
 
+/** Fix truncated schemes like `ttps://` from a missing `h` in the admin form. */
+export function normalizeHttpPublicUrl(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  let value = raw.trim();
+  if (!value) return null;
+  if (value.startsWith('ttps://')) value = `h${value}`;
+  else if (value.startsWith('tp://')) value = `ht${value}`;
+  else if (value.startsWith('//')) value = `https:${value}`;
+  else if (!/^[a-z][a-z0-9+.-]*:/i.test(value)) value = `https://${value}`;
+  return value.replace(/\/+$/, '');
+}
+
+const gcsPublicBaseUrl = z
+  .union([z.string(), z.literal(''), z.null()])
+  .optional()
+  .transform((value) => normalizeHttpPublicUrl(value ?? null))
+  .refine((value) => value === null || /^https?:\/\//i.test(value), {
+    message: 'Public / CDN base URL must start with https://',
+  });
+
 export const generalSettingsSchema = z.object({
   siteName: z.string().min(1).max(120).default('Varnarc'),
   siteTagline: z.string().max(200).optional().nullable(),
@@ -81,7 +101,7 @@ export const gcsSettingsSchema = z.object({
   privateKey: z.string().max(12000).optional().nullable(),
   /** When true, wipe the stored PEM and use Cloud Run ADC. */
   clearPrivateKey: z.boolean().optional(),
-  publicBaseUrl: optionalUrl,
+  publicBaseUrl: gcsPublicBaseUrl,
   makePublic: z.boolean().default(false),
 });
 

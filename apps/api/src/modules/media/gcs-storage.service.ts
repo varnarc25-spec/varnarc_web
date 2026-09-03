@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import {
   ALLOWED_MEDIA_MIME_TYPES,
   MAX_MEDIA_UPLOAD_BYTES,
+  normalizeHttpPublicUrl,
   validateFileSignature,
 } from '@varnarc/validation';
 import type {
@@ -106,7 +107,7 @@ export class GcsStorageService {
       projectId: process.env.GCS_PROJECT_ID?.trim() || undefined,
       clientEmail: process.env.GCS_CLIENT_EMAIL?.trim() || undefined,
       privateKey: process.env.GCS_PRIVATE_KEY?.replace(/\\n/g, '\n') || undefined,
-      publicBaseUrl: process.env.GCS_PUBLIC_BASE_URL?.trim() || null,
+      publicBaseUrl: normalizeHttpPublicUrl(process.env.GCS_PUBLIC_BASE_URL) || null,
       makePublic: process.env.GCS_MAKE_PUBLIC === 'true',
     };
   }
@@ -119,7 +120,7 @@ export class GcsStorageService {
         projectId: db.projectId?.trim() || undefined,
         clientEmail: db.clientEmail?.trim() || undefined,
         privateKey: db.privateKey?.replace(/\\n/g, '\n') || undefined,
-        publicBaseUrl: db.publicBaseUrl?.trim() || null,
+        publicBaseUrl: normalizeHttpPublicUrl(db.publicBaseUrl) || null,
         makePublic: Boolean(db.makePublic),
       };
     }
@@ -333,10 +334,12 @@ export class GcsStorageService {
 
   buildPublicUrl(publicId: string, cfg?: ResolvedGcs | null) {
     const path = publicId.replace(/^\/+/, '');
-    const publicBaseUrl = (cfg?.publicBaseUrl ?? process.env.GCS_PUBLIC_BASE_URL?.trim()) || null;
+    const publicBaseUrl = normalizeHttpPublicUrl(
+      cfg?.publicBaseUrl ?? process.env.GCS_PUBLIC_BASE_URL ?? null,
+    );
     const bucket = cfg?.bucket ?? process.env.GCS_BUCKET?.trim() ?? '';
     if (publicBaseUrl) {
-      return `${publicBaseUrl.replace(/\/+$/, '')}/${path}`;
+      return `${publicBaseUrl}/${path}`;
     }
     return `https://storage.googleapis.com/${bucket}/${path}`;
   }

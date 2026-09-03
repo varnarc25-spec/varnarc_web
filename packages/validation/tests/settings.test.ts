@@ -59,6 +59,15 @@ describe('gcsSettingsSchema', () => {
     expect(parsed.bucket).toBe('varnarc-media');
     expect(parsed.privateKey).toBe('');
   });
+
+  it('repairs a truncated https public base URL', () => {
+    const parsed = gcsSettingsSchema.parse({
+      enabled: true,
+      bucket: 'varnarc_files',
+      publicBaseUrl: 'ttps://storage.googleapis.com/varnarc_files',
+    });
+    expect(parsed.publicBaseUrl).toBe('https://storage.googleapis.com/varnarc_files');
+  });
 });
 
 describe('securitySettingsSchema', () => {

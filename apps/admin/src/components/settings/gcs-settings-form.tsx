@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { normalizeHttpPublicUrl } from '@varnarc/validation';
 
 export type GcsSettingsView = {
   enabled?: boolean;
@@ -22,7 +23,7 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
     projectId: initial.projectId ?? '',
     clientEmail: initial.clientEmail ?? '',
     privateKey: '',
-    publicBaseUrl: initial.publicBaseUrl ?? '',
+    publicBaseUrl: normalizeHttpPublicUrl(initial.publicBaseUrl) ?? '',
     makePublic: Boolean(initial.makePublic),
     clearPrivateKey: false,
   });
@@ -49,7 +50,7 @@ export function GcsSettingsForm({ initial }: { initial: GcsSettingsView }) {
           clientEmail: form.clearPrivateKey ? null : form.clientEmail.trim() || null,
           privateKey: form.privateKey.trim() ? form.privateKey : '',
           clearPrivateKey: form.clearPrivateKey,
-          publicBaseUrl: form.publicBaseUrl.trim() || null,
+          publicBaseUrl: normalizeHttpPublicUrl(form.publicBaseUrl),
           makePublic: form.makePublic,
         }),
       });

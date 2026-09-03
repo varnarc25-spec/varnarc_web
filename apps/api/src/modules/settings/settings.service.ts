@@ -19,6 +19,7 @@ import type {
 import {
   adsenseSettingsSchema,
   gcsSettingsSchema,
+  normalizeHttpPublicUrl,
   cmsDefaultsSettingsSchema,
   contactSettingsSchema,
   generalSettingsSchema,
@@ -426,7 +427,7 @@ export class SettingsService {
       bucket: raw.bucket ?? null,
       projectId: raw.projectId ?? null,
       clientEmail: raw.clientEmail ?? null,
-      publicBaseUrl: raw.publicBaseUrl ?? null,
+      publicBaseUrl: normalizeHttpPublicUrl(raw.publicBaseUrl),
       makePublic: Boolean(raw.makePublic),
       privateKeyConfigured: Boolean(raw.privateKey?.trim()),
       envBucketConfigured: envBucket,
@@ -455,7 +456,7 @@ export class SettingsService {
       projectId: parsed.projectId?.trim() || null,
       clientEmail: parsed.clientEmail?.trim() || null,
       privateKey: nextKey,
-      publicBaseUrl: parsed.publicBaseUrl?.trim() || null,
+      publicBaseUrl: parsed.publicBaseUrl,
       makePublic: Boolean(parsed.makePublic),
     };
 
