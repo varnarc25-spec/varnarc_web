@@ -1,4 +1,4 @@
-import { apiPublicFetch } from '@/services/api-client';
+import { ApiError, type ApiFailure, type ApiSuccess } from '@/services/api-client';
 
 export type NewsletterSubscribeResult = {
   id: string;
@@ -9,28 +9,34 @@ export type NewsletterSubscribeResult = {
   source?: string | null;
 };
 
-export async function subscribeToNewsletter(input: {
-  email: string;
-  source?: string;
-}) {
-  const { data } = await apiPublicFetch<NewsletterSubscribeResult>('/newsletter/subscribe', {
+async function newsletterFetch<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`/api/newsletter/${path}`, {
     method: 'POST',
-    body: JSON.stringify(input),
-    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(8_000),
   });
-  return data;
+  const payload = (await response.json().catch(() => ({}))) as ApiSuccess<T> | ApiFailure;
+  if (!response.ok || payload.success === false) {
+    const failure = payload as ApiFailure;
+    throw new ApiError(
+      failure.error?.message || `Request failed (${response.status})`,
+      response.status,
+      failure.error?.code,
+    );
+  }
+  return (payload as ApiSuccess<T>).data;
+}
+
+export async function subscribeToNewsletter(input: { email: string; source?: string }) {
+  return newsletterFetch<NewsletterSubscribeResult>('subscribe', input);
 }
 
 export async function unsubscribeFromNewsletter(email: string) {
-  const { data } = await apiPublicFetch<{
+  return newsletterFetch<{
     email: string;
     status: string;
     found: boolean;
     unsubscribedAt?: string | null;
-  }>('/newsletter/unsubscribe', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-    cache: 'no-store',
-  });
-  return data;
+  }>('unsubscribe', { email });
 }
