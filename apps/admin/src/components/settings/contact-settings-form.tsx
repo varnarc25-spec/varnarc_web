@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 
+type EmailProviderOption = 'resend' | 'google-workspace' | 'smtp';
+
 export type ContactSettings = {
   emailEnabled?: boolean;
   emailProvider?: 'resend' | 'smtp';
@@ -29,9 +31,13 @@ export function ContactSettingsForm({
   initial: ContactSettings;
   mode?: 'contact' | 'ai-alerts';
 }) {
+  const initialProvider: EmailProviderOption =
+    initial.emailProvider === 'smtp' && initial.smtpHost === 'smtp.gmail.com'
+      ? 'google-workspace'
+      : (initial.emailProvider ?? 'resend');
   const [form, setForm] = useState({
     emailEnabled: initial.emailEnabled !== false,
-    emailProvider: initial.emailProvider ?? 'resend',
+    emailProvider: initialProvider,
     fromEmail: initial.fromEmail ?? '',
     toGeneral: initial.toGeneral ?? '',
     toEditorial: initial.toEditorial ?? '',
@@ -54,6 +60,23 @@ export function ContactSettingsForm({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function changeProvider(provider: EmailProviderOption) {
+    setForm((prev) => ({
+      ...prev,
+      emailProvider: provider,
+      ...(provider === 'google-workspace'
+        ? {
+            smtpHost: 'smtp.gmail.com',
+            smtpPort: 587,
+            smtpSecure: false,
+            fromEmail:
+              prev.fromEmail ||
+              (prev.smtpUsername ? `Varnarc <${prev.smtpUsername}>` : prev.fromEmail),
+          }
+        : {}),
+    }));
+  }
+
   async function save() {
     setSaving(true);
     setMessage(null);
@@ -61,7 +84,7 @@ export function ContactSettingsForm({
     try {
       const body: Record<string, unknown> = {
         emailEnabled: form.emailEnabled,
-        emailProvider: form.emailProvider,
+        emailProvider: form.emailProvider === 'resend' ? 'resend' : 'smtp',
         fromEmail: form.fromEmail || null,
         toGeneral: form.toGeneral || null,
         toEditorial: form.toEditorial || null,
@@ -124,15 +147,16 @@ export function ContactSettingsForm({
         <select
           className={inputClass}
           value={form.emailProvider}
-          onChange={(e) => update('emailProvider', e.target.value as 'resend' | 'smtp')}
+          onChange={(e) => changeProvider(e.target.value as EmailProviderOption)}
         >
           <option value="resend">Resend</option>
-          <option value="smtp">SMTP</option>
+          <option value="google-workspace">Google Workspace (Gmail SMTP)</option>
+          <option value="smtp">Custom SMTP server</option>
         </select>
       </label>
 
       <div className="rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] px-3 py-2 text-sm text-[var(--varnarc-subtle)]">
-        {form.emailProvider === 'smtp' ? (
+        {form.emailProvider !== 'resend' ? (
           <>SMTP password: {initial.smtpPasswordConfigured ? 'configured' : 'not configured'}</>
         ) : (
           <>
@@ -241,13 +265,31 @@ export function ContactSettingsForm({
           </label>
         ) : (
           <>
+            {form.emailProvider === 'google-workspace' ? (
+              <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 md:col-span-2">
+                <p className="font-medium">Google Workspace setup</p>
+                <p className="mt-1">
+                  Use your full Workspace email and a 16-character Google App Password. Your normal
+                  Google password will not work.
+                </p>
+                <a
+                  className="mt-2 inline-block font-medium underline"
+                  href="https://myaccount.google.com/apppasswords"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Create a Google App Password
+                </a>
+              </div>
+            ) : null}
             <label className="block text-sm">
-              SMTP host
+              {form.emailProvider === 'google-workspace' ? 'Gmail SMTP host' : 'SMTP host'}
               <input
                 className={inputClass}
                 placeholder="smtp.example.com"
                 value={form.smtpHost}
                 onChange={(e) => update('smtpHost', e.target.value)}
+                readOnly={form.emailProvider === 'google-workspace'}
               />
             </label>
             <label className="block text-sm">
@@ -259,19 +301,28 @@ export function ContactSettingsForm({
                 className={inputClass}
                 value={form.smtpPort}
                 onChange={(e) => update('smtpPort', Number(e.target.value))}
+                readOnly={form.emailProvider === 'google-workspace'}
               />
             </label>
             <label className="block text-sm">
-              SMTP username
+              {form.emailProvider === 'google-workspace'
+                ? 'Google Workspace email'
+                : 'SMTP username'}
               <input
+                type={form.emailProvider === 'google-workspace' ? 'email' : 'text'}
                 className={inputClass}
                 autoComplete="username"
+                placeholder={
+                  form.emailProvider === 'google-workspace' ? 'business@varnarc.com' : undefined
+                }
                 value={form.smtpUsername}
                 onChange={(e) => update('smtpUsername', e.target.value)}
               />
             </label>
             <label className="block text-sm">
-              SMTP password (leave blank to keep existing)
+              {form.emailProvider === 'google-workspace'
+                ? 'Google App Password (leave blank to keep existing)'
+                : 'SMTP password (leave blank to keep existing)'}
               <input
                 type="password"
                 autoComplete="new-password"
@@ -281,7 +332,11 @@ export function ContactSettingsForm({
                 onChange={(e) => update('smtpPassword', e.target.value)}
               />
             </label>
-            <label className="flex items-center gap-2 text-sm md:col-span-2">
+            <label
+              className={`flex items-center gap-2 text-sm md:col-span-2 ${
+                form.emailProvider === 'google-workspace' ? 'hidden' : ''
+              }`}
+            >
               <input
                 type="checkbox"
                 checked={form.smtpSecure}
