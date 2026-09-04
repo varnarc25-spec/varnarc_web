@@ -63,7 +63,7 @@ export const CONTACT_PURPOSE_CARDS: Array<{
     key: 'general',
     topic: 'general',
     title: 'General enquiries',
-    description: 'Questions about Varnarc, our tools, content or platform.',
+    description: 'Questions about Varnarc, our tools, guides, content or platform.',
   },
   {
     key: 'correction',
@@ -75,7 +75,7 @@ export const CONTACT_PURPOSE_CARDS: Array<{
     key: 'business',
     topic: 'partnership',
     title: 'Business & partnerships',
-    description: 'Partnerships, business listings, advertising and commercial enquiries.',
+    description: 'Partnerships, provider listings, advertising and other commercial enquiries.',
   },
   {
     key: 'support',

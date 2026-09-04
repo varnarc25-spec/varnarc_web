@@ -1,23 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, BookOpenCheck, Info, ShieldCheck } from 'lucide-react';
+import { JsonLd, breadcrumbJsonLd } from '@/components/seo/json-ld';
 import { ContactExperience } from '@/features/contact/contact-experience';
+import { ContactHelpLinks } from '@/features/contact/contact-help-links';
 import { resolveContactTopic, sanitizePrefillPage } from '@/lib/contact';
 import { apiPublicFetch } from '@/services/api-client';
 
 export const metadata: Metadata = {
-  title: 'Contact Varnarc | Support, Feedback & Business Enquiries',
+  title: { absolute: 'Contact Varnarc | Support, Corrections & Partnerships' },
   description:
-    'Contact Varnarc for general enquiries, support, content corrections, business listings, partnerships and other questions.',
+    'Contact Varnarc for general enquiries, content corrections, business partnerships, advertising or support. Choose the right contact option for your enquiry.',
   alternates: { canonical: '/contact' },
+  robots: { index: true, follow: true },
 };
-
-const quickLinks = [
-  { href: '/about', label: 'About Varnarc', icon: Info },
-  { href: '/authors/varnarc-editorial', label: 'Editorial standards', icon: BookOpenCheck },
-  { href: '/privacy', label: 'Privacy Policy', icon: ShieldCheck },
-  { href: '/disclaimer', label: 'Disclaimer', icon: Info },
-];
 
 export default async function ContactPage({
   searchParams,
@@ -39,10 +34,17 @@ export default async function ContactPage({
   const initialTopic =
     resolveContactTopic(params.type) || resolveContactTopic(params.topic) || 'general';
   const initialPageUrl = sanitizePrefillPage(params.page);
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://varnarc.com';
 
   return (
-    <main className="bg-white text-slate-950">
-      <div className="site-container pb-10">
+    <div className="bg-white text-slate-950">
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', url: `${siteUrl}/` },
+          { name: 'Contact', url: `${siteUrl}/contact` },
+        ])}
+      />
+      <div className="site-container pb-8 sm:pb-10">
         <nav
           aria-label="Breadcrumb"
           className="flex items-center gap-2 py-6 text-[13px] text-slate-500"
@@ -54,16 +56,17 @@ export default async function ContactPage({
           <span className="font-semibold text-slate-800">Contact</span>
         </nav>
 
-        <header className="max-w-2xl pb-2">
+        <header className="max-w-3xl pb-1 pt-1 sm:pt-2">
           <span className="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-blue-600">
-            Contact Varnarc
+            CONTACT VARNARC
           </span>
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-            How can we help?
+            Contact Varnarc
           </h1>
-          <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">
-            Questions, feedback, corrections or business enquiries? Choose the right option below or
-            send us a message.
+          <p className="mt-3 text-lg font-bold text-slate-900 sm:text-xl">How can we help?</p>
+          <p className="mt-2 text-sm leading-7 text-slate-600 sm:text-base">
+            Questions, feedback, corrections, support or business enquiries? Choose the right option
+            below and we&apos;ll route your message to the appropriate team.
           </p>
         </header>
 
@@ -73,33 +76,8 @@ export default async function ContactPage({
           initialPageUrl={initialPageUrl}
         />
 
-        <section className="mt-10 border-t border-slate-100 pt-8">
-          <h2 className="text-xl font-bold text-slate-950 sm:text-2xl">
-            You may find your answer here
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {quickLinks.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group flex min-h-11 items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-blue-200 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
-                >
-                  <span className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-slate-500" aria-hidden />
-                    {item.label}
-                  </span>
-                  <ArrowRight
-                    className="h-4 w-4 text-slate-400 transition motion-safe:group-hover:translate-x-0.5"
-                    aria-hidden
-                  />
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+        <ContactHelpLinks />
       </div>
-    </main>
+    </div>
   );
 }

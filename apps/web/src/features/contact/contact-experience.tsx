@@ -82,6 +82,7 @@ export function ContactExperience({
   initialPageUrl?: string;
 }) {
   const formSectionRef = useRef<HTMLElement>(null);
+  const successRef = useRef<HTMLDivElement>(null);
   const topicRef = useRef<HTMLSelectElement | null>(null);
   const pageUrlRef = useRef<HTMLInputElement | null>(null);
   const formStartedAt = useRef(Date.now());
@@ -137,6 +138,10 @@ export function ContactExperience({
     setSelectedPurpose(purposeKeyForTopic(initialTopic));
   }, [initialTopic]);
 
+  useEffect(() => {
+    if (status === 'success') successRef.current?.focus();
+  }, [status]);
+
   function trackContact(action: string, meta?: Record<string, unknown>) {
     trackAnalyticsEvent({
       eventType: 'contact_form',
@@ -168,7 +173,7 @@ export function ContactExperience({
     setSelectedPurpose(key);
     setValue('topic', card.topic, { shouldValidate: true, shouldDirty: true });
     setStatus('idle');
-    trackContact('contact_enquiry_type_selected', { purpose: key });
+    trackContact('contact_type_selected', { purpose: key });
     if (key === 'correction' && options?.focusPageUrl) {
       scrollToForm('pageUrl');
     } else {
@@ -179,7 +184,7 @@ export function ContactExperience({
   function onTopicChange(next: ContactTopic) {
     setValue('topic', next, { shouldValidate: true });
     setSelectedPurpose(purposeKeyForTopic(next));
-    trackContact('contact_enquiry_type_selected', { purpose: purposeKeyForTopic(next) });
+    trackContact('contact_type_selected', { purpose: purposeKeyForTopic(next) });
   }
 
   const onSubmit = handleSubmit(
@@ -262,7 +267,7 @@ export function ContactExperience({
 
   return (
     <>
-      <section aria-labelledby="contact-purpose-heading" className="mt-10">
+      <section aria-labelledby="contact-purpose-heading" className="mt-8 sm:mt-10">
         <h2 id="contact-purpose-heading" className="sr-only">
           Choose how we can help
         </h2>
@@ -280,7 +285,7 @@ export function ContactExperience({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => selectPurpose(item.key)}
-                className={`rounded-xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40 motion-safe:hover:-translate-y-0.5 ${
+                className={`min-h-11 rounded-xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 motion-safe:hover:-translate-y-0.5 ${
                   selected
                     ? 'border-blue-400 bg-blue-50/70 ring-1 ring-blue-200'
                     : 'border-slate-200 bg-white hover:border-blue-200'
@@ -311,7 +316,7 @@ export function ContactExperience({
         </div>
       </section>
 
-      <section className="mt-10 grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(16rem,0.9fr)] lg:items-start">
+      <section className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(16rem,0.9fr)] lg:items-start">
         <article
           ref={formSectionRef}
           id="contact-form"
@@ -325,7 +330,12 @@ export function ContactExperience({
 
           <div aria-live="polite" className="mt-4">
             {status === 'success' ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-5">
+              <div
+                ref={successRef}
+                role="status"
+                tabIndex={-1}
+                className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+              >
                 <h3 className="text-base font-bold text-emerald-900">Message received</h3>
                 <p className="mt-2 text-sm leading-6 text-emerald-900">
                   We&apos;ve received your enquiry. If a response is required, we&apos;ll reply
@@ -366,6 +376,7 @@ export function ContactExperience({
               onSubmit={onSubmit}
               noValidate
               onFocusCapture={markFormStarted}
+              aria-busy={isSubmitting}
             >
               <div className="sr-only" aria-hidden>
                 <label htmlFor={honeypotId}>Fax number</label>
@@ -644,7 +655,7 @@ export function ContactExperience({
                   aria-describedby={
                     errors.message ? 'message-error message-privacy' : 'message-privacy'
                   }
-                  className={`${errors.message ? fieldErrorClass : fieldClass} min-h-[9rem] py-2.5 leading-6`}
+                  className={`${errors.message ? fieldErrorClass : fieldClass} min-h-36 py-2.5 leading-6`}
                   required
                 />
                 <FieldError id="message-error" message={errors.message?.message} />
@@ -713,16 +724,20 @@ export function ContactExperience({
             <div>
               <h3 className="text-sm font-bold text-slate-950">Content corrections</h3>
               <p className="mt-1">
-                Include the page URL and explain what appears inaccurate or outdated.
+                Include the page URL and explain what appears inaccurate, outdated or incomplete.
               </p>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-950">Support</h3>
+              <p className="mt-1">Help with your account or Varnarc tools.</p>
             </div>
           </div>
 
           <div className="mt-5 border-t border-slate-100 pt-5">
             <h3 className="text-sm font-bold text-slate-950">When will we reply?</h3>
             <p className="mt-1 text-[13px] leading-5 text-slate-600 sm:text-sm">
-              We aim to review messages as soon as practical. Some enquiries may require additional
-              time to investigate.
+              We aim to review enquiries within 2 business days. Complex content corrections or
+              support requests may require additional time.
             </p>
           </div>
 
@@ -739,7 +754,7 @@ export function ContactExperience({
         </aside>
       </section>
 
-      <section className="mt-12 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-5 py-5 sm:px-6">
+      <section className="mt-8 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-5 py-5 sm:mt-10 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-emerald-600">
@@ -758,7 +773,7 @@ export function ContactExperience({
           <button
             type="button"
             onClick={() => {
-              trackContact('correction_cta_clicked');
+              trackContact('contact_correction_clicked');
               selectPurpose('correction', { focusPageUrl: true });
             }}
             className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-emerald-200 bg-white px-4 text-sm font-bold text-slate-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600/30"
