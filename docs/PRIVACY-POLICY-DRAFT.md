@@ -225,6 +225,6 @@ For privacy questions, requests or grievances:
 - **Privacy request form:** `https://varnarc.com/contact?type=privacy`
 - **Website:** `https://varnarc.com`
 - **Grievance Officer:** Grievance Officer, Varnarc Private Limited
-- **Postal address:** #153, Katha No.1257, property No.9, 1st cross, Hanumanth nagar, Bilishivale Village, Bidarahalli Hobli, Bangalore East Taluk, Bangalore-560077
+- **Postal address:** #153, Katha No. 1257, Property No. 9, 1st Cross, Hanumanth Nagar, Bilishivale Village, Bidarahalli Hobli, Bangalore East Taluk, Bangalore – 560077, Karnataka, India
 
 If you are not satisfied with our response, you may have the right to approach the Data Protection Board of India in accordance with applicable law.
