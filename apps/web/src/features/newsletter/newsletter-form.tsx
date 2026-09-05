@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,11 +21,44 @@ type NewsletterFormProps = {
   className?: string;
 };
 
+type SubmissionStatus = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
+
+function StatusMessage({
+  status,
+  compact = false,
+}: {
+  status: SubmissionStatus;
+  compact?: boolean;
+}) {
+  if (!status) return null;
+  return (
+    <p
+      role={status.type === 'error' ? 'alert' : 'status'}
+      aria-live="polite"
+      className={`${compact ? 'text-xs' : 'text-sm'} ${
+        status.type === 'success'
+          ? compact
+            ? 'text-emerald-300'
+            : 'text-emerald-700'
+          : compact
+            ? 'text-red-300'
+            : 'text-red-700'
+      }`}
+    >
+      {status.message}
+    </p>
+  );
+}
+
 export function NewsletterForm({
   source = 'newsletter-page',
   variant = 'default',
   className,
 }: NewsletterFormProps) {
+  const [status, setStatus] = useState<SubmissionStatus>(null);
   const {
     register,
     handleSubmit,
@@ -35,8 +69,13 @@ export function NewsletterForm({
   });
 
   const onSubmit = handleSubmit(async (values) => {
+    setStatus(null);
     try {
       const result = await subscribeToNewsletter({ email: values.email, source });
+      const successMessage = result.alreadySubscribed
+        ? 'This email is already subscribed.'
+        : 'Thanks — your subscription is confirmed.';
+      setStatus({ type: 'success', message: successMessage });
       toast.success(result.alreadySubscribed ? 'Already subscribed' : 'Subscribed', {
         description: result.alreadySubscribed
           ? 'This email is already on our list.'
@@ -46,6 +85,7 @@ export function NewsletterForm({
     } catch (error) {
       const message =
         error instanceof ApiError ? error.message : 'Could not subscribe. Please try again.';
+      setStatus({ type: 'error', message });
       toast.error('Subscription failed', { description: message });
     }
   });
@@ -76,6 +116,7 @@ export function NewsletterForm({
             {errors.email.message}
           </p>
         ) : null}
+        <StatusMessage status={status} />
       </form>
     );
   }
@@ -108,6 +149,8 @@ export function NewsletterForm({
           <p className="text-xs text-red-300" role="alert">
             {errors.email.message}
           </p>
+        ) : status ? (
+          <StatusMessage status={status} compact />
         ) : (
           <p className="text-xs text-slate-500">
             Product updates and guides.{' '}
@@ -140,6 +183,7 @@ export function NewsletterForm({
             {errors.email.message}
           </p>
         ) : null}
+        <StatusMessage status={status} />
       </div>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Subscribing…' : 'Subscribe'}
