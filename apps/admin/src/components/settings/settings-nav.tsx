@@ -42,14 +42,17 @@ export function SettingsNav({ active }: { active?: string }) {
   return (
     <nav
       aria-label="Settings sections"
-      className="grid gap-3 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-3 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid gap-4 rounded-xl border border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] p-4 sm:grid-cols-2 xl:grid-cols-4"
     >
       {groups.map((group) => (
-        <div key={group.label}>
-          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+        <div
+          key={group.label}
+          className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-3"
+        >
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--varnarc-subtle)]">
             {group.label}
           </p>
-          <div className="flex flex-wrap gap-1">
+          <div className="grid gap-1.5">
             {group.links.map((link) => {
               const isActive = active === link.href;
               return (
@@ -57,10 +60,10 @@ export function SettingsNav({ active }: { active?: string }) {
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`rounded-md px-2 py-1.5 text-sm transition-colors ${
+                  className={`flex min-h-10 items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--varnarc-brand)] focus-visible:ring-offset-2 ${
                     isActive
-                      ? 'bg-[var(--varnarc-brand)] font-medium text-white'
-                      : 'text-[var(--varnarc-subtle)] hover:bg-[var(--varnarc-muted)] hover:text-[var(--varnarc-brand)]'
+                      ? 'border-[var(--varnarc-brand)] bg-[var(--varnarc-brand)] text-white shadow-sm'
+                      : 'border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] text-[var(--varnarc-subtle)] hover:border-[var(--varnarc-brand)] hover:bg-[var(--varnarc-muted)] hover:text-[var(--varnarc-brand)]'
                   }`}
                 >
                   {link.label}

@@ -22,6 +22,18 @@ function apiErrorMessage(json: { error?: { message?: string; code?: string } }, 
   return json.error?.message || fallback;
 }
 
+async function readApiResponse<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  if (!text.trim()) return {} as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(
+      res.ok ? 'The server returned an invalid response.' : `Request failed (${res.status}).`,
+    );
+  }
+}
+
 function looksLikeHtml(content: string) {
   return /^\s*</.test(content) || /<(?:p|h[1-6]|ul|ol|blockquote|div|img|iframe)\b/i.test(content);
 }
@@ -90,7 +102,7 @@ export function PageEditActions({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(buildPayload()),
         });
-        const json = (await res.json()) as { error?: { message?: string; code?: string } };
+        const json = await readApiResponse<{ error?: { message?: string; code?: string } }>(res);
         if (!res.ok) throw new Error(apiErrorMessage(json, 'Failed to save'));
         if (opts?.silent) setAutosaveState('saved');
         else {
@@ -129,10 +141,10 @@ export function PageEditActions({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId }),
       });
-      const json = (await res.json()) as {
+      const json = await readApiResponse<{
         data?: { id: string };
         error?: { message?: string; code?: string };
-      };
+      }>(res);
       if (!res.ok) throw new Error(apiErrorMessage(json, 'Action failed'));
       if (json.data?.id && path.includes('duplicate')) {
         router.push(`/pages/${json.data.id}`);
@@ -163,7 +175,7 @@ export function PageEditActions({
           publishedAt: new Date(form.scheduleAt).toISOString(),
         }),
       });
-      const json = (await res.json()) as { error?: { message?: string; code?: string } };
+      const json = await readApiResponse<{ error?: { message?: string; code?: string } }>(res);
       if (!res.ok) throw new Error(apiErrorMessage(json, 'Failed to schedule'));
       setMessage('Scheduled');
       router.refresh();
@@ -180,10 +192,10 @@ export function PageEditActions({
     try {
       await save({ silent: true });
       const res = await fetch(`/api/admin/cms/pages/preview?pageId=${pageId}`);
-      const json = (await res.json()) as {
+      const json = await readApiResponse<{
         data?: { title?: string; content?: string | null };
         error?: { message?: string };
-      };
+      }>(res);
       if (!res.ok) throw new Error(json.error?.message || 'Preview failed');
       const titleText = json.data?.title || form.title;
       const body = json.data?.content || form.content;
@@ -209,7 +221,7 @@ export function PageEditActions({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId, notes: notes || null }),
       });
-      const json = (await res.json()) as { error?: { message?: string } };
+      const json = await readApiResponse<{ error?: { message?: string } }>(res);
       if (!res.ok) throw new Error(json.error?.message || 'Reject failed');
       setMessage('Rejected — returned to draft');
       router.refresh();
@@ -312,7 +324,11 @@ export function PageEditActions({
         ) : null}
         {status === 'REVIEW' ? (
           <>
-            <Button type="button" onClick={() => action('/api/admin/cms/pages/approve-review')} disabled={loading}>
+            <Button
+              type="button"
+              onClick={() => action('/api/admin/cms/pages/approve-review')}
+              disabled={loading}
+            >
               Approve review
             </Button>
             <Button type="button" variant="secondary" onClick={rejectReview} disabled={loading}>
@@ -321,11 +337,19 @@ export function PageEditActions({
           </>
         ) : null}
         {status !== 'PUBLISHED' ? (
-          <Button type="button" onClick={() => action('/api/admin/cms/pages/publish')} disabled={loading}>
+          <Button
+            type="button"
+            onClick={() => action('/api/admin/cms/pages/publish')}
+            disabled={loading}
+          >
             Publish
           </Button>
         ) : null}
-        <Button type="button" onClick={() => action('/api/admin/cms/pages/duplicate')} disabled={loading}>
+        <Button
+          type="button"
+          onClick={() => action('/api/admin/cms/pages/duplicate')}
+          disabled={loading}
+        >
           Duplicate
         </Button>
         <span className="text-sm text-[var(--varnarc-subtle)]">Status: {status}</span>
