@@ -65,10 +65,10 @@ function TermsNavigation() {
         <ul className="mt-3 grid grid-cols-2 gap-1">{links}</ul>
       </details>
 
-      <aside className="hidden lg:block">
+      <aside className="sticky top-24 hidden self-start lg:block">
         <nav
           aria-label="Terms of Service sections"
-          className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4"
+          className="max-h-[calc(100vh-7rem)] overflow-y-auto rounded-xl border border-slate-200 bg-white p-4"
         >
           <h2 className="px-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
             On this page
