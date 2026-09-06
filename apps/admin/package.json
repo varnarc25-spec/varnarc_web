@@ -11,6 +11,8 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "43.3.1",
+    "@ckeditor/ckeditor5-react": "^9.2.0",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-table": "^8.21.3",
     "@tiptap/core": "^2.26.1",

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { CkeditorContentEditor } from '@/components/ckeditor-content-editor';
 
 export function PageCreateForm() {
   const router = useRouter();
@@ -57,7 +58,14 @@ export function PageCreateForm() {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              if (!slug || slug === title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) {
+              if (
+                !slug ||
+                slug ===
+                  title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '')
+              ) {
                 setSlug(
                   e.target.value
                     .toLowerCase()
@@ -77,14 +85,10 @@ export function PageCreateForm() {
           />
         </label>
       </div>
-      <label className="block text-sm">
-        <span className="mb-1 block text-[var(--varnarc-subtle)]">Content</span>
-        <textarea
-          className="min-h-28 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 text-sm"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-      </label>
+      <div>
+        <span className="mb-1 block text-sm text-[var(--varnarc-subtle)]">Content</span>
+        <CkeditorContentEditor value={content} onChange={setContent} />
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block text-[var(--varnarc-subtle)]">SEO title</span>

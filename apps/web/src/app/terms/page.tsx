@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { ContentLayout } from '@/components/layout/content-layout';
 import { LegalPage } from '@/components/legal/legal-page';
+import { TermsDocument } from '@/components/legal/terms-document';
 import { RecordContentView } from '@/components/record-content-view';
-import { MarkdownContent } from '@/components/shared/markdown-content';
 import { legalContent } from '@/lib/legal-content';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { fetchPageBySlug } from '@/services/content';
@@ -20,13 +19,43 @@ function normalizeTermsContent(content: string) {
     .replaceAll('&lt;', '<')
     .replaceAll('&gt;', '>')
     .replaceAll('&amp;', '&');
-  return unwrapped.replace(/^\s*#\s+(?:Varnarc )?Terms of Service\s*\n+/i, '').trim();
+  return unwrapped
+    .replace(/^\s*#\s+(?:Varnarc )?Terms of Service\s*\n+/i, '')
+    .replace(/^\s*<h1[^>]*>\s*(?:Varnarc )?Terms of Service\s*<\/h1>\s*/i, '')
+    .trim();
+}
+
+function extractDocumentDates(content: string) {
+  const effectiveDate =
+    content.match(/^\s*\*{0,2}Effective date:\*{0,2}\s*(.+?)\s*$/im)?.[1]?.trim() ||
+    content
+      .match(/<p[^>]*>\s*(?:<strong>)?Effective date:(?:<\/strong>)?\s*(.*?)\s*<\/p>/i)?.[1]
+      ?.replace(/<[^>]+>/g, '')
+      .trim() ||
+    undefined;
+  const lastUpdated =
+    content.match(/^\s*\*{0,2}Last updated:\*{0,2}\s*(.+?)\s*$/im)?.[1]?.trim() ||
+    content
+      .match(/<p[^>]*>\s*(?:<strong>)?Last updated:(?:<\/strong>)?\s*(.*?)\s*<\/p>/i)?.[1]
+      ?.replace(/<[^>]+>/g, '')
+      .trim() ||
+    undefined;
+  return {
+    effectiveDate,
+    lastUpdated,
+    content: content
+      .replace(/^\s*\*{0,2}Effective date:\*{0,2}\s*.+?\s*$/im, '')
+      .replace(/^\s*\*{0,2}Last updated:\*{0,2}\s*.+?\s*$/im, '')
+      .replace(/<p[^>]*>\s*(?:<strong>)?Effective date:(?:<\/strong>)?\s*.*?\s*<\/p>/i, '')
+      .replace(/<p[^>]*>\s*(?:<strong>)?Last updated:(?:<\/strong>)?\s*.*?\s*<\/p>/i, '')
+      .trim(),
+  };
 }
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const { data } = await fetchPageBySlug('terms-of-service');
-    return buildSeoMetadata({
+    const metadata = await buildSeoMetadata({
       entityType: 'page',
       entityId: data.id,
       path: '/terms',
@@ -34,6 +63,10 @@ export async function generateMetadata(): Promise<Metadata> {
       title: data.seo?.title || data.title,
       description: data.seo?.description || legalContent.terms.description,
     });
+    return {
+      ...metadata,
+      title: { absolute: data.seo?.title || data.title },
+    };
   } catch {
     return fallbackMetadata;
   }
@@ -42,6 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TermsOfServicePage() {
   try {
     const { data } = await fetchPageBySlug('terms-of-service');
+    const document = extractDocumentDates(normalizeTermsContent(data.content || ''));
     return (
       <>
         <RecordContentView
@@ -49,14 +83,13 @@ export default async function TermsOfServicePage() {
           entityId={data.id}
           metadata={{ slug: 'terms-of-service', title: data.title }}
         />
-        <ContentLayout
+        <TermsDocument
           title={data.title}
           description={data.seo?.description || undefined}
-          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Terms of Service' }]}
-          showAd={false}
-        >
-          <MarkdownContent content={normalizeTermsContent(data.content || '')} />
-        </ContentLayout>
+          content={document.content}
+          effectiveDate={document.effectiveDate}
+          lastUpdated={document.lastUpdated}
+        />
       </>
     );
   } catch {

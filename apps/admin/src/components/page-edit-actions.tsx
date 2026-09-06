@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@varnarc/ui';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { CkeditorContentEditor } from '@/components/ckeditor-content-editor';
 import { AiSeoAssistant } from '@/components/ai-seo-assistant';
 import { DateTimeLocalInput } from '@/components/datetime-local-input';
 
@@ -254,7 +254,7 @@ export function PageEditActions({
       </div>
       <div>
         <span className="mb-1 block text-sm text-[var(--varnarc-subtle)]">Content</span>
-        <RichTextEditor
+        <CkeditorContentEditor
           value={form.content}
           onChange={(content) => setForm((f) => ({ ...f, content }))}
         />

@@ -26,7 +26,7 @@ function normalizePrivacyContent(content: string) {
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const { data } = await fetchPageBySlug('privacy-policy');
-    return buildSeoMetadata({
+    const metadata = await buildSeoMetadata({
       entityType: 'page',
       entityId: data.id,
       path: '/privacy',
@@ -34,6 +34,10 @@ export async function generateMetadata(): Promise<Metadata> {
       title: data.seo?.title || data.title,
       description: data.seo?.description || legalContent.privacy.description,
     });
+    return {
+      ...metadata,
+      title: { absolute: data.seo?.title || data.title },
+    };
   } catch {
     return fallbackMetadata;
   }
@@ -55,7 +59,9 @@ export default async function PrivacyPolicyPage() {
           breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Privacy Policy' }]}
           showAd={false}
         >
-          <MarkdownContent content={normalizePrivacyContent(data.content || '')} />
+          <div className="max-w-4xl">
+            <MarkdownContent content={normalizePrivacyContent(data.content || '')} />
+          </div>
         </ContentLayout>
       </>
     );
