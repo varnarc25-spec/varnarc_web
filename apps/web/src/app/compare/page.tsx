@@ -17,10 +17,14 @@ import { CompareBuilder } from '@/components/compare/compare-builder';
 import { CompareHeroPreview } from '@/components/compare/compare-hero-preview';
 import { ComparePopular } from '@/components/compare/compare-popular';
 import { CompareSearch } from '@/components/compare/compare-search';
+import { RecentComparisons } from '@/components/compare/recent-comparisons';
 import { JsonLd, breadcrumbJsonLd, itemListJsonLd } from '@/components/seo/json-ld';
 import {
   COMPARE_CATEGORY_META,
+  attachPreviewToCard,
   classifyComparisonText,
+  compareHubIsIndexable,
+  featuredPairFromCatalog,
   looksUnlikeForLike,
   loanGroupKey,
   parseVsTitle,
@@ -33,12 +37,35 @@ import { fetchConstructionMaterials } from '@/services/construction';
 import { fetchComparisons, type ComparisonListItem } from '@/services/content';
 import { fetchFinanceCreditCards, fetchFinanceLoans } from '@/services/finance';
 
-export const metadata: Metadata = {
-  title: 'Compare Products, Cars, Finance & More | Varnarc',
-  description:
-    'Compare financial products, cars, construction materials, solar options and more with clear side-by-side information and useful Varnarc tools.',
-  alternates: { canonical: '/compare' },
-};
+const COMPARE_HUB_TITLE = 'Compare Cars, Loans, Materials & Solar Options | Varnarc';
+const COMPARE_HUB_DESCRIPTION =
+  'Compare cars, financial products, construction materials and solar options side by side using structured data, calculators and verified sources.';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; category?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const indexable = compareHubIsIndexable(params);
+  return {
+    title: COMPARE_HUB_TITLE,
+    description: COMPARE_HUB_DESCRIPTION,
+    alternates: { canonical: '/compare' },
+    robots: { index: indexable, follow: true },
+    openGraph: {
+      title: COMPARE_HUB_TITLE,
+      description: COMPARE_HUB_DESCRIPTION,
+      url: '/compare',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: COMPARE_HUB_TITLE,
+      description: COMPARE_HUB_DESCRIPTION,
+    },
+  };
+}
 
 export const revalidate = 60;
 
@@ -51,6 +78,29 @@ const CATEGORY_ICONS = {
   solar: Sun,
   products: Scale,
 } as const;
+
+function numberValue(value: number | string | null | undefined) {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function money(value: number | string | null | undefined) {
+  const parsed = numberValue(value);
+  return parsed == null
+    ? null
+    : new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+        notation: parsed >= 100_000 ? 'compact' : 'standard',
+      }).format(parsed);
+}
+
+function previewRows(rows: Array<[string, string | number | null | undefined]>) {
+  return rows.flatMap(([label, value]) =>
+    value === null || value === undefined || value === '' ? [] : [{ label, value: String(value) }],
+  );
+}
 
 function cardFromComparison(item: ComparisonListItem): CompareCard | null {
   const pair = parseVsTitle(item.title);
@@ -109,16 +159,20 @@ export default async function CompareHubPage({
     return [card];
   });
 
-  const allCards = [...autoCards, ...cmsCards].filter(
-    (card, index, list) => list.findIndex((item) => item.href === card.href) === index,
-  );
-
   const builderCatalogs: BuilderCategory[] = [];
 
   const carOptions = (vehicles.data ?? []).map((vehicle) => ({
     id: vehicle.id,
     label: [vehicle.manufacturer?.name, vehicle.name].filter(Boolean).join(' ') || vehicle.name,
     group: (vehicle.bodyType || vehicle.category || 'vehicle').toLowerCase(),
+    sortValue: numberValue(vehicle.exShowroomPrice),
+    preview: previewRows([
+      ['Price', money(vehicle.exShowroomPrice)],
+      ['Mileage', vehicle.mileage ? `${vehicle.mileage} km/l` : null],
+      ['Fuel', vehicle.fuelType],
+      ['Transmission', vehicle.transmission],
+      ['Safety', vehicle.safetyRating ? `${vehicle.safetyRating} rating` : null],
+    ]),
   }));
   if (carOptions.length >= 2) {
     builderCatalogs.push({
@@ -133,11 +187,38 @@ export default async function CompareHubPage({
     id: loan.id,
     label: [loan.bank?.name, loan.name].filter(Boolean).join(' ') || loan.name,
     group: loanGroupKey(loan.loanType),
+    sortValue: numberValue(loan.interestRateMin ?? loan.interestRate),
+    preview: previewRows([
+      [
+        'Interest rate',
+        loan.interestRateMin != null && loan.interestRateMax != null
+          ? `${loan.interestRateMin}%–${loan.interestRateMax}%`
+          : loan.interestRate != null
+            ? `${loan.interestRate}%`
+            : null,
+      ],
+      ['Rate type', loan.rateType],
+      ['Loan type', loan.loanType],
+      ['Processing fee', loan.processingFeeText ?? money(loan.processingFee)],
+      [
+        'Tenure',
+        loan.tenureMin != null && loan.tenureMax != null
+          ? `${loan.tenureMin}–${loan.tenureMax} months`
+          : null,
+      ],
+    ]),
   }));
   const cardOptions = (cards.data ?? []).map((card) => ({
     id: card.id,
     label: [card.bank?.name, card.name].filter(Boolean).join(' ') || card.name,
     group: 'card:credit',
+    sortValue: numberValue(card.annualFee),
+    preview: previewRows([
+      ['Annual fee', money(card.annualFee)],
+      ['Joining fee', money(card.joiningFee)],
+      ['Rewards', card.rewards],
+      ['Cashback', card.cashback],
+    ]),
   }));
   if ([...loanOptions, ...cardOptions].length >= 2) {
     builderCatalogs.push({
@@ -152,6 +233,13 @@ export default async function CompareHubPage({
     id: material.id,
     label: material.name,
     group: material.category?.slug || material.category?.name || 'material',
+    sortValue: numberValue(material.approximatePrice),
+    preview: previewRows([
+      ['Approximate price', money(material.approximatePrice)],
+      ['Unit', material.unit],
+      ['Category', material.category?.name],
+      ['Brand', material.brand?.name],
+    ]),
   }));
   if (materialOptions.length >= 2) {
     builderCatalogs.push({
@@ -161,6 +249,14 @@ export default async function CompareHubPage({
       options: materialOptions,
     });
   }
+
+  const catalogCards = builderCatalogs
+    .map(featuredPairFromCatalog)
+    .filter((card): card is CompareCard => Boolean(card));
+
+  const allCards = [...autoCards, ...cmsCards, ...catalogCards]
+    .map((card) => attachPreviewToCard(card, builderCatalogs))
+    .filter((card, index, list) => list.findIndex((item) => item.href === card.href) === index);
 
   const enabledCategories = (Object.keys(COMPARE_CATEGORY_META) as CompareCategoryKey[]).filter(
     (key) => {
@@ -221,11 +317,11 @@ export default async function CompareHubPage({
               Compare options side by side.
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
-              Compare products, services and everyday choices using clear, structured information.
+              Compare products, services and everyday choices using clear, structured information,
+              calculators and source-backed details.
             </p>
             <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-              Review important differences, use relevant calculators and verify key details before
-              deciding.
+              Review important differences before deciding.
             </p>
             <div className="mt-6">
               <CompareSearch initialQuery={query} cards={allCards} />
@@ -242,7 +338,7 @@ export default async function CompareHubPage({
               ))}
             </p>
           </div>
-          <CompareHeroPreview />
+          <CompareHeroPreview cards={allCards} />
         </section>
       </div>
 
@@ -266,15 +362,15 @@ export default async function CompareHubPage({
                 <Link
                   key={key}
                   href={meta.href}
-                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-100/70 transition hover:-translate-y-0.5 hover:border-blue-200"
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-100/70 transition hover:-translate-y-0.5 hover:border-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
                 >
                   <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
                     <Icon className="h-5 w-5" aria-hidden />
                   </div>
                   <h3 className="mt-4 text-base font-bold text-slate-950">{meta.label}</h3>
                   <p className="mt-1.5 text-[13px] leading-5 text-slate-600">{meta.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-blue-700">
-                    Compare {meta.label.toLowerCase()}{' '}
+                  <span className="mt-4 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-blue-700">
+                    {meta.cta}{' '}
                     <ArrowRight
                       className="h-4 w-4 transition group-hover:translate-x-0.5"
                       aria-hidden
@@ -292,6 +388,8 @@ export default async function CompareHubPage({
 
         <ComparePopular cards={allCards} initialQuery={query} initialCategory={initialCategory} />
 
+        <RecentComparisons />
+
         <section>
           <h2 className="text-xl font-bold text-slate-950 sm:text-2xl">
             How Varnarc comparisons work
@@ -301,25 +399,25 @@ export default async function CompareHubPage({
               {
                 n: '01',
                 title: 'Select',
-                body: 'Choose the options you want to evaluate.',
+                body: 'Choose the two comparable options you want to evaluate.',
                 icon: ListChecks,
               },
               {
                 n: '02',
                 title: 'Compare',
-                body: 'Review important differences side by side.',
+                body: 'See important differences in a consistent side-by-side format.',
                 icon: Scale,
               },
               {
                 n: '03',
                 title: 'Calculate',
-                body: 'Use relevant Varnarc calculators where available.',
+                body: 'Use relevant Varnarc calculators where useful.',
                 icon: Calculator,
               },
               {
                 n: '04',
                 title: 'Verify',
-                body: 'Check important details with official or provider sources before deciding.',
+                body: 'Review source details and official information before deciding.',
                 icon: SearchCheck,
               },
             ].map((step) => {
@@ -345,13 +443,13 @@ export default async function CompareHubPage({
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               ['Structured comparisons', 'Important attributes presented clearly side by side.'],
-              ['Useful calculations', 'Relevant Varnarc calculators where available.'],
-              ['Source transparency', 'Important dates and sources shown where applicable.'],
+              ['Useful calculators', 'Relevant Varnarc tools linked where available.'],
+              ['Source transparency', 'Important data sources and verification dates shown.'],
+              ['Editorial separation', 'Comparison methodology is separate from paid placements.'],
               [
-                'Independent research',
-                'Editorial information separated from commercial relationships.',
+                'Review status',
+                'Important pages show last reviewed or verified dates where available.',
               ],
-              ['Regular reviews', 'Comparison content reviewed and updated where practical.'],
             ].map(([title, body]) => (
               <article key={title} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-50 text-emerald-600">

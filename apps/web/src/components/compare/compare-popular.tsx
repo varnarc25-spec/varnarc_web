@@ -8,6 +8,7 @@ import {
   type CompareCard,
   type CompareCategoryKey,
 } from '@/lib/compare-hub';
+import { trackAnalyticsEvent } from '@/lib/analytics-client';
 
 export function ComparePopular({
   cards,
@@ -43,9 +44,9 @@ export function ComparePopular({
 
   return (
     <section>
-      <h2 className="text-xl font-bold text-slate-950 sm:text-2xl">Popular comparisons</h2>
+      <h2 className="text-xl font-bold text-slate-950 sm:text-2xl">Featured comparisons</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Explore useful side-by-side comparisons across Varnarc.
+        Explore editorially selected side-by-side comparisons across Varnarc.
       </p>
 
       {available.length > 1 ? (
@@ -63,7 +64,14 @@ export function ComparePopular({
                 type="button"
                 role="tab"
                 aria-selected={active}
-                onClick={() => setFilter(key)}
+                onClick={() => {
+                  setFilter(key);
+                  trackAnalyticsEvent({
+                    eventType: 'custom',
+                    entityType: 'comparison',
+                    metadata: { eventName: 'comparison_filter_used', category: key },
+                  });
+                }}
                 className={`h-9 shrink-0 rounded-full px-3 text-[13px] font-semibold ${
                   active
                     ? 'bg-[#0b1f3a] text-white'
@@ -85,6 +93,18 @@ export function ComparePopular({
               <Link
                 key={card.id}
                 href={card.href}
+                onClick={() =>
+                  trackAnalyticsEvent({
+                    eventType: 'custom',
+                    entityType: 'comparison',
+                    entityId: card.id,
+                    path: card.href,
+                    metadata: {
+                      eventName: 'comparison_related_clicked',
+                      category: card.category,
+                    },
+                  })
+                }
                 className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-100/60 transition hover:-translate-y-0.5 hover:border-blue-200"
               >
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-blue-600">

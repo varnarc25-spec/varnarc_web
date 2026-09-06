@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Search } from 'lucide-react';
-import type { CompareCard } from '@/lib/compare-hub';
+import { matchComparisonCards, type CompareCard } from '@/lib/compare-hub';
+import { trackAnalyticsEvent } from '@/lib/analytics-client';
 
 export function CompareSearch({
   initialQuery = '',
@@ -15,19 +16,26 @@ export function CompareSearch({
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
 
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return cards
-      .filter((card) =>
-        `${card.title} ${card.optionA} ${card.optionB} ${card.category}`.toLowerCase().includes(q),
-      )
-      .slice(0, 6);
-  }, [cards, query]);
+  const suggestions = useMemo(() => matchComparisonCards(cards, query).slice(0, 6), [cards, query]);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     const next = query.trim();
+    trackAnalyticsEvent({
+      eventType: 'search',
+      entityType: 'comparison',
+      metadata: {
+        context: 'compare',
+        queryLength: next.length,
+        hasVsIntent: /\bvs\.?\b|\bversus\b/i.test(next),
+        resultCount: suggestions.length,
+      },
+    });
+    const exact = suggestions[0];
+    if (exact) {
+      router.push(exact.href);
+      return;
+    }
     router.push(next ? `/compare?q=${encodeURIComponent(next)}` : '/compare');
   }
 
@@ -47,7 +55,7 @@ export function CompareSearch({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search cars, loans, cards, solar, construction..."
+            placeholder="Search Swift vs Baleno, OPC vs PPC, SBI vs HDFC..."
             autoComplete="off"
             className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
           />
@@ -65,6 +73,19 @@ export function CompareSearch({
             <li key={card.id}>
               <a
                 href={card.href}
+                onClick={() =>
+                  trackAnalyticsEvent({
+                    eventType: 'custom',
+                    entityType: 'comparison',
+                    entityId: card.id,
+                    path: card.href,
+                    metadata: {
+                      eventName: 'comparison_started',
+                      source: 'compare_search',
+                      category: card.category,
+                    },
+                  })
+                }
                 className="block px-4 py-2.5 text-sm text-slate-800 hover:bg-slate-50 focus-visible:bg-slate-50"
               >
                 <span className="font-semibold">{card.optionA}</span>

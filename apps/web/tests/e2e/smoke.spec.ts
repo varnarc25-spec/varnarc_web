@@ -17,7 +17,9 @@ test('tags page loads', async ({ page }) => {
 
 test('compare index loads', async ({ page }) => {
   await page.goto('/compare');
-  await expect(page.getByRole('heading', { level: 1, name: 'Comparisons' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Compare options side by side.' }),
+  ).toBeVisible();
 });
 
 test('compare slug route responds', async ({ page }) => {

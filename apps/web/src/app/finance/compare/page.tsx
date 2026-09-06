@@ -6,8 +6,18 @@ import { fetchFinanceCompare } from '@/services/finance';
 import { ApiError } from '@/services/api-client';
 import { buildFinancePageMetadata, getFinancePageContent } from '@/lib/finance-page-seo';
 
-export async function generateMetadata(): Promise<Metadata> {
-  return buildFinancePageMetadata('compare');
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; ids?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const metadata = await buildFinancePageMetadata('compare');
+  const hasPair = Boolean(params.ids?.split(',').filter(Boolean).length);
+  return {
+    ...metadata,
+    robots: hasPair ? { index: false, follow: true } : { index: true, follow: true },
+  };
 }
 
 type Props = {

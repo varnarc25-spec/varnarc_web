@@ -5,11 +5,20 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { fetchAutomobileCompare, fetchAutomobileVehicles } from '@/services/automobile';
 import { ApiError } from '@/services/api-client';
 
-export const metadata: Metadata = {
-  title: 'Compare Vehicles',
-  description: 'Side-by-side comparison of vehicles by specifications and price.',
-  alternates: { canonical: '/automobile/compare' },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ ids?: string }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const hasPair = Boolean(params.ids?.split(',').filter(Boolean).length);
+  return {
+    title: 'Compare Vehicles',
+    description: 'Side-by-side comparison of vehicles by specifications and price.',
+    alternates: { canonical: '/automobile/compare' },
+    robots: hasPair ? { index: false, follow: true } : { index: true, follow: true },
+  };
+}
 
 type Props = {
   searchParams: Promise<{ ids?: string }>;
@@ -17,11 +26,16 @@ type Props = {
 
 export default async function AutomobileComparePage({ searchParams }: Props) {
   const params = await searchParams;
-  const ids = params.ids?.split(',').map((s) => s.trim()).filter(Boolean) ?? [];
+  const ids =
+    params.ids
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
 
   let items: Array<Record<string, unknown>> = [];
   let error: string | null = null;
-  const featured = ids.length < 2 ? await fetchAutomobileVehicles({ featured: true, limit: 2 }) : { data: [] };
+  const featured =
+    ids.length < 2 ? await fetchAutomobileVehicles({ featured: true, limit: 2 }) : { data: [] };
   const starterIds = (featured.data ?? []).map((v) => v.id).filter(Boolean);
   const starterHref =
     starterIds.length >= 2 ? `/automobile/compare?ids=${starterIds.slice(0, 2).join(',')}` : null;
@@ -102,7 +116,10 @@ export default async function AutomobileComparePage({ searchParams }: Props) {
           </table>
         </div>
       ) : (
-        <EmptyState title="No vehicles found" message="Those IDs did not resolve to published vehicles." />
+        <EmptyState
+          title="No vehicles found"
+          message="Those IDs did not resolve to published vehicles."
+        />
       )}
     </ContentLayout>
   );

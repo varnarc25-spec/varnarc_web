@@ -55,29 +55,44 @@ function buildMatrix(detail: ComparisonDetail) {
     productId: item.product.id,
   }));
 
-  const rows: CompareRow[] = detail.attributes.map((attr) => {
-    const values = Array.isArray(attr.values)
-      ? (attr.values as unknown[])
-      : typeof attr.values === 'object' && attr.values
-        ? Object.values(attr.values as Record<string, unknown>)
-        : [String(attr.values ?? '')];
-    const row: CompareRow = {
-      feature: attr.label,
-      groupKey: (attr as { groupKey?: string }).groupKey,
-    };
-    columns.forEach((col, idx) => {
-      row[col.key] = String(values[idx] ?? '—');
-    });
-    return row;
-  });
+  const rows: CompareRow[] = detail.attributes
+    .map((attr) => {
+      const values = Array.isArray(attr.values)
+        ? (attr.values as unknown[])
+        : typeof attr.values === 'object' && attr.values
+          ? Object.values(attr.values as Record<string, unknown>)
+          : [String(attr.values ?? '')];
+      const row: CompareRow = {
+        feature: attr.label,
+        groupKey: (attr as { groupKey?: string }).groupKey,
+      };
+      columns.forEach((col, idx) => {
+        const raw = values[idx];
+        const text = raw == null || raw === '' ? '' : String(raw);
+        row[col.key] = text === 'null' || text === 'undefined' ? '' : text;
+      });
+      return row;
+    })
+    .filter((row) =>
+      columns.some((col) => {
+        const value = row[col.key];
+        return Boolean(value) && value !== '—';
+      }),
+    );
 
-  const chart = detail.attributes.slice(0, 6).map((attr) => {
+  const chart = detail.attributes.slice(0, 6).flatMap((attr) => {
     const values = Array.isArray(attr.values) ? attr.values : [];
-    const nums = values.map((v) => Number(v)).filter((n) => !Number.isNaN(n));
-    return {
-      name: attr.label,
-      score: nums.length ? Math.round(nums.reduce((a, b) => a + b, 0) / nums.length) : 50,
-    };
+    const nums = values.flatMap((value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && String(value).trim() !== '' ? [parsed] : [];
+    });
+    if (!nums.length) return [];
+    return [
+      {
+        name: attr.label,
+        score: Math.round(nums.reduce((a, b) => a + b, 0) / nums.length),
+      },
+    ];
   });
 
   const groups = [
@@ -116,6 +131,7 @@ export function ComparisonDetailClient({
   related: RelatedContent | null;
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [showDifferencesOnly, setShowDifferencesOnly] = useState(false);
   const [groupFilter, setGroupFilter] = useState<string>('all');
 
   const matrix = useMemo(() => buildMatrix(detail), [detail]);
@@ -126,11 +142,11 @@ export function ComparisonDetailClient({
     if (groupFilter !== 'all') {
       rows = rows.filter((r) => r.groupKey === groupFilter);
     }
-    if (viewMode === 'diff') {
+    if (viewMode === 'diff' || showDifferencesOnly) {
       rows = diffOnlyRows(rows, columnKeys);
     }
     return rows;
-  }, [matrix.rows, groupFilter, viewMode, columnKeys]);
+  }, [matrix.rows, groupFilter, viewMode, showDifferencesOnly, columnKeys]);
 
   const tableColumns = useMemo<ColumnDef<CompareRow>[]>(
     () => [
@@ -184,9 +200,17 @@ export function ComparisonDetailClient({
                     : 'Mobile accordion'}
             </button>
           ))}
+          <label className="ml-auto inline-flex min-h-9 items-center gap-2 text-xs font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={showDifferencesOnly || viewMode === 'diff'}
+              onChange={(e) => setShowDifferencesOnly(e.target.checked)}
+            />
+            Show differences only
+          </label>
           {matrix.groups.length ? (
             <select
-              className="ml-auto rounded-md border border-slate-200 px-3 py-1 text-xs"
+              className="rounded-md border border-slate-200 px-3 py-1 text-xs"
               value={groupFilter}
               onChange={(e) => setGroupFilter(e.target.value)}
             >
@@ -248,10 +272,42 @@ export function ComparisonDetailClient({
           </div>
         ) : null}
 
-        <div className="mt-8">
-          <h2 className="mb-3 text-sm font-extrabold text-[#0b1f3a]">Score snapshot</h2>
-          <SimpleBarChart data={matrix.chart} xKey="name" yKey="score" />
-        </div>
+        {matrix.columns.length === 2
+          ? (() => {
+              const diffs = diffOnlyRows(matrix.rows, columnKeys).slice(0, 4);
+              if (!diffs.length) return null;
+              return (
+                <section className="mt-8 grid gap-4 sm:grid-cols-2">
+                  {matrix.columns.map((col) => (
+                    <article
+                      key={col.key}
+                      className="rounded-2xl border border-slate-200 bg-white p-5"
+                    >
+                      <h2 className="text-sm font-bold text-slate-950">
+                        {col.header} may suit users prioritising
+                      </h2>
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                        {diffs.map((row) =>
+                          row[col.key] ? (
+                            <li key={`${col.key}-${row.feature}`}>
+                              {row.feature}: {row[col.key]}
+                            </li>
+                          ) : null,
+                        )}
+                      </ul>
+                    </article>
+                  ))}
+                </section>
+              );
+            })()
+          : null}
+
+        {matrix.chart.length ? (
+          <div className="mt-8">
+            <h2 className="mb-3 text-sm font-extrabold text-[#0b1f3a]">Score snapshot</h2>
+            <SimpleBarChart data={matrix.chart} xKey="name" yKey="score" />
+          </div>
+        ) : null}
 
         {related?.affiliateOffers?.length ? (
           <section className="mt-10">

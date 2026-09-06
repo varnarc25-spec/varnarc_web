@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
+import { GoToTopButton } from '@/components/legal/go-to-top-button';
 
 const termsNavigation = [
   ['Eligibility', '1-eligibility'],
@@ -145,6 +146,7 @@ export function TermsDocument({
           </article>
         </div>
       </div>
+      <GoToTopButton />
     </main>
   );
 }

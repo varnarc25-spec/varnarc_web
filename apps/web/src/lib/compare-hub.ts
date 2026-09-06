@@ -1,5 +1,11 @@
 export type CompareCategoryKey = 'finance' | 'cars' | 'home' | 'solar' | 'products';
 
+export type ComparePreviewRow = {
+  label: string;
+  optionA: string;
+  optionB: string;
+};
+
 export type CompareCard = {
   id: string;
   href: string;
@@ -8,12 +14,15 @@ export type CompareCard = {
   optionA: string;
   optionB: string;
   dimensions: string[];
+  previewRows?: ComparePreviewRow[];
 };
 
 export type BuilderOption = {
   id: string;
   label: string;
   group: string;
+  sortValue?: number | null;
+  preview?: Array<{ label: string; value: string }>;
 };
 
 export type BuilderCategory = {
@@ -25,35 +34,46 @@ export type BuilderCategory = {
 
 export const COMPARE_CATEGORY_META: Record<
   CompareCategoryKey,
-  { label: string; badge: string; href: string; description: string; dimensions: string[] }
+  {
+    label: string;
+    badge: string;
+    href: string;
+    description: string;
+    dimensions: string[];
+    cta: string;
+  }
 > = {
   finance: {
     label: 'Finance',
     badge: 'Finance',
     href: '/finance/compare',
-    description: 'Loans, cards, deposits and other financial options.',
-    dimensions: ['Rates', 'Fees', 'Tenure'],
+    description: 'Compare loans, rates, fees, tenure and financial products.',
+    dimensions: ['Rate range', 'Processing fee', 'Tenure', 'Loan type'],
+    cta: 'Compare finance',
   },
   cars: {
     label: 'Cars',
     badge: 'Automobile',
     href: '/automobile/compare',
-    description: 'Models, variants and ownership choices.',
-    dimensions: ['Price', 'Mileage', 'Features'],
+    description: 'Compare price, mileage, specifications, safety and ownership costs.',
+    dimensions: ['Price', 'Mileage', 'Fuel', 'Transmission'],
+    cta: 'Compare cars',
   },
   home: {
     label: 'Home & Construction',
     badge: 'Home & Construction',
     href: '/construction/compare',
-    description: 'Materials, methods and home products.',
-    dimensions: ['Cost', 'Strength', 'Use case'],
+    description: 'Compare materials, methods, costs, durability and applications.',
+    dimensions: ['Cost', 'Strength', 'Durability', 'Use case'],
+    cta: 'Compare construction',
   },
   solar: {
     label: 'Solar',
     badge: 'Solar',
     href: '/solar',
-    description: 'Panels, technologies and system options.',
-    dimensions: ['Efficiency', 'Cost', 'Degradation'],
+    description: 'Compare panels, technologies, output, efficiency and payback.',
+    dimensions: ['Efficiency', 'Temperature performance', 'Cost', 'Degradation'],
+    cta: 'Compare solar',
   },
   products: {
     label: 'Products',
@@ -61,6 +81,7 @@ export const COMPARE_CATEGORY_META: Record<
     href: '/compare/products',
     description: 'Appliances and other structured products.',
     dimensions: ['Price', 'Features', 'Warranty'],
+    cta: 'Compare products',
   },
 };
 
@@ -135,4 +156,106 @@ export function loanGroupKey(loanType?: string | null): string {
   if (/business|sme|msme/.test(raw)) return 'loan:business';
   if (/lap|property/.test(raw)) return 'loan:property';
   return `loan:${raw || 'general'}`;
+}
+
+export function comparableOptions(options: BuilderOption[], selectedId: string) {
+  const selected = options.find((option) => option.id === selectedId);
+  if (!selected) return [];
+
+  return options
+    .filter((option) => option.id !== selected.id && option.group === selected.group)
+    .sort((left, right) => {
+      if (selected.sortValue == null || left.sortValue == null || right.sortValue == null) {
+        return left.label.localeCompare(right.label);
+      }
+      return (
+        Math.abs(left.sortValue - selected.sortValue) -
+        Math.abs(right.sortValue - selected.sortValue)
+      );
+    });
+}
+
+export function comparisonPreview(optionA?: BuilderOption, optionB?: BuilderOption) {
+  if (!optionA || !optionB) return [];
+  const right = new Map((optionB.preview ?? []).map((item) => [item.label, item.value]));
+  return (optionA.preview ?? [])
+    .flatMap((item) => {
+      const valueB = right.get(item.label);
+      return valueB ? [{ label: item.label, optionA: item.value, optionB: valueB }] : [];
+    })
+    .slice(0, 5);
+}
+
+export function normalizeCompareLabel(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+export function canonicalPairOrder(a: string, b: string): [string, string] {
+  return normalizeCompareLabel(a) <= normalizeCompareLabel(b) ? [a, b] : [b, a];
+}
+
+export function matchComparisonCards(cards: CompareCard[], query: string) {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const pair = parseVsTitle(query);
+  if (pair) {
+    const a = normalizeCompareLabel(pair.a);
+    const b = normalizeCompareLabel(pair.b);
+    const vsMatches = cards.filter((card) => {
+      const left = normalizeCompareLabel(card.optionA);
+      const right = normalizeCompareLabel(card.optionB);
+      return (left.includes(a) && right.includes(b)) || (left.includes(b) && right.includes(a));
+    });
+    if (vsMatches.length) return vsMatches.slice(0, 8);
+  }
+  return cards
+    .filter((card) =>
+      `${card.title} ${card.optionA} ${card.optionB} ${card.category}`.toLowerCase().includes(q),
+    )
+    .slice(0, 8);
+}
+
+export function featuredPairFromCatalog(catalog: BuilderCategory): CompareCard | null {
+  const optionA = catalog.options[0];
+  if (!optionA) return null;
+  const optionB = comparableOptions(catalog.options, optionA.id)[0];
+  if (!optionB) return null;
+  const previewRows = comparisonPreview(optionA, optionB);
+  return {
+    id: `${catalog.key}-${optionA.id}-${optionB.id}`,
+    href: builderCompareHref(catalog.key, optionA.id, optionB.id, optionA.group),
+    title: `${optionA.label} vs ${optionB.label}`,
+    category: catalog.key,
+    optionA: optionA.label,
+    optionB: optionB.label,
+    dimensions: COMPARE_CATEGORY_META[catalog.key].dimensions,
+    previewRows,
+  };
+}
+
+export function attachPreviewToCard(card: CompareCard, catalogs: BuilderCategory[]): CompareCard {
+  if (card.previewRows?.length) return card;
+  const catalog = catalogs.find((item) => item.key === card.category);
+  if (!catalog) return card;
+  const optionA = catalog.options.find((item) =>
+    normalizeCompareLabel(item.label).includes(normalizeCompareLabel(card.optionA).slice(0, 18)),
+  );
+  const optionB = catalog.options.find((item) =>
+    normalizeCompareLabel(item.label).includes(normalizeCompareLabel(card.optionB).slice(0, 18)),
+  );
+  if (!optionA || !optionB || optionA.id === optionB.id) return card;
+  return { ...card, previewRows: comparisonPreview(optionA, optionB) };
+}
+
+export function differingPreviewRows(rows: ComparePreviewRow[]) {
+  return rows.filter(
+    (row) => normalizeCompareLabel(row.optionA) !== normalizeCompareLabel(row.optionB),
+  );
+}
+
+export function compareHubIsIndexable(search?: { q?: string; category?: string }) {
+  return !search?.q?.trim() && !search?.category?.trim();
 }
