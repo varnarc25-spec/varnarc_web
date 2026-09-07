@@ -695,7 +695,7 @@ export class MenuRepository extends BaseRepository {
       where: { location, deletedAt: null },
       include: {
         items: {
-          where: { deletedAt: null },
+          where: { deletedAt: null, isActive: true },
           orderBy: { sortOrder: 'asc' },
         },
       },

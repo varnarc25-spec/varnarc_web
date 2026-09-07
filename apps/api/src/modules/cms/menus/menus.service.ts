@@ -55,7 +55,7 @@ export class MenusService {
       ...row,
       items: row.items.filter((item) => item.isActive !== false),
     };
-    await this.cache.set(cacheKey, publicMenu, 60_000);
+    await this.cache.set(cacheKey, publicMenu, 5_000);
     return publicMenu;
   }
 

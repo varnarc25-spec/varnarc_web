@@ -18,6 +18,7 @@ import { fetchAdsensePublicConfig, getAdsenseClientFromConfig } from '@/lib/adse
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
+import { publicMenuLinks } from '@/lib/public-menu-links';
 import {
   isAuth0Configured,
   isAuthUiEnabled,
@@ -219,21 +220,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       fetchPublicGoogleAnalyticsId(),
     ]);
 
-  const cmsNav =
-    menuRes.data?.items
-      ?.filter((item) => item.href)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((item) => ({ label: item.label, href: item.href! })) ?? [];
-
   const staticNav = staticNavItems.map((item) => ({ label: item.label, href: item.href }));
-
-  const nav = cmsNav.length >= staticNav.length ? cmsNav : staticNav;
-
-  const footerLinks =
-    footerRes.data?.items
-      ?.filter((item) => item.href)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((item) => ({ label: item.label, href: item.href! })) ?? [];
+  const cmsNav = publicMenuLinks(menuRes.data);
+  const nav = cmsNav ?? staticNav;
+  const footerLinks = publicMenuLinks(footerRes.data) ?? undefined;
 
   const branding = activeTheme?.branding ?? {};
   const footerTokens = activeTheme?.tokens?.footer ?? {};

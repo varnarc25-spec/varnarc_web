@@ -158,7 +158,7 @@ export async function fetchPageBySlug(slug: string) {
 export async function fetchMenuByLocation(location: string) {
   try {
     return await apiPublicFetch<MenuPayload>(`/menus/location/${location}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
   } catch {
     return { data: null };

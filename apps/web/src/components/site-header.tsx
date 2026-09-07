@@ -47,9 +47,7 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = navProp?.length
-    ? navProp
-    : navItems.map((item) => ({ label: item.label, href: item.href }));
+  const items = navProp ?? navItems.map((item) => ({ label: item.label, href: item.href }));
   const brand = siteName?.trim() || 'Varnarc';
   const brandTagline = tagline?.trim() || 'Finance • Home • Auto • Tools';
 

@@ -48,7 +48,7 @@ export function SiteFooter({
   showAds?: boolean;
 }) {
   const popular = quickTools.slice(0, 5);
-  const quickLinks = cmsLinks?.length ? cmsLinks : defaultQuickLinks;
+  const quickLinks = cmsLinks ?? defaultQuickLinks;
   const brand = siteName?.trim() || 'Varnarc';
   const brandTagline =
     tagline?.trim() || 'Smart tools and expert guides to help you plan better and spend smarter.';
