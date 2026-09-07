@@ -85,12 +85,14 @@ export function ConstructionDashboardHero({
   points,
   headingAs: Heading = 'h2',
   children,
+  aside,
 }: {
   title?: string;
   description?: string;
   points?: string[];
   headingAs?: 'h1' | 'h2';
   children?: ReactNode;
+  aside?: ReactNode;
 }) {
   return (
     <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
@@ -120,7 +122,7 @@ export function ConstructionDashboardHero({
         {children}
       </div>
       <div className="flex justify-center lg:justify-end">
-        <ConstructionHouseIllustration />
+        {aside ?? <ConstructionHouseIllustration />}
       </div>
     </section>
   );
