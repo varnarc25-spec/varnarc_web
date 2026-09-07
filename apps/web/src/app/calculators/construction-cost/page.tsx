@@ -4,6 +4,7 @@ import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { ConstructionCostDashboard } from '@/components/construction/cost-calculator/construction-cost-dashboard';
 import { COST_CALC_FAQS } from '@/components/construction/cost-calculator/content';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
+import { fetchConstructionPageSeo } from '@/services/construction';
 
 const PATH = '/calculators/construction-cost';
 const TITLE = 'Construction Cost Calculator | Varnarc';
@@ -25,7 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ConstructionCostCatalogPage() {
+export default async function ConstructionCostCatalogPage() {
+  const hub = await fetchConstructionPageSeo('hub');
   return (
     <ContentLayout
       title="Construction Cost Calculator"
@@ -53,7 +55,12 @@ export default function ConstructionCostCatalogPage() {
           answer: f.answer,
         }))}
       />
-      <ConstructionCostDashboard />
+      <ConstructionCostDashboard
+        heroImageUrl={hub.data?.heroImageUrl}
+        heroImageMediaId={hub.data?.heroImageMediaId}
+        heroImageAlt={hub.data?.heroImageAlt}
+        heroImageTitle={hub.data?.heroImageTitle}
+      />
     </ContentLayout>
   );
 }

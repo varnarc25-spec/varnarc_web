@@ -18,6 +18,8 @@ import {
   ConstructionHouseIllustration,
   ConstructionSplitDonut,
 } from '@/components/construction/construction-dashboard-chrome';
+import { CmsMediaImage } from '@/components/cms/cms-media-image';
+import { resolvePublicCmsMediaUrl } from '@/lib/cms-media-url';
 import { cn, cx } from '@/components/construction/styles';
 import { COST_CALC_FAQS } from './content';
 
@@ -64,9 +66,17 @@ function toSqft(area: number, unit: 'sqft' | 'sqm') {
 export function ConstructionCostDashboard({
   initialLocation = 'Bengaluru',
   initialArea = '1500',
+  heroImageUrl,
+  heroImageMediaId,
+  heroImageAlt,
+  heroImageTitle,
 }: {
   initialLocation?: string;
   initialArea?: string;
+  heroImageUrl?: string | null;
+  heroImageMediaId?: string | null;
+  heroImageAlt?: string | null;
+  heroImageTitle?: string | null;
 }) {
   const [projectName, setProjectName] = useState('My Dream Home');
   const [editingName, setEditingName] = useState(false);
@@ -109,6 +119,7 @@ export function ConstructionCostDashboard({
   const boqRows =
     boqTab === 'all' ? estimate.breakdown : estimate.breakdown.filter((row) => row.id === boqTab);
   const renovationHint = Math.round(estimate.estimatedTotal * 0.22);
+  const heroPhoto = resolvePublicCmsMediaUrl(heroImageUrl, heroImageMediaId);
 
   return (
     <div className="space-y-8">
@@ -132,8 +143,23 @@ export function ConstructionCostDashboard({
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex justify-center">
-              <ConstructionHouseIllustration />
+            <div className="mt-4 flex justify-center bg-transparent">
+              {heroPhoto ? (
+                <CmsMediaImage
+                  src={heroPhoto}
+                  alt={heroImageAlt?.trim() || 'House construction planning illustration'}
+                  title={heroImageTitle?.trim() || undefined}
+                  width={320}
+                  height={180}
+                  sizes="320px"
+                  className="w-full max-w-[320px] bg-transparent"
+                  imgClassName="h-auto w-full bg-transparent object-contain"
+                  objectFit="contain"
+                  unoptimized
+                />
+              ) : (
+                <ConstructionHouseIllustration />
+              )}
             </div>
           </div>
         }
