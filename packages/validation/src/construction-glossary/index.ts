@@ -373,7 +373,7 @@ export const CONSTRUCTION_GLOSSARY_TERMS: ConstructionGlossaryTermDef[] = [
     ],
     nextActions: [
       {
-        href: '/construction/calc/construction-cost/1500-sq-ft',
+        href: '/construction/cost/1500-sq-ft',
         label: 'Cost for 1500 sq ft house',
       },
       { href: '/construction/construction-cost', label: 'City construction cost' },

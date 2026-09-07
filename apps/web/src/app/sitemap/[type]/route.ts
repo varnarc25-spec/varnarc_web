@@ -14,6 +14,7 @@ import {
   listGuideClusters,
   listIndexableConstructionGlossaryTerms,
   listIndexableIntentCalcLandings,
+  listIndexableConstructionCostAreaLandings,
   listPotentialConstructionCostCities,
 } from '@varnarc/validation';
 
@@ -90,6 +91,7 @@ const STATIC_FALLBACK_URLS: Record<string, string[]> = {
   'construction-calculators': [
     ...CONSTRUCTION_SITEMAP_CALCULATOR_PATHS,
     ...listIndexableIntentCalcLandings().map((p) => p.path),
+    ...listIndexableConstructionCostAreaLandings().map((p) => p.path),
   ],
   'construction-materials': CONSTRUCTION_SITEMAP_MATERIAL_GUIDE_SLUGS.map(
     (s) => `/construction/materials/${s}`,

@@ -193,6 +193,8 @@ export const CONSTRUCTION_SEO_STATIC_INVENTORY: ConstructionSeoInventoryItem[] =
   { path: '/construction/fair-price-checker', pageType: 'price', indexable: true },
   { path: '/construction/material-selector', pageType: 'calculator', indexable: true },
   { path: '/construction/calc', pageType: 'hub', indexable: true },
+  { path: '/construction/cost', pageType: 'hub', indexable: true },
+  { path: '/construction/cost/1500-sq-ft', pageType: 'calculator', indexable: true },
 ];
 
 export type ParsedConstructionPageSignals = {

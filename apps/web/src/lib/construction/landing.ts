@@ -5,7 +5,7 @@ import { askResultsPath, resolveAskConstructionQuery } from '@/lib/construction/
 export const LANDING_SEARCH_EXAMPLES = [
   {
     label: 'Cost to build 1500 sqft house',
-    href: '/construction/cost-calculator?builtUpArea=1500',
+    href: '/construction/cost/1500-sq-ft',
   },
   {
     label: 'Cement required for 1200 sqft',
@@ -127,6 +127,12 @@ export const CONSTRUCTION_INTENT_NAVIGATOR: ConstructionIntentDefinition[] = [
         label: 'Quick estimate',
         description: 'Area, floors and quality → range.',
         href: '/construction#quick-estimator',
+      },
+      {
+        key: 'cost_by_area',
+        label: 'Cost by house size',
+        description: '1500 sq ft and other common built-up areas.',
+        href: '/construction/cost',
       },
       {
         key: 'full_estimator',

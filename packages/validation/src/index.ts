@@ -17,6 +17,7 @@ export * from './construction-domain';
 export * from './construction-engine';
 export * from './construction-cost';
 export * from './construction-cost-city';
+export * from './construction-cost-area';
 export * from './intent-calc-landing';
 export * from './construction-glossary';
 export * from './construction-guide-clusters';

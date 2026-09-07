@@ -209,13 +209,13 @@ export const CONSTRUCTION_GUIDE_CLUSTERS: ConstructionGuideClusterDef[] = [
       link({
         id: 'landing-1500',
         kind: 'calc_landing',
-        href: '/construction/calc/construction-cost/1500-sq-ft',
+        href: '/construction/cost/1500-sq-ft',
         label: 'Cost for 1500 sq ft house',
       }),
       link({
         id: 'landing-1200',
         kind: 'calc_landing',
-        href: '/construction/calc/construction-cost/1200-sq-ft',
+        href: '/construction/cost/1200-sq-ft',
         label: 'Cost for 1200 sq ft house',
       }),
       link({

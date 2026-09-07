@@ -93,7 +93,10 @@ export default function IntentCalcHubPage() {
       </div>
 
       <div className="mt-10 flex flex-wrap gap-2">
-        <Link href="/construction/cement-calculator" className={cx.primaryBtn}>
+        <Link href="/construction/cost" className={cx.primaryBtn}>
+          Cost by house size
+        </Link>
+        <Link href="/construction/cement-calculator" className={cx.secondaryBtn}>
           Cement calculator
         </Link>
         <Link href="/construction/steel-calculator" className={cx.secondaryBtn}>

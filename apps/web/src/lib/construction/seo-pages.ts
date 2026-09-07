@@ -44,6 +44,7 @@ export const CONSTRUCTION_PAGE_KEYS = [
   'projects',
   'prices',
   'calc',
+  'cost-by-area',
   'price-alerts',
   'fair-price-checker',
   'price-position',
@@ -442,6 +443,15 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       description:
         'City and material reference prices with freshness labels. Stale observations are never shown as current — verify locally before budgeting.',
       h1: 'Construction prices',
+      indexable: true,
+    },
+    'cost-by-area': {
+      path: '/construction/cost',
+      label: 'Cost by area',
+      title: 'House Construction Cost by Area in India | Varnarc',
+      description:
+        'Indicative construction cost for 500 to 3,000 sq ft houses in India — quality tables, materials and calculators. Same engine as the Varnarc cost calculator. Not a quote.',
+      h1: 'House construction cost by area',
       indexable: true,
     },
     calc: {

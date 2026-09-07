@@ -21,6 +21,11 @@ export const revalidate = 60;
 
 const FALLBACK_CALCULATORS = [
   {
+    label: 'Cost by area',
+    href: '/construction/cost',
+    description: '500–3000 sq ft house cost',
+  },
+  {
     label: 'Construction Cost',
     href: '/calculators/construction-cost',
     description: 'Project cost planning',

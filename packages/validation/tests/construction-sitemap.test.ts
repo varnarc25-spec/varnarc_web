@@ -43,7 +43,7 @@ describe('construction-sitemap', () => {
     for (const p of calcs) {
       expect(core.has(p)).toBe(false);
     }
-    expect(CONSTRUCTION_SITEMAP_CORE_PATHS.length).toBeGreaterThan(10);
+    expect(CONSTRUCTION_SITEMAP_CORE_PATHS).toContain('/construction/cost');
     expect(CONSTRUCTION_SITEMAP_CALCULATOR_PATHS.length).toBeGreaterThan(20);
   });
 

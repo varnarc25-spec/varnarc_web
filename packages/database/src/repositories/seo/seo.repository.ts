@@ -19,6 +19,7 @@ import {
   listGuideClusters,
   listIndexableConstructionGlossaryTerms,
   listIndexableIntentCalcLandings,
+  listIndexableConstructionCostAreaLandings,
   PRICE_HUB_CITIES,
   type AutomobileSitemapSegment,
   type ConstructionSitemapSegment,
@@ -442,6 +443,10 @@ export class SeoSitemapRepository extends BaseRepository {
         entries = [
           ...staticEntries(),
           ...listIndexableIntentCalcLandings().map((p) => ({
+            loc: `${base}${p.path}`,
+            lastmod: staticLastmod,
+          })),
+          ...listIndexableConstructionCostAreaLandings().map((p) => ({
             loc: `${base}${p.path}`,
             lastmod: staticLastmod,
           })),
