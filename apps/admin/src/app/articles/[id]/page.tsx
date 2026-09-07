@@ -21,7 +21,17 @@ type ArticleDetail = {
   featuredImage?: { id: string; url: string; secureUrl: string | null } | null;
   heroImage?: { id: string; url: string; secureUrl: string | null } | null;
   ogImage?: { id: string; url: string; secureUrl: string | null } | null;
-  seo?: { title?: string | null; description?: string | null; metaKeywords?: string | null } | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    metaKeywords?: string | null;
+    canonicalUrl?: string | null;
+    robots?: string | null;
+    structuredData?: { ogTitle?: string | null; ogDescription?: string | null } | null;
+  } | null;
+  articleType?: string | null;
+  articleStyle?: string | null;
+  customCssClass?: string | null;
   relatedFrom?: Array<{
     relatedId: string;
     related: { id: string; title: string };
@@ -91,6 +101,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         seoTitle={article.seo?.title ?? null}
         seoDescription={article.seo?.description ?? null}
         seoKeywords={article.seo?.metaKeywords ?? null}
+        seoCanonicalUrl={article.seo?.canonicalUrl ?? null}
+        seoRobots={article.seo?.robots ?? null}
+        seoOgTitle={article.seo?.structuredData?.ogTitle ?? null}
+        seoOgDescription={article.seo?.structuredData?.ogDescription ?? null}
+        articleType={article.articleType ?? 'GENERAL'}
+        articleStyle={article.articleStyle ?? 'default'}
+        customCssClass={article.customCssClass ?? null}
         metadata={article.metadata ?? null}
       />
 

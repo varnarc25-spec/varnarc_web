@@ -9,12 +9,7 @@ import type {
   UpdateMenuItemInput,
 } from '@varnarc/validation';
 import { REPOS } from '../../../database/database.module';
-import {
-  CACHE_MANAGER,
-  cmsCacheKeys,
-  invalidateCmsCache,
-  type Cache,
-} from '../cms-cache';
+import { CACHE_MANAGER, cmsCacheKeys, invalidateCmsCache, type Cache } from '../cms-cache';
 
 @Injectable()
 export class MenusService {
@@ -56,8 +51,12 @@ export class MenusService {
         error: { code: 'NOT_FOUND', message: 'Menu not found.' },
       });
     }
-    await this.cache.set(cacheKey, row, 60_000);
-    return row;
+    const publicMenu = {
+      ...row,
+      items: row.items.filter((item) => item.isActive !== false),
+    };
+    await this.cache.set(cacheKey, publicMenu, 60_000);
+    return publicMenu;
   }
 
   private async bustLocation(location?: string | null) {
@@ -107,6 +106,7 @@ export class MenusService {
     await this.repos.menus.createItem({
       label: input.label,
       href: input.href ?? null,
+      isActive: input.isActive ?? true,
       sortOrder: input.sortOrder,
       menu: { connect: { id: menuId } },
       ...(input.parentId ? { parent: { connect: { id: input.parentId } } } : {}),

@@ -1,0 +1,293 @@
+.article-page {
+  --article-text: var(--varnarc-ink, #0b1f3a);
+  --article-heading: var(--vn-navy, #0b1f3a);
+  --article-muted: var(--varnarc-subtle, #475569);
+  --article-border: var(--varnarc-border, #e2e8f0);
+  --article-surface: var(--varnarc-surface, #ffffff);
+  --article-primary: var(--varnarc-accent, #f97316);
+  --article-primary-soft: var(--vn-orange-soft, #fff4eb);
+  --article-info: var(--vn-navy-soft, #e8eef5);
+  --article-success: #ecfdf3;
+  --article-warning: #fff7ed;
+  --article-danger: #fef2f2;
+  color: var(--article-text);
+}
+
+.article-content {
+  max-width: 860px;
+  margin: 0 auto;
+  font-size: 17px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.article-content h2,
+.article-content h3,
+.article-content h4 {
+  color: var(--article-heading);
+  scroll-margin-top: 96px;
+  line-height: 1.25;
+  font-weight: 750;
+}
+
+.article-content h2 {
+  font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
+  margin: 2rem 0 0.85rem;
+}
+
+.article-content h3 {
+  font-size: clamp(1.15rem, 1vw + 0.95rem, 1.4rem);
+  margin: 1.6rem 0 0.6rem;
+}
+
+.article-content h4 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.article-content p {
+  margin: 0 0 1.05rem;
+}
+
+.article-content a {
+  color: var(--article-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.article-content a:focus-visible,
+.article-toc a:focus-visible,
+.article-block-toolbar button:focus-visible {
+  outline: 2px solid var(--article-primary);
+  outline-offset: 2px;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+
+.article-content figure {
+  margin: 1.5rem 0;
+}
+
+.article-content figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--article-muted);
+}
+
+.article-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-content table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.article-content th,
+.article-content td {
+  border: 1px solid var(--article-border);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+}
+
+.article-content th {
+  background: var(--article-info);
+}
+
+.article-block {
+  border: 1px solid var(--article-border);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 28px 0;
+  background: var(--article-surface);
+}
+
+.article-key-takeaways {
+  background: color-mix(in srgb, var(--article-info) 88%, white);
+  border-left: 4px solid var(--vn-navy, #0b1f3a);
+}
+
+.article-info-box {
+  background: var(--article-info);
+  border-left: 4px solid var(--vn-navy, #0b1f3a);
+}
+
+.article-warning-box {
+  background: var(--article-warning);
+  border-left: 4px solid var(--article-primary);
+}
+
+.article-tip-box {
+  background: var(--article-success);
+  border-left: 4px solid #15803d;
+}
+
+.article-formula-card {
+  background: #f8fafc;
+  text-align: center;
+}
+
+.article-formula-equation {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 700;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.article-cta,
+.article-related-tool {
+  background: linear-gradient(180deg, #fff, var(--article-primary-soft));
+}
+
+.article-cta a,
+.article-related-tool a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--vn-navy, #0b1f3a);
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 650;
+}
+
+.article-cta-label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--article-primary);
+}
+
+.article-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.article-checklist li {
+  position: relative;
+  padding: 0.35rem 0 0.35rem 1.8rem;
+}
+
+.article-checklist li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+  border: 2px solid var(--vn-navy, #0b1f3a);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(var(--article-info), var(--article-info)) border-box;
+}
+
+.article-comparison-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+.article-comparison-card,
+.article-pros-cons {
+  border: 1px solid var(--article-border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+}
+
+.article-source-note {
+  font-size: 0.92rem;
+  color: var(--article-muted);
+  background: #f8fafc;
+}
+
+.article-faq details {
+  border-top: 1px solid var(--article-border);
+  padding: 0.7rem 0;
+}
+
+.article-faq summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.article-toc {
+  border: 1px solid var(--article-border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin: 0 0 1.5rem;
+  background: #fbfcfe;
+}
+
+.article-toc h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+
+.article-toc ol {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.article-page.article-style-calculator-guide .article-formula-card {
+  border-color: color-mix(in srgb, var(--article-primary) 35%, var(--article-border));
+}
+
+.article-page.article-style-comparison .article-comparison-grid {
+  gap: 1.15rem;
+}
+
+.article-page.article-style-automobile-guide .article-key-takeaways {
+  border-left-color: var(--article-primary);
+}
+
+.article-page.article-style-construction-guide .article-key-takeaways {
+  border-left-color: #0f766e;
+}
+
+.article-block-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.article-block-toolbar button {
+  border: 1px solid var(--article-border);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .article-comparison-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .article-cta a,
+  .article-related-tool a {
+    width: 100%;
+  }
+
+  .article-block {
+    padding: 16px;
+  }
+}

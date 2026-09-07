@@ -9,6 +9,9 @@ import { ArticleSeoGenerator } from '@/components/article-seo-generator';
 import { ArticleFeaturedImageField } from '@/components/article-featured-image-field';
 import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 import { normalizeArticleContent } from '@/lib/article-content';
+import { ArticleTypeSelector } from '@/components/article-type-selector';
+import { ArticleQualityHints } from '@/components/article-quality-hints';
+import type { ArticleStyle, ArticleType } from '@varnarc/validation';
 
 export function ArticleCreateForm({
   seedTopic,
@@ -37,6 +40,13 @@ export function ArticleCreateForm({
     url: null,
     alt: '',
   });
+  const [articleType, setArticleType] = useState<ArticleType>('GENERAL');
+  const [articleStyle, setArticleStyle] = useState<ArticleStyle>('default');
+  const [customCssClass, setCustomCssClass] = useState('');
+  const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [robots, setRobots] = useState('index,follow');
+  const [ogTitle, setOgTitle] = useState('');
+  const [ogDescription, setOgDescription] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -56,11 +66,18 @@ export function ArticleCreateForm({
           featuredImageId: featuredImageId || null,
           heroImageId: heroImage.mediaId || null,
           ogImageId: ogImage.mediaId || null,
+          articleType,
+          articleStyle,
+          customCssClass: customCssClass || null,
           tagIds: [],
           seo: {
             title: seoTitle || null,
             description: seoDescription || null,
             metaKeywords: seoKeywords || null,
+            canonicalUrl: canonicalUrl || null,
+            robots: robots || null,
+            ogTitle: ogTitle || null,
+            ogDescription: ogDescription || null,
           },
         }),
       });
@@ -130,10 +147,26 @@ export function ArticleCreateForm({
           onChange={(e) => setExcerpt(e.target.value)}
         />
       </label>
+      <ArticleTypeSelector
+        articleType={articleType}
+        articleStyle={articleStyle}
+        customCssClass={customCssClass}
+        onChange={(next) => {
+          setArticleType(next.articleType);
+          setArticleStyle(next.articleStyle);
+          setCustomCssClass(next.customCssClass);
+        }}
+      />
       <label className="block text-sm">
         <span className="mb-1 block text-[var(--varnarc-subtle)]">Content</span>
-        <ArticleContentEditor value={content} onChange={setContent} />
+        <ArticleContentEditor value={content} onChange={setContent} articleStyle={articleStyle} />
       </label>
+      <ArticleQualityHints
+        title={title}
+        seoTitle={seoTitle}
+        metaDescription={seoDescription}
+        content={content}
+      />
 
       <ArticleFeaturedImageField
         value={featuredImageId}
@@ -200,6 +233,43 @@ export function ArticleCreateForm({
               className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
               value={seoKeywords}
               onChange={(e) => setSeoKeywords(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">Canonical URL override</span>
+            <input
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={canonicalUrl}
+              onChange={(e) => setCanonicalUrl(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">Robots</span>
+            <select
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={robots}
+              onChange={(e) => setRobots(e.target.value)}
+            >
+              <option value="index,follow">Index, follow</option>
+              <option value="noindex,follow">Noindex, follow</option>
+              <option value="index,nofollow">Index, nofollow</option>
+              <option value="noindex,nofollow">Noindex, nofollow</option>
+            </select>
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">OG title override</span>
+            <input
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={ogTitle}
+              onChange={(e) => setOgTitle(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">OG description override</span>
+            <textarea
+              className="min-h-16 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 text-sm"
+              value={ogDescription}
+              onChange={(e) => setOgDescription(e.target.value)}
             />
           </label>
         </div>

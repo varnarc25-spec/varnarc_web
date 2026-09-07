@@ -72,6 +72,7 @@ export type MenuItem = {
   label: string;
   href: string | null;
   sortOrder: number;
+  isActive?: boolean;
 };
 
 export type MenuPayload = {
@@ -132,6 +133,18 @@ export async function fetchArticleBySlug(slug: string) {
       category?: { id: string; name: string; slug: string } | null;
       tags?: Array<{ tag: { id: string; name: string; slug: string } }>;
       metadata?: unknown;
+      articleType?: string;
+      articleStyle?: string;
+      customCssClass?: string | null;
+      updatedAt?: string | null;
+      seo?: {
+        title?: string | null;
+        description?: string | null;
+        canonicalUrl?: string | null;
+        robots?: string | null;
+        ogImage?: string | null;
+        structuredData?: { ogTitle?: string; ogDescription?: string } | null;
+      } | null;
     }
   >(`/articles/slug/${slug}`, {
     cache: 'no-store',

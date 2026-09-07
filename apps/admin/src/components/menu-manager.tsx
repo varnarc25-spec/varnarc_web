@@ -4,6 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@varnarc/ui';
 
+type MenuItemRow = {
+  id: string;
+  label: string;
+  href: string | null;
+  sortOrder: number;
+  isActive?: boolean;
+};
+
 export function MenuManager({
   menuId,
   name,
@@ -13,7 +21,7 @@ export function MenuManager({
   menuId: string;
   name: string;
   location: string;
-  items: Array<{ id: string; label: string; href: string | null; sortOrder: number }>;
+  items: MenuItemRow[];
 }) {
   const router = useRouter();
   const [label, setLabel] = useState('');
@@ -33,6 +41,7 @@ export function MenuManager({
           label,
           href: href || null,
           sortOrder: items.length,
+          isActive: true,
         }),
       });
       const json = (await res.json()) as { error?: { message?: string } };
@@ -40,6 +49,26 @@ export function MenuManager({
       setLabel('');
       setHref('');
       setMessage('Added');
+      router.refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function setItemActive(itemId: string, isActive: boolean) {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/admin/cms/menus/items/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menuId, itemId, isActive }),
+      });
+      const json = (await res.json()) as { error?: { message?: string } };
+      if (!res.ok) throw new Error(json.error?.message || 'Failed to update item');
+      setMessage(isActive ? 'Enabled' : 'Disabled');
       router.refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed');
@@ -68,38 +97,59 @@ export function MenuManager({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
+    <div className="flex h-full flex-col space-y-4 rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
       <div>
         <h3 className="font-semibold">{name}</h3>
         <p className="text-sm text-[var(--varnarc-subtle)]">Location: {location}</p>
       </div>
 
       <ul className="space-y-2">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-[var(--varnarc-border)] px-3 py-2 text-sm"
-          >
-            <div>
-              <div className="font-medium">{item.label}</div>
-              <div className="text-xs text-[var(--varnarc-subtle)]">{item.href || '—'}</div>
-            </div>
-            <button
-              type="button"
-              className="text-xs text-red-600 hover:underline"
-              onClick={() => removeItem(item.id)}
-              disabled={loading}
+        {items.map((item) => {
+          const active = item.isActive !== false;
+          return (
+            <li
+              key={item.id}
+              className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm ${
+                active
+                  ? 'border-[var(--varnarc-border)]'
+                  : 'border-dashed border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] opacity-70'
+              }`}
             >
-              Remove
-            </button>
-          </li>
-        ))}
+              <div>
+                <div className="font-medium">{item.label}</div>
+                <div className="text-xs text-[var(--varnarc-subtle)]">{item.href || '—'}</div>
+                <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--varnarc-subtle)]">
+                  {active ? 'Active' : 'Hidden'}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 text-xs font-medium">
+                  <input
+                    type="checkbox"
+                    checked={active}
+                    disabled={loading}
+                    onChange={(e) => void setItemActive(item.id, e.target.checked)}
+                  />
+                  {active ? 'Enabled' : 'Disabled'}
+                </label>
+                <button
+                  type="button"
+                  className="text-xs text-red-600 hover:underline"
+                  onClick={() => removeItem(item.id)}
+                  disabled={loading}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          );
+        })}
         {!items.length ? (
           <li className="text-sm text-[var(--varnarc-subtle)]">No items yet.</li>
         ) : null}
       </ul>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="mt-auto grid gap-3 md:grid-cols-2">
         <input
           className="h-10 rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
           placeholder="Label"

@@ -9,6 +9,7 @@ export {
   resolveAppBaseUrlFromHeaders,
   getAuth0ClientOptions,
   appBaseUrlMatchesHost,
+  shouldRunAuth0Middleware,
   AUTH0_CALLBACK_PATH,
   AUTH0_LOGIN_PATH,
   AUTH0_LOGOUT_PATH,

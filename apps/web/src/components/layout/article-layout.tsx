@@ -10,6 +10,8 @@ export function ArticleLayout({
   badges,
   children,
   sidebar,
+  articleStyle = 'default',
+  customCssClass,
 }: {
   title: string;
   excerpt?: string | null;
@@ -18,18 +20,30 @@ export function ArticleLayout({
   badges?: ReactNode;
   children: ReactNode;
   sidebar?: ReactNode;
+  articleStyle?: string;
+  customCssClass?: string | null;
 }) {
+  const classes = [
+    'article-page',
+    `article-style-${articleStyle || 'default'}`,
+    customCssClass || '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <main className="w-full bg-white">
       <div className="site-container py-8 sm:py-10">
         <Breadcrumbs items={breadcrumbs} />
         <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <article>
+          <article className={classes}>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-3xl font-extrabold tracking-tight text-[#0b1f3a]">{title}</h1>
               {badges}
             </div>
-            {publishedLabel ? <p className="mt-2 text-sm text-slate-500">{publishedLabel}</p> : null}
+            {publishedLabel ? (
+              <p className="mt-2 text-sm text-slate-500">{publishedLabel}</p>
+            ) : null}
             {excerpt ? <p className="mt-4 text-lg text-slate-600">{excerpt}</p> : null}
             <div className="mt-8">{children}</div>
           </article>

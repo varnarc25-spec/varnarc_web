@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@varnarc/ui/styles.css";
+@import "@varnarc/ui/article-content.css";
 
 :root {
   --font-size-min: 12px;

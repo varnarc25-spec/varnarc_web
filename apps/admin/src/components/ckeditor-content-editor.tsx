@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { ArticleEditorHandle } from '@/lib/ckeditor-insert';
 
 const Editor = dynamic(
   () =>
@@ -18,9 +19,23 @@ const Editor = dynamic(
 export function CkeditorContentEditor({
   value,
   onChange,
+  placeholder,
+  onReady,
+  enableSourceEditing,
 }: {
   value: string;
   onChange: (html: string) => void;
+  placeholder?: string;
+  onReady?: (editor: ArticleEditorHandle) => void;
+  enableSourceEditing?: boolean;
 }) {
-  return <Editor value={value} onChange={onChange} />;
+  return (
+    <Editor
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      onReady={onReady}
+      enableSourceEditing={enableSourceEditing}
+    />
+  );
 }

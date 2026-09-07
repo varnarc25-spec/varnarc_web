@@ -24,6 +24,18 @@ enum PublishStatus {
   @@map("publish_status")
 }
 
+enum ArticleType {
+  GENERAL
+  GUIDE
+  CALCULATOR_GUIDE
+  COMPARISON
+  HOW_TO
+  RATES
+  ELIGIBILITY
+  NEWS
+  @@map("article_type")
+}
+
 enum MediaResourceType {
   IMAGE
   VIDEO
@@ -651,6 +663,7 @@ model MenuItem {
   parentId  String?    @map("parent_id") @db.Uuid
   label     String
   href      String?
+  isActive  Boolean    @default(true) @map("is_active")
   sortOrder Int        @default(0) @map("sort_order")
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
@@ -845,6 +858,9 @@ model Article {
   publishedAt     DateTime?     @map("published_at")
   isFeatured      Boolean       @default(false) @map("is_featured")
   readingTimeMinutes Int?       @map("reading_time_minutes")
+  articleType     ArticleType   @default(GENERAL) @map("article_type")
+  articleStyle    String        @default("default") @map("article_style") @db.VarChar(80)
+  customCssClass  String?       @map("custom_css_class") @db.VarChar(80)
   metadata        Json?
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")

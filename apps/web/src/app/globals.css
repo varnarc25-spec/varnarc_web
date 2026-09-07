@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "@varnarc/ui/styles.css";
+@import "@varnarc/ui/article-content.css";
 
 :root {
   /* Logo palette: navy + orange/gold */

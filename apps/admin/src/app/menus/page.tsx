@@ -8,8 +8,16 @@ type MenuRow = {
   name: string;
   slug: string;
   location: string;
-  items: Array<{ id: string; label: string; href: string | null; sortOrder: number }>;
+  items: Array<{
+    id: string;
+    label: string;
+    href: string | null;
+    sortOrder: number;
+    isActive?: boolean;
+  }>;
 };
+
+const LOCATION_ORDER = ['header', 'footer', 'sidebar', 'mobile'];
 
 export default async function MenusPage({
   searchParams,
@@ -21,7 +29,11 @@ export default async function MenusPage({
   if (location) qs.set('location', location);
 
   const result = await apiServerFetch<MenuRow[]>(`/menus?${qs.toString()}`);
-  const menus = Array.isArray(result.data) ? result.data : [];
+  const menus = (Array.isArray(result.data) ? result.data : []).slice().sort((left, right) => {
+    const leftRank = LOCATION_ORDER.indexOf(left.location);
+    const rightRank = LOCATION_ORDER.indexOf(right.location);
+    return (leftRank === -1 ? 99 : leftRank) - (rightRank === -1 ? 99 : rightRank);
+  });
 
   return (
     <div className="space-y-6">
@@ -45,7 +57,7 @@ export default async function MenusPage({
           </CardHeader>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-2">
           {menus.map((menu) => (
             <MenuManager
               key={menu.id}

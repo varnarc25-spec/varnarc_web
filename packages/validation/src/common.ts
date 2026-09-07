@@ -65,47 +65,23 @@ export const adTypeSchema = z.enum([
   'INTERNAL',
 ]);
 
-export const adProviderSchema = z.enum([
-  'GOOGLE_ADSENSE',
-  'DIRECT',
-  'AFFILIATE',
-  'INTERNAL',
-]);
+export const adProviderSchema = z.enum(['GOOGLE_ADSENSE', 'DIRECT', 'AFFILIATE', 'INTERNAL']);
 
-export const adContentTypeSchema = z.enum([
-  'IMAGE',
-  'HTML',
-  'JAVASCRIPT',
-  'TEXT',
-  'SCRIPT_SLOT',
-]);
+export const adContentTypeSchema = z.enum(['IMAGE', 'HTML', 'JAVASCRIPT', 'TEXT', 'SCRIPT_SLOT']);
 
-export const adRotationModeSchema = z.enum([
-  'SEQUENTIAL',
-  'RANDOM',
-  'WEIGHTED',
-  'PRIORITY',
-]);
+export const adRotationModeSchema = z.enum(['SEQUENTIAL', 'RANDOM', 'WEIGHTED', 'PRIORITY']);
 
-export const businessStatusSchema = z.enum([
-  'PENDING',
-  'APPROVED',
-  'REJECTED',
-  'SUSPENDED',
-]);
+export const businessStatusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED']);
 
-export const mediaResourceTypeSchema = z.enum([
-  'IMAGE',
-  'VIDEO',
-  'RAW',
-  'DOCUMENT',
-]);
+export const mediaResourceTypeSchema = z.enum(['IMAGE', 'VIDEO', 'RAW', 'DOCUMENT']);
 
 export const seoMetadataSchema = z.object({
   title: z.string().max(200).optional().nullable(),
   description: z.string().max(500).optional().nullable(),
   canonicalUrl: z.string().url().optional().nullable().or(z.literal('')),
   ogImage: z.string().url().optional().nullable().or(z.literal('')),
+  ogTitle: z.string().max(200).optional().nullable(),
+  ogDescription: z.string().max(500).optional().nullable(),
   robots: z.string().max(120).optional().nullable(),
   metaKeywords: z.string().max(500).optional().nullable(),
   twitterCard: z.enum(['summary', 'summary_large_image']).optional().nullable(),

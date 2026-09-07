@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isAuth0Configured, isAuthUiEnabled, appBaseUrlMatchesHost } from '@varnarc/auth';
+import { shouldRunAuth0Middleware } from '@varnarc/auth';
 import { auth0 } from './lib/auth0';
 import { getMaintenanceStatus } from './lib/maintenance';
 import { resolveSeoRedirect } from './lib/seo-redirects';
@@ -72,11 +72,13 @@ export async function middleware(request: NextRequest) {
     }
 
     const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
-    const authReady =
-      isAuth0Configured() ||
-      (isAuthRoute && isAuthUiEnabled() && Boolean(process.env.AUTH0_DOMAIN?.trim()));
+    const authReady = shouldRunAuth0Middleware({
+      pathname,
+      forwardedHost: host,
+      nextUrlHost: request.nextUrl.host,
+    });
 
-    if (!authReady || !appBaseUrlMatchesHost(request.nextUrl.host)) {
+    if (!authReady) {
       return NextResponse.next();
     }
 

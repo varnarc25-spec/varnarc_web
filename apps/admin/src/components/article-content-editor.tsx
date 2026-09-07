@@ -1,17 +1,30 @@
 'use client';
 
-import { useState } from 'react';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { useRef, useState } from 'react';
+import { CkeditorContentEditor } from '@/components/ckeditor-content-editor';
 import { ArticleContentPreview } from '@/components/article-content-preview';
+import { ArticleBlockToolbar } from '@/components/article-block-toolbar';
+import { insertEditorHtml, type ArticleEditorHandle } from '@/lib/ckeditor-insert';
 
 export function ArticleContentEditor({
   value,
   onChange,
+  articleStyle = 'default',
 }: {
   value: string;
   onChange: (html: string) => void;
+  articleStyle?: string;
 }) {
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  const editorRef = useRef<ArticleEditorHandle | null>(null);
+
+  function insertBlock(html: string) {
+    if (editorRef.current) {
+      insertEditorHtml(editorRef.current, html);
+      return;
+    }
+    onChange(`${value}${html}`);
+  }
 
   return (
     <div className="space-y-2">
@@ -40,9 +53,20 @@ export function ArticleContentEditor({
         </button>
       </div>
       {mode === 'edit' ? (
-        <RichTextEditor value={value} onChange={onChange} />
+        <>
+          <ArticleBlockToolbar onInsert={insertBlock} />
+          <CkeditorContentEditor
+            value={value}
+            onChange={onChange}
+            placeholder="Write the article…"
+            enableSourceEditing
+            onReady={(editor) => {
+              editorRef.current = editor as ArticleEditorHandle;
+            }}
+          />
+        </>
       ) : (
-        <ArticleContentPreview content={value} />
+        <ArticleContentPreview content={value} articleStyle={articleStyle} />
       )}
     </div>
   );

@@ -25,11 +25,34 @@ export const createTagSchema = z.object({
 
 export const updateTagSchema = createTagSchema.partial();
 
+export const articleTypeSchema = z.enum([
+  'GENERAL',
+  'GUIDE',
+  'CALCULATOR_GUIDE',
+  'COMPARISON',
+  'HOW_TO',
+  'RATES',
+  'ELIGIBILITY',
+  'NEWS',
+]);
+
+export const articleStyleSchema = z.enum([
+  'default',
+  'finance-guide',
+  'calculator-guide',
+  'comparison',
+  'automobile-guide',
+  'construction-guide',
+]);
+
 export const createArticleSchema = z.object({
   title: z.string().min(1).max(300),
   slug: slugSchema,
   excerpt: z.string().max(1000).optional().nullable(),
   content: z.string().min(1),
+  articleType: articleTypeSchema.default('GENERAL'),
+  articleStyle: articleStyleSchema.default('default'),
+  customCssClass: z.string().max(80).optional().nullable(),
   categoryId: uuidSchema.optional().nullable(),
   featuredImageId: uuidSchema.optional().nullable(),
   heroImageId: uuidSchema.optional().nullable(),
@@ -79,6 +102,7 @@ export const createMenuItemSchema = z.object({
   href: z.string().max(500).optional().nullable(),
   parentId: uuidSchema.optional().nullable(),
   sortOrder: z.number().int().nonnegative().default(0),
+  isActive: z.boolean().default(true),
 });
 
 export const updateMenuItemSchema = createMenuItemSchema.partial();

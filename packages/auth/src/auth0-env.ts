@@ -109,9 +109,9 @@ export function appBaseUrlMatchesHost(
   host: string,
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
 ): boolean {
-  const normalizedHost = host.trim().toLowerCase();
+  const normalizedHost = host.trim().toLowerCase().replace(/:\d+$/, '');
   if (!normalizedHost) return false;
-  if (normalizedHost.startsWith('0.0.0.0') || normalizedHost.startsWith('127.0.0.1')) {
+  if (normalizedHost === '0.0.0.0' || normalizedHost === '127.0.0.1') {
     return false;
   }
 
@@ -122,10 +122,31 @@ export function appBaseUrlMatchesHost(
   }
 
   try {
-    return new URL(fromEnv).host.toLowerCase() === normalizedHost;
+    return new URL(fromEnv).hostname.toLowerCase() === normalizedHost;
   } catch {
     return false;
   }
+}
+
+/** Whether middleware should invoke Auth0 (login/callback must not fall through to 404). */
+export function shouldRunAuth0Middleware(input: {
+  pathname: string;
+  forwardedHost?: string | null;
+  nextUrlHost?: string | null;
+  env?: Record<string, string | undefined>;
+}): boolean {
+  const env = input.env ?? (process.env as Record<string, string | undefined>);
+  const pathname = input.pathname;
+  const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
+  const authReady =
+    isAuth0Configured(env) ||
+    (isAuthRoute && isAuthUiEnabled(env) && Boolean(env.AUTH0_DOMAIN?.trim()));
+
+  if (!authReady) return false;
+  if (isAuthRoute) return true;
+
+  const publicHost = input.forwardedHost?.split(',')[0]?.trim() || input.nextUrlHost || '';
+  return appBaseUrlMatchesHost(publicHost, env);
 }
 
 export const AUTH0_CALLBACK_PATH = '/auth/callback';

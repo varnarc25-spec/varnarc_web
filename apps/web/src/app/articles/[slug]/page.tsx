@@ -8,8 +8,8 @@ import {
 import { ArticleSubscribeBar } from '@/components/articles/article-subscribe-bar';
 import { BookmarkButton } from '@/components/bookmark-button';
 import { ArticleAiSummarizer } from '@/components/articles/article-ai-summarizer';
-import { MarkdownContent } from '@/components/shared/markdown-content';
-import { JsonLd, articleJsonLd, breadcrumbJsonLd } from '@/components/seo/json-ld';
+import { ArticleBody } from '@/components/articles/article-body';
+import { JsonLd, articleJsonLd, breadcrumbJsonLd, faqJsonLd } from '@/components/seo/json-ld';
 import { buildSeoMetadata } from '@/lib/seo-metadata';
 import { fetchArticleBySlug } from '@/services/content';
 import { apiPublicFetch, ApiError } from '@/services/api-client';
@@ -21,6 +21,7 @@ import { SponsoredLabel } from '@/components/business/sponsored-label';
 import { CmsMediaImage } from '@/components/cms/cms-media-image';
 import { parseArticleSponsor } from '@/lib/article-sponsor';
 import { getPublicSiteUrlSync } from '@/lib/public-site-url';
+import { parseFaqItemsFromHtml, estimateReadingMinutes } from '@varnarc/validation';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -31,16 +32,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const og =
       data.ogImage?.secureUrl ||
       data.ogImage?.url ||
+      data.heroImage?.secureUrl ||
+      data.heroImage?.url ||
       data.featuredImage?.secureUrl ||
       data.featuredImage?.url ||
+      data.seo?.ogImage ||
       null;
+    const seoTitle = data.seo?.title || data.title;
+    const seoDescription = data.seo?.description || data.excerpt;
     return buildSeoMetadata({
       entityType: 'article',
       entityId: data.id,
       path: `/articles/${slug}`,
-      title: data.title,
-      description: data.excerpt,
+      title: seoTitle,
+      description: seoDescription,
       image: og,
+      canonicalUrl: data.seo?.canonicalUrl,
     });
   } catch {
     return { title: 'Article' };
@@ -62,6 +69,37 @@ export default async function ArticleDetailPage({ params }: Props) {
     }));
     const siteUrl = getPublicSiteUrlSync();
     const url = `${siteUrl}/articles/${slug}`;
+    const crumbs = [
+      { name: 'Home', url: siteUrl },
+      { name: 'Articles', url: `${siteUrl}/articles` },
+      ...(data.category
+        ? [{ name: data.category.name, url: `${siteUrl}/articles?category=${data.category.slug}` }]
+        : []),
+      { name: data.title, url },
+    ];
+    const faqItems = parseFaqItemsFromHtml(data.content || '');
+    const schema = [
+      breadcrumbJsonLd(crumbs),
+      articleJsonLd({
+        title: data.title,
+        description: data.excerpt,
+        url,
+        datePublished: data.publishedAt,
+        dateModified: data.updatedAt || data.publishedAt,
+        authorName: data.author?.displayName || data.author?.username || null,
+        image:
+          data.ogImage?.secureUrl ||
+          data.ogImage?.url ||
+          data.heroImage?.secureUrl ||
+          data.heroImage?.url ||
+          data.featuredImage?.secureUrl ||
+          data.featuredImage?.url ||
+          null,
+      }),
+      ...(faqItems.length >= 2 ? [faqJsonLd(faqItems)] : []),
+    ];
+    const reading =
+      data.readingTimeMinutes || estimateReadingMinutes(data.content || data.excerpt || '');
     return (
       <>
         <RecordContentView
@@ -69,31 +107,16 @@ export default async function ArticleDetailPage({ params }: Props) {
           entityId={data.id}
           metadata={{ slug, title: data.title }}
         />
-        <JsonLd
-          data={[
-            breadcrumbJsonLd([
-              { name: 'Home', url: siteUrl },
-              { name: 'Articles', url: `${siteUrl}/articles` },
-              { name: data.title, url },
-            ]),
-            articleJsonLd({
-              title: data.title,
-              description: data.excerpt,
-              url,
-              datePublished: data.publishedAt,
-              dateModified: data.publishedAt,
-              authorName: data.author?.displayName || data.author?.username || null,
-              image: data.featuredImage?.secureUrl || data.featuredImage?.url || null,
-            }),
-          ]}
-        />
+        <JsonLd data={schema} />
         <ArticleLayout
           title={data.title}
           excerpt={data.excerpt}
+          articleStyle={data.articleStyle || 'default'}
+          customCssClass={data.customCssClass}
           badges={sponsor.sponsored ? <SponsoredLabel /> : null}
           publishedLabel={[
             formatDate(data.publishedAt),
-            data.readingTimeMinutes ? `${data.readingTimeMinutes} min read` : null,
+            `${reading} min read`,
             data.author?.username ? `By ${data.author.displayName || data.author.username}` : null,
           ]
             .filter(Boolean)
@@ -101,6 +124,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           breadcrumbs={[
             { label: 'Home', href: '/' },
             { label: 'Articles', href: '/articles' },
+            ...(data.category ? [{ label: data.category.name }] : []),
             { label: data.title },
           ]}
         >
@@ -183,7 +207,7 @@ export default async function ArticleDetailPage({ params }: Props) {
             );
           })()}
           <ArticleAiSummarizer title={data.title} content={data.content || data.excerpt || ''} />
-          <MarkdownContent content={data.content || data.excerpt || ''} />
+          <ArticleBody content={data.content || data.excerpt || ''} />
           {data.related?.length ? (
             <section className="mt-12 border-t border-[var(--varnarc-border)] pt-8">
               <h2 className="mb-4 text-xl font-semibold">Related articles</h2>
@@ -204,6 +228,10 @@ export default async function ArticleDetailPage({ params }: Props) {
               </ul>
             </section>
           ) : null}
+          <p className="mt-10 text-sm text-[var(--varnarc-subtle)]">
+            This article is for general information. It is not financial advice. Confirm current
+            rates, fees, and eligibility with the lender or professional you work with.
+          </p>
           <ArticleCommentsSection
             articleId={data.id}
             initialComments={commentsPayload.data.items}

@@ -13,6 +13,12 @@ import type {
   ScheduleContentInput,
   UpdateArticleInput,
 } from '@varnarc/validation';
+import {
+  sanitizeArticleHtml,
+  sanitizeCustomCssClass,
+  normalizeArticleStyle,
+  normalizeArticleType,
+} from '@varnarc/validation';
 import type { CurrentUser } from '@varnarc/types';
 import { REPOS } from '../../../database/database.module';
 import {
@@ -169,17 +175,24 @@ export class ArticlesService {
       categoryId,
       ...rest
     } = input;
-    const readingTimeMinutes = rest.readingTimeMinutes ?? estimateReadingTimeMinutes(rest.content);
+    const content = sanitizeArticleHtml(rest.content);
+    const readingTimeMinutes = rest.readingTimeMinutes ?? estimateReadingTimeMinutes(content);
+    const articleType = normalizeArticleType(rest.articleType);
+    const articleStyle = normalizeArticleStyle(rest.articleStyle);
+    const customCssClass = sanitizeCustomCssClass(rest.customCssClass);
 
     const article = await this.repos.articles.create({
       title: rest.title,
       slug: rest.slug,
       excerpt: rest.excerpt ?? null,
-      content: rest.content,
+      content,
       status: rest.status,
       publishedAt: rest.publishedAt ?? undefined,
       isFeatured: rest.isFeatured ?? false,
       readingTimeMinutes,
+      articleType,
+      articleStyle,
+      customCssClass,
       metadata: rest.metadata as never,
       author: { connect: { id: authorId } },
       ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
@@ -202,7 +215,12 @@ export class ArticlesService {
         canonicalUrl: seo.canonicalUrl || undefined,
         ogImage: seo.ogImage || undefined,
         robots: seo.robots ?? undefined,
-        structuredData: seo.structuredData as never,
+        metaKeywords: seo.metaKeywords ?? undefined,
+        structuredData: {
+          ...((seo.structuredData as object) || {}),
+          ogTitle: seo.ogTitle ?? undefined,
+          ogDescription: seo.ogDescription ?? undefined,
+        } as never,
       });
     }
 
@@ -243,14 +261,25 @@ export class ArticlesService {
       await this.repos.articles.setRelated(id, relatedIds);
     }
 
-    const content = rest.content ?? existing.content;
+    const content = sanitizeArticleHtml(rest.content ?? existing.content);
     const readingTimeMinutes =
       rest.readingTimeMinutes !== undefined
         ? rest.readingTimeMinutes
         : estimateReadingTimeMinutes(content);
 
+    const articleType =
+      rest.articleType !== undefined ? normalizeArticleType(rest.articleType) : undefined;
+    const articleStyle =
+      rest.articleStyle !== undefined ? normalizeArticleStyle(rest.articleStyle) : undefined;
+    const customCssClass =
+      rest.customCssClass !== undefined ? sanitizeCustomCssClass(rest.customCssClass) : undefined;
+
     await this.repos.articles.update(id, {
       ...rest,
+      content: rest.content !== undefined ? content : undefined,
+      articleType,
+      articleStyle,
+      customCssClass,
       readingTimeMinutes,
       metadata: rest.metadata as never,
       ...(categoryId !== undefined
@@ -283,7 +312,12 @@ export class ArticlesService {
         canonicalUrl: seo.canonicalUrl || undefined,
         ogImage: seo.ogImage || undefined,
         robots: seo.robots ?? undefined,
-        structuredData: seo.structuredData as never,
+        metaKeywords: seo.metaKeywords ?? undefined,
+        structuredData: {
+          ...((seo.structuredData as object) || {}),
+          ogTitle: seo.ogTitle ?? undefined,
+          ogDescription: seo.ogDescription ?? undefined,
+        } as never,
       });
     }
 
@@ -450,6 +484,15 @@ export class ArticlesService {
         featuredImageId: source.featuredImageId,
         heroImageId: source.heroImageId,
         ogImageId: source.ogImageId,
+        articleType: normalizeArticleType(
+          (source as typeof source & { articleType?: string }).articleType,
+        ),
+        articleStyle: normalizeArticleStyle(
+          (source as typeof source & { articleStyle?: string }).articleStyle,
+        ),
+        customCssClass: sanitizeCustomCssClass(
+          (source as typeof source & { customCssClass?: string | null }).customCssClass,
+        ),
         tagIds,
         relatedIds,
         metadata: source.metadata as never,

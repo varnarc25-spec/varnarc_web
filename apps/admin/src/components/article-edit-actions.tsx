@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@varnarc/ui';
 import { RelatedArticlesPicker } from '@/components/related-articles-picker';
 import { ArticleAiPanel } from '@/components/article-ai-panel';
@@ -10,6 +10,15 @@ import { ArticleSeoGenerator } from '@/components/article-seo-generator';
 import { ArticleFeaturedImageField } from '@/components/article-featured-image-field';
 import { EntityMediaField, type EntityMediaValue } from '@/components/entity-media-field';
 import { DateTimeLocalInput } from '@/components/datetime-local-input';
+import { ArticleTypeSelector } from '@/components/article-type-selector';
+import { ArticleQualityHints } from '@/components/article-quality-hints';
+import { ArticleContentPreview } from '@/components/article-content-preview';
+import {
+  normalizeArticleStyle,
+  normalizeArticleType,
+  type ArticleStyle,
+  type ArticleType,
+} from '@varnarc/validation';
 
 type CategoryOption = { id: string; name: string; slug: string; parentId?: string | null };
 
@@ -19,10 +28,6 @@ function toLocalInputValue(iso: string | null | undefined) {
   if (Number.isNaN(d.getTime())) return '';
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function looksLikeHtml(content: string) {
-  return /^\s*</.test(content) || /<(?:p|h[1-6]|ul|ol|blockquote|div|img|iframe)\b/i.test(content);
 }
 
 function apiErrorMessage(json: { error?: { message?: string; code?: string } }, fallback: string) {
@@ -69,6 +74,13 @@ export function ArticleEditActions({
   seoTitle = null,
   seoDescription = null,
   seoKeywords = null,
+  seoCanonicalUrl = null,
+  seoRobots = null,
+  seoOgTitle = null,
+  seoOgDescription = null,
+  articleType = 'GENERAL',
+  articleStyle = 'default',
+  customCssClass = null,
   metadata = null,
 }: {
   articleId: string;
@@ -91,6 +103,13 @@ export function ArticleEditActions({
   seoTitle?: string | null;
   seoDescription?: string | null;
   seoKeywords?: string | null;
+  seoCanonicalUrl?: string | null;
+  seoRobots?: string | null;
+  seoOgTitle?: string | null;
+  seoOgDescription?: string | null;
+  articleType?: string | null;
+  articleStyle?: string | null;
+  customCssClass?: string | null;
   metadata?: unknown;
 }) {
   const sponsorDefaults = parseSponsorMeta(metadata);
@@ -113,6 +132,13 @@ export function ArticleEditActions({
     seoTitle: seoTitle || '',
     seoDescription: seoDescription || '',
     seoKeywords: seoKeywords || '',
+    seoCanonicalUrl: seoCanonicalUrl || '',
+    seoRobots: seoRobots || 'index,follow',
+    seoOgTitle: seoOgTitle || '',
+    seoOgDescription: seoOgDescription || '',
+    articleType: normalizeArticleType(articleType),
+    articleStyle: normalizeArticleStyle(articleStyle),
+    customCssClass: customCssClass || '',
     sponsored: sponsorDefaults.sponsored,
     sponsorName: sponsorDefaults.sponsorName,
     sponsorUrl: sponsorDefaults.sponsorUrl,
@@ -123,6 +149,7 @@ export function ArticleEditActions({
   const [autosaveState, setAutosaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const skipAutosave = useRef(true);
   const formRef = useRef(form);
   const metadataRef = useRef(metadata);
@@ -182,6 +209,9 @@ export function ArticleEditActions({
       heroImageId: f.heroImageId || null,
       ogImageId: f.ogImageId || null,
       relatedIds: f.relatedIds,
+      articleType: f.articleType,
+      articleStyle: f.articleStyle,
+      customCssClass: f.customCssClass || null,
       metadata: {
         ...baseMeta,
         sponsored: f.sponsored,
@@ -197,6 +227,10 @@ export function ArticleEditActions({
         title: f.seoTitle || null,
         description: f.seoDescription || null,
         metaKeywords: f.seoKeywords || null,
+        canonicalUrl: f.seoCanonicalUrl || null,
+        robots: f.seoRobots || null,
+        ogTitle: f.seoOgTitle || null,
+        ogDescription: f.seoOgDescription || null,
       },
     };
   }, [articleId]);
@@ -217,6 +251,7 @@ export function ArticleEditActions({
         });
         const json = (await res.json()) as { error?: { message?: string; code?: string } };
         if (!res.ok) throw new Error(apiErrorMessage(json, 'Failed to save'));
+        setDirty(false);
         if (opts?.silent) {
           setAutosaveState('saved');
         } else {
@@ -239,6 +274,7 @@ export function ArticleEditActions({
       skipAutosave.current = false;
       return;
     }
+    setDirty(true);
     const t = setTimeout(() => {
       void save({ silent: true });
     }, 2500);
@@ -257,8 +293,23 @@ export function ArticleEditActions({
     form.seoTitle,
     form.seoDescription,
     form.seoKeywords,
+    form.seoCanonicalUrl,
+    form.seoRobots,
+    form.articleType,
+    form.articleStyle,
+    form.customCssClass,
     save,
   ]);
+
+  useEffect(() => {
+    const onLeave = (event: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onLeave);
+    return () => window.removeEventListener('beforeunload', onLeave);
+  }, [dirty]);
 
   async function publish() {
     setLoading(true);
@@ -399,20 +450,7 @@ export function ArticleEditActions({
     setMessage(null);
     try {
       await save({ silent: true });
-      const res = await fetch(`/api/admin/cms/articles/preview?articleId=${articleId}`);
-      const json = (await res.json()) as {
-        data?: { title?: string; content?: string; excerpt?: string | null };
-        error?: { message?: string };
-      };
-      if (!res.ok) throw new Error(json.error?.message || 'Preview failed');
-      const titleText = json.data?.title || form.title;
-      const body = json.data?.content || form.content;
-      const bodyHtml = looksLikeHtml(body)
-        ? body
-        : `<pre style="white-space:pre-wrap;font:inherit">${escapeHtml(body)}</pre>`;
-      setPreviewHtml(
-        `<article><h1>${escapeHtml(titleText)}</h1><p><em>${escapeHtml(json.data?.excerpt || '')}</em></p>${bodyHtml}</article>`,
-      );
+      setPreviewHtml(form.content);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed');
     } finally {
@@ -476,13 +514,26 @@ export function ArticleEditActions({
           onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
         />
       </label>
+      <ArticleTypeSelector
+        articleType={form.articleType as ArticleType}
+        articleStyle={form.articleStyle as ArticleStyle}
+        customCssClass={form.customCssClass}
+        onChange={(next) => setForm((f) => ({ ...f, ...next }))}
+      />
       <label className="block text-sm">
         <span className="mb-1 block text-[var(--varnarc-subtle)]">Content</span>
         <ArticleContentEditor
           value={form.content}
           onChange={(content) => setForm((f) => ({ ...f, content }))}
+          articleStyle={form.articleStyle}
         />
       </label>
+      <ArticleQualityHints
+        title={form.title}
+        seoTitle={form.seoTitle}
+        metaDescription={form.seoDescription}
+        content={form.content}
+      />
 
       <div className="rounded-lg border border-[var(--varnarc-border)] bg-[var(--varnarc-surface)] p-4">
         <h3 className="mb-3 text-sm font-semibold">SEO metadata</h3>
@@ -523,6 +574,43 @@ export function ArticleEditActions({
               className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
               value={form.seoKeywords}
               onChange={(e) => setForm((f) => ({ ...f, seoKeywords: e.target.value }))}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">Canonical URL override</span>
+            <input
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={form.seoCanonicalUrl}
+              onChange={(e) => setForm((f) => ({ ...f, seoCanonicalUrl: e.target.value }))}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">Robots</span>
+            <select
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={form.seoRobots}
+              onChange={(e) => setForm((f) => ({ ...f, seoRobots: e.target.value }))}
+            >
+              <option value="index,follow">Index, follow</option>
+              <option value="noindex,follow">Noindex, follow</option>
+              <option value="index,nofollow">Index, nofollow</option>
+              <option value="noindex,nofollow">Noindex, nofollow</option>
+            </select>
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">OG title override</span>
+            <input
+              className="h-10 w-full rounded-md border border-[var(--varnarc-border)] px-3"
+              value={form.seoOgTitle}
+              onChange={(e) => setForm((f) => ({ ...f, seoOgTitle: e.target.value }))}
+            />
+          </label>
+          <label className="text-sm">
+            <span className="mb-1 block text-[var(--varnarc-subtle)]">OG description override</span>
+            <textarea
+              className="min-h-16 w-full rounded-md border border-[var(--varnarc-border)] px-3 py-2 text-sm"
+              value={form.seoOgDescription}
+              onChange={(e) => setForm((f) => ({ ...f, seoOgDescription: e.target.value }))}
             />
           </label>
         </div>
@@ -737,21 +825,16 @@ export function ArticleEditActions({
                 Close
               </Button>
             </div>
-            <div
-              className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
-            />
+            <article className={`article-page article-style-${form.articleStyle}`}>
+              <h1 className="text-3xl font-extrabold tracking-tight">{form.title}</h1>
+              {form.excerpt ? <p className="mt-3 text-lg text-slate-600">{form.excerpt}</p> : null}
+              <div className="mt-6">
+                <ArticleContentPreview content={previewHtml} articleStyle={form.articleStyle} />
+              </div>
+            </article>
           </div>
         </div>
       ) : null}
     </div>
   );
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }

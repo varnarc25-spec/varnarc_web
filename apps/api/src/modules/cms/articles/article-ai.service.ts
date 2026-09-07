@@ -202,7 +202,8 @@ export class ArticleAiService {
     const system = [
       'You are an expert SEO content writer for Varnarc, a finance and home tools portal for India.',
       'Write factual, helpful articles. Do not invent specific interest rates, prices, or legal claims.',
-      'Use markdown with ## headings, bullet lists, and short paragraphs.',
+      'Return CKEditor-compatible semantic HTML only: h2/h3 headings, p, ul/ol, tables, and optional Varnarc article-block classes.',
+      'Never output h1, html/head/body, inline CSS, scripts, or markdown fences.',
       'Return valid JSON only.',
     ].join(' ');
 
@@ -217,7 +218,7 @@ export class ArticleAiService {
       '- title (string, compelling, under 80 chars)',
       '- slug (kebab-case, lowercase, no special chars)',
       '- excerpt (string, 1-2 sentences, under 200 chars)',
-      '- content (markdown body, 600-1200 words, include Overview, key sections, and Bottom line)',
+      '- content (HTML body, 600-1200 words, start with an introduction paragraph then h2 sections; no h1)',
       '- seo: { title, description (under 155 chars), metaKeywords (comma-separated) }',
       '- suggestedRelatedTopics: array of 3-5 follow-up article ideas',
     ]
