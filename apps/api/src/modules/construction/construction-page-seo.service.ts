@@ -9,6 +9,7 @@ import {
   type ConstructionPageKey,
   type UpdateConstructionPageSeoInput,
 } from '@varnarc/validation';
+import { appMediaPublicUrl } from '../media/app-media-storage';
 import { PRISMA } from '../../database/database.module';
 
 type PageStructuredData = {
@@ -29,6 +30,38 @@ function parsePageStructuredData(value: unknown): PageStructuredData {
     heroImageMediaId: typeof row.heroImageMediaId === 'string' ? row.heroImageMediaId : null,
     heroImageAlt: typeof row.heroImageAlt === 'string' ? row.heroImageAlt : null,
   };
+}
+
+function isUnusableHeroUrl(url: string | null | undefined) {
+  if (!url?.trim()) return true;
+  const value = url.trim();
+  if (value === 'pending') return true;
+  try {
+    const host = new URL(value, 'https://varnarc.com').hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+  } catch {
+    return true;
+  }
+}
+
+async function resolveHeroImageUrl(
+  db: PrismaClient,
+  mediaId: string | null,
+  storedUrl: string | null,
+) {
+  if (mediaId) {
+    const asset = await db.mediaAsset.findFirst({
+      where: { id: mediaId, deletedAt: null },
+      select: { id: true, secureUrl: true, url: true },
+    });
+    if (asset) {
+      const live = asset.secureUrl || asset.url;
+      if (live && !isUnusableHeroUrl(live) && live !== 'pending') return live;
+      return appMediaPublicUrl(asset.id);
+    }
+    return appMediaPublicUrl(mediaId);
+  }
+  return isUnusableHeroUrl(storedUrl) ? null : storedUrl;
 }
 
 @Injectable()
@@ -63,14 +96,11 @@ export class ConstructionPageSeoService {
       },
     });
     const structured = parsePageStructuredData(meta?.structuredData);
-    let heroImageUrl = structured.heroImageUrl ?? null;
-    if (!heroImageUrl && structured.heroImageMediaId) {
-      const asset = await this.db.mediaAsset.findFirst({
-        where: { id: structured.heroImageMediaId, deletedAt: null },
-        select: { secureUrl: true, url: true },
-      });
-      heroImageUrl = asset?.secureUrl || asset?.url || null;
-    }
+    const heroImageUrl = await resolveHeroImageUrl(
+      this.db,
+      structured.heroImageMediaId ?? null,
+      structured.heroImageUrl ?? null,
+    );
 
     return {
       pageKey,
@@ -99,17 +129,20 @@ export class ConstructionPageSeoService {
       },
     });
     const existingStructured = parsePageStructuredData(existing?.structuredData);
+    const nextHeroMediaId =
+      input.heroImageMediaId !== undefined
+        ? input.heroImageMediaId || null
+        : (existingStructured.heroImageMediaId ?? null);
+    const nextHeroUrlInput =
+      input.heroImageUrl !== undefined
+        ? input.heroImageUrl?.trim() || null
+        : (existingStructured.heroImageUrl ?? null);
+    const nextHeroUrl = await resolveHeroImageUrl(this.db, nextHeroMediaId, nextHeroUrlInput);
     const structuredData: PageStructuredData = {
       h1: input.h1 !== undefined ? input.h1 : (existingStructured.h1 ?? defaults.h1),
       intro: input.intro !== undefined ? input.intro : (existingStructured.intro ?? defaults.intro),
-      heroImageUrl:
-        input.heroImageUrl !== undefined
-          ? input.heroImageUrl?.trim() || null
-          : (existingStructured.heroImageUrl ?? null),
-      heroImageMediaId:
-        input.heroImageMediaId !== undefined
-          ? input.heroImageMediaId || null
-          : (existingStructured.heroImageMediaId ?? null),
+      heroImageUrl: nextHeroUrl,
+      heroImageMediaId: nextHeroMediaId,
       heroImageAlt:
         input.heroImageAlt !== undefined
           ? input.heroImageAlt?.trim() || null

@@ -33,6 +33,8 @@ export type CmsMediaImageProps = {
   media?: string;
   objectFit?: 'cover' | 'contain';
   decoding?: 'async' | 'auto' | 'sync';
+  /** Skip the Next image optimizer (CMS/API files that are not on the allowlist). */
+  unoptimized?: boolean;
 };
 
 const TRANSPARENT_PIXEL =
@@ -55,6 +57,9 @@ function canUseNextImage(src: string) {
     const host = new URL(src).hostname;
     return (
       host === 'storage.googleapis.com' ||
+      host.endsWith('.googleapis.com') ||
+      host === 'api.varnarc.com' ||
+      host.endsWith('.run.app') ||
       host.endsWith('.googleusercontent.com') ||
       host === 'res.cloudinary.com' ||
       host.endsWith('.cloudinary.com')
@@ -132,6 +137,7 @@ export function CmsMediaImage({
   media,
   objectFit = 'cover',
   decoding = 'async',
+  unoptimized = false,
 }: CmsMediaImageProps) {
   const w = width && width > 0 ? width : 16;
   const h = height && height > 0 ? height : 16;
@@ -169,7 +175,7 @@ export function CmsMediaImage({
         />
       </picture>
     );
-  } else if (canUseNextImage(src)) {
+  } else if (!unoptimized && canUseNextImage(src)) {
     image = (
       <Image
         src={src}

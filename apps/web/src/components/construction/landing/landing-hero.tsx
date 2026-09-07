@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { AskConstructionSearch } from '@/components/construction/ask/ask-construction-search';
 import { ConstructionHouseIllustration } from '@/components/construction/construction-dashboard-chrome';
 import { CmsMediaImage } from '@/components/cms/cms-media-image';
+import { resolvePublicCmsMediaUrl } from '@/lib/cms-media-url';
 import { cn, cx } from '@/components/construction/styles';
 import { LANDING_SEARCH_EXAMPLES } from '@/lib/construction/landing';
 import { resolveAskConstructionQuery, askResultsPath } from '@/lib/construction/ask';
@@ -21,15 +22,17 @@ export function ConstructionLandingHero({
   intro,
   imageUrl,
   imageAlt,
+  imageMediaId,
 }: {
   title?: string | null;
   intro?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  imageMediaId?: string | null;
 }) {
   const heading = title?.trim() || DEFAULT_TITLE;
   const subtitle = intro?.trim() || DEFAULT_INTRO;
-  const photo = imageUrl?.trim() || null;
+  const photo = resolvePublicCmsMediaUrl(imageUrl, imageMediaId);
   const router = useRouter();
   const [sticky, setSticky] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
@@ -97,6 +100,7 @@ export function ConstructionLandingHero({
                     className="h-full w-full"
                     imgClassName="h-full w-full object-cover"
                     objectFit="cover"
+                    unoptimized
                     priority
                   />
                 </div>
