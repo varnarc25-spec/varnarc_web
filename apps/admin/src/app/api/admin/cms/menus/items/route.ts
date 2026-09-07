@@ -1,24 +1,10 @@
-import { NextResponse } from 'next/server';
-import { getApiAccessToken } from '@/lib/api';
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+import { proxyAdminApi } from '@/lib/admin-api-proxy';
 
 export async function POST(request: Request) {
-  const token = await getApiAccessToken();
-  if (!token) {
-    return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
-  }
-
   const body = (await request.json()) as Record<string, unknown> & { menuId: string };
   const { menuId, ...rest } = body;
-  const res = await fetch(`${apiUrl}/menus/${menuId}/items`, {
+  return proxyAdminApi(`/menus/${menuId}/items`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(rest),
   });
-  const json = await res.json().catch(() => ({}));
-  return NextResponse.json(json, { status: res.status });
 }

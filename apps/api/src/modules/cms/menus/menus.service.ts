@@ -120,8 +120,11 @@ export class MenusService {
   async updateItem(menuId: string, itemId: string, input: UpdateMenuItemInput, actorId: string) {
     const menu = await this.getById(menuId);
     const { parentId, ...rest } = input;
+    const data = Object.fromEntries(
+      Object.entries(rest).filter(([, value]) => value !== undefined),
+    ) as Omit<UpdateMenuItemInput, 'parentId'>;
     await this.repos.menus.updateItem(itemId, {
-      ...rest,
+      ...data,
       ...(parentId !== undefined
         ? parentId
           ? { parent: { connect: { id: parentId } } }

@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getApiAccessToken, getApiBaseUrl } from '@/lib/api';
 
-export async function proxyAdminApi(path: string, init: RequestInit = {}): Promise<NextResponse> {
+export async function proxyAdminApi(path: string, init: RequestInit = {}) {
   const token = await getApiAccessToken();
   if (!token) {
     return NextResponse.json({ error: { message: 'Not authenticated' } }, { status: 401 });
   }
 
+  const apiUrl = getApiBaseUrl();
   try {
-    const apiUrl = getApiBaseUrl();
     const res = await fetch(`${apiUrl}${path.startsWith('/') ? path : `/${path}`}`, {
       ...init,
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
         ...init.headers,
       },
@@ -22,6 +23,6 @@ export async function proxyAdminApi(path: string, init: RequestInit = {}): Promi
   } catch (error) {
     const message =
       error instanceof Error && error.message ? error.message : 'API server unreachable';
-    return NextResponse.json({ success: false, error: { message } }, { status: 503 });
+    return NextResponse.json({ error: { message } }, { status: 503 });
   }
 }

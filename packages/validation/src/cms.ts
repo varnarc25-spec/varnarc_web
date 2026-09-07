@@ -105,7 +105,13 @@ export const createMenuItemSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const updateMenuItemSchema = createMenuItemSchema.partial();
+export const updateMenuItemSchema = z.object({
+  label: z.string().min(1).max(150).optional(),
+  href: z.string().max(500).optional().nullable(),
+  parentId: uuidSchema.optional().nullable(),
+  sortOrder: z.number().int().nonnegative().optional(),
+  isActive: z.boolean().optional(),
+});
 
 export const reorderMenuItemsSchema = z.object({
   orderedIds: z.array(uuidSchema).min(1),
