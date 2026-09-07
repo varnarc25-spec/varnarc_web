@@ -99,6 +99,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: '/construction', label: 'Overview', permission: PERMISSIONS.CONSTRUCTION_VIEW },
       {
+        href: '/construction/seo',
+        label: 'Home page',
+        permission: PERMISSIONS.CONSTRUCTION_VIEW,
+      },
+      {
         href: '/construction/categories',
         label: 'Categories',
         permission: PERMISSIONS.CONSTRUCTION_VIEW,

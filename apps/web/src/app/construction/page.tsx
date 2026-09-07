@@ -5,6 +5,7 @@ import {
   fetchConstructionFaqs,
   fetchConstructionGuides,
   fetchConstructionMaterials,
+  fetchConstructionPageSeo,
   fetchConstructionProjects,
 } from '@/services/construction';
 
@@ -80,13 +81,15 @@ const FALLBACK_CALCULATORS = [
 
 export default async function ConstructionPage({ searchParams }: Props) {
   const params = await searchParams;
-  const [dashboardRes, materialsRes, guidesRes, faqsRes, projectsRes] = await Promise.all([
-    fetchConstructionDashboard(),
-    fetchConstructionMaterials({ featured: true, limit: 6 }),
-    fetchConstructionGuides(),
-    fetchConstructionFaqs(),
-    fetchConstructionProjects(),
-  ]);
+  const [dashboardRes, materialsRes, guidesRes, faqsRes, projectsRes, pageSeoRes] =
+    await Promise.all([
+      fetchConstructionDashboard(),
+      fetchConstructionMaterials({ featured: true, limit: 6 }),
+      fetchConstructionGuides(),
+      fetchConstructionFaqs(),
+      fetchConstructionProjects(),
+      fetchConstructionPageSeo('hub'),
+    ]);
 
   const calculators =
     dashboardRes.data?.relatedCalculators?.map((calc) => ({
@@ -146,6 +149,12 @@ export default async function ConstructionPage({ searchParams }: Props) {
       faqs={faqs}
       projects={projects}
       initialIntent={params.intent ?? null}
+      hero={{
+        title: pageSeoRes.data?.h1,
+        intro: pageSeoRes.data?.intro,
+        imageUrl: pageSeoRes.data?.heroImageUrl,
+        imageAlt: pageSeoRes.data?.heroImageAlt,
+      }}
     />
   );
 }

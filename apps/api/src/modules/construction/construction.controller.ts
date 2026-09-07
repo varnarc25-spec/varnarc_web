@@ -53,6 +53,7 @@ import {
   saveConstructionBudgetItemSchema,
   saveConstructionExpenseSchema,
   saveConstructionDocumentMetaSchema,
+  updateConstructionPageSeoSchema,
   type ConstructionCompareQuery,
   type ConstructionEstimateInput,
   type ConstructionEstimateQuery,
@@ -85,6 +86,7 @@ import {
   type UpdateConstructionProjectInput,
   type UpdateConstructionPriceAlertInput,
   type UpdateCostTemplateInput,
+  type UpdateConstructionPageSeoInput,
 } from '@varnarc/validation';
 import { SECURITY_RATE_LIMITS } from '@varnarc/config';
 import { Throttle } from '@nestjs/throttler';
@@ -95,6 +97,7 @@ import { CurrentUserDecorator } from '../../auth/decorators/current-user.decorat
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { ok, okCursor } from '../../common/utils/response';
 import { ConstructionService } from './construction.service';
+import { ConstructionPageSeoService } from './construction-page-seo.service';
 import { CommunityPriceReportsService } from './community-price-reports.service';
 import { PriceAlertsService } from './price-alerts.service';
 
@@ -104,6 +107,7 @@ import { PriceAlertsService } from './price-alerts.service';
 export class ConstructionController {
   constructor(
     private readonly service: ConstructionService,
+    private readonly pageSeo: ConstructionPageSeoService,
     private readonly priceAlerts: PriceAlertsService,
     private readonly communityPrices: CommunityPriceReportsService,
   ) {}
@@ -120,6 +124,45 @@ export class ConstructionController {
   @ApiOperation({ summary: 'Public construction dashboard stats' })
   async dashboard() {
     return ok(await this.service.dashboard());
+  }
+
+  @Public()
+  @Get('pages')
+  @ApiOperation({ summary: 'List construction CMS pages' })
+  listPages() {
+    return ok(this.pageSeo.listPages());
+  }
+
+  @Public()
+  @Get('pages/:pageKey')
+  @ApiOperation({ summary: 'Public construction page SEO including hub hero' })
+  async pageSeoPublic(@Param('pageKey') pageKey: string) {
+    return ok(await this.pageSeo.getPageSeo(pageKey));
+  }
+
+  @Get('admin/pages')
+  @RequirePermissions(PERMISSIONS.CONSTRUCTION_VIEW)
+  @ApiOperation({ summary: 'Admin construction CMS pages' })
+  adminPages() {
+    return ok(this.pageSeo.listPages());
+  }
+
+  @Get('admin/pages/:pageKey')
+  @RequirePermissions(PERMISSIONS.CONSTRUCTION_VIEW)
+  @ApiOperation({ summary: 'Admin construction page SEO' })
+  async adminPageSeo(@Param('pageKey') pageKey: string) {
+    return ok(await this.pageSeo.getPageSeo(pageKey));
+  }
+
+  @Put('admin/pages/:pageKey')
+  @RequirePermissions(PERMISSIONS.CONSTRUCTION_EDIT)
+  @ApiOperation({ summary: 'Update construction page SEO and hub hero image' })
+  async upsertPageSeo(
+    @Param('pageKey') pageKey: string,
+    @Body(new ZodValidationPipe(updateConstructionPageSeoSchema))
+    body: UpdateConstructionPageSeoInput,
+  ) {
+    return ok(await this.pageSeo.upsertPageSeo(pageKey, body));
   }
 
   @Public()

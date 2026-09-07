@@ -4,13 +4,32 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { AskConstructionSearch } from '@/components/construction/ask/ask-construction-search';
+import { ConstructionHouseIllustration } from '@/components/construction/construction-dashboard-chrome';
+import { CmsMediaImage } from '@/components/cms/cms-media-image';
 import { cn, cx } from '@/components/construction/styles';
 import { LANDING_SEARCH_EXAMPLES } from '@/lib/construction/landing';
 import { resolveAskConstructionQuery, askResultsPath } from '@/lib/construction/ask';
 import { trackAskResultClicked, trackLandingCtaClicked } from '@/lib/construction/analytics';
 import { useRouter } from 'next/navigation';
 
-export function ConstructionLandingHero() {
+const DEFAULT_TITLE = 'Plan your construction with confidence';
+const DEFAULT_INTRO =
+  'Estimate costs, calculate materials, compare options and plan your project with transparent construction tools.';
+
+export function ConstructionLandingHero({
+  title,
+  intro,
+  imageUrl,
+  imageAlt,
+}: {
+  title?: string | null;
+  intro?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+}) {
+  const heading = title?.trim() || DEFAULT_TITLE;
+  const subtitle = intro?.trim() || DEFAULT_INTRO;
+  const photo = imageUrl?.trim() || null;
   const router = useRouter();
   const [sticky, setSticky] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
@@ -55,17 +74,36 @@ export function ConstructionLandingHero() {
         <div className="site-container py-8 sm:py-10 lg:py-12">
           <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Home & Construction' }]} />
 
-          <div className="mt-2 max-w-3xl">
-            <h1
-              id="construction-landing-h1"
-              className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]"
-            >
-              Plan your construction with confidence
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              Estimate costs, calculate materials, compare options and plan your project with
-              transparent construction tools.
-            </p>
+          <div className="mt-2 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(220px,0.8fr)] lg:items-center">
+            <div className="max-w-3xl">
+              <h1
+                id="construction-landing-h1"
+                className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]"
+              >
+                {heading}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                {subtitle}
+              </p>
+            </div>
+            <div className="flex justify-center lg:justify-end">
+              {photo ? (
+                <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <CmsMediaImage
+                    src={photo}
+                    alt={imageAlt?.trim() || heading}
+                    width={640}
+                    height={360}
+                    className="h-full w-full"
+                    imgClassName="h-full w-full object-cover"
+                    objectFit="cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                <ConstructionHouseIllustration />
+              )}
+            </div>
           </div>
 
           <div className="mt-6 max-w-2xl">
