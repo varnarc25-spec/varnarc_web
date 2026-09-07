@@ -2,17 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { publicMenuLinks } from '@/lib/public-menu-links';
 
 describe('publicMenuLinks', () => {
-  it('returns null when the CMS menu is missing so callers can use a static fallback', () => {
+  it('returns null when the CMS menu is missing so the header does not revive static links', () => {
     expect(publicMenuLinks(null)).toBeNull();
     expect(publicMenuLinks(undefined)).toBeNull();
   });
 
-  it('omits disabled items even if that makes the menu shorter than the static nav', () => {
+  it('omits items that are disabled or missing isActive', () => {
     expect(
       publicMenuLinks({
         items: [
           { label: 'Home', href: '/', sortOrder: 1, isActive: true },
           { label: 'Solar', href: '/solar', sortOrder: 2, isActive: false },
+          { label: 'Tags', href: '/tags', sortOrder: 3 },
         ],
       }),
     ).toEqual([{ label: 'Home', href: '/' }]);

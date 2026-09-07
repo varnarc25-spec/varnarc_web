@@ -17,7 +17,6 @@ import { isCmpTestScriptsEnabled } from '@/lib/cmp-test-scripts-config';
 import { fetchAdsensePublicConfig, getAdsenseClientFromConfig } from '@/lib/adsense-config';
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
-import { navItems as staticNavItems } from '@/features/home/static-data';
 import { publicMenuLinks } from '@/lib/public-menu-links';
 import {
   isAuth0Configured,
@@ -124,6 +123,8 @@ export const viewport = {
   themeColor: '#0b1f3a',
 };
 
+export const dynamic = 'force-dynamic';
+
 export type HeaderUser = {
   email: string;
   displayName: string;
@@ -220,9 +221,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       fetchPublicGoogleAnalyticsId(),
     ]);
 
-  const staticNav = staticNavItems.map((item) => ({ label: item.label, href: item.href }));
   const cmsNav = publicMenuLinks(menuRes.data);
-  const nav = cmsNav ?? staticNav;
+  const nav = cmsNav ?? [{ label: 'Home', href: '/' }];
   const footerLinks = publicMenuLinks(footerRes.data) ?? undefined;
 
   const branding = activeTheme?.branding ?? {};

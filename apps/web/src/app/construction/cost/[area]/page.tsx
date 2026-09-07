@@ -55,6 +55,7 @@ export default async function ConstructionCostAreaPage({ params }: Props) {
     <ContentLayout
       title={landing.h1}
       description={landing.qualification}
+      hideTitle
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Construction', href: '/construction' },

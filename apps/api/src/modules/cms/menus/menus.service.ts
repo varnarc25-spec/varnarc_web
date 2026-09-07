@@ -40,10 +40,6 @@ export class MenusService {
   }
 
   async getByLocation(location: string) {
-    const cacheKey = cmsCacheKeys.menuLocation(location);
-    const cached = await this.cache.get<unknown>(cacheKey);
-    if (cached) return cached;
-
     const row = await this.repos.menus.findByLocation(location);
     if (!row) {
       throw new NotFoundException({
@@ -53,9 +49,8 @@ export class MenusService {
     }
     const publicMenu = {
       ...row,
-      items: row.items.filter((item) => item.isActive !== false),
+      items: row.items.filter((item) => item.isActive === true),
     };
-    await this.cache.set(cacheKey, publicMenu, 5_000);
     return publicMenu;
   }
 

@@ -3,8 +3,13 @@ import Link from 'next/link';
 import { ContentLayout } from '@/components/layout/content-layout';
 import { ConstructionSeo } from '@/components/construction/construction-seo';
 import {
+  ConstructionDashboardHero,
+  ConstructionHeroActions,
+} from '@/components/construction/construction-dashboard-chrome';
+import {
   CONSTRUCTION_COST_AREA_METHODOLOGY,
   CONSTRUCTION_COST_AREA_QUALIFICATION,
+  formatInr,
   listIndexableConstructionCostAreaLandings,
 } from '@varnarc/validation';
 import { constructionHubBreadcrumbs, resolveConstructionIndexing } from '@/lib/construction/seo';
@@ -32,6 +37,7 @@ export default function ConstructionCostByAreaHubPage() {
     <ContentLayout
       title="House construction cost by area"
       description={CONSTRUCTION_COST_AREA_QUALIFICATION}
+      hideTitle
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Construction', href: '/construction' },
@@ -49,14 +55,25 @@ export default function ConstructionCostByAreaHubPage() {
         }}
       />
 
-      <section className="space-y-3">
-        <p className="text-sm leading-relaxed text-slate-700">
-          Searchers looking for “1500 sq ft house construction cost” should land on a page with a
-          rupee range, quality table, materials sketch and a calculator — not a blank form. Each
-          size below uses the same published cost engine.
-        </p>
-        <p className="text-xs text-slate-500">{CONSTRUCTION_COST_AREA_METHODOLOGY}</p>
-      </section>
+      <ConstructionDashboardHero
+        headingAs="h1"
+        title="Plan, quantify and manage your construction project"
+        description="Pick a house size to see an indicative cost range, material quantities and a BOQ starting point. Same published engine as the full cost calculator."
+        points={['Estimate costs', 'Plan materials', 'Control budget', 'Complete with confidence']}
+      >
+        <ConstructionHeroActions
+          primaryHref="/construction/cost-calculator"
+          primaryLabel="Open cost calculator"
+          secondaryHref="/construction/boq-generator"
+        />
+      </ConstructionDashboardHero>
+
+      <p className="mt-8 text-sm leading-relaxed text-slate-700">
+        Searchers looking for “1500 sq ft house construction cost” land on a size page with a rupee
+        range, quality table, materials sketch and calculator — not a blank form.
+      </p>
+      <p className="mt-2 text-xs text-slate-500">{CONSTRUCTION_COST_AREA_METHODOLOGY}</p>
+      <p className="mt-1 text-xs text-slate-500">{CONSTRUCTION_COST_AREA_QUALIFICATION}</p>
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {landings.map((item) => (
@@ -66,7 +83,10 @@ export default function ConstructionCostByAreaHubPage() {
               className="block rounded-xl border border-slate-200 bg-white p-4 transition hover:border-[#f97316]"
             >
               <p className="text-lg font-bold text-[#0b1f3a]">{item.label}</p>
-              <p className="mt-1 text-sm text-slate-600">House construction cost in India</p>
+              <p className="mt-1 text-sm font-semibold tabular-nums text-[#f97316]">
+                {formatInr(item.estimatedTotal)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">{item.rangeLabel} · standard quality</p>
             </Link>
           </li>
         ))}

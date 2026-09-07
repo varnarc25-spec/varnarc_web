@@ -3,6 +3,8 @@
 import { calculateConstructionCost } from '../construction-cost/calculate';
 import {
   COST_CALC_VERSION,
+  DEFAULT_COST_SPLIT,
+  DEFAULT_MARKET_RATES,
   LOCATION_MULTIPLIERS,
   QUALITY_QTY_FACTOR,
   RATE_QTY_PER_SQFT,
@@ -48,6 +50,18 @@ export const COST_AREA_QTY_PER_SQFT = {
   sandTonnes: 0.025,
   aggregateTonnes: 0.028,
   bricks: 8,
+  tilesSqft: 0.9,
+  paintLitres: 0.035,
+} as const;
+
+export const COST_AREA_MATERIAL_RATES = {
+  cementPerBag: DEFAULT_MARKET_RATES.cementRatePerBag,
+  steelPerKg: DEFAULT_MARKET_RATES.steelRatePerKg,
+  sandPerTonne: 2_200,
+  aggregatePerTonne: 1_650,
+  brickEach: 8,
+  tilePerSqft: 55,
+  paintPerLitre: 220,
 } as const;
 
 export const CONSTRUCTION_COST_AREA_PROFILES: Record<
@@ -205,6 +219,17 @@ export type ConstructionCostAreaMaterials = {
   sandTonnes: number;
   aggregateTonnes: number;
   bricks: number;
+  tilesSqft: number;
+  paintLitres: number;
+};
+
+export type ConstructionCostAreaMaterialLine = {
+  id: string;
+  label: string;
+  quantity: number;
+  unit: string;
+  rate: number;
+  cost: number;
 };
 
 export function estimateCostAreaMaterials(
@@ -218,7 +243,66 @@ export function estimateCostAreaMaterials(
     sandTonnes: Math.round(areaSqft * COST_AREA_QTY_PER_SQFT.sandTonnes * q * 10) / 10,
     aggregateTonnes: Math.round(areaSqft * COST_AREA_QTY_PER_SQFT.aggregateTonnes * q * 10) / 10,
     bricks: Math.round(areaSqft * COST_AREA_QTY_PER_SQFT.bricks * q),
+    tilesSqft: Math.round(areaSqft * COST_AREA_QTY_PER_SQFT.tilesSqft * q),
+    paintLitres: Math.round(areaSqft * COST_AREA_QTY_PER_SQFT.paintLitres * q * 10) / 10,
   };
+}
+
+export function buildCostAreaMaterialLines(
+  qty: ConstructionCostAreaMaterials,
+): ConstructionCostAreaMaterialLine[] {
+  const rows = [
+    {
+      id: 'cement',
+      label: 'Cement',
+      quantity: qty.cementBags,
+      unit: 'bags',
+      rate: COST_AREA_MATERIAL_RATES.cementPerBag,
+    },
+    {
+      id: 'steel',
+      label: 'Steel (TMT)',
+      quantity: qty.steelKg,
+      unit: 'kg',
+      rate: COST_AREA_MATERIAL_RATES.steelPerKg,
+    },
+    {
+      id: 'sand',
+      label: 'Sand',
+      quantity: qty.sandTonnes,
+      unit: 'tonnes',
+      rate: COST_AREA_MATERIAL_RATES.sandPerTonne,
+    },
+    {
+      id: 'aggregate',
+      label: 'Aggregate',
+      quantity: qty.aggregateTonnes,
+      unit: 'tonnes',
+      rate: COST_AREA_MATERIAL_RATES.aggregatePerTonne,
+    },
+    {
+      id: 'bricks',
+      label: 'Bricks / blocks',
+      quantity: qty.bricks,
+      unit: 'pieces',
+      rate: COST_AREA_MATERIAL_RATES.brickEach,
+    },
+    {
+      id: 'tiles',
+      label: 'Tiles',
+      quantity: qty.tilesSqft,
+      unit: 'sq ft',
+      rate: COST_AREA_MATERIAL_RATES.tilePerSqft,
+    },
+    {
+      id: 'paint',
+      label: 'Paint',
+      quantity: qty.paintLitres,
+      unit: 'litres',
+      rate: COST_AREA_MATERIAL_RATES.paintPerLitre,
+    },
+  ];
+  return rows.map((row) => ({ ...row, cost: Math.round(row.quantity * row.rate) }));
 }
 
 export type ConstructionCostAreaQualityRow = {
@@ -248,7 +332,14 @@ export type ConstructionCostAreaEstimate = {
   rangeHigh: number;
   costPerSqft: number;
   rangeLabel: string;
+  materialCost: number;
+  labourCost: number;
+  miscellaneousCost: number;
+  materialPercent: number;
+  labourPercent: number;
+  miscPercent: number;
   materials: ConstructionCostAreaMaterials;
+  materialLines: ConstructionCostAreaMaterialLine[];
   breakdown: ConstructionCostAreaBreakdownRow[];
   qualityRows: ConstructionCostAreaQualityRow[];
   assumptions: string[];
@@ -304,6 +395,8 @@ export function computeConstructionCostAreaEstimate(input: {
     };
   });
 
+  const materials = estimateCostAreaMaterials(result.areaSqft, quality);
+
   return {
     areaSqft: result.areaSqft,
     floors: result.floors,
@@ -315,7 +408,14 @@ export function computeConstructionCostAreaEstimate(input: {
     rangeHigh: result.rangeHigh,
     costPerSqft: result.costPerSqft,
     rangeLabel: formatLakhRange(result.rangeLow, result.rangeHigh),
-    materials: estimateCostAreaMaterials(result.areaSqft, quality),
+    materialCost: result.materialCost,
+    labourCost: result.labourCost,
+    miscellaneousCost: result.miscellaneousCost,
+    materialPercent: DEFAULT_COST_SPLIT.materialPercent,
+    labourPercent: DEFAULT_COST_SPLIT.labourPercent,
+    miscPercent: DEFAULT_COST_SPLIT.miscPercent,
+    materials,
+    materialLines: buildCostAreaMaterialLines(materials),
     breakdown: breakdownFromResult(result),
     qualityRows,
     assumptions: result.assumptions,
@@ -429,6 +529,8 @@ export function listIndexableConstructionCostAreaLandings(): Array<{
   areaSqft: number;
   path: string;
   label: string;
+  rangeLabel: string;
+  estimatedTotal: number;
 }> {
   return listConstructionCostAreaSlugs()
     .map((slug) => {
@@ -439,6 +541,8 @@ export function listIndexableConstructionCostAreaLandings(): Array<{
         areaSqft: landing.areaSqft,
         path: landing.canonicalPath,
         label: landing.label,
+        rangeLabel: landing.estimate.rangeLabel,
+        estimatedTotal: landing.estimate.estimatedTotal,
       };
     })
     .filter((row): row is NonNullable<typeof row> => row != null);

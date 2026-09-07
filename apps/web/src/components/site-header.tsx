@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, User, X } from 'lucide-react';
-import { navItems } from '@/features/home/static-data';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { LocaleSwitch } from '@/components/shared/locale-switch';
 import { SearchAutocomplete } from '@/components/search/search-autocomplete';
@@ -47,7 +46,7 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = navProp ?? navItems.map((item) => ({ label: item.label, href: item.href }));
+  const items = navProp ?? [];
   const brand = siteName?.trim() || 'Varnarc';
   const brandTagline = tagline?.trim() || 'Finance • Home • Auto • Tools';
 

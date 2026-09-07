@@ -33,7 +33,8 @@ describe('construction cost by area landings', () => {
     expect(landing.canonicalPath).toBe('/construction/cost/1500-sq-ft');
     expect(landing.estimate.areaSqft).toBe(1500);
     expect(landing.estimate.qualityRows).toHaveLength(4);
-    expect(landing.estimate.materials.cementBags).toBeGreaterThan(0);
+    expect(landing.estimate.materialLines.length).toBeGreaterThan(3);
+    expect(landing.estimate.materialCost).toBeGreaterThan(0);
     expect(landing.estimate.breakdown.some((row) => row.id === 'foundation')).toBe(true);
     expect(landing.sizeNote.length).toBeGreaterThanOrEqual(80);
     expect(landing.estimate.rangeLow).toBeLessThan(landing.estimate.rangeHigh);
@@ -63,6 +64,10 @@ describe('construction cost by area landings', () => {
   });
 
   it('indexes every curated size', () => {
-    expect(listIndexableConstructionCostAreaLandings()).toHaveLength(10);
+    const rows = listIndexableConstructionCostAreaLandings();
+    expect(rows).toHaveLength(10);
+    expect(rows[5]?.slug).toBe('1500-sq-ft');
+    expect(rows[5]?.estimatedTotal).toBeGreaterThan(0);
+    expect(rows[5]?.rangeLabel.length).toBeGreaterThan(0);
   });
 });

@@ -160,7 +160,8 @@ export async function fetchMenuByLocation(location: string) {
     return await apiPublicFetch<MenuPayload>(`/menus/location/${location}`, {
       cache: 'no-store',
     });
-  } catch {
+  } catch (error) {
+    console.error(`[cms] menu location "${location}" failed`, error);
     return { data: null };
   }
 }

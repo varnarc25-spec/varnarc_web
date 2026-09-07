@@ -8,6 +8,10 @@ import { StickyMobileCTA } from '@/components/construction/sticky-mobile-cta';
 import { CalculatorSaveSlot } from '@/components/construction/calculator/calculator-save-slot';
 import { CalculatorShareSlot } from '@/components/construction/calculator/calculator-share-slot';
 import { ConstructionWhatNextSlot } from '@/components/construction/calculator/construction-what-next-slot';
+import {
+  ConstructionDashboardHero,
+  ConstructionHeroActions,
+} from '@/components/construction/construction-dashboard-chrome';
 import type {
   ConstructionCrumb,
   ConstructionFaqItem,
@@ -62,19 +66,22 @@ export function CalculatorShell({
       <div className="site-container py-8 sm:py-10">
         {breadcrumbs?.length ? <ConstructionBreadcrumbs items={breadcrumbs} /> : null}
 
-        <header className="max-w-3xl">
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#0b1f3a] sm:text-3xl">
-            {title}
-          </h1>
-          {description ? (
-            <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-              {description}
-            </p>
-          ) : null}
+        <ConstructionDashboardHero
+          headingAs="h1"
+          title={title}
+          description={description}
+          points={[
+            'Estimate costs',
+            'Plan materials',
+            'Control budget',
+            'Complete with confidence',
+          ]}
+        >
+          <ConstructionHeroActions />
           {lastUpdated ? (
-            <p className="mt-2 text-xs text-slate-500">Last updated: {lastUpdated}</p>
+            <p className="mt-3 text-xs text-slate-500">Last updated: {lastUpdated}</p>
           ) : null}
-        </header>
+        </ConstructionDashboardHero>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           <section aria-label="Calculator inputs">{form}</section>
