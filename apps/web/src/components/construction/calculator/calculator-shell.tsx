@@ -8,6 +8,11 @@ import { StickyMobileCTA } from '@/components/construction/sticky-mobile-cta';
 import { CalculatorSaveSlot } from '@/components/construction/calculator/calculator-save-slot';
 import { CalculatorShareSlot } from '@/components/construction/calculator/calculator-share-slot';
 import { ConstructionWhatNextSlot } from '@/components/construction/calculator/construction-what-next-slot';
+import {
+  CONSTRUCTION_HERO_POINTS,
+  ConstructionCalculatorModules,
+  ConstructionHeroActions,
+} from '@/components/construction/calculator/construction-calculator-dashboard';
 import type {
   ConstructionCrumb,
   ConstructionFaqItem,
@@ -26,6 +31,9 @@ export function CalculatorShell({
   lastUpdated,
   form,
   result,
+  workspace,
+  summary,
+  extra,
   formula,
   assumptions,
   breakdown,
@@ -36,6 +44,7 @@ export function CalculatorShell({
   methodology,
   stickyCta,
   className,
+  areaSqft,
 }: {
   breadcrumbs?: ConstructionCrumb[];
   title: string;
@@ -43,6 +52,9 @@ export function CalculatorShell({
   lastUpdated?: string;
   form: ReactNode;
   result?: ReactNode;
+  workspace?: ReactNode;
+  summary?: ReactNode;
+  extra?: ReactNode;
   formula?: ReactNode;
   assumptions?: ReactNode;
   breakdown?: ReactNode;
@@ -56,44 +68,58 @@ export function CalculatorShell({
     secondary?: { label: string; href?: string; onClick?: () => void };
   };
   className?: string;
+  areaSqft?: number;
 }) {
+  const dashboardGrid = Boolean(workspace);
+
   return (
     <main className={cn('w-full bg-white', stickyCta ? 'pb-24 md:pb-0' : '', className)}>
       <header className="full-bleed border-b border-slate-200/70 bg-[#f4f7fb]">
         <div className="site-container py-8 sm:py-10">
           {breadcrumbs?.length ? <ConstructionBreadcrumbs items={breadcrumbs} /> : null}
-          <div className="mt-2 max-w-3xl">
-            <h1 className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
-              {title}
+          <div className="mt-4 max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#f97316]">{title}</p>
+            <h1 className="mt-1 text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
+              Plan, quantify and manage your construction project
             </h1>
             {description ? (
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
                 {description}
               </p>
-            ) : null}
+            ) : (
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                Calculate costs, estimate materials, generate BOQ, compare options and connect with
+                trusted professionals — all in one place.
+              </p>
+            )}
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-[#0b1f3a]">
-              {[
-                'Estimate costs',
-                'Plan materials',
-                'Control budget',
-                'Complete with confidence',
-              ].map((point) => (
+              {CONSTRUCTION_HERO_POINTS.map((point) => (
                 <li key={point} className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" aria-hidden />
                   {point}
                 </li>
               ))}
             </ul>
+            <ConstructionHeroActions areaSqft={areaSqft} />
             {lastUpdated ? (
-              <p className="mt-2 text-xs text-slate-500">Last updated: {lastUpdated}</p>
+              <p className="mt-3 text-xs text-slate-500">Last updated: {lastUpdated}</p>
             ) : null}
           </div>
         </div>
       </header>
 
-      <div className="site-container py-8 sm:py-10">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+      <div className="site-container space-y-10 py-8 sm:py-10">
+        {summary}
+
+        <div
+          className={
+            dashboardGrid
+              ? 'grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(16rem,0.85fr)] lg:items-start'
+              : 'grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start'
+          }
+        >
           <section aria-label="Calculator inputs">{form}</section>
+          {dashboardGrid ? <section aria-label="Quantity results">{workspace}</section> : null}
           <section aria-label="Calculator results" className="space-y-4 lg:sticky lg:top-24">
             {result ? <CalculatorSaveSlot /> : null}
             {result ? <CalculatorShareSlot /> : null}
@@ -108,45 +134,33 @@ export function CalculatorShell({
           </section>
         </div>
 
+        {extra}
+
+        <ConstructionCalculatorModules />
+
         {formula ? (
-          <ConstructionSection id="formula" title="Formula" className="mt-12">
+          <ConstructionSection id="formula" title="Formula">
             {formula}
           </ConstructionSection>
         ) : null}
 
         {methodology ? (
-          <ConstructionSection id="methodology" title="Methodology" className="mt-12">
+          <ConstructionSection id="methodology" title="Methodology">
             {methodology}
           </ConstructionSection>
         ) : null}
 
         {seoContent ? (
-          <ConstructionSection
-            id="about-this-calculator"
-            title="About this calculator"
-            className="mt-12"
-          >
+          <ConstructionSection id="about-this-calculator" title="About this calculator">
             <div className="prose prose-slate max-w-none text-sm leading-relaxed">{seoContent}</div>
           </ConstructionSection>
         ) : null}
 
-        {relatedTools?.length ? (
-          <div className="mt-12">
-            <RelatedTools items={relatedTools} variant="chips" />
-          </div>
-        ) : null}
+        {relatedTools?.length ? <RelatedTools items={relatedTools} variant="chips" /> : null}
 
-        {relatedGuides?.length ? (
-          <div className="mt-12">
-            <RelatedGuides items={relatedGuides} />
-          </div>
-        ) : null}
+        {relatedGuides?.length ? <RelatedGuides items={relatedGuides} /> : null}
 
-        {faqs?.length ? (
-          <div className="mt-12">
-            <ConstructionFAQ faqs={faqs} />
-          </div>
-        ) : null}
+        {faqs?.length ? <ConstructionFAQ faqs={faqs} /> : null}
       </div>
 
       {stickyCta ? <StickyMobileCTA {...stickyCta} /> : null}

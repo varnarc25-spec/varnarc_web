@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateConstructionCost,
+  estimateCostAreaMaterialLines,
   type ConstructionCostInput,
   type ConstructionCostQuality,
   type ConstructionCostPropertyType,
@@ -21,6 +22,12 @@ import {
   ReverseResultPanel,
   UnitSelector,
 } from '@/components/construction/calculator';
+import {
+  ConstructionBoqPreview,
+  ConstructionCostDonut,
+  ConstructionMaterialLinesTable,
+  ConstructionProjectSummaryBar,
+} from '@/components/construction/calculator/construction-calculator-dashboard';
 import { ConstructionRelatedSection } from '@/components/construction/construction-related-section';
 import { cn, cx } from '@/components/construction/styles';
 import {
@@ -274,7 +281,19 @@ export function ConstructionCostCalculatorClient({
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<ConstructionCostResult | null>(null);
+  const [result, setResult] = useState<ConstructionCostResult | null>(() => {
+    try {
+      const start = initialShareInputs
+        ? formFromShareInputs(initialShareInputs)
+        : parseInitial(initialParams);
+      if (start.mode === 'forward' && Number(start.builtUpArea) > 0) {
+        return calculateConstructionCost(toInput(start));
+      }
+    } catch {
+      /* wait for explicit calculate */
+    }
+    return null;
+  });
   const [compare, setCompare] = useState<ConstructionCostResult | null>(null);
   const [actionMsg, setActionMsg] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('My construction project');
@@ -497,6 +516,11 @@ export function ConstructionCostCalculatorClient({
     }));
   }, [result]);
 
+  const materialLines = useMemo(() => {
+    if (!result) return [];
+    return estimateCostAreaMaterialLines(result.areaSqft, form.quality);
+  }, [result, form.quality]);
+
   const formNode = (
     <CalculatorForm
       calculatorType={CALC_TYPE}
@@ -513,7 +537,7 @@ export function ConstructionCostCalculatorClient({
         setActionMsg(null);
         clearConstructionCalculationSave();
       }}
-      submitLabel="Calculate cost"
+      submitLabel="Calculate quantities"
     >
       <UnitSelector
         id="cost-mode"
@@ -917,11 +941,13 @@ export function ConstructionCostCalculatorClient({
         {actionMsg ? <p className="text-xs text-slate-600">{actionMsg}</p> : null}
       </div>
 
-      <CalculationBreakdown
-        title="Cost breakdown"
-        caption="Percentage and ₹ values — planning allocations, not contractor invoices."
-        rows={breakdownRows}
-      />
+      <div id="cost-breakdown">
+        <CalculationBreakdown
+          title="Cost breakdown"
+          caption="Percentage and ₹ values — planning allocations, not contractor invoices."
+          rows={breakdownRows}
+        />
+      </div>
       <CalculationBreakdown title="Phase-wise cost" rows={phaseRows} />
       <CalculationBreakdown title="Floor-wise cost" rows={floorRows} />
 
@@ -954,10 +980,56 @@ export function ConstructionCostCalculatorClient({
           { label: 'Cost calculator' },
         ]}
         title="Construction cost calculator"
-        description="Estimate the likely cost of building a property by location, area, floors and quality. Override rates when you have local quotes. Results are indicative — never a guaranteed quote."
+        description="Calculate costs, estimate materials, generate BOQ, compare options and connect with trusted professionals — all in one place."
         lastUpdated="Aug 2026"
+        areaSqft={(result?.areaSqft ?? Number(form.builtUpArea)) || undefined}
         form={formNode}
-        result={resultNode}
+        summary={
+          result ? (
+            <ConstructionProjectSummaryBar
+              projectName={projectName}
+              location={result.locationLabel}
+              areaLabel={`${Math.round(result.areaSqft).toLocaleString('en-IN')} sq ft`}
+              floors={result.floors}
+              quality={form.quality}
+              total={result.estimatedTotal}
+              rangeLabel={`${formatInr(result.rangeLow)} – ${formatInr(result.rangeHigh)}`}
+              materialCost={result.materialCost}
+              labourCost={result.labourCost}
+              otherCost={result.miscellaneousCost}
+            />
+          ) : null
+        }
+        workspace={
+          result && materialLines.length ? (
+            <ConstructionMaterialLinesTable lines={materialLines} />
+          ) : undefined
+        }
+        result={
+          result ? (
+            <div className="space-y-4">
+              <ConstructionCostDonut
+                materialCost={result.materialCost}
+                labourCost={result.labourCost}
+                otherCost={result.miscellaneousCost}
+                areaSqft={result.areaSqft}
+              />
+              {resultNode}
+            </div>
+          ) : undefined
+        }
+        extra={
+          result ? (
+            <ConstructionBoqPreview
+              rows={result.phaseBreakdown.map((row) => ({
+                id: row.id,
+                label: row.label,
+                amount: row.amount,
+                percentOfTotal: row.percentOfTotal,
+              }))}
+            />
+          ) : null
+        }
         formula={
           <div className="space-y-3 text-sm leading-relaxed text-slate-600">
             <p className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700 sm:text-sm">
