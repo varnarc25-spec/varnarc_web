@@ -57,6 +57,7 @@ export const updateConstructionPageSeoSchema = z.object({
     ),
   heroImageMediaId: uuidSchema.optional().nullable(),
   heroImageAlt: z.string().max(300).optional().nullable(),
+  heroImageWidth: z.coerce.number().int().min(120).max(800).optional().nullable(),
 });
 
 export type UpdateConstructionPageSeoInput = z.infer<typeof updateConstructionPageSeoSchema>;

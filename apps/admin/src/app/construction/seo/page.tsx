@@ -13,6 +13,7 @@ type ConstructionPageRow = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageWidth?: number | null;
   metaKeywords?: string | null;
   canonicalUrl?: string | null;
 };

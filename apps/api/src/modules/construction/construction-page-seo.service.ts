@@ -18,6 +18,7 @@ type PageStructuredData = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageWidth?: number | null;
 };
 
 function parsePageStructuredData(value: unknown): PageStructuredData {
@@ -29,7 +30,14 @@ function parsePageStructuredData(value: unknown): PageStructuredData {
     heroImageUrl: typeof row.heroImageUrl === 'string' ? row.heroImageUrl : null,
     heroImageMediaId: typeof row.heroImageMediaId === 'string' ? row.heroImageMediaId : null,
     heroImageAlt: typeof row.heroImageAlt === 'string' ? row.heroImageAlt : null,
+    heroImageWidth: parseHeroWidth(row.heroImageWidth),
   };
+}
+
+function parseHeroWidth(value: unknown): number | null {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  if (!Number.isFinite(n)) return null;
+  return Math.min(800, Math.max(120, Math.round(n)));
 }
 
 function isUnusableHeroUrl(url: string | null | undefined) {
@@ -114,6 +122,7 @@ export class ConstructionPageSeoService {
       heroImageUrl,
       heroImageMediaId: structured.heroImageMediaId ?? null,
       heroImageAlt: structured.heroImageAlt ?? null,
+      heroImageWidth: structured.heroImageWidth ?? 380,
       metaKeywords: meta?.metaKeywords ?? null,
       canonicalUrl: meta?.canonicalUrl ?? defaults.canonicalUrl ?? null,
     };
@@ -147,6 +156,10 @@ export class ConstructionPageSeoService {
         input.heroImageAlt !== undefined
           ? input.heroImageAlt?.trim() || null
           : (existingStructured.heroImageAlt ?? null),
+      heroImageWidth:
+        input.heroImageWidth !== undefined
+          ? (parseHeroWidth(input.heroImageWidth) ?? 380)
+          : (existingStructured.heroImageWidth ?? 380),
     };
 
     await this.db.seoMetadata.upsert({

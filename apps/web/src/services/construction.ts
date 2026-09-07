@@ -27,6 +27,7 @@ export type ConstructionPageSeo = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageWidth?: number | null;
 };
 
 export type ConstructionBrand = {

@@ -9,6 +9,7 @@ export type EntityMediaValue = {
   title?: string;
   caption?: string;
   description?: string;
+  displayWidth?: number | null;
 };
 
 /**
@@ -24,6 +25,7 @@ export function EntityMediaField({
   showCaption = false,
   showTitle = false,
   showDescription = false,
+  showDisplayWidth = false,
 }: {
   label: string;
   help?: string;
@@ -32,6 +34,7 @@ export function EntityMediaField({
   showCaption?: boolean;
   showTitle?: boolean;
   showDescription?: boolean;
+  showDisplayWidth?: boolean;
 }) {
   function applySelection(selection: MediaPickerSelection) {
     onChange({
@@ -106,6 +109,31 @@ export function EntityMediaField({
             maxLength={2000}
           />
         </label>
+      ) : null}
+      {showDisplayWidth ? (
+        <div className="max-w-xs">
+          <label className="block text-xs text-[var(--varnarc-subtle)]">
+            Website image width (px)
+            <input
+              type="number"
+              min={120}
+              max={800}
+              step={10}
+              className="mt-1 h-9 w-full rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
+              value={value.displayWidth ?? 380}
+              onChange={(e) => {
+                const next = Number(e.target.value);
+                onChange({
+                  ...value,
+                  displayWidth: Number.isFinite(next) ? next : 380,
+                });
+              }}
+            />
+          </label>
+          <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+            Height is calculated automatically from the image aspect ratio.
+          </p>
+        </div>
       ) : null}
       {help ? <p className="text-xs text-[var(--varnarc-subtle)]">{help}</p> : null}
     </div>

@@ -52,6 +52,7 @@ export type ConstructionLandingProps = {
     imageUrl?: string | null;
     imageAlt?: string | null;
     imageMediaId?: string | null;
+    imageWidth?: number | null;
   };
 };
 
@@ -104,6 +105,7 @@ export function ConstructionLandingPage({
         imageUrl={hero?.imageUrl}
         imageAlt={hero?.imageAlt}
         imageMediaId={hero?.imageMediaId}
+        imageWidth={hero?.imageWidth}
       />
 
       <div className="site-container space-y-12 py-8 sm:space-y-14 sm:py-10">

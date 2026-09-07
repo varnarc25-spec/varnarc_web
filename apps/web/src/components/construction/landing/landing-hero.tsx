@@ -23,16 +23,19 @@ export function ConstructionLandingHero({
   imageUrl,
   imageAlt,
   imageMediaId,
+  imageWidth,
 }: {
   title?: string | null;
   intro?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
   imageMediaId?: string | null;
+  imageWidth?: number | null;
 }) {
   const heading = title?.trim() || DEFAULT_TITLE;
   const subtitle = intro?.trim() || DEFAULT_INTRO;
   const photo = resolvePublicCmsMediaUrl(imageUrl, imageMediaId);
+  const displayWidth = Math.min(800, Math.max(120, imageWidth ?? 380));
   const router = useRouter();
   const [sticky, setSticky] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
@@ -71,7 +74,7 @@ export function ConstructionLandingHero({
     <>
       <section
         ref={heroRef}
-        className="full-bleed border-b border-slate-200/70 bg-[#f4f7fb]"
+        className="full-bleed border-b border-slate-200/70 bg-white"
         aria-labelledby="construction-landing-h1"
       >
         <div className="site-container py-8 sm:py-10 lg:py-12">
@@ -89,20 +92,22 @@ export function ConstructionLandingHero({
                 {subtitle}
               </p>
             </div>
-            <div className="flex justify-center lg:justify-end">
+            <div className="flex justify-center bg-transparent lg:justify-end">
               {photo ? (
-                <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <CmsMediaImage
-                    src={photo}
-                    alt={imageAlt?.trim() || heading}
-                    width={640}
-                    height={360}
-                    className="h-full w-full"
-                    imgClassName="h-full w-full object-cover"
-                    objectFit="cover"
-                    unoptimized
-                    priority
-                  />
+                <div className="flex w-full justify-center bg-transparent lg:justify-end">
+                  <div className="max-w-full bg-transparent" style={{ width: displayWidth }}>
+                    <CmsMediaImage
+                      src={photo}
+                      alt={imageAlt?.trim() || heading}
+                      width={displayWidth}
+                      height={Math.round(displayWidth * 0.56)}
+                      className="w-full bg-transparent"
+                      imgClassName="h-auto w-full bg-transparent object-contain"
+                      objectFit="contain"
+                      unoptimized
+                      priority
+                    />
+                  </div>
                 </div>
               ) : (
                 <ConstructionHouseIllustration />
