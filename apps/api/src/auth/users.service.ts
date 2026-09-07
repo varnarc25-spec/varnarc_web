@@ -9,7 +9,13 @@ import {
 import { ProfileVisibility, UserStatus } from '@varnarc/database';
 import type { Repositories, UserWithRoles } from '@varnarc/database';
 import type { Auth0TokenClaims, CurrentUser, RoleSlug } from '@varnarc/types';
-import { AUTH_ERROR_CODES, isSuperAdminEmail } from '@varnarc/auth';
+import {
+  AUTH_ERROR_CODES,
+  isAuth0Identifier,
+  isPlaceholderAuthEmail,
+  isSuperAdminEmail,
+  publicAuthDisplayName,
+} from '@varnarc/auth';
 import type {
   AssignUserRolesInput,
   PaginationQuery,
@@ -101,8 +107,13 @@ export class UsersService {
       });
     }
 
-    const email = claims.email ?? `${claims.sub.replace('|', '_')}@users.auth0.local`;
-    const displayName = claims.name ?? claims.given_name ?? email.split('@')[0] ?? null;
+    const email = claims.email ?? `${claims.sub.replace(/\|/g, '_')}@users.auth0.local`;
+    const displayName = publicAuthDisplayName({
+      name: claims.name,
+      givenName: claims.given_name,
+      email,
+      fallback: 'Account',
+    });
     const existing = await this.repos.users.findByAuth0UserIdAny(claims.sub);
 
     const user = await this.repos.users.upsertFromAuth0({
@@ -114,6 +125,13 @@ export class UsersService {
       avatarUrl: claims.picture || null,
       emailVerified: Boolean(claims.email_verified),
     });
+
+    if (existing && isAuth0Identifier(existing.displayName) && !isAuth0Identifier(displayName)) {
+      await this.repos.users.updateProfile(user.id, { displayName });
+    }
+    if (existing && isPlaceholderAuthEmail(existing.email) && !isPlaceholderAuthEmail(email)) {
+      await this.repos.users.updateProfile(user.id, { email });
+    }
 
     if (!existing) {
       await this.repos.users.ensureRole(user.id, 'user');

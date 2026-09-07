@@ -1,6 +1,7 @@
 import { auth0 } from '@/lib/auth0';
 import type { ApiEnvelope, ApiError } from '@/services/api-client';
 import { getApiBaseUrl } from '@/lib/runtime-public-env';
+import { isNextControlFlowError } from '@/lib/next-control-flow';
 
 export { getApiBaseUrl };
 
@@ -10,6 +11,7 @@ export async function getApiAccessToken(): Promise<string | null> {
     const result = await auth0.getAccessToken(audience ? { audience } : undefined);
     return result?.token ?? null;
   } catch (error) {
+    if (isNextControlFlowError(error)) throw error;
     console.error('[auth] getAccessToken failed', error);
     return null;
   }

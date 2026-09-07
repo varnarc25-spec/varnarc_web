@@ -149,6 +149,38 @@ export function shouldRunAuth0Middleware(input: {
   return appBaseUrlMatchesHost(publicHost, env);
 }
 
+export function isAuth0Identifier(value: string | null | undefined): boolean {
+  const v = value?.trim() ?? '';
+  if (!v) return true;
+  return /^(auth0|google-oauth2|github|windowslive|oauth2)[|_]/i.test(v) || v.includes('|');
+}
+
+export function isPlaceholderAuthEmail(email: string | null | undefined): boolean {
+  return (email ?? '').toLowerCase().endsWith('@users.auth0.local');
+}
+
+export function publicAuthDisplayName(input: {
+  name?: string | null;
+  givenName?: string | null;
+  nickname?: string | null;
+  email?: string | null;
+  fallback?: string;
+}): string {
+  const email = input.email?.trim() || '';
+  const emailLabel =
+    email && email.includes('@') && !isPlaceholderAuthEmail(email) ? email.split('@')[0] : '';
+  const candidates = [input.name, input.givenName, input.nickname, emailLabel, email];
+  const picked = candidates.find((value) => value && !isAuth0Identifier(value));
+  return picked?.trim() || input.fallback || 'Account';
+}
+
+export function isUsableAvatarUrl(url: string | null | undefined): boolean {
+  const value = url?.trim() ?? '';
+  if (!value) return false;
+  if (value.startsWith('data:')) return false;
+  return /^https?:\/\//i.test(value);
+}
+
 export const AUTH0_CALLBACK_PATH = '/auth/callback';
 export const AUTH0_LOGIN_PATH = '/auth/login';
 export const AUTH0_LOGOUT_PATH = '/auth/logout';

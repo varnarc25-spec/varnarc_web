@@ -10,17 +10,7 @@ import { LocaleSwitch } from '@/components/shared/locale-switch';
 import { SearchAutocomplete } from '@/components/search/search-autocomplete';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { AuthNavLink } from '@/components/auth-nav-link';
-
-function initials(name: string): string {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('') || '?'
-  );
-}
+import { HeaderAccount } from '@/components/header-account';
 
 function HeaderSearch({ className = '' }: { className?: string }) {
   return (
@@ -100,26 +90,11 @@ export function SiteHeader({
             {user ? <NotificationBell /> : null}
             {user ? (
               <>
-                <Link
-                  href="/profile"
-                  className="hidden items-center gap-2 text-sm text-[var(--varnarc-ink)] sm:inline-flex"
-                >
-                  {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.displayName || 'Account'}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 rounded-full object-cover ring-1 ring-[var(--varnarc-border)]"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--varnarc-accent)] text-xs font-semibold text-white">
-                      {initials(user.displayName || user.email)}
-                    </span>
-                  )}
-                  <span className="max-w-[120px] truncate">{user.displayName}</span>
-                </Link>
+                <HeaderAccount
+                  displayName={user.displayName}
+                  email={user.email}
+                  avatarUrl={user.avatarUrl}
+                />
                 <AuthNavLink
                   href="/auth/logout"
                   className="hidden text-sm text-[var(--varnarc-subtle)] hover:text-[var(--varnarc-ink)] sm:inline"

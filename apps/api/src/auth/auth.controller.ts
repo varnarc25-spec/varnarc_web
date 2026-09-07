@@ -7,6 +7,7 @@ import { CurrentUserDecorator } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { CurrentUser } from '@varnarc/types';
+import { isAuth0Identifier, isPlaceholderAuthEmail } from '@varnarc/auth';
 import {
   adminLoginSchema,
   createStaffUserSchema,
@@ -77,9 +78,11 @@ export class AuthController {
   ) {
     const claims = {
       sub: body.sub ?? user.auth0UserId,
-      email: body.email ?? user.email,
+      email: body.email || (isPlaceholderAuthEmail(user.email) ? undefined : user.email),
       email_verified: body.email_verified ?? user.emailVerified,
-      name: body.name ?? user.displayName ?? undefined,
+      name:
+        body.name ||
+        (isAuth0Identifier(user.displayName) ? undefined : (user.displayName ?? undefined)),
       given_name: body.given_name ?? user.firstName ?? undefined,
       family_name: body.family_name ?? user.lastName ?? undefined,
       picture: body.picture ?? user.avatarUrl ?? undefined,

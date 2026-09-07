@@ -7,6 +7,7 @@ import { ToastProvider } from './toast-provider';
 import { UiStoreProvider } from '@/stores/ui-store';
 import { I18nProvider } from '@/providers/i18n-provider';
 import { UserThemeSync } from '@/providers/user-theme-sync';
+import { ClientErrorBoundary } from '@/components/client-error-boundary';
 
 export function AppProviders({
   children,
@@ -19,7 +20,9 @@ export function AppProviders({
 }) {
   return (
     <ThemeProvider styleBlock={themeStyleBlock}>
-      <UserThemeSync enabled={isAuthenticated} />
+      <ClientErrorBoundary>
+        <UserThemeSync enabled={isAuthenticated} />
+      </ClientErrorBoundary>
       <I18nProvider>
         <QueryProvider>
           <UiStoreProvider>

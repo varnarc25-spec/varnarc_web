@@ -193,10 +193,15 @@ export class UserRepository extends BaseRepository {
         lastLoginAt: new Date(),
       },
       update: {
-        email: data.email,
+        email: data.email.endsWith('@users.auth0.local') ? undefined : data.email,
         firstName: data.firstName ?? undefined,
         lastName: data.lastName ?? undefined,
-        displayName: data.displayName ?? undefined,
+        displayName:
+          !data.displayName ||
+          data.displayName === 'Account' ||
+          /^(auth0|google-oauth2|github|windowslive|oauth2)[|_]/i.test(data.displayName)
+            ? undefined
+            : data.displayName,
         avatarUrl: data.avatarUrl ?? undefined,
         emailVerified: data.emailVerified,
         lastLoginAt: new Date(),

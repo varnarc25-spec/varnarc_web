@@ -5,6 +5,7 @@ import { auth0 } from './lib/auth0';
 import { getMaintenanceStatus } from './lib/maintenance';
 import { resolveSeoRedirect } from './lib/seo-redirects';
 import { resolveHostCanonicalRedirect } from './lib/www-canonical';
+import { isNextControlFlowError } from './lib/next-control-flow';
 
 const STATIC_SEO_PATHS = new Set(['/favicon.ico', '/robots.txt', '/ads.txt', '/sitemap.xml']);
 
@@ -96,12 +97,14 @@ export async function middleware(request: NextRequest) {
           ...(audience ? { audience } : {}),
         });
       }
-    } catch {
+    } catch (err) {
+      if (isNextControlFlowError(err)) throw err;
       // User may be logged out, or API audience not yet granted for this session.
     }
 
     return authResponse;
   } catch (err) {
+    if (isNextControlFlowError(err)) throw err;
     console.error('[middleware] Fatal auth error:', err);
     // Public site must stay reachable when Auth0 is misconfigured on Cloud Run.
     return NextResponse.next();

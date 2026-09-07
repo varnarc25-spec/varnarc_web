@@ -18,10 +18,17 @@ import { fetchAdsensePublicConfig, getAdsenseClientFromConfig } from '@/lib/adse
 import { fetchMenuByLocation } from '@/services/content';
 import { fetchActiveTheme, googleFontsHref } from '@/services/theme';
 import { navItems as staticNavItems } from '@/features/home/static-data';
-import { isAuth0Configured, isAuthUiEnabled, appBaseUrlMatchesHost } from '@varnarc/auth';
+import {
+  isAuth0Configured,
+  isAuthUiEnabled,
+  appBaseUrlMatchesHost,
+  publicAuthDisplayName,
+  isUsableAvatarUrl,
+} from '@varnarc/auth';
 import { getRuntimePublicEnvScript } from '@/lib/runtime-public-env';
 import { auth0 } from '@/lib/auth0';
 import { apiServerFetch } from '@/lib/api';
+import { isNextControlFlowError } from '@/lib/next-control-flow';
 import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/components/seo/json-ld';
 import { getPublicSiteUrl } from '@/lib/public-site-url';
 import {
@@ -133,6 +140,7 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
   try {
     session = await auth0.getSession();
   } catch (error) {
+    if (isNextControlFlowError(error)) throw error;
     console.error('[auth] getSession failed; treating as logged out', error);
     return null;
   }
@@ -151,14 +159,14 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
   };
 
   const fallback: HeaderUser = {
-    email: sessionUser.email || sessionUser.sub || 'Signed in',
-    displayName:
-      sessionUser.name ||
-      sessionUser.nickname ||
-      sessionUser.email ||
-      sessionUser.given_name ||
-      'Account',
-    avatarUrl: sessionUser.picture || null,
+    email: sessionUser.email || 'Signed in',
+    displayName: publicAuthDisplayName({
+      name: sessionUser.name,
+      givenName: sessionUser.given_name,
+      nickname: sessionUser.nickname,
+      email: sessionUser.email,
+    }),
+    avatarUrl: isUsableAvatarUrl(sessionUser.picture) ? sessionUser.picture! : null,
     fromApi: false,
   };
 
@@ -179,13 +187,20 @@ async function loadHeaderUser(): Promise<HeaderUser | null> {
     const me = await apiServerFetch<CurrentUser>('/auth/me');
     if (me.data) {
       return {
-        email: me.data.email,
-        displayName: me.data.displayName || me.data.email,
-        avatarUrl: me.data.avatarUrl || sessionUser.picture || null,
+        email: me.data.email || fallback.email,
+        displayName: publicAuthDisplayName({
+          name: me.data.displayName,
+          givenName: me.data.firstName,
+          email: me.data.email || sessionUser.email,
+          fallback: fallback.displayName,
+        }),
+        avatarUrl:
+          (isUsableAvatarUrl(me.data.avatarUrl) ? me.data.avatarUrl : null) || fallback.avatarUrl,
         fromApi: true,
       };
     }
   } catch (error) {
+    if (isNextControlFlowError(error)) throw error;
     console.error('[auth] API sync/me failed; using Auth0 session for header', error);
   }
 
