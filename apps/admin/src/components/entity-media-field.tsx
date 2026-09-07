@@ -38,6 +38,7 @@ export function EntityMediaField({
 }) {
   function applySelection(selection: MediaPickerSelection) {
     onChange({
+      ...value,
       mediaId: selection.id,
       url: selection.url,
       alt: selection.alt?.trim() || value.alt || '',

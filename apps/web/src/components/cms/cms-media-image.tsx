@@ -144,7 +144,8 @@ export function CmsMediaImage({
   const resolvedLoading = priority ? 'eager' : loading;
   const resolvedPriority = priority ? ('high' as const) : fetchPriority;
   const fitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover';
-  const sharedClass = `h-full w-full ${fitClass} ${imgClassName ?? ''}`.trim();
+  const sizeClass = objectFit === 'contain' ? 'h-auto w-full' : 'h-full w-full';
+  const sharedClass = `${sizeClass} ${fitClass} ${imgClassName ?? ''}`.trim();
 
   let image: ReactNode;
 

@@ -18,6 +18,7 @@ export type ConstructionPageSeoValue = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageTitle?: string | null;
   heroImageWidth?: number | null;
   metaKeywords?: string | null;
   canonicalUrl?: string | null;
@@ -39,6 +40,7 @@ export function ConstructionPageSeoEditor({
     mediaId: initial.heroImageMediaId ?? null,
     url: initial.heroImageUrl ?? null,
     alt: initial.heroImageAlt ?? '',
+    title: initial.heroImageTitle ?? '',
     displayWidth: initial.heroImageWidth ?? 380,
   });
   const [metaKeywords, setMetaKeywords] = useState(initial.metaKeywords ?? '');
@@ -61,6 +63,7 @@ export function ConstructionPageSeoEditor({
           heroImageUrl: hero.url || null,
           heroImageMediaId: hero.mediaId || null,
           heroImageAlt: hero.alt || null,
+          heroImageTitle: hero.title || null,
           heroImageWidth: hero.displayWidth ?? 380,
           metaKeywords: metaKeywords || null,
           canonicalUrl: canonicalUrl || null,

@@ -51,6 +51,7 @@ export type ConstructionLandingProps = {
     intro?: string | null;
     imageUrl?: string | null;
     imageAlt?: string | null;
+    imageTitle?: string | null;
     imageMediaId?: string | null;
     imageWidth?: number | null;
   };
@@ -104,6 +105,7 @@ export function ConstructionLandingPage({
         intro={hero?.intro}
         imageUrl={hero?.imageUrl}
         imageAlt={hero?.imageAlt}
+        imageTitle={hero?.imageTitle}
         imageMediaId={hero?.imageMediaId}
         imageWidth={hero?.imageWidth}
       />

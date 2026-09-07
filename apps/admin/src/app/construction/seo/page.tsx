@@ -13,6 +13,7 @@ type ConstructionPageRow = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageTitle?: string | null;
   heroImageWidth?: number | null;
   metaKeywords?: string | null;
   canonicalUrl?: string | null;
@@ -29,7 +30,11 @@ export default async function ConstructionHomePageSeoAdmin() {
       />
       {hub.error ? <p className="text-sm text-red-600">{hub.error}</p> : null}
       {hub.data ? (
-        <ConstructionPageSeoEditor pageKey={hub.data.pageKey} initial={hub.data} />
+        <ConstructionPageSeoEditor
+          key={`${hub.data.heroImageTitle ?? ''}-${hub.data.heroImageWidth ?? 380}`}
+          pageKey={hub.data.pageKey}
+          initial={hub.data}
+        />
       ) : null}
     </div>
   );

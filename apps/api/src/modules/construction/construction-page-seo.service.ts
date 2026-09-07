@@ -18,6 +18,7 @@ type PageStructuredData = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
+  heroImageTitle?: string | null;
   heroImageWidth?: number | null;
 };
 
@@ -30,6 +31,7 @@ function parsePageStructuredData(value: unknown): PageStructuredData {
     heroImageUrl: typeof row.heroImageUrl === 'string' ? row.heroImageUrl : null,
     heroImageMediaId: typeof row.heroImageMediaId === 'string' ? row.heroImageMediaId : null,
     heroImageAlt: typeof row.heroImageAlt === 'string' ? row.heroImageAlt : null,
+    heroImageTitle: typeof row.heroImageTitle === 'string' ? row.heroImageTitle : null,
     heroImageWidth: parseHeroWidth(row.heroImageWidth),
   };
 }
@@ -104,6 +106,13 @@ export class ConstructionPageSeoService {
       },
     });
     const structured = parsePageStructuredData(meta?.structuredData);
+    const asset =
+      structured.heroImageMediaId != null
+        ? await this.db.mediaAsset.findFirst({
+            where: { id: structured.heroImageMediaId, deletedAt: null },
+            select: { id: true, secureUrl: true, url: true, title: true, alt: true },
+          })
+        : null;
     const heroImageUrl = await resolveHeroImageUrl(
       this.db,
       structured.heroImageMediaId ?? null,
@@ -121,7 +130,8 @@ export class ConstructionPageSeoService {
       intro: structured.intro ?? defaults.intro,
       heroImageUrl,
       heroImageMediaId: structured.heroImageMediaId ?? null,
-      heroImageAlt: structured.heroImageAlt ?? null,
+      heroImageAlt: structured.heroImageAlt ?? asset?.alt ?? null,
+      heroImageTitle: structured.heroImageTitle ?? asset?.title ?? null,
       heroImageWidth: structured.heroImageWidth ?? 380,
       metaKeywords: meta?.metaKeywords ?? null,
       canonicalUrl: meta?.canonicalUrl ?? defaults.canonicalUrl ?? null,
@@ -147,20 +157,39 @@ export class ConstructionPageSeoService {
         ? input.heroImageUrl?.trim() || null
         : (existingStructured.heroImageUrl ?? null);
     const nextHeroUrl = await resolveHeroImageUrl(this.db, nextHeroMediaId, nextHeroUrlInput);
+    const nextHeroTitle =
+      input.heroImageTitle !== undefined
+        ? input.heroImageTitle?.trim() || null
+        : (existingStructured.heroImageTitle ?? null);
+    const nextHeroAlt =
+      input.heroImageAlt !== undefined
+        ? input.heroImageAlt?.trim() || null
+        : (existingStructured.heroImageAlt ?? null);
     const structuredData: PageStructuredData = {
       h1: input.h1 !== undefined ? input.h1 : (existingStructured.h1 ?? defaults.h1),
       intro: input.intro !== undefined ? input.intro : (existingStructured.intro ?? defaults.intro),
       heroImageUrl: nextHeroUrl,
       heroImageMediaId: nextHeroMediaId,
-      heroImageAlt:
-        input.heroImageAlt !== undefined
-          ? input.heroImageAlt?.trim() || null
-          : (existingStructured.heroImageAlt ?? null),
+      heroImageAlt: nextHeroAlt,
+      heroImageTitle: nextHeroTitle,
       heroImageWidth:
         input.heroImageWidth !== undefined
           ? (parseHeroWidth(input.heroImageWidth) ?? 380)
           : (existingStructured.heroImageWidth ?? 380),
     };
+
+    if (
+      nextHeroMediaId &&
+      (input.heroImageTitle !== undefined || input.heroImageAlt !== undefined)
+    ) {
+      await this.db.mediaAsset.updateMany({
+        where: { id: nextHeroMediaId, deletedAt: null },
+        data: {
+          ...(input.heroImageTitle !== undefined ? { title: nextHeroTitle } : {}),
+          ...(input.heroImageAlt !== undefined ? { alt: nextHeroAlt } : {}),
+        },
+      });
+    }
 
     await this.db.seoMetadata.upsert({
       where: {

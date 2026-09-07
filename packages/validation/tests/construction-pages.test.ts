@@ -16,9 +16,11 @@ describe('construction page SEO', () => {
       heroImageUrl: 'https://cdn.example.com/construction-hero.jpg',
       heroImageMediaId: 'c0000001-0000-4000-8000-000000000099',
       heroImageAlt: 'House under construction',
-      heroImageWidth: 320,
+      heroImageTitle: 'Varnarc house construction calculators',
+      heroImageWidth: 800,
     });
-    expect(parsed.heroImageWidth).toBe(320);
+    expect(parsed.heroImageTitle).toBe('Varnarc house construction calculators');
+    expect(parsed.heroImageWidth).toBe(800);
     expect(parsed.heroImageUrl).toContain('construction-hero');
   });
 });

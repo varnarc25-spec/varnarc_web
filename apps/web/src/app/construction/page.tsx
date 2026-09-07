@@ -154,6 +154,7 @@ export default async function ConstructionPage({ searchParams }: Props) {
         intro: pageSeoRes.data?.intro,
         imageUrl: pageSeoRes.data?.heroImageUrl,
         imageAlt: pageSeoRes.data?.heroImageAlt,
+        imageTitle: pageSeoRes.data?.heroImageTitle,
         imageMediaId: pageSeoRes.data?.heroImageMediaId,
         imageWidth: pageSeoRes.data?.heroImageWidth,
       }}
