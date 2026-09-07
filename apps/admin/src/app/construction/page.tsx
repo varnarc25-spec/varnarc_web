@@ -13,7 +13,6 @@ type DashboardData = {
 };
 
 const sections = [
-  { href: '/construction/seo', label: 'Home page' },
   { href: '/construction/categories', label: 'Categories' },
   { href: '/construction/materials', label: 'Materials' },
   { href: '/construction/brands', label: 'Brands' },
@@ -37,7 +36,7 @@ export default async function ConstructionAdminDashboardPage() {
     <div>
       <PageHeader
         title="Construction"
-        description="Manage the home page hero, materials, brands, cost templates, projects, and guides."
+        description="Manage materials, brands, cost templates, projects, and guides."
       />
 
       {result.error ? (

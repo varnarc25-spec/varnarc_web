@@ -45,6 +45,20 @@ describe('construction-sitemap', () => {
     }
     expect(CONSTRUCTION_SITEMAP_CORE_PATHS).toContain('/construction/cost');
     expect(CONSTRUCTION_SITEMAP_CALCULATOR_PATHS.length).toBeGreaterThan(20);
+    for (const slug of [
+      '500-sq-ft',
+      '600-sq-ft',
+      '800-sq-ft',
+      '1000-sq-ft',
+      '1200-sq-ft',
+      '1500-sq-ft',
+      '1800-sq-ft',
+      '2000-sq-ft',
+      '2500-sq-ft',
+      '3000-sq-ft',
+    ]) {
+      expect(calcs).toContain(`/construction/cost/${slug}`);
+    }
   });
 
   it('emits material guides and editorial comparisons in their segments', () => {

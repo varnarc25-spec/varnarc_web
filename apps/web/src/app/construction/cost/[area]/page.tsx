@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ContentLayout } from '@/components/layout/content-layout';
 import { ConstructionSeo } from '@/components/construction/construction-seo';
 import { ConstructionCostAreaView } from '@/components/construction/construction-cost-area/construction-cost-area-view';
 import {
@@ -10,7 +8,6 @@ import {
   listIndexableConstructionCostAreaLandings,
 } from '@varnarc/validation';
 import { constructionHubBreadcrumbs, resolveConstructionIndexing } from '@/lib/construction/seo';
-import { cx } from '@/components/construction/styles';
 
 type Props = { params: Promise<{ area: string }> };
 
@@ -52,17 +49,7 @@ export default async function ConstructionCostAreaPage({ params }: Props) {
   if (!landing) notFound();
 
   return (
-    <ContentLayout
-      title={landing.h1}
-      description={landing.qualification}
-      hideTitle
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Construction', href: '/construction' },
-        { label: 'Cost by area', href: '/construction/cost' },
-        { label: landing.label },
-      ]}
-    >
+    <>
       <ConstructionSeo
         breadcrumbs={constructionHubBreadcrumbs([
           { name: 'Cost by area', path: '/construction/cost' },
@@ -80,17 +67,7 @@ export default async function ConstructionCostAreaPage({ params }: Props) {
           path: '/construction/cost-calculator',
         }}
       />
-
       <ConstructionCostAreaView landing={landing} />
-
-      <div className="mt-8 flex flex-wrap gap-2">
-        <Link href="/construction/cost" className={cx.secondaryBtn}>
-          All house sizes
-        </Link>
-        <Link href="/construction/construction-cost" className={cx.secondaryBtn}>
-          Cost by city
-        </Link>
-      </div>
-    </ContentLayout>
+    </>
   );
 }

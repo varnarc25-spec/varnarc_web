@@ -124,7 +124,10 @@ export function SiteFooter({
             <ul className="mt-3 space-y-1.5 text-sm">
               {quickLinks.map((l) => (
                 <li key={l.href + l.label}>
-                  <Link href={l.href} className="inline-flex items-center py-1 hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -137,7 +140,10 @@ export function SiteFooter({
             <ul className="mt-3 space-y-1.5 text-sm">
               {popular.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex items-center py-1 hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.name}
                   </Link>
                 </li>
@@ -150,7 +156,10 @@ export function SiteFooter({
             <ul className="mt-3 space-y-1.5 text-sm">
               {helpfulLinks.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex items-center py-1 hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -163,7 +172,10 @@ export function SiteFooter({
             <ul className="mt-3 space-y-1.5 text-sm">
               {resources.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex items-center py-1 hover:text-white">
+                  <Link
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center py-1 hover:text-white"
+                  >
                     {l.label}
                   </Link>
                 </li>

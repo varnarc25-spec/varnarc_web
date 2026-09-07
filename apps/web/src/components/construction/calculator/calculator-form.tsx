@@ -55,7 +55,7 @@ export function CalculatorForm({
     >
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
       <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center">
-        <button type="submit" disabled={loading} className={cn(cx.primaryBtn, 'sm:min-w-[8.5rem]')}>
+        <button type="submit" disabled={loading} className={cn(cx.accentBtn, 'sm:min-w-[8.5rem]')}>
           {loading ? 'Calculating…' : submitLabel}
         </button>
         {onReset ? (

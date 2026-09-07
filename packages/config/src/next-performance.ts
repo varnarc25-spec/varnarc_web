@@ -9,9 +9,6 @@ export const nextPerformanceDefaults = {
     remotePatterns: [
       { protocol: 'https' as const, hostname: 'api.varnarc.com' },
       { protocol: 'http' as const, hostname: 'localhost', port: '4000' },
-      { protocol: 'https' as const, hostname: 'storage.googleapis.com' },
-      { protocol: 'https' as const, hostname: '**.googleapis.com' },
-      { protocol: 'https' as const, hostname: '**.run.app' },
       { protocol: 'https' as const, hostname: '**.googleusercontent.com' },
       { protocol: 'https' as const, hostname: 'res.cloudinary.com' },
       { protocol: 'https' as const, hostname: '**.cloudinary.com' },

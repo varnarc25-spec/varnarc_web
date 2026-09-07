@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { Button } from '@varnarc/ui';
+import { getApiBaseUrl } from '@/services/api-client';
 import type { ConstructionEstimateResult } from '@/services/construction';
 import {
   categorizeConstructionResultRange,
@@ -133,7 +134,7 @@ export function ConstructionEstimateForm({
       });
     }
     try {
-      const res = await fetch('/api/construction/estimate', {
+      const res = await fetch(`${getApiBaseUrl()}/construction/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload()),

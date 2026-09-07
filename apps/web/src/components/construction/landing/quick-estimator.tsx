@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { getApiBaseUrl } from '@/services/api-client';
 import { ConstructionSection } from '@/components/construction/construction-section';
 import { cn, cx } from '@/components/construction/styles';
 import { QUICK_ESTIMATOR_LOCATIONS } from '@/lib/construction/landing';
@@ -68,7 +69,7 @@ export function ConstructionQuickEstimator() {
       const region =
         location === 'Other / India average' ? undefined : location.replace(' NCR', '');
 
-      const res = await fetch('/api/construction/estimate', {
+      const res = await fetch(`${getApiBaseUrl()}/construction/estimate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

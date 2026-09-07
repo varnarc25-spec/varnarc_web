@@ -194,7 +194,16 @@ export const CONSTRUCTION_SEO_STATIC_INVENTORY: ConstructionSeoInventoryItem[] =
   { path: '/construction/material-selector', pageType: 'calculator', indexable: true },
   { path: '/construction/calc', pageType: 'hub', indexable: true },
   { path: '/construction/cost', pageType: 'hub', indexable: true },
+  { path: '/construction/cost/500-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/600-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/800-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/1000-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/1200-sq-ft', pageType: 'calculator', indexable: true },
   { path: '/construction/cost/1500-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/1800-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/2000-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/2500-sq-ft', pageType: 'calculator', indexable: true },
+  { path: '/construction/cost/3000-sq-ft', pageType: 'calculator', indexable: true },
 ];
 
 export type ParsedConstructionPageSignals = {

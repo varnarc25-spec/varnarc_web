@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getApiAccessToken } from '@/lib/api';
-import { getApiBaseUrl } from '@/lib/runtime-public-env';
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 export async function POST(request: Request) {
   const token = await getApiAccessToken();
@@ -9,7 +10,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const res = await fetch(`${getApiBaseUrl()}/construction/estimate/save`, {
+  const res = await fetch(`${apiUrl}/construction/estimate/save`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

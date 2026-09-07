@@ -8,22 +8,15 @@ export function ContentLayout({
   breadcrumbs,
   children,
   showAd = true,
-  hideTitle = false,
 }: {
   title: string;
   description?: string;
   breadcrumbs?: Array<{ label: string; href?: string }>;
   children: ReactNode;
   showAd?: boolean;
-  hideTitle?: boolean;
 }) {
   return (
-    <PageShell
-      title={title}
-      description={description}
-      breadcrumbs={breadcrumbs}
-      hideTitle={hideTitle}
-    >
+    <PageShell title={title} description={description} breadcrumbs={breadcrumbs}>
       {showAd ? (
         <div className="mb-6">
           <AdBanner slot="content-top" />

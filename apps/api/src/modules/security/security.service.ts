@@ -54,10 +54,6 @@ export class SecurityConfigService implements OnModuleInit {
       process.env.NEXT_PUBLIC_ADMIN_URL,
       process.env.WEB_APP_URL,
       process.env.ADMIN_APP_URL,
-      process.env.APP_BASE_URL,
-      ...(process.env.NODE_ENV === 'production'
-        ? ['https://varnarc.com', 'https://www.varnarc.com', 'https://admin.varnarc.com']
-        : []),
     ].filter((value): value is string => Boolean(value?.trim()));
 
     const configured = [...settings.corsOrigins, ...settings.allowedOrigins, ...envOrigins];

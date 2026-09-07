@@ -3,7 +3,6 @@ import { MediaModule } from '../media/media.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ConstructionController } from './construction.controller';
 import { ConstructionService } from './construction.service';
-import { ConstructionPageSeoService } from './construction-page-seo.service';
 import { CommunityPriceReportsService } from './community-price-reports.service';
 import { PriceAlertsSchedulerService } from './price-alerts.scheduler';
 import { PriceAlertsService } from './price-alerts.service';
@@ -23,7 +22,6 @@ import { ConstructionSearchOpportunityService } from './construction-search-oppo
   ],
   providers: [
     ConstructionService,
-    ConstructionPageSeoService,
     PriceAlertsService,
     PriceAlertsSchedulerService,
     CommunityPriceReportsService,

@@ -20,6 +20,8 @@ export const cx = {
   link: 'text-sm font-semibold text-[#0b1f3a] underline-offset-2 transition hover:text-[#f97316] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316]',
   primaryBtn:
     'inline-flex min-h-11 items-center justify-center rounded-lg bg-[#0b1f3a] px-4 text-sm font-semibold text-white transition hover:bg-[#122b4a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+  accentBtn:
+    'inline-flex min-h-11 items-center justify-center rounded-lg bg-[#f97316] px-4 text-sm font-semibold text-white transition hover:bg-[#ea6a0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
   secondaryBtn:
     'inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-[#0b1f3a] transition hover:border-[#f97316] hover:text-[#f97316] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2',
 } as const;

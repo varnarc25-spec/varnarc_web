@@ -4,12 +4,11 @@ import {
   CONSTRUCTION_CMS_PAGE_DEFAULTS,
   CONSTRUCTION_PAGE_ENTITY_TYPE,
   CONSTRUCTION_PAGE_IDS,
-  CONSTRUCTION_CMS_PAGE_KEYS,
+  CONSTRUCTION_PAGE_KEYS,
   constructionPageKeySchema,
   type ConstructionPageKey,
   type UpdateConstructionPageSeoInput,
 } from '@varnarc/validation';
-import { appMediaPublicUrl } from '../media/app-media-storage';
 import { PRISMA } from '../../database/database.module';
 
 type PageStructuredData = {
@@ -18,8 +17,6 @@ type PageStructuredData = {
   heroImageUrl?: string | null;
   heroImageMediaId?: string | null;
   heroImageAlt?: string | null;
-  heroImageTitle?: string | null;
-  heroImageWidth?: number | null;
 };
 
 function parsePageStructuredData(value: unknown): PageStructuredData {
@@ -31,47 +28,7 @@ function parsePageStructuredData(value: unknown): PageStructuredData {
     heroImageUrl: typeof row.heroImageUrl === 'string' ? row.heroImageUrl : null,
     heroImageMediaId: typeof row.heroImageMediaId === 'string' ? row.heroImageMediaId : null,
     heroImageAlt: typeof row.heroImageAlt === 'string' ? row.heroImageAlt : null,
-    heroImageTitle: typeof row.heroImageTitle === 'string' ? row.heroImageTitle : null,
-    heroImageWidth: parseHeroWidth(row.heroImageWidth),
   };
-}
-
-function parseHeroWidth(value: unknown): number | null {
-  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-  if (!Number.isFinite(n)) return null;
-  return Math.min(800, Math.max(120, Math.round(n)));
-}
-
-function isUnusableHeroUrl(url: string | null | undefined) {
-  if (!url?.trim()) return true;
-  const value = url.trim();
-  if (value === 'pending') return true;
-  try {
-    const host = new URL(value, 'https://varnarc.com').hostname;
-    return host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
-  } catch {
-    return true;
-  }
-}
-
-async function resolveHeroImageUrl(
-  db: PrismaClient,
-  mediaId: string | null,
-  storedUrl: string | null,
-) {
-  if (mediaId) {
-    const asset = await db.mediaAsset.findFirst({
-      where: { id: mediaId, deletedAt: null },
-      select: { id: true, secureUrl: true, url: true },
-    });
-    if (asset) {
-      const live = asset.secureUrl || asset.url;
-      if (live && !isUnusableHeroUrl(live) && live !== 'pending') return live;
-      return appMediaPublicUrl(asset.id);
-    }
-    return appMediaPublicUrl(mediaId);
-  }
-  return isUnusableHeroUrl(storedUrl) ? null : storedUrl;
 }
 
 @Injectable()
@@ -79,7 +36,7 @@ export class ConstructionPageSeoService {
   constructor(@Inject(PRISMA) private readonly db: PrismaClient) {}
 
   listPages() {
-    return CONSTRUCTION_CMS_PAGE_KEYS.map((key) => {
+    return CONSTRUCTION_PAGE_KEYS.map((key) => {
       const defaults = CONSTRUCTION_CMS_PAGE_DEFAULTS[key];
       return { pageKey: key, path: defaults.path, label: defaults.label };
     });
@@ -106,18 +63,14 @@ export class ConstructionPageSeoService {
       },
     });
     const structured = parsePageStructuredData(meta?.structuredData);
-    const asset =
-      structured.heroImageMediaId != null
-        ? await this.db.mediaAsset.findFirst({
-            where: { id: structured.heroImageMediaId, deletedAt: null },
-            select: { id: true, secureUrl: true, url: true, title: true, alt: true },
-          })
-        : null;
-    const heroImageUrl = await resolveHeroImageUrl(
-      this.db,
-      structured.heroImageMediaId ?? null,
-      structured.heroImageUrl ?? null,
-    );
+    let heroImageUrl = structured.heroImageUrl ?? null;
+    if (!heroImageUrl && structured.heroImageMediaId) {
+      const asset = await this.db.mediaAsset.findFirst({
+        where: { id: structured.heroImageMediaId, deletedAt: null },
+        select: { secureUrl: true, url: true },
+      });
+      heroImageUrl = asset?.secureUrl || asset?.url || null;
+    }
 
     return {
       pageKey,
@@ -130,9 +83,7 @@ export class ConstructionPageSeoService {
       intro: structured.intro ?? defaults.intro,
       heroImageUrl,
       heroImageMediaId: structured.heroImageMediaId ?? null,
-      heroImageAlt: structured.heroImageAlt ?? asset?.alt ?? null,
-      heroImageTitle: structured.heroImageTitle ?? asset?.title ?? null,
-      heroImageWidth: structured.heroImageWidth ?? 380,
+      heroImageAlt: structured.heroImageAlt ?? null,
       metaKeywords: meta?.metaKeywords ?? null,
       canonicalUrl: meta?.canonicalUrl ?? defaults.canonicalUrl ?? null,
     };
@@ -148,48 +99,22 @@ export class ConstructionPageSeoService {
       },
     });
     const existingStructured = parsePageStructuredData(existing?.structuredData);
-    const nextHeroMediaId =
-      input.heroImageMediaId !== undefined
-        ? input.heroImageMediaId || null
-        : (existingStructured.heroImageMediaId ?? null);
-    const nextHeroUrlInput =
-      input.heroImageUrl !== undefined
-        ? input.heroImageUrl?.trim() || null
-        : (existingStructured.heroImageUrl ?? null);
-    const nextHeroUrl = await resolveHeroImageUrl(this.db, nextHeroMediaId, nextHeroUrlInput);
-    const nextHeroTitle =
-      input.heroImageTitle !== undefined
-        ? input.heroImageTitle?.trim() || null
-        : (existingStructured.heroImageTitle ?? null);
-    const nextHeroAlt =
-      input.heroImageAlt !== undefined
-        ? input.heroImageAlt?.trim() || null
-        : (existingStructured.heroImageAlt ?? null);
     const structuredData: PageStructuredData = {
       h1: input.h1 !== undefined ? input.h1 : (existingStructured.h1 ?? defaults.h1),
       intro: input.intro !== undefined ? input.intro : (existingStructured.intro ?? defaults.intro),
-      heroImageUrl: nextHeroUrl,
-      heroImageMediaId: nextHeroMediaId,
-      heroImageAlt: nextHeroAlt,
-      heroImageTitle: nextHeroTitle,
-      heroImageWidth:
-        input.heroImageWidth !== undefined
-          ? (parseHeroWidth(input.heroImageWidth) ?? 380)
-          : (existingStructured.heroImageWidth ?? 380),
+      heroImageUrl:
+        input.heroImageUrl !== undefined
+          ? input.heroImageUrl?.trim() || null
+          : (existingStructured.heroImageUrl ?? null),
+      heroImageMediaId:
+        input.heroImageMediaId !== undefined
+          ? input.heroImageMediaId || null
+          : (existingStructured.heroImageMediaId ?? null),
+      heroImageAlt:
+        input.heroImageAlt !== undefined
+          ? input.heroImageAlt?.trim() || null
+          : (existingStructured.heroImageAlt ?? null),
     };
-
-    if (
-      nextHeroMediaId &&
-      (input.heroImageTitle !== undefined || input.heroImageAlt !== undefined)
-    ) {
-      await this.db.mediaAsset.updateMany({
-        where: { id: nextHeroMediaId, deletedAt: null },
-        data: {
-          ...(input.heroImageTitle !== undefined ? { title: nextHeroTitle } : {}),
-          ...(input.heroImageAlt !== undefined ? { alt: nextHeroAlt } : {}),
-        },
-      });
-    }
 
     await this.db.seoMetadata.upsert({
       where: {

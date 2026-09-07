@@ -2,7 +2,6 @@ import { headers as nextHeaders } from 'next/headers';
 import {
   AUTOMOBILE_SITEMAP_STATIC_LASTMOD,
   buildGuideClusterLanding,
-  CONSTRUCTION_SITEMAP_CALCULATOR_PATHS,
   CONSTRUCTION_SITEMAP_CORE_PATHS,
   CONSTRUCTION_SITEMAP_EDITORIAL_COMPARISON_SLUGS,
   CONSTRUCTION_SITEMAP_MATERIAL_GUIDE_SLUGS,
@@ -11,10 +10,10 @@ import {
   isAutomobileSitemapSegment,
   isConstructionSitemapSegment,
   listAllAutomobileSitemapStaticPaths,
+  listConstructionSitemapStaticPaths,
   listGuideClusters,
   listIndexableConstructionGlossaryTerms,
   listIndexableIntentCalcLandings,
-  listIndexableConstructionCostAreaLandings,
   listPotentialConstructionCostCities,
 } from '@varnarc/validation';
 
@@ -89,9 +88,8 @@ const STATIC_FALLBACK_URLS: Record<string, string[]> = {
   ],
   'construction-core': [...CONSTRUCTION_SITEMAP_CORE_PATHS],
   'construction-calculators': [
-    ...CONSTRUCTION_SITEMAP_CALCULATOR_PATHS,
+    ...listConstructionSitemapStaticPaths('construction-calculators'),
     ...listIndexableIntentCalcLandings().map((p) => p.path),
-    ...listIndexableConstructionCostAreaLandings().map((p) => p.path),
   ],
   'construction-materials': CONSTRUCTION_SITEMAP_MATERIAL_GUIDE_SLUGS.map(
     (s) => `/construction/materials/${s}`,

@@ -16,21 +16,6 @@ export type ConstructionDashboard = {
   relatedCalculators?: Array<{ slug: string; name: string }>;
 };
 
-export type ConstructionPageSeo = {
-  pageKey: string;
-  path: string;
-  label: string;
-  title: string;
-  description: string;
-  h1: string;
-  intro: string;
-  heroImageUrl?: string | null;
-  heroImageMediaId?: string | null;
-  heroImageAlt?: string | null;
-  heroImageTitle?: string | null;
-  heroImageWidth?: number | null;
-};
-
 export type ConstructionBrand = {
   id: string;
   name: string;
@@ -304,16 +289,6 @@ export async function fetchConstructionDashboard() {
   try {
     return await apiPublicFetch<ConstructionDashboard>('/construction/dashboard', {
       cache: 'no-store',
-    });
-  } catch {
-    return { data: null };
-  }
-}
-
-export async function fetchConstructionPageSeo(pageKey: string) {
-  try {
-    return await apiPublicFetch<ConstructionPageSeo>(`/construction/pages/${pageKey}`, {
-      next: { revalidate: 60 },
     });
   } catch {
     return { data: null };

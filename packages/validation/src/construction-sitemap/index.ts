@@ -1,3 +1,5 @@
+import { constructionCostAreaPath, listConstructionCostAreaSlugs } from '../construction-cost-area';
+
 /**
  * Construction sitemap architecture — segment catalog, static paths, and
  * eligibility helpers shared by API sitemap builders and SEO audit.
@@ -188,7 +190,10 @@ export function listConstructionSitemapStaticPaths(segment: ConstructionSitemapS
     case 'construction-core':
       return filterConstructionSitemapPaths(CONSTRUCTION_SITEMAP_CORE_PATHS);
     case 'construction-calculators':
-      return filterConstructionSitemapPaths(CONSTRUCTION_SITEMAP_CALCULATOR_PATHS);
+      return filterConstructionSitemapPaths([
+        ...CONSTRUCTION_SITEMAP_CALCULATOR_PATHS,
+        ...listConstructionCostAreaSlugs().map(constructionCostAreaPath),
+      ]);
     case 'construction-materials':
       return filterConstructionSitemapPaths(
         CONSTRUCTION_SITEMAP_MATERIAL_GUIDE_SLUGS.map((s) => `/construction/materials/${s}`),

@@ -46,15 +46,6 @@ export type ConstructionLandingProps = {
   faqs: Array<{ id: string; question: string; answer: string }>;
   projects: Array<{ id: string; name: string; href: string; summary?: string | null }>;
   initialIntent?: string | null;
-  hero?: {
-    title?: string | null;
-    intro?: string | null;
-    imageUrl?: string | null;
-    imageAlt?: string | null;
-    imageTitle?: string | null;
-    imageMediaId?: string | null;
-    imageWidth?: number | null;
-  };
 };
 
 export function ConstructionLandingPage({
@@ -64,7 +55,6 @@ export function ConstructionLandingPage({
   faqs,
   projects,
   initialIntent = null,
-  hero,
 }: ConstructionLandingProps) {
   const meta = getModuleHubMeta('construction');
   const hubSeo = CONSTRUCTION_PAGE_DEFAULTS.hub;
@@ -100,15 +90,7 @@ export function ConstructionLandingPage({
         }
       />
 
-      <ConstructionLandingHero
-        title={hero?.title}
-        intro={hero?.intro}
-        imageUrl={hero?.imageUrl}
-        imageAlt={hero?.imageAlt}
-        imageTitle={hero?.imageTitle}
-        imageMediaId={hero?.imageMediaId}
-        imageWidth={hero?.imageWidth}
-      />
+      <ConstructionLandingHero />
 
       <div className="site-container space-y-12 py-8 sm:space-y-14 sm:py-10">
         <Suspense fallback={<LoadingState label="Loading planner" variant="cards" />}>

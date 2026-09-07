@@ -96,7 +96,6 @@ export function CalculatorEditor({
     mediaId: initial?.illustrationMediaId ?? null,
     url: initial?.illustrationUrl ?? null,
     alt: initial?.illustrationAlt ?? '',
-    displayWidth: illustrationWidthSetting(initial?.settings, 380),
   });
   const [formula, setFormula] = useState(
     initial?.formula || JSON.stringify({ type: 'static', outputs: { result: 'a + b' } }, null, 2),
@@ -113,6 +112,9 @@ export function CalculatorEditor({
       null,
       2,
     ),
+  );
+  const [illustrationWidth, setIllustrationWidth] = useState(
+    String(illustrationWidthSetting(initial?.settings, 380)),
   );
   const [seoTitle, setSeoTitle] = useState(initial?.seoTitle || '');
   const [seoDescription, setSeoDescription] = useState(initial?.seoDescription || '');
@@ -185,7 +187,7 @@ export function CalculatorEditor({
         settings: {
           ...(parsedSettings as Record<string, unknown>),
           illustrationDisplay: {
-            width: clampDimension(String(illustration.displayWidth ?? 380), 380),
+            width: clampDimension(illustrationWidth, 380),
           },
         },
         seoTitle: seoTitle || null,
@@ -357,8 +359,24 @@ export function CalculatorEditor({
         onChange={setIllustration}
         showTitle
         showDescription
-        showDisplayWidth
       />
+      <div className="max-w-xs">
+        <label className="text-xs text-[var(--varnarc-subtle)]">
+          Website image width (px)
+          <input
+            type="number"
+            min={120}
+            max={800}
+            step={10}
+            className="mt-1 h-9 w-full rounded-md border border-[var(--varnarc-border)] px-3 text-sm"
+            value={illustrationWidth}
+            onChange={(event) => setIllustrationWidth(event.target.value)}
+          />
+        </label>
+        <p className="mt-1 text-xs text-[var(--varnarc-subtle)]">
+          Height is calculated automatically from the image aspect ratio.
+        </p>
+      </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">

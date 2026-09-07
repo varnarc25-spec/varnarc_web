@@ -4,40 +4,13 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { AskConstructionSearch } from '@/components/construction/ask/ask-construction-search';
-import { ConstructionHouseIllustration } from '@/components/construction/construction-dashboard-chrome';
-import { CmsMediaImage } from '@/components/cms/cms-media-image';
-import { resolvePublicCmsMediaUrl } from '@/lib/cms-media-url';
 import { cn, cx } from '@/components/construction/styles';
 import { LANDING_SEARCH_EXAMPLES } from '@/lib/construction/landing';
 import { resolveAskConstructionQuery, askResultsPath } from '@/lib/construction/ask';
 import { trackAskResultClicked, trackLandingCtaClicked } from '@/lib/construction/analytics';
 import { useRouter } from 'next/navigation';
 
-const DEFAULT_TITLE = 'Plan your construction with confidence';
-const DEFAULT_INTRO =
-  'Estimate costs, calculate materials, compare options and plan your project with transparent construction tools.';
-
-export function ConstructionLandingHero({
-  title,
-  intro,
-  imageUrl,
-  imageAlt,
-  imageTitle,
-  imageMediaId,
-  imageWidth,
-}: {
-  title?: string | null;
-  intro?: string | null;
-  imageUrl?: string | null;
-  imageAlt?: string | null;
-  imageTitle?: string | null;
-  imageMediaId?: string | null;
-  imageWidth?: number | null;
-}) {
-  const heading = title?.trim() || DEFAULT_TITLE;
-  const subtitle = intro?.trim() || DEFAULT_INTRO;
-  const photo = resolvePublicCmsMediaUrl(imageUrl, imageMediaId);
-  const displayWidth = Math.min(800, Math.max(120, imageWidth ?? 380));
+export function ConstructionLandingHero() {
   const router = useRouter();
   const [sticky, setSticky] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
@@ -76,112 +49,85 @@ export function ConstructionLandingHero({
     <>
       <section
         ref={heroRef}
-        className="full-bleed border-b border-slate-200/70 bg-white"
+        className="full-bleed border-b border-slate-200/70 bg-[#f4f7fb]"
         aria-labelledby="construction-landing-h1"
       >
         <div className="site-container py-8 sm:py-10 lg:py-12">
           <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Home & Construction' }]} />
 
-          <div className="mt-2 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-            <div className="flex min-w-0 max-w-3xl flex-col">
-              <h1
-                id="construction-landing-h1"
-                className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]"
-              >
-                {heading}
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                {subtitle}
-              </p>
+          <div className="mt-2 max-w-3xl">
+            <h1
+              id="construction-landing-h1"
+              className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]"
+            >
+              Plan your construction with confidence
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+              Estimate costs, calculate materials, compare options and plan your project with
+              transparent construction tools.
+            </p>
+          </div>
 
-              <div className="mt-6">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Ask Varnarc Construction
-                </p>
-                <AskConstructionSearch
-                  id="construction-intent-search"
-                  placeholder="cement required for 1500 sqft, cost to build 3 BHK in Hyderabad…"
-                />
-              </div>
+          <div className="mt-6 max-w-2xl">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Ask Varnarc Construction
+            </p>
+            <AskConstructionSearch
+              id="construction-intent-search"
+              placeholder="cement required for 1500 sqft, cost to build 3 BHK in Hyderabad…"
+            />
+          </div>
 
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Try an example
-                </p>
-                <ul className="mt-2 flex flex-wrap gap-2">
-                  {LANDING_SEARCH_EXAMPLES.map((example) => (
-                    <li key={example.label}>
-                      <button
-                        type="button"
-                        onClick={() => runExample(example.label, example.href)}
-                        className={cn(
-                          'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-[#0b1f3a]',
-                          'hover:border-[#f97316] hover:text-[#f97316]',
-                          cx.focus,
-                        )}
-                      >
-                        {example.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link
-                  href="/construction/estimate"
-                  onClick={() =>
-                    trackLandingCtaClicked({
-                      cta_key: 'hero_estimate',
-                      surface: 'hero',
-                      path: '/construction/estimate',
-                    })
-                  }
-                  className={cx.primaryBtn}
-                >
-                  Quick estimate
-                </Link>
-                <Link
-                  href="/construction/cement-calculator"
-                  onClick={() =>
-                    trackLandingCtaClicked({
-                      cta_key: 'hero_materials',
-                      surface: 'hero',
-                      path: '/construction/cement-calculator',
-                    })
-                  }
-                  className={cx.secondaryBtn}
-                >
-                  Material calculators
-                </Link>
-              </div>
-            </div>
-            <div className="flex justify-center bg-transparent lg:justify-end">
-              {photo ? (
-                <div className="flex w-full justify-center bg-transparent lg:justify-end">
-                  <div
-                    className="shrink-0 bg-transparent"
-                    style={{ width: displayWidth, maxWidth: '100%' }}
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Try an example
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {LANDING_SEARCH_EXAMPLES.map((example) => (
+                <li key={example.label}>
+                  <button
+                    type="button"
+                    onClick={() => runExample(example.label, example.href)}
+                    className={cn(
+                      'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-[#0b1f3a]',
+                      'hover:border-[#f97316] hover:text-[#f97316]',
+                      cx.focus,
+                    )}
                   >
-                    <CmsMediaImage
-                      src={photo}
-                      alt={imageAlt?.trim() || heading}
-                      title={imageTitle?.trim() || undefined}
-                      width={displayWidth}
-                      height={Math.round(displayWidth * 0.56)}
-                      sizes={`${displayWidth}px`}
-                      className="w-full bg-transparent"
-                      imgClassName="h-auto w-full bg-transparent object-contain"
-                      objectFit="contain"
-                      unoptimized
-                      priority
-                    />
-                  </div>
-                </div>
-              ) : (
-                <ConstructionHouseIllustration />
-              )}
-            </div>
+                    {example.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Link
+              href="/construction/estimate"
+              onClick={() =>
+                trackLandingCtaClicked({
+                  cta_key: 'hero_estimate',
+                  surface: 'hero',
+                  path: '/construction/estimate',
+                })
+              }
+              className={cx.primaryBtn}
+            >
+              Quick estimate
+            </Link>
+            <Link
+              href="/construction/cement-calculator"
+              onClick={() =>
+                trackLandingCtaClicked({
+                  cta_key: 'hero_materials',
+                  surface: 'hero',
+                  path: '/construction/cement-calculator',
+                })
+              }
+              className={cx.secondaryBtn}
+            >
+              Material calculators
+            </Link>
           </div>
         </div>
       </section>

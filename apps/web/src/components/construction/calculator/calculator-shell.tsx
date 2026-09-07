@@ -8,10 +8,6 @@ import { StickyMobileCTA } from '@/components/construction/sticky-mobile-cta';
 import { CalculatorSaveSlot } from '@/components/construction/calculator/calculator-save-slot';
 import { CalculatorShareSlot } from '@/components/construction/calculator/calculator-share-slot';
 import { ConstructionWhatNextSlot } from '@/components/construction/calculator/construction-what-next-slot';
-import {
-  ConstructionDashboardHero,
-  ConstructionHeroActions,
-} from '@/components/construction/construction-dashboard-chrome';
 import type {
   ConstructionCrumb,
   ConstructionFaqItem,
@@ -63,27 +59,40 @@ export function CalculatorShell({
 }) {
   return (
     <main className={cn('w-full bg-white', stickyCta ? 'pb-24 md:pb-0' : '', className)}>
+      <header className="full-bleed border-b border-slate-200/70 bg-[#f4f7fb]">
+        <div className="site-container py-8 sm:py-10">
+          {breadcrumbs?.length ? <ConstructionBreadcrumbs items={breadcrumbs} /> : null}
+          <div className="mt-2 max-w-3xl">
+            <h1 className="text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
+              {title}
+            </h1>
+            {description ? (
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                {description}
+              </p>
+            ) : null}
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-[#0b1f3a]">
+              {[
+                'Estimate costs',
+                'Plan materials',
+                'Control budget',
+                'Complete with confidence',
+              ].map((point) => (
+                <li key={point} className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" aria-hidden />
+                  {point}
+                </li>
+              ))}
+            </ul>
+            {lastUpdated ? (
+              <p className="mt-2 text-xs text-slate-500">Last updated: {lastUpdated}</p>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
       <div className="site-container py-8 sm:py-10">
-        {breadcrumbs?.length ? <ConstructionBreadcrumbs items={breadcrumbs} /> : null}
-
-        <ConstructionDashboardHero
-          headingAs="h1"
-          title={title}
-          description={description}
-          points={[
-            'Estimate costs',
-            'Plan materials',
-            'Control budget',
-            'Complete with confidence',
-          ]}
-        >
-          <ConstructionHeroActions />
-          {lastUpdated ? (
-            <p className="mt-3 text-xs text-slate-500">Last updated: {lastUpdated}</p>
-          ) : null}
-        </ConstructionDashboardHero>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           <section aria-label="Calculator inputs">{form}</section>
           <section aria-label="Calculator results" className="space-y-4 lg:sticky lg:top-24">
             {result ? <CalculatorSaveSlot /> : null}
