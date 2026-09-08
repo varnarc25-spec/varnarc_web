@@ -163,7 +163,7 @@ export function mapApiProjectToSnapshot(project: ConstructionProject): Construct
       propertyType: project.projectType,
       builtUpArea: builtUp,
       floors,
-      quality: project.quality,
+      quality: project.quality ?? null,
     });
     if (derived) {
       material = material ?? derived.materialCost;

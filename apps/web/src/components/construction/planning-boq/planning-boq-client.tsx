@@ -216,9 +216,18 @@ export function PlanningBoqClient() {
                 ? Number(taxMatch[1])
                 : null,
           items: items.map((item, i) => {
-            const sectionId = isPlanningBoqSectionId(item.metadata?.sectionId ?? '')
-              ? item.metadata!.sectionId!
+            const rawSection = String(item.metadata?.sectionId ?? '');
+            const sectionId: PlanningBoqSectionId = isPlanningBoqSectionId(rawSection)
+              ? rawSection
               : sectionFromCategory(item.metadata?.category ?? '');
+            const rawSource = String(item.metadata?.source ?? 'saved');
+            const source: BoqItem['source'] =
+              rawSource === 'template' ||
+              rawSource === 'material_quantity' ||
+              rawSource === 'custom' ||
+              rawSource === 'saved'
+                ? rawSource
+                : 'saved';
             return {
               id: item.id || `saved-${i}`,
               sectionId,
@@ -228,7 +237,7 @@ export function PlanningBoqClient() {
               quantity: Number(item.quantity) || 0,
               rate: Number(item.unitRate) || 0,
               isIncluded: item.metadata?.isIncluded !== false,
-              source: item.metadata?.source ?? 'saved',
+              source,
               notes: item.metadata?.notes || item.description || '',
               isCustom: Boolean(item.metadata?.isCustom),
             };

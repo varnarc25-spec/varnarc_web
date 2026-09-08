@@ -267,7 +267,12 @@ export function MaterialQuantityCalculatorClient({
       } catch (err) {
         setResult(null);
         setError(err instanceof Error ? err.message : 'Enter a valid built-up area and floors.');
-        trackCalculatorModeError({ calculator_type: CALC_TYPE, error_type: 'validation' });
+        trackCalculatorModeError({
+          mode: 'forward',
+          calculator_type: CALC_TYPE,
+          error_code: 'validation',
+          logged_in: projects.length > 0,
+        });
       }
     },
     [form, projects.length],
