@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { cn, cx } from '@/components/construction/styles';
 import type { ConstructionProject, ConstructionSupplier } from '@/services/construction';
+import { rememberCurrentConstructionProjectId } from '@/lib/construction/current-project';
 import {
   PROJECT_DASHBOARD_TABS,
   actualSpentFromProject,
@@ -84,6 +85,10 @@ export function ProjectDashboardClient({
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab: ProjectDashboardTabId = isProjectDashboardTab(tabParam) ? tabParam : 'overview';
+
+  useEffect(() => {
+    rememberCurrentConstructionProjectId(project.id);
+  }, [project.id]);
 
   function setTab(tab: ProjectDashboardTabId) {
     const next = new URLSearchParams(searchParams.toString());
@@ -401,10 +406,7 @@ export function ProjectDashboardClient({
       {activeTab === 'boq' ? (
         <section className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/construction/boq-generator?projectId=${project.id}`}
-              className={cx.primaryBtn}
-            >
+            <Link href={`/construction/boq?projectId=${project.id}`} className={cx.primaryBtn}>
               Open BOQ Generator
             </Link>
           </div>
@@ -427,7 +429,7 @@ export function ProjectDashboardClient({
                       </p>
                     </div>
                     <Link
-                      href={`/construction/boq-generator?projectId=${project.id}&boqId=${boq.id}`}
+                      href={`/construction/boq?projectId=${project.id}&boqId=${boq.id}`}
                       className="text-sm font-medium text-[#f97316] hover:underline"
                     >
                       Open / edit
@@ -441,7 +443,7 @@ export function ProjectDashboardClient({
               title="No BOQ yet"
               body="Generate an indicative planning BOQ from project assumptions, or build one manually. This is not a tender BOQ."
               action={{
-                href: `/construction/boq-generator?projectId=${project.id}`,
+                href: `/construction/boq?projectId=${project.id}`,
                 label: 'Generate BOQ',
               }}
             />

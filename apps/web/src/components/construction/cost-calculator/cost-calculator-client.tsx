@@ -5,10 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateConstructionCost,
   estimateCostAreaMaterialLines,
+  parsePlannerHandoffQuery,
+  plannerToolHref,
   type ConstructionCostInput,
   type ConstructionCostQuality,
   type ConstructionCostPropertyType,
   type ConstructionCostResult,
+  type ConstructionPlannerHandoff,
   COST_CALC_VERSION,
 } from '@varnarc/validation';
 import {
@@ -52,7 +55,8 @@ import {
 } from '@/components/construction/report';
 import { COST_CALC_EXAMPLE, COST_CALC_FAQS, LOCATION_SUGGESTIONS } from './content';
 
-const STORAGE_KEY = 'varnarc.construction.cost-calculator.v1';
+import { COST_CALCULATOR_STORAGE_KEY } from '@/lib/construction/current-project';
+import { persistPlannerHandoff, readPlannerHandoff } from '@/lib/construction/planner-handoff';
 const CALC_TYPE = 'construction_cost_calculator';
 
 function formatInr(n: number): string {
@@ -125,21 +129,8 @@ const DEFAULT_FORM: FormState = {
 function parseInitial(params?: Record<string, string | undefined>): FormState {
   const next = { ...DEFAULT_FORM };
   if (!params) return next;
-  if (params.location || params.region) next.location = (params.location || params.region)!;
-  if (params.area || params.areaSqft || params.builtUpArea) {
-    next.builtUpArea = (params.builtUpArea || params.areaSqft || params.area)!;
-  }
-  if (params.areaUnit === 'sqm' || params.areaUnit === 'sqft') next.areaUnit = params.areaUnit;
-  if (params.floors) next.floors = params.floors;
-  if (
-    params.quality === 'basic' ||
-    params.quality === 'standard' ||
-    params.quality === 'premium' ||
-    params.quality === 'luxury'
-  ) {
-    next.quality = params.quality;
-  }
-  if (params.propertyType) next.propertyType = params.propertyType as ConstructionCostPropertyType;
+  const handoff = parsePlannerHandoffQuery(params);
+  applyHandoffToForm(next, handoff);
   if (params.contingency || params.contingencyPercent) {
     next.contingencyPercent = (params.contingencyPercent || params.contingency)!;
   }
@@ -150,6 +141,56 @@ function parseInitial(params?: Record<string, string | undefined>): FormState {
     next.mode = 'reverse';
   }
   return next;
+}
+
+function applyHandoffToForm(next: FormState, handoff: ConstructionPlannerHandoff): FormState {
+  if (handoff.location) next.location = handoff.location;
+  if (handoff.builtUpArea != null) next.builtUpArea = String(handoff.builtUpArea);
+  if (handoff.areaUnit) next.areaUnit = handoff.areaUnit;
+  if (handoff.floors != null) next.floors = String(handoff.floors);
+  if (
+    handoff.quality === 'basic' ||
+    handoff.quality === 'standard' ||
+    handoff.quality === 'premium' ||
+    handoff.quality === 'luxury'
+  ) {
+    next.quality = handoff.quality;
+  }
+  if (handoff.propertyType)
+    next.propertyType = handoff.propertyType as ConstructionCostPropertyType;
+  if (handoff.structureType) next.structureType = handoff.structureType;
+  if (handoff.foundationType) next.foundationType = handoff.foundationType;
+  if (handoff.basement) next.basement = true;
+  if (handoff.parkingSlots != null) next.parkingSlots = String(handoff.parkingSlots);
+  if (handoff.lift) next.lift = true;
+  if (handoff.compoundWall) next.compoundWall = true;
+  if (handoff.modularKitchen) next.modularKitchen = true;
+  if (handoff.budgetInr != null) next.budgetInr = String(handoff.budgetInr);
+  return next;
+}
+
+function handoffFromCost(
+  form: FormState,
+  result?: ConstructionCostResult | null,
+): ConstructionPlannerHandoff {
+  const area = Number(form.builtUpArea);
+  return {
+    location: form.location.trim() || undefined,
+    builtUpArea: Number.isFinite(area) && area > 0 ? area : result?.areaSqft,
+    areaUnit: form.areaUnit,
+    floors: Math.max(1, Math.round(Number(form.floors) || 1)),
+    propertyType: form.propertyType,
+    quality: form.quality,
+    structureType: form.structureType || undefined,
+    foundationType: form.foundationType || undefined,
+    basement: form.basement || undefined,
+    parkingSlots: Number(form.parkingSlots) > 0 ? Number(form.parkingSlots) : undefined,
+    lift: form.lift || undefined,
+    compoundWall: form.compoundWall || undefined,
+    modularKitchen: form.modularKitchen || undefined,
+    budgetInr:
+      result?.estimatedTotal ?? (Number(form.budgetInr) > 0 ? Number(form.budgetInr) : undefined),
+  };
 }
 
 function formFromShareInputs(inputs: Record<string, unknown>): FormState {
@@ -348,10 +389,18 @@ export function ConstructionCostCalculatorClient({
     hydrated.current = true;
     if (initialShareInputs) return;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw && !initialParams?.builtUpArea && !initialParams?.areaSqft) {
+      const raw = localStorage.getItem(COST_CALCULATOR_STORAGE_KEY);
+      const hasUrlArea = Boolean(
+        initialParams?.builtUpArea || initialParams?.areaSqft || initialParams?.area,
+      );
+      if (raw && !hasUrlArea) {
         const saved = JSON.parse(raw) as { form?: FormState };
         if (saved.form) setForm({ ...DEFAULT_FORM, ...saved.form });
+      } else if (!hasUrlArea) {
+        const stored = readPlannerHandoff();
+        if (stored.builtUpArea) {
+          setForm((prev) => applyHandoffToForm({ ...prev }, stored));
+        }
       }
     } catch {
       /* ignore */
@@ -388,9 +437,10 @@ export function ConstructionCostCalculatorClient({
       });
       try {
         localStorage.setItem(
-          STORAGE_KEY,
+          COST_CALCULATOR_STORAGE_KEY,
           JSON.stringify({ form, lastTotal: next.estimatedTotal, savedAt: Date.now() }),
         );
+        persistPlannerHandoff(handoffFromCost(form, next));
       } catch {
         /* ignore */
       }
@@ -524,6 +574,15 @@ export function ConstructionCostCalculatorClient({
     if (!result) return [];
     return estimateCostAreaMaterialLines(result.areaSqft, form.quality);
   }, [result, form.quality]);
+
+  const plannerHandoff = useMemo(() => handoffFromCost(form, result), [form, result]);
+  const quantityHref = plannerToolHref(
+    '/construction/material-calculator',
+    plannerHandoff,
+    'material-qty-breakdown',
+  );
+  const boqPlannerHref = plannerToolHref('/construction/boq', plannerHandoff);
+  const costToMaterialsHref = plannerToolHref('/construction/material-calculator', plannerHandoff);
 
   const formNode = (
     <CalculatorForm
@@ -829,7 +888,13 @@ export function ConstructionCostCalculatorClient({
             label: result.mode === 'reverse' ? 'Contingency buffer' : 'Contingency',
             value: `${result.contingencyPercent}%`,
           },
-          { id: 'mat', label: 'Estimated material', value: formatCompact(result.materialCost) },
+          {
+            id: 'mat',
+            label: 'Estimated material',
+            value: formatCompact(result.materialCost),
+            href: quantityHref,
+            hrefLabel: 'View quantity breakdown →',
+          },
           { id: 'lab', label: 'Estimated labour', value: formatCompact(result.labourCost) },
           {
             id: 'conf',
@@ -876,16 +941,19 @@ export function ConstructionCostCalculatorClient({
                 trackBoqGenerated({ item_count_bucket: 'many' });
               }}
             >
-              Create BOQ
+              Download BOQ CSV
             </button>
+            <Link href={boqPlannerHref} className={cx.secondaryBtn}>
+              Open BOQ generator
+            </Link>
             <Link
               href={`/construction/cost-optimization?builtUpArea=${Math.round(result.areaSqft)}&quality=${form.quality}&projectCost=${result.estimatedTotal}&targetReduction=${Math.round(result.estimatedTotal * 0.1)}`}
               className={cx.secondaryBtn}
             >
               Reduce my budget
             </Link>
-            <Link href={`/construction/cement-calculator`} className={cx.secondaryBtn}>
-              Calculate materials
+            <Link href={costToMaterialsHref} className={cx.accentBtn}>
+              View material quantities
             </Link>
           </div>
         }
@@ -1013,7 +1081,7 @@ export function ConstructionCostCalculatorClient({
                 city SOR prices. Enter your contractor rate below to override this estimate only —
                 global admin rates are never changed.
               </p>
-              <ConstructionMaterialLinesTable lines={materialLines} />
+              <ConstructionMaterialLinesTable lines={materialLines} quantityHref={quantityHref} />
             </div>
           ) : undefined
         }
@@ -1025,6 +1093,8 @@ export function ConstructionCostCalculatorClient({
                 labourCost={result.labourCost}
                 otherCost={result.miscellaneousCost}
                 areaSqft={result.areaSqft}
+                quantityHref={quantityHref}
+                boqHref={boqPlannerHref}
               />
               {resultNode}
             </div>
@@ -1125,14 +1195,18 @@ export function ConstructionCostCalculatorClient({
           </div>
         }
         faqs={COST_CALC_FAQS}
+        relatedTools={[
+          { label: 'Material quantity calculator', href: costToMaterialsHref },
+          { label: 'BOQ generator', href: boqPlannerHref },
+        ]}
         stickyCta={{
           primary: {
             label: 'Calculate cost',
             onClick: () => runCalculate(),
           },
           secondary: result
-            ? { label: 'Share', onClick: () => void shareResult() }
-            : { label: 'Materials', href: '/construction/materials' },
+            ? { label: 'View material quantities', href: costToMaterialsHref }
+            : { label: 'Materials', href: '/construction/material-calculator' },
         }}
       />
 

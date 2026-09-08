@@ -28,7 +28,14 @@ export function CalculationResult({
       {metrics?.length ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {metrics.map((m) => (
-            <MetricCard key={m.id ?? m.label} label={m.label} value={m.value} hint={m.hint} />
+            <MetricCard
+              key={m.id ?? m.label}
+              label={m.label}
+              value={m.value}
+              hint={m.hint}
+              href={m.href}
+              hrefLabel={m.hrefLabel}
+            />
           ))}
         </div>
       ) : null}

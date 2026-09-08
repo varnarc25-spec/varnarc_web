@@ -14,6 +14,7 @@ export const CONSTRUCTION_PAGE_KEYS = [
   'cost-change-simulator',
   'cost-optimization',
   'cement-calculator',
+  'material-calculator',
   'concrete-calculator',
   'brick-calculator',
   'aac-block-calculator',
@@ -35,6 +36,12 @@ export const CONSTRUCTION_PAGE_KEYS = [
   'beam-calculator',
   'column-calculator',
   'footing-calculator',
+  'false-ceiling-calculator',
+  'staircase-calculator',
+  'water-tank-calculator',
+  'roofing-calculator',
+  'wall-area-calculator',
+  'excavation-calculator',
   'planner',
   'compare',
   'guides',
@@ -79,7 +86,7 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       title: 'Plan Construction with Cost Estimators & Material Calculators | Varnarc',
       description:
         'Estimate construction costs, calculate materials, compare options and plan your project with transparent Varnarc construction tools.',
-      h1: 'Plan your construction with confidence',
+      h1: 'Plan, quantify and manage your construction project',
       indexable: true,
     },
     materials: {
@@ -189,6 +196,15 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       h1: 'Cement calculator',
       indexable: true,
     },
+    'material-calculator': {
+      path: '/construction/material-calculator',
+      label: 'Material quantity calculator',
+      title: 'Material Quantity Calculator — Cement, Steel, Sand & More | Varnarc',
+      description:
+        'Estimate indicative cement, steel, sand, aggregate, bricks, tiles, paint, electrical and plumbing quantities from built-up area, floors and quality. Edit local rates and send to BOQ. Indicative only.',
+      h1: 'Material quantity calculator',
+      indexable: true,
+    },
     'concrete-calculator': {
       path: '/construction/concrete-calculator',
       label: 'Concrete calculator',
@@ -235,7 +251,7 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       indexable: true,
     },
     'boq-generator': {
-      path: '/construction/boq-generator',
+      path: '/construction/boq',
       label: 'BOQ Generator',
       title: 'BOQ Generator — Indicative Planning Bill of Quantities | Varnarc',
       description:
@@ -376,6 +392,60 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       description:
         'Calculate RCC footing concrete for rectangular and square footings. Optional lean PCC bed, materials and cost. Does not size footings from building loads. Indicative only.',
       h1: 'Footing concrete calculator',
+      indexable: true,
+    },
+    'false-ceiling-calculator': {
+      path: '/construction/false-ceiling-calculator',
+      label: 'False ceiling calculator',
+      title: 'False Ceiling Calculator — Gypsum / POP Area & Boards | Varnarc',
+      description:
+        'Calculate gypsum or POP false-ceiling area, board count and perimeter allowance from room dimensions. Planning quantities only.',
+      h1: 'False ceiling calculator',
+      indexable: true,
+    },
+    'staircase-calculator': {
+      path: '/construction/staircase-calculator',
+      label: 'Staircase calculator',
+      title: 'Staircase Calculator — Geometry & Planning Quantities | Varnarc',
+      description:
+        'Estimate risers, treads, going and indicative waist volume for a straight flight. Planning geometry only — not structural design.',
+      h1: 'Staircase calculator',
+      indexable: true,
+    },
+    'water-tank-calculator': {
+      path: '/construction/water-tank-calculator',
+      label: 'Water tank calculator',
+      title: 'Water Tank Calculator — Capacity from Dimensions | Varnarc',
+      description:
+        'Calculate rectangular or circular tank volume in m³ and litres from dimensions. Optional freeboard. Not wall or hydrostatic design.',
+      h1: 'Water tank calculator',
+      indexable: true,
+    },
+    'roofing-calculator': {
+      path: '/construction/roofing-calculator',
+      label: 'Roofing calculator',
+      title: 'Roofing Calculator — Roof Area & Sheet Count | Varnarc',
+      description:
+        'Estimate pitched roof area from plan dimensions and sheet quantities with overlap and wastage. Planning quantities only.',
+      h1: 'Roofing calculator',
+      indexable: true,
+    },
+    'wall-area-calculator': {
+      path: '/construction/wall-area-calculator',
+      label: 'Wall area calculator',
+      title: 'Wall Area Calculator — Paint, Tile & Plaster Surface | Varnarc',
+      description:
+        'Calculate net wall surface area after openings for paint, tile or plaster. Planning surface area only.',
+      h1: 'Wall area calculator',
+      indexable: true,
+    },
+    'excavation-calculator': {
+      path: '/construction/excavation-calculator',
+      label: 'Excavation calculator',
+      title: 'Excavation Calculator — Pit Volume & Bulking | Varnarc',
+      description:
+        'Estimate rectangular excavation volume and optional loose volume with a bulking allowance. Not a geotechnical or shoring design.',
+      h1: 'Excavation calculator',
       indexable: true,
     },
     planner: {

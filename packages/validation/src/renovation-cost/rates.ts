@@ -1,9 +1,14 @@
 /** Indicative rates for the Renovation Cost Calculator. */
 
 import type { RenovationPropertyType, RenovationQuality, RenovationWorkId } from './types';
-import { LOCATION_MULTIPLIERS, normalizeLocationKey, toSqft } from '../construction-cost/rates';
+import {
+  DEFAULT_COST_SPLIT,
+  LOCATION_MULTIPLIERS,
+  normalizeLocationKey,
+  toSqft,
+} from '../construction-cost/rates';
 
-export const RENOVATION_CALC_VERSION = '2026.08.1';
+export const RENOVATION_CALC_VERSION = '2026.09.1';
 
 export { LOCATION_MULTIPLIERS, normalizeLocationKey, toSqft };
 
@@ -146,3 +151,93 @@ export function computeWorkAmount(
   const factor = 1 + ((areaSqft - ref) / ref) * scale;
   return Math.round(base * Math.max(0.7, Math.min(1.6, factor)));
 }
+
+/** Eight primary renovation intents shown as selectable cards. */
+export const PRIMARY_RENOVATION_CATEGORY_IDS = [
+  'kitchen',
+  'bathroom',
+  'flooring',
+  'painting',
+  'false_ceiling',
+  'electrical',
+  'plumbing',
+  'doors_windows',
+] as const;
+
+export const RENOVATION_COST_SPLIT = {
+  materialPercent: DEFAULT_COST_SPLIT.materialPercent,
+  labourPercent: DEFAULT_COST_SPLIT.labourPercent,
+  otherPercent: DEFAULT_COST_SPLIT.miscPercent,
+} as const;
+
+export const PAINT_SCOPE_MULTIPLIERS = {
+  interior: 1,
+  exterior: 0.55,
+  both: 1.35,
+} as const;
+
+export const FLOORING_TYPE_MULTIPLIERS = {
+  ceramic: 0.85,
+  vitrified: 1,
+  wood: 1.45,
+  marble: 1.85,
+} as const;
+
+export const KITCHEN_SIZE_MULTIPLIERS = {
+  compact: 0.78,
+  standard: 1,
+  large: 1.28,
+} as const;
+
+export const KITCHEN_CABINET_MULTIPLIERS = {
+  basic: 0.88,
+  modular: 1.15,
+} as const;
+
+export const KITCHEN_COUNTER_MULTIPLIERS = {
+  laminate: 0.9,
+  granite: 1,
+  quartz: 1.22,
+} as const;
+
+export const BHK_MULTIPLIERS: Record<string, number> = {
+  '1bhk': 0.94,
+  '2bhk': 1,
+  '3bhk': 1.06,
+  '4bhk': 1.12,
+  '5plus': 1.18,
+  na: 1,
+};
+
+export type RenovationCategoryCard = {
+  id: (typeof PRIMARY_RENOVATION_CATEGORY_IDS)[number];
+  title: string;
+  startingLabel: string;
+  icon: 'kitchen' | 'bath' | 'floor' | 'paint' | 'ceiling' | 'electrical' | 'plumbing' | 'door';
+};
+
+export const RENOVATION_CATEGORY_CARDS: RenovationCategoryCard[] = [
+  { id: 'kitchen', title: 'Kitchen renovation', startingLabel: 'From ₹ 1.8L', icon: 'kitchen' },
+  { id: 'bathroom', title: 'Bathroom renovation', startingLabel: 'From ₹ 95,000', icon: 'bath' },
+  {
+    id: 'flooring',
+    title: 'Flooring replacement',
+    startingLabel: 'From ₹ 85/sq ft',
+    icon: 'floor',
+  },
+  { id: 'painting', title: 'Painting', startingLabel: 'From ₹ 18/sq ft', icon: 'paint' },
+  {
+    id: 'false_ceiling',
+    title: 'False ceiling',
+    startingLabel: 'From ₹ 55/sq ft',
+    icon: 'ceiling',
+  },
+  {
+    id: 'electrical',
+    title: 'Electrical rewiring',
+    startingLabel: 'From ₹ 45/sq ft',
+    icon: 'electrical',
+  },
+  { id: 'plumbing', title: 'Plumbing', startingLabel: 'From ₹ 40/sq ft', icon: 'plumbing' },
+  { id: 'doors_windows', title: 'Doors & windows', startingLabel: 'From ₹ 35/sq ft', icon: 'door' },
+];

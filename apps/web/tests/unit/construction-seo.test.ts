@@ -195,6 +195,20 @@ describe('resolveConstructionIndexing', () => {
     expect(clean.index).toBe(true);
   });
 
+  it('indexes phase-2 advanced construction calculators', () => {
+    for (const path of [
+      '/construction/false-ceiling-calculator',
+      '/construction/staircase-calculator',
+      '/construction/water-tank-calculator',
+      '/construction/roofing-calculator',
+      '/construction/wall-area-calculator',
+      '/construction/excavation-calculator',
+    ]) {
+      expect(isConstructionCalculatorPath(path)).toBe(true);
+      expect(resolveConstructionIndexing({ pathname: path }).index).toBe(true);
+    }
+  });
+
   it('indexes steel-calculator clean page', () => {
     expect(isConstructionCalculatorPath('/construction/steel-calculator')).toBe(true);
     const clean = resolveConstructionIndexing({ pathname: '/construction/steel-calculator' });
@@ -211,7 +225,8 @@ describe('resolveConstructionIndexing', () => {
 
   it('indexes boq-generator clean page', () => {
     expect(isConstructionCalculatorPath('/construction/boq-generator')).toBe(true);
-    const clean = resolveConstructionIndexing({ pathname: '/construction/boq-generator' });
+    expect(isConstructionCalculatorPath('/construction/boq')).toBe(true);
+    const clean = resolveConstructionIndexing({ pathname: '/construction/boq' });
     expect(clean.index).toBe(true);
   });
 

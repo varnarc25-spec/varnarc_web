@@ -80,7 +80,7 @@ export const CONSTRUCTION_INTENT_NAVIGATOR: ConstructionIntentDefinition[] = [
         key: 'generate_boq',
         label: 'Generate BOQ',
         description: 'Organise quantities for quotes.',
-        href: '/construction/boq-generator',
+        href: '/construction/boq',
       },
     ],
   },
@@ -160,6 +160,11 @@ export const CONSTRUCTION_INTENT_NAVIGATOR: ConstructionIntentDefinition[] = [
     shortTitle: 'Materials',
     description: 'Quantity tools for core building materials.',
     nextActions: [
+      {
+        key: 'material-qty',
+        label: 'Material quantities',
+        href: '/construction/material-calculator',
+      },
       { key: 'cement', label: 'Cement', href: '/construction/cement-calculator' },
       { key: 'concrete', label: 'Concrete', href: '/construction/concrete-calculator' },
       { key: 'rcc', label: 'RCC', href: '/construction/rcc-calculator' },
@@ -195,7 +200,7 @@ export const CONSTRUCTION_INTENT_NAVIGATOR: ConstructionIntentDefinition[] = [
         key: 'open_boq',
         label: 'Open BOQ Generator',
         description: 'Build or generate an indicative planning BOQ.',
-        href: '/construction/boq-generator',
+        href: '/construction/boq',
       },
       {
         key: 'bbs',
@@ -373,7 +378,7 @@ export const LANDING_JOURNEY = [
     key: 'boq',
     title: 'BOQ',
     description: 'Organise line items for quotes and tracking.',
-    href: '/construction/boq-generator',
+    href: '/construction/boq',
   },
   {
     key: 'timeline',

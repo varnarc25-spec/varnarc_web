@@ -9,6 +9,7 @@ export const RECENT_CONSTRUCTION_TOOLS_STORAGE_KEY = 'varnarc.construction.recen
 const TOOL_LABELS: Record<string, string> = {
   'cost-calculator': 'Construction Cost Calculator',
   'cement-calculator': 'Cement Calculator',
+  'material-calculator': 'Material Quantity Calculator',
   'steel-calculator': 'Steel Calculator',
   'concrete-calculator': 'Concrete Calculator',
   'brick-calculator': 'Brick Calculator',
@@ -24,8 +25,15 @@ const TOOL_LABELS: Record<string, string> = {
   'beam-calculator': 'Beam Calculator',
   'column-calculator': 'Column Calculator',
   'footing-calculator': 'Footing Calculator',
+  'false-ceiling-calculator': 'False Ceiling Calculator',
+  'staircase-calculator': 'Staircase Calculator',
+  'water-tank-calculator': 'Water Tank Calculator',
+  'roofing-calculator': 'Roofing Calculator',
+  'wall-area-calculator': 'Wall Area Calculator',
+  'excavation-calculator': 'Excavation Calculator',
   'bbs-calculator': 'Bar Bending Schedule',
   'boq-generator': 'BOQ Generator',
+  boq: 'BOQ Generator',
   'renovation-cost-calculator': 'Renovation Cost Calculator',
   'interior-cost-calculator': 'Interior Cost Calculator',
   'affordability-calculator': 'Affordability Calculator',
@@ -119,7 +127,17 @@ export function buildConstructionToolResultSummary(input: {
       (input.outputs as { litres?: unknown; paintLitres?: unknown } | null)?.litres ??
       (input.outputs as { paintLitres?: unknown } | null)?.paintLitres,
   );
-  if (paintLitres != null) return `≈ ${paintLitres.toFixed(1)} L paint`;
+  if (paintLitres != null) {
+    const looksLikeTank = asNumber((input.outputs as { volumeM3?: unknown } | null)?.volumeM3);
+    if (looksLikeTank != null && paintLitres >= 100) return `≈ ${Math.round(paintLitres)} L`;
+    return `≈ ${paintLitres.toFixed(1)} L paint`;
+  }
+
+  const boards = asNumber((input.outputs as { boards?: unknown } | null)?.boards);
+  if (boards != null) return `≈ ${Math.round(boards)} boards`;
+
+  const netArea = asNumber((input.outputs as { netAreaM2?: unknown } | null)?.netAreaM2);
+  if (netArea != null) return `≈ ${netArea.toFixed(1)} m²`;
 
   const total =
     asNumber((input.outputs as { totalCostInr?: unknown } | null)?.totalCostInr) ??

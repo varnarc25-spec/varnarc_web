@@ -38,6 +38,7 @@ describe('construction intent navigator data', () => {
     ]);
     const materials = getConstructionIntent('calculate_materials');
     expect(materials?.nextActions.map((a) => a.label)).toEqual([
+      'Material quantities',
       'Cement',
       'Concrete',
       'RCC',

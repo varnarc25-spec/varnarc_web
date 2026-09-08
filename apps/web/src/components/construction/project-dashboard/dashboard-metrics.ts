@@ -76,26 +76,40 @@ export function estimateBreakdownRows(
     .filter((x): x is { label: string; amount: number } => x != null);
 }
 
-export function materialCostFromProject(project: ConstructionProject): number | null {
-  const rows = estimateBreakdownRows(project);
-  const fromLabel = rows.find((r) => /material/i.test(r.label));
-  if (fromLabel) return fromLabel.amount;
-
+function breakdownRecord(project: ConstructionProject): Record<string, unknown> | null {
   if (
     project.breakdown &&
     !Array.isArray(project.breakdown) &&
     typeof project.breakdown === 'object'
   ) {
-    const rec = project.breakdown as Record<string, unknown>;
-    const direct = toNum(rec.materialCost as number | string | null | undefined);
-    if (direct != null) return direct;
+    return project.breakdown as Record<string, unknown>;
   }
+  return null;
+}
+
+export function materialCostFromProject(project: ConstructionProject): number | null {
+  const rows = estimateBreakdownRows(project);
+  const fromLabel = rows.find((r) => /material/i.test(r.label));
+  if (fromLabel) return fromLabel.amount;
+
+  const rec = breakdownRecord(project);
+  const direct = toNum(rec?.materialCost as number | string | null | undefined);
+  if (direct != null) return direct;
 
   const itemSum = (project.items ?? []).reduce((sum, item) => {
     const cost = toNum(item.estimatedCost);
     return cost != null ? sum + cost : sum;
   }, 0);
   return itemSum > 0 ? itemSum : null;
+}
+
+export function labourCostFromProject(project: ConstructionProject): number | null {
+  const rows = estimateBreakdownRows(project);
+  const fromLabel = rows.find((r) => /labou?r/i.test(r.label));
+  if (fromLabel) return fromLabel.amount;
+
+  const rec = breakdownRecord(project);
+  return toNum(rec?.labourCost as number | string | null | undefined);
 }
 
 export function actualSpentFromProject(project: ConstructionProject): number | null {
@@ -198,7 +212,7 @@ export function nextRecommendedAction(project: ConstructionProject): NextRecomme
       id: 'boq',
       title: 'Generate BOQ',
       body: 'Create an indicative planning BOQ from project assumptions. Not a tender document.',
-      href: `/construction/boq-generator?projectId=${project.id}`,
+      href: `/construction/boq?projectId=${project.id}`,
       tab: 'boq',
     };
   }

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { cn, cx } from '@/components/construction/styles';
 
 /** Primary result display — large readable numbers. */
@@ -38,11 +39,15 @@ export function MetricCard({
   label,
   value,
   hint,
+  href,
+  hrefLabel,
   className,
 }: {
   label: string;
   value: ReactNode;
   hint?: string;
+  href?: string;
+  hrefLabel?: string;
   className?: string;
 }) {
   return (
@@ -50,6 +55,11 @@ export function MetricCard({
       <p className="text-xs font-medium text-slate-500">{label}</p>
       <p className="mt-1 text-xl font-extrabold tabular-nums text-[#0b1f3a]">{value}</p>
       {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      {href ? (
+        <Link href={href} className={cn(cx.link, 'mt-2 inline-block text-sm')}>
+          {hrefLabel ?? 'View details →'}
+        </Link>
+      ) : null}
     </div>
   );
 }

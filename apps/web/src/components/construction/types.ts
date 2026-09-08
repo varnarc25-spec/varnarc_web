@@ -22,6 +22,8 @@ export type ConstructionMetric = {
   label: string;
   value: ReactNode;
   hint?: string;
+  href?: string;
+  hrefLabel?: string;
 };
 
 export type ConstructionBreakdownRow = {

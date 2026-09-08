@@ -31,6 +31,11 @@ const FALLBACK_CALCULATORS = [
     description: 'Project cost planning',
   },
   { label: 'Cement', href: '/construction/cement-calculator', description: 'Bag quantities' },
+  {
+    label: 'Material quantities',
+    href: '/construction/material-calculator',
+    description: 'Whole-house material estimate',
+  },
   { label: 'Concrete', href: '/construction/concrete-calculator', description: 'Mix & volume' },
   { label: 'RCC', href: '/construction/rcc-calculator', description: 'Slab, beam, column' },
   { label: 'Brick', href: '/construction/brick-calculator', description: 'Wall quantities' },
@@ -47,7 +52,7 @@ const FALLBACK_CALCULATORS = [
   },
   {
     label: 'BOQ Generator',
-    href: '/construction/boq-generator',
+    href: '/construction/boq',
     description: 'Indicative planning BOQ',
   },
   {
@@ -76,6 +81,28 @@ const FALLBACK_CALCULATORS = [
   { label: 'Paint', href: '/construction/paint-calculator', description: 'Coverage & litres' },
   { label: 'Tile', href: '/construction/tile-calculator', description: 'Floor & wall area' },
   { label: 'Flooring', href: '/construction/flooring-calculator', description: 'Area by type' },
+  {
+    label: 'False ceiling',
+    href: '/construction/false-ceiling-calculator',
+    description: 'Gypsum/POP boards',
+  },
+  {
+    label: 'Staircase',
+    href: '/construction/staircase-calculator',
+    description: 'Geometry planning',
+  },
+  {
+    label: 'Water tank',
+    href: '/construction/water-tank-calculator',
+    description: 'Tank capacity',
+  },
+  { label: 'Roofing', href: '/construction/roofing-calculator', description: 'Roof area & sheets' },
+  {
+    label: 'Wall area',
+    href: '/construction/wall-area-calculator',
+    description: 'Paint/tile/plaster',
+  },
+  { label: 'Excavation', href: '/construction/excavation-calculator', description: 'Pit volume' },
 ];
 
 export default async function ConstructionPage({ searchParams }: Props) {
@@ -145,6 +172,8 @@ export default async function ConstructionPage({ searchParams }: Props) {
       guides={guides}
       faqs={faqs}
       projects={projects}
+      serverProjects={projectsRes.unauthorized ? [] : (projectsRes.data ?? [])}
+      isAuthenticated={!projectsRes.unauthorized}
       initialIntent={params.intent ?? null}
     />
   );

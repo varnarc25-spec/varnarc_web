@@ -50,6 +50,7 @@ describe('calculateRenovationCost', () => {
     expect(result.costPerSqft).toBe(Math.round(result.estimatedTotal / 1000));
     expect(result.contingencyAmount).toBeGreaterThan(0);
     expect(result.disclaimer.toLowerCase()).toMatch(/not a quotation|indicative/);
+    expect(result.materialCost + result.labourCost + result.otherCost).toBe(result.estimatedTotal);
   });
 
   it('applies quality tiers within a category', () => {
@@ -109,5 +110,31 @@ describe('calculateRenovationCost', () => {
         workItems: [{ id: 'painting', enabled: false, quality: 'standard' }],
       }),
     ).toThrow(/at least one/i);
+  });
+
+  it('applies kitchen and bathroom detail multipliers when provided', () => {
+    const kitchenOnly = {
+      ...baseInput,
+      workItems: [{ id: 'kitchen' as const, enabled: true, quality: 'standard' as const }],
+    };
+    const base = calculateRenovationCost(kitchenOnly);
+    const modular = calculateRenovationCost({
+      ...kitchenOnly,
+      workDetails: {
+        kitchen: { kitchenSize: 'large', cabinetType: 'modular', countertop: 'quartz' },
+      },
+    });
+    expect(modular.estimatedTotal).toBeGreaterThan(base.estimatedTotal);
+
+    const oneBath = calculateRenovationCost({
+      ...baseInput,
+      workItems: [{ id: 'bathroom', enabled: true, quality: 'standard' }],
+    });
+    const twoBath = calculateRenovationCost({
+      ...baseInput,
+      workItems: [{ id: 'bathroom', enabled: true, quality: 'standard' }],
+      workDetails: { bathroom: { bathroomCount: 2 } },
+    });
+    expect(twoBath.estimatedTotal).toBeGreaterThan(oneBath.estimatedTotal);
   });
 });

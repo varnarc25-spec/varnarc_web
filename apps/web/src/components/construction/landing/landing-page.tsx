@@ -9,6 +9,11 @@ import { RelatedTools } from '@/components/construction/related-tools';
 import { MaterialCard } from '@/components/construction/material-card';
 import { ConstructionSection } from '@/components/construction/construction-section';
 import { ConstructionLandingHero } from '@/components/construction/landing/landing-hero';
+import { CurrentConstructionProjectSummary } from '@/components/construction/landing/current-construction-project';
+import { ConstructionMaterialQuantityCompact } from '@/components/construction/landing/material-quantity-compact';
+import { ConstructionRenovationCostCompact } from '@/components/construction/landing/renovation-cost-compact';
+import { ConstructionAdvancedCalculatorsSection } from '@/components/construction/landing/advanced-calculators-section';
+import type { ConstructionProject } from '@/services/construction';
 import { ConstructionIntentNavigator } from '@/components/construction/landing/intent-navigator';
 import { ConstructionContinueProject } from '@/components/construction/landing/continue-project';
 import { ConstructionRecentlyUsedTools } from '@/components/construction/landing/recently-used-tools';
@@ -45,6 +50,8 @@ export type ConstructionLandingProps = {
   }>;
   faqs: Array<{ id: string; question: string; answer: string }>;
   projects: Array<{ id: string; name: string; href: string; summary?: string | null }>;
+  serverProjects?: ConstructionProject[];
+  isAuthenticated?: boolean;
   initialIntent?: string | null;
 };
 
@@ -54,6 +61,8 @@ export function ConstructionLandingPage({
   guides,
   faqs,
   projects,
+  serverProjects = [],
+  isAuthenticated = false,
   initialIntent = null,
 }: ConstructionLandingProps) {
   const meta = getModuleHubMeta('construction');
@@ -92,12 +101,23 @@ export function ConstructionLandingPage({
 
       <ConstructionLandingHero />
 
+      <CurrentConstructionProjectSummary
+        serverProjects={serverProjects}
+        isAuthenticated={isAuthenticated}
+      />
+
       <div className="site-container space-y-12 py-8 sm:space-y-14 sm:py-10">
         <Suspense fallback={<LoadingState label="Loading planner" variant="cards" />}>
           <ConstructionIntentNavigator initialIntent={initialIntent} />
         </Suspense>
 
         <ConstructionQuickEstimator />
+
+        <ConstructionMaterialQuantityCompact />
+
+        <ConstructionRenovationCostCompact />
+
+        <ConstructionAdvancedCalculatorsSection />
 
         <ConstructionContinueProject projects={projects} />
 

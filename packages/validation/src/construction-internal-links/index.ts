@@ -380,7 +380,7 @@ export const CONSTRUCTION_INTERNAL_LINK_GRAPH: Record<string, ConstructionIntern
       e('guide:cost', 'related_guides', 25),
     ],
   ),
-  'calc:boq': entity('calc:boq', 'calculator', '/construction/boq-generator', 'BOQ generator', [
+  'calc:boq': entity('calc:boq', 'calculator', '/construction/boq', 'BOQ generator', [
     e('calc:cost', 'related_cost', 10),
     e('calc:cement', 'related_calculators', 20),
     e('tool:budget', 'related_calculators', 30),

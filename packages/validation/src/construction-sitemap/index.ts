@@ -27,7 +27,7 @@ export type ConstructionSitemapSegment = (typeof CONSTRUCTION_SITEMAP_SEGMENTS)[
  * Bump when static construction hub/calculator paths change so `<lastmod>`
  * stays meaningful without using request wall-clock time.
  */
-export const CONSTRUCTION_SITEMAP_CONTENT_VERSION = '2026.09.07';
+export const CONSTRUCTION_SITEMAP_CONTENT_VERSION = '2026.09.08';
 
 /** Reliable lastmod for curated static construction URLs. */
 export const CONSTRUCTION_SITEMAP_STATIC_LASTMOD = new Date('2026-09-01T00:00:00.000Z');
@@ -88,12 +88,13 @@ export const CONSTRUCTION_SITEMAP_CALCULATOR_PATHS = [
   '/construction/cost-change-simulator',
   '/construction/cost-optimization',
   '/construction/cement-calculator',
+  '/construction/material-calculator',
   '/construction/concrete-calculator',
   '/construction/brick-calculator',
   '/construction/aac-block-calculator',
   '/construction/steel-calculator',
   '/construction/bar-bending-schedule',
-  '/construction/boq-generator',
+  '/construction/boq',
   '/construction/timeline-planner',
   '/construction/budget-tracker',
   '/construction/sand-calculator',
@@ -107,6 +108,12 @@ export const CONSTRUCTION_SITEMAP_CALCULATOR_PATHS = [
   '/construction/beam-calculator',
   '/construction/column-calculator',
   '/construction/footing-calculator',
+  '/construction/false-ceiling-calculator',
+  '/construction/staircase-calculator',
+  '/construction/water-tank-calculator',
+  '/construction/roofing-calculator',
+  '/construction/wall-area-calculator',
+  '/construction/excavation-calculator',
 ] as const;
 
 /**

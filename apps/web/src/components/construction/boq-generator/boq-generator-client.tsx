@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BOQ_CALC_VERSION,
   BOQ_CATEGORIES,
@@ -10,6 +10,9 @@ import {
   CONSTRUCTION_UNITS,
   calculateBoqTotals,
   generateBoqFromProjectAssumptions,
+  parsePlannerHandoffQuery,
+  plannerToolHref,
+  mergePlannerHandoff,
   type BoqGeneratorResult,
 } from '@varnarc/validation';
 import {
@@ -35,6 +38,7 @@ import {
   clearConstructionCalculationSave,
   publishConstructionCalculationSave,
 } from '@/lib/construction/save-calculation/publish';
+import { persistPlannerHandoff, readPlannerHandoff } from '@/lib/construction/planner-handoff';
 import type { ConstructionProject } from '@/services/construction';
 import { BOQ_GEN_FAQS, BOQ_GEN_SEO, BOQ_GEN_WORKED_EXAMPLE } from './content';
 
@@ -130,6 +134,7 @@ export function BoqGeneratorClient() {
   const [actionMsg, setActionMsg] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [loadMsg, setLoadMsg] = useState<string | null>(null);
+  const handoffHydrated = useRef(false);
 
   const units = useMemo(() => [...CONSTRUCTION_UNITS], []);
 
@@ -151,6 +156,31 @@ export function BoqGeneratorClient() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (handoffHydrated.current || projectIdParam) return;
+    handoffHydrated.current = true;
+    const fromUrl = parsePlannerHandoffQuery({
+      location: searchParams.get('location') ?? undefined,
+      builtUpArea: searchParams.get('builtUpArea') ?? undefined,
+      area: searchParams.get('area') ?? undefined,
+      areaUnit: searchParams.get('areaUnit') ?? undefined,
+      floors: searchParams.get('floors') ?? undefined,
+      quality: searchParams.get('quality') ?? undefined,
+    });
+    const handoff = mergePlannerHandoff(readPlannerHandoff(), fromUrl);
+    if (handoff.builtUpArea != null) setBuiltUp(String(Math.round(handoff.builtUpArea)));
+    if (handoff.floors != null) setFloors(String(handoff.floors));
+    if (
+      handoff.quality === 'basic' ||
+      handoff.quality === 'standard' ||
+      handoff.quality === 'premium'
+    ) {
+      setQuality(handoff.quality);
+    } else if (handoff.quality === 'luxury') {
+      setQuality('premium');
+    }
+  }, [projectIdParam, searchParams]);
 
   useEffect(() => {
     if (!projectIdParam) return;
@@ -370,6 +400,12 @@ export function BoqGeneratorClient() {
       setLines(linesFromResult(generated));
       setResult(generated);
       setActionMsg('Generated indicative lines from assumptions. Review every auto quantity.');
+      persistPlannerHandoff({
+        builtUpArea: Number(builtUp) || undefined,
+        areaUnit: 'sqft',
+        floors: Number(floors) || undefined,
+        quality,
+      });
       trackBoqGenerated({
         logged_in: Boolean(projectId),
         item_count_bucket: generated.lines.length <= 10 ? 'few' : 'many',
@@ -952,6 +988,26 @@ export function BoqGeneratorClient() {
           </div>
         }
         faqs={BOQ_GEN_FAQS}
+        relatedTools={[
+          {
+            label: 'Construction cost calculator',
+            href: plannerToolHref('/construction/cost-calculator', {
+              builtUpArea: Number(builtUp) || undefined,
+              areaUnit: 'sqft',
+              floors: Number(floors) || undefined,
+              quality,
+            }),
+          },
+          {
+            label: 'Material quantity calculator',
+            href: plannerToolHref('/construction/material-calculator', {
+              builtUpArea: Number(builtUp) || undefined,
+              areaUnit: 'sqft',
+              floors: Number(floors) || undefined,
+              quality,
+            }),
+          },
+        ]}
         stickyCta={{
           primary: { label: 'Recalculate', onClick: () => runRecalc() },
           secondary: { label: 'Export CSV', onClick: () => exportSpreadsheet() },

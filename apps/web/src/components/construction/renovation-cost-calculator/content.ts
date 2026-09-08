@@ -26,6 +26,24 @@ export const RENO_CALC_FAQS = [
       'Many homeowners keep 10–15% contingency for renovations because opening walls often reveals extra work. The calculator defaults to 12% and lets you change it.',
   },
   {
+    id: 'faq-reno-kitchen-cost',
+    question: 'How much does a kitchen renovation cost in India?',
+    answer:
+      'Indicative kitchen packages in this calculator start around ₹1.8 lakh for a basic refresh and rise with modular cabinets, quartz counters and city labour rates. Always get local quotes — brands and layout changes move the total.',
+  },
+  {
+    id: 'faq-reno-bathroom-cost',
+    question: 'How much does bathroom renovation cost?',
+    answer:
+      'A single bathroom package here starts near ₹95,000 at a basic finish. Extra bathrooms, premium fixtures and waterproofing increase cost. Wet-area work is often bid as a package, not a flat whole-home ₹/sq ft.',
+  },
+  {
+    id: 'faq-reno-paint-sqft',
+    question: 'What is painting cost per sq ft for a home renovation?',
+    answer:
+      'Planning rates in this tool start from about ₹18/sq ft for a basic interior coat and rise with premium paints and exterior work. Coverage, surface prep and height change real quantities.',
+  },
+  {
     id: 'faq-reno-kitchen-bath',
     question: 'Why are kitchen and bathroom costs shown as packages?',
     answer:

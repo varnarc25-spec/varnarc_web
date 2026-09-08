@@ -63,12 +63,17 @@ const nextConfig: NextConfig = withSecurityHeaders(
         },
         {
           source: '/calculators/boq',
-          destination: '/construction/boq-generator',
+          destination: '/construction/boq',
           permanent: true,
         },
         {
           source: '/calculators/boq-generator',
-          destination: '/construction/boq-generator',
+          destination: '/construction/boq',
+          permanent: true,
+        },
+        {
+          source: '/construction/boq-generator',
+          destination: '/construction/boq',
           permanent: true,
         },
         {
@@ -139,6 +144,41 @@ const nextConfig: NextConfig = withSecurityHeaders(
         {
           source: '/calculators/rcc',
           destination: '/construction/rcc-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/false-ceiling',
+          destination: '/construction/false-ceiling-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/staircase',
+          destination: '/construction/staircase-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/water-tank',
+          destination: '/construction/water-tank-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/roofing',
+          destination: '/construction/roofing-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/aac-block',
+          destination: '/construction/aac-block-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/wall-area',
+          destination: '/construction/wall-area-calculator',
+          permanent: true,
+        },
+        {
+          source: '/construction/calculators/excavation',
+          destination: '/construction/excavation-calculator',
           permanent: true,
         },
       ];

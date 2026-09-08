@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  PRIMARY_RENOVATION_CATEGORY_IDS,
+  RENOVATION_CATEGORY_CARDS,
   RENOVATION_WORK_RATES,
   calculateRenovationCost,
   defaultRenovationWorkItems,
@@ -9,6 +11,7 @@ import {
   type RenovationCostResult,
   type RenovationPropertyType,
   type RenovationQuality,
+  type RenovationRoomsBhk,
   type RenovationWorkId,
   RENOVATION_CALC_VERSION,
 } from '@varnarc/validation';
@@ -24,6 +27,7 @@ import {
 } from '@/components/construction/calculator';
 import { ConstructionRelatedLinks } from '@/components/construction/construction-related-links';
 import { cn, cx } from '@/components/construction/styles';
+import { RenoCategoryIcon } from './reno-category-icon';
 import {
   categorizeConstructionResultRange,
   resolveConstructionLocationLevel,
@@ -77,9 +81,20 @@ type FormState = {
   propertyType: RenovationPropertyType;
   renovationArea: string;
   areaUnit: 'sqft' | 'sqm';
+  roomsBhk: RenovationRoomsBhk;
+  finishTier: RenovationQuality;
   propertyAgeYears: string;
   contingencyPercent: string;
   work: WorkState;
+  paintArea: string;
+  paintScope: 'interior' | 'exterior' | 'both';
+  floorArea: string;
+  flooringType: 'ceramic' | 'vitrified' | 'wood' | 'marble';
+  floorDemolition: boolean;
+  kitchenSize: 'compact' | 'standard' | 'large';
+  cabinetType: 'basic' | 'modular';
+  countertop: 'laminate' | 'granite' | 'quartz';
+  bathroomCount: string;
 };
 
 const DEFAULT_FORM: FormState = {
@@ -87,9 +102,20 @@ const DEFAULT_FORM: FormState = {
   propertyType: 'apartment',
   renovationArea: '1000',
   areaUnit: 'sqft',
+  roomsBhk: '2bhk',
+  finishTier: 'standard',
   propertyAgeYears: '12',
   contingencyPercent: '12',
   work: defaultWorkState(),
+  paintArea: '',
+  paintScope: 'interior',
+  floorArea: '',
+  flooringType: 'vitrified',
+  floorDemolition: false,
+  kitchenSize: 'standard',
+  cabinetType: 'modular',
+  countertop: 'granite',
+  bathroomCount: '1',
 };
 
 function parseInitial(params?: Record<string, string | undefined>): FormState {
@@ -116,6 +142,27 @@ function parseInitial(params?: Record<string, string | undefined>): FormState {
   if (params.propertyType) {
     next.propertyType = params.propertyType as RenovationPropertyType;
   }
+  if (
+    params.roomsBhk === '1bhk' ||
+    params.roomsBhk === '2bhk' ||
+    params.roomsBhk === '3bhk' ||
+    params.roomsBhk === '4bhk'
+  ) {
+    next.roomsBhk = params.roomsBhk;
+  }
+  if (
+    params.finishTier === 'basic' ||
+    params.finishTier === 'standard' ||
+    params.finishTier === 'premium' ||
+    params.quality === 'basic' ||
+    params.quality === 'standard' ||
+    params.quality === 'premium'
+  ) {
+    next.finishTier = (params.finishTier || params.quality) as RenovationQuality;
+    for (const id of Object.keys(next.work) as RenovationWorkId[]) {
+      next.work[id] = { ...next.work[id], quality: next.finishTier };
+    }
+  }
   if (params.work) {
     const ids = params.work.split(',').map((s) => s.trim()) as RenovationWorkId[];
     for (const id of Object.keys(next.work) as RenovationWorkId[]) {
@@ -129,18 +176,46 @@ function parseInitial(params?: Record<string, string | undefined>): FormState {
 }
 
 function toInput(form: FormState): RenovationCostInput {
+  const workItems = RENOVATION_WORK_RATES.map((meta) => ({
+    id: meta.id,
+    enabled: form.work[meta.id].enabled,
+    quality: form.finishTier,
+  }));
   return {
     location: form.location.trim() || 'India',
     propertyType: form.propertyType,
     renovationArea: Number(form.renovationArea),
     areaUnit: form.areaUnit,
+    roomsBhk: form.roomsBhk,
     propertyAgeYears: Math.max(0, Number(form.propertyAgeYears) || 0),
+    finishTier: form.finishTier,
     contingencyPercent: Number(form.contingencyPercent) || 12,
-    workItems: RENOVATION_WORK_RATES.map((meta) => ({
-      id: meta.id,
-      enabled: form.work[meta.id].enabled,
-      quality: form.work[meta.id].quality,
-    })),
+    workItems,
+    workDetails: {
+      painting: form.work.painting.enabled
+        ? {
+            paintArea: Number(form.paintArea) > 0 ? Number(form.paintArea) : undefined,
+            scope: form.paintScope,
+          }
+        : undefined,
+      flooring: form.work.flooring.enabled
+        ? {
+            floorArea: Number(form.floorArea) > 0 ? Number(form.floorArea) : undefined,
+            flooringType: form.flooringType,
+            demolition: form.floorDemolition,
+          }
+        : undefined,
+      kitchen: form.work.kitchen.enabled
+        ? {
+            kitchenSize: form.kitchenSize,
+            cabinetType: form.cabinetType,
+            countertop: form.countertop,
+          }
+        : undefined,
+      bathroom: form.work.bathroom.enabled
+        ? { bathroomCount: Math.max(1, Math.round(Number(form.bathroomCount) || 1)) }
+        : undefined,
+    },
   };
 }
 
@@ -204,13 +279,6 @@ export function RenovationCostCalculatorClient({
     setForm((prev) => ({
       ...prev,
       work: { ...prev.work, [id]: { ...prev.work[id], enabled } },
-    }));
-  }, []);
-
-  const setWorkQuality = useCallback((id: RenovationWorkId, quality: RenovationQuality) => {
-    setForm((prev) => ({
-      ...prev,
-      work: { ...prev.work, [id]: { ...prev.work[id], quality } },
     }));
   }, []);
 
@@ -406,6 +474,33 @@ export function RenovationCostCalculatorClient({
         ]}
       />
 
+      <CalculatorSelect
+        id="reno-bhk"
+        label="Rooms / BHK"
+        value={form.roomsBhk}
+        onChange={(e) => setField('roomsBhk', e.target.value as RenovationRoomsBhk)}
+        options={[
+          { value: 'na', label: 'Not specified' },
+          { value: '1bhk', label: '1 BHK' },
+          { value: '2bhk', label: '2 BHK' },
+          { value: '3bhk', label: '3 BHK' },
+          { value: '4bhk', label: '4 BHK' },
+          { value: '5plus', label: '5 BHK+' },
+        ]}
+      />
+
+      <UnitSelector
+        id="reno-finish"
+        label="Finish tier"
+        value={form.finishTier}
+        onChange={(v) => setField('finishTier', v as RenovationQuality)}
+        options={[
+          { value: 'basic', label: 'Basic' },
+          { value: 'standard', label: 'Standard' },
+          { value: 'premium', label: 'Premium' },
+        ]}
+      />
+
       <CalculatorInput
         id="reno-area"
         label="Renovation area"
@@ -450,55 +545,177 @@ export function RenovationCostCalculatorClient({
       />
 
       <fieldset className="sm:col-span-2">
-        <legend className={cx.label}>Work categories</legend>
+        <legend className={cx.label}>Renovation categories</legend>
         <p className={cx.helper}>
-          Select work to include. Set basic / standard / premium per item. After calculating,
-          toggles update the total instantly.
+          Indicative starting costs. Select what you will renovate — local rates still apply.
         </p>
-        <ul className="mt-3 space-y-2">
-          {RENOVATION_WORK_RATES.map((meta) => {
+        <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {RENOVATION_CATEGORY_CARDS.map((card) => {
+            const selected = form.work[card.id].enabled;
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  onClick={() => toggleWork(card.id, !selected)}
+                  className={cn(
+                    cx.card,
+                    cx.focus,
+                    'flex w-full min-h-[7.5rem] flex-col items-start gap-2 p-3 text-left',
+                    selected
+                      ? 'ring-2 ring-[#f97316] bg-orange-50/60'
+                      : 'hover:border-[#f97316]/40',
+                  )}
+                  aria-pressed={selected}
+                >
+                  <RenoCategoryIcon name={card.icon} />
+                  <span className="text-sm font-bold text-[#0b1f3a]">{card.title}</span>
+                  <span className="text-xs text-slate-500">{card.startingLabel}</span>
+                  <span className="text-[11px] font-semibold text-[#f97316]">
+                    {selected ? 'Selected' : 'Tap to select'}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </fieldset>
+
+      <div id="reno-customize" className="sm:col-span-2 space-y-3">
+        {form.work.painting.enabled ? (
+          <div className={cn(cx.card, 'grid gap-3 p-4 sm:grid-cols-2')}>
+            <p className="sm:col-span-2 text-sm font-bold text-[#0b1f3a]">Painting details</p>
+            <CalculatorInput
+              id="reno-paint-area"
+              label="Paint area (optional)"
+              hint="Leave blank to use property size"
+              inputMode="decimal"
+              value={form.paintArea}
+              onChange={(e) => setField('paintArea', e.target.value)}
+            />
+            <CalculatorSelect
+              id="reno-paint-scope"
+              label="Interior / exterior"
+              value={form.paintScope}
+              onChange={(e) => setField('paintScope', e.target.value as FormState['paintScope'])}
+              options={[
+                { value: 'interior', label: 'Interior' },
+                { value: 'exterior', label: 'Exterior' },
+                { value: 'both', label: 'Interior and exterior' },
+              ]}
+            />
+          </div>
+        ) : null}
+        {form.work.flooring.enabled ? (
+          <div className={cn(cx.card, 'grid gap-3 p-4 sm:grid-cols-2')}>
+            <p className="sm:col-span-2 text-sm font-bold text-[#0b1f3a]">Flooring details</p>
+            <CalculatorInput
+              id="reno-floor-area"
+              label="Floor area (optional)"
+              hint="Leave blank to use property size"
+              inputMode="decimal"
+              value={form.floorArea}
+              onChange={(e) => setField('floorArea', e.target.value)}
+            />
+            <CalculatorSelect
+              id="reno-floor-type"
+              label="Tile / flooring type"
+              value={form.flooringType}
+              onChange={(e) =>
+                setField('flooringType', e.target.value as FormState['flooringType'])
+              }
+              options={[
+                { value: 'ceramic', label: 'Ceramic' },
+                { value: 'vitrified', label: 'Vitrified' },
+                { value: 'wood', label: 'Wood / laminate' },
+                { value: 'marble', label: 'Marble / stone' },
+              ]}
+            />
+            <label className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.floorDemolition}
+                onChange={(e) => setField('floorDemolition', e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-[#f97316]"
+              />
+              Demolition of existing flooring required
+            </label>
+          </div>
+        ) : null}
+        {form.work.kitchen.enabled ? (
+          <div className={cn(cx.card, 'grid gap-3 p-4 sm:grid-cols-2')}>
+            <p className="sm:col-span-2 text-sm font-bold text-[#0b1f3a]">Kitchen details</p>
+            <CalculatorSelect
+              id="reno-kitchen-size"
+              label="Kitchen size"
+              value={form.kitchenSize}
+              onChange={(e) => setField('kitchenSize', e.target.value as FormState['kitchenSize'])}
+              options={[
+                { value: 'compact', label: 'Compact' },
+                { value: 'standard', label: 'Standard' },
+                { value: 'large', label: 'Large' },
+              ]}
+            />
+            <CalculatorSelect
+              id="reno-cabinet"
+              label="Cabinet type"
+              value={form.cabinetType}
+              onChange={(e) => setField('cabinetType', e.target.value as FormState['cabinetType'])}
+              options={[
+                { value: 'basic', label: 'Basic' },
+                { value: 'modular', label: 'Modular' },
+              ]}
+            />
+            <CalculatorSelect
+              id="reno-counter"
+              label="Countertop type"
+              value={form.countertop}
+              onChange={(e) => setField('countertop', e.target.value as FormState['countertop'])}
+              options={[
+                { value: 'laminate', label: 'Laminate' },
+                { value: 'granite', label: 'Granite' },
+                { value: 'quartz', label: 'Quartz' },
+              ]}
+            />
+          </div>
+        ) : null}
+        {form.work.bathroom.enabled ? (
+          <div className={cn(cx.card, 'grid gap-3 p-4 sm:grid-cols-2')}>
+            <p className="sm:col-span-2 text-sm font-bold text-[#0b1f3a]">Bathroom details</p>
+            <CalculatorInput
+              id="reno-bath-count"
+              label="Number of bathrooms"
+              inputMode="numeric"
+              value={form.bathroomCount}
+              onChange={(e) => setField('bathroomCount', e.target.value)}
+            />
+            <p className="text-xs text-slate-500 sm:col-span-2">
+              Fixture tier follows the finish selected above (basic / standard / premium).
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      <fieldset className="sm:col-span-2">
+        <legend className={cx.label}>More work (optional)</legend>
+        <ul className="mt-2 space-y-2">
+          {RENOVATION_WORK_RATES.filter(
+            (meta) => !(PRIMARY_RENOVATION_CATEGORY_IDS as readonly string[]).includes(meta.id),
+          ).map((meta) => {
             const item = form.work[meta.id];
             return (
               <li
                 key={meta.id}
-                className={cn(
-                  'flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between',
-                  item.enabled ? 'border-[#0b1f3a]/20' : 'opacity-80',
-                )}
+                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3"
               >
-                <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-[#0b1f3a]">
+                <label className="flex min-h-11 items-center gap-2 text-sm font-medium">
                   <input
                     type="checkbox"
                     checked={item.enabled}
                     onChange={(e) => toggleWork(meta.id, e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-[#f97316] focus:ring-[#f97316]"
+                    className="h-4 w-4 rounded border-slate-300 text-[#f97316]"
                   />
                   {meta.label}
                 </label>
-                <div
-                  className="flex flex-wrap gap-1"
-                  role="group"
-                  aria-label={`${meta.label} quality`}
-                >
-                  {(['basic', 'standard', 'premium'] as const).map((q) => (
-                    <button
-                      key={q}
-                      type="button"
-                      disabled={!item.enabled}
-                      onClick={() => setWorkQuality(meta.id, q)}
-                      className={cn(
-                        'min-h-9 rounded-md border px-2.5 text-xs font-semibold capitalize transition',
-                        cx.focus,
-                        item.enabled && item.quality === q
-                          ? 'border-[#0b1f3a] bg-[#0b1f3a] text-white'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-[#f97316]',
-                        !item.enabled && 'cursor-not-allowed opacity-50',
-                      )}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
               </li>
             );
           })}
@@ -520,20 +737,21 @@ export function RenovationCostCalculatorClient({
         value={formatInr(result.estimatedTotal)}
         hint={`Likely range ${formatInr(result.rangeLow)} – ${formatInr(result.rangeHigh)}. Indicative only — not a guaranteed quote.`}
         metrics={[
+          { id: 'mat', label: 'Material cost', value: formatInr(result.materialCost) },
+          { id: 'lab', label: 'Labour cost', value: formatInr(result.labourCost) },
+          { id: 'oth', label: 'Other', value: formatInr(result.otherCost) },
           { id: 'psf', label: 'Cost per sq ft', value: formatInr(result.costPerSqft) },
           {
             id: 'cont',
             label: 'Contingency',
             value: `${formatInr(result.contingencyAmount)} (${result.contingencyPercent}%)`,
           },
-          {
-            id: 'age',
-            label: 'Age adjustment',
-            value: `×${result.ageMultiplier}`,
-          },
         ]}
         actions={
           <div className="flex flex-wrap gap-2">
+            <a href="#reno-customize" className={cx.accentBtn}>
+              Customize renovation
+            </a>
             <button type="button" className={cx.secondaryBtn} onClick={() => void shareResult()}>
               Share
             </button>
@@ -628,7 +846,7 @@ export function RenovationCostCalculatorClient({
         ]}
         title="Renovation cost calculator"
         description="Estimate renovation expenses by selecting only the work you need — painting, kitchen, bathroom, waterproofing and more — without forcing a full new-build cost."
-        lastUpdated="Aug 2026"
+        lastUpdated="September 2026"
         form={formNode}
         result={resultNode}
         formula={
@@ -682,7 +900,7 @@ export function RenovationCostCalculatorClient({
             onClick: () => runCalculate(),
           },
           secondary: result
-            ? { label: 'Share', onClick: () => void shareResult() }
+            ? { label: 'Customize renovation', href: '#reno-customize' }
             : { label: 'New-build cost', href: '/construction/cost-calculator' },
         }}
       />

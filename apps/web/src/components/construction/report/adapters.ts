@@ -7,6 +7,7 @@ import type {
   BoqGeneratorResult,
   CementCalculatorResult,
   ConstructionCostResult,
+  PlanningBoqTotals,
   ScenarioCompareResult,
 } from '@varnarc/validation';
 import {
@@ -162,6 +163,46 @@ export function reportFromBoq(input: {
     assumptions: result.assumptions,
     methodology: { versionLabel: result.version },
     disclaimer: result.qualification || DEFAULT_CONSTRUCTION_REPORT_DISCLAIMER,
+  };
+}
+
+export function reportFromPlanningBoq(input: {
+  title: string;
+  totals: PlanningBoqTotals;
+}): ConstructionCalculationReportData {
+  const { title, totals } = input;
+  return {
+    calculatorSlug: 'boq',
+    title: 'Planning Bill of Quantities',
+    subtitle: title,
+    generatedAt: new Date().toISOString(),
+    currency: 'INR',
+    inputs: [
+      { label: 'Included items', value: String(totals.items.filter((i) => i.isIncluded).length) },
+      { label: 'Contingency', value: `${totals.contingencyPercent}%` },
+    ],
+    results: [
+      { label: 'Subtotal', value: inr(totals.subtotal) },
+      { label: 'Contingency amount', value: inr(totals.contingencyAmount) },
+      ...(totals.taxAmount != null ? [{ label: 'Tax', value: inr(totals.taxAmount) }] : []),
+      { label: 'Grand total', value: inr(totals.grandTotal) },
+    ],
+    breakdown: totals.sectionSubtotals
+      .filter((s) => s.itemCount > 0)
+      .map((c) => ({
+        label: c.label,
+        value: inr(c.amount),
+      })),
+    breakdownRows: totals.items.slice(0, 80).map((line) => ({
+      label: line.description,
+      quantity: String(line.quantity),
+      unit: line.unit,
+      rate: inr(line.rate),
+      amount: inr(line.amount),
+    })),
+    assumptions: [totals.disclaimer],
+    methodology: { versionLabel: totals.version },
+    disclaimer: totals.disclaimer,
   };
 }
 

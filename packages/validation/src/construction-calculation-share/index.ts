@@ -17,6 +17,7 @@ import { aggregateCalculatorInputSchema } from '../aggregate-calculator/types';
 import { plasterCalculatorInputSchema } from '../plaster-calculator/types';
 import { paintCalculatorInputSchema } from '../paint-calculator/types';
 import { aacCalculatorInputSchema } from '../aac-block-calculator/types';
+import { materialQuantityInputSchema } from '../material-quantity-calculator/types';
 
 /** Max length of the encoded `s` query value (chars). */
 export const CONSTRUCTION_SHARE_MAX_ENCODED_LENGTH = 1800;
@@ -70,6 +71,7 @@ const SHARE_SCHEMAS: Record<string, z.ZodTypeAny> = {
   'plaster-calculator': plasterCalculatorInputSchema,
   'paint-calculator': paintCalculatorInputSchema,
   'aac-block-calculator': aacCalculatorInputSchema,
+  'material-calculator': materialQuantityInputSchema,
 };
 
 const genericShareInputsSchema = z

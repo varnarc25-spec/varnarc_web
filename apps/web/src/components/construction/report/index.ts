@@ -10,5 +10,6 @@ export {
   reportFromCostCalculation,
   reportFromCementCalculation,
   reportFromBoq,
+  reportFromPlanningBoq,
   reportFromScenarioCompare,
 } from './adapters';

@@ -156,12 +156,14 @@ export function isConstructionCalculatorPath(pathname: string): boolean {
     p === '/construction/cost-change-simulator' ||
     p === '/construction/cost-optimization' ||
     p === '/construction/cement-calculator' ||
+    p === '/construction/material-calculator' ||
     p === '/construction/concrete-calculator' ||
     p === '/construction/brick-calculator' ||
     p === '/construction/aac-block-calculator' ||
     p === '/construction/steel-calculator' ||
     p === '/construction/bar-bending-schedule' ||
     p === '/construction/boq-generator' ||
+    p === '/construction/boq' ||
     p === '/construction/timeline-planner' ||
     p === '/construction/budget-tracker' ||
     p === '/construction/document-vault' ||
@@ -179,6 +181,12 @@ export function isConstructionCalculatorPath(pathname: string): boolean {
     p === '/construction/beam-calculator' ||
     p === '/construction/column-calculator' ||
     p === '/construction/footing-calculator' ||
+    p === '/construction/false-ceiling-calculator' ||
+    p === '/construction/staircase-calculator' ||
+    p === '/construction/water-tank-calculator' ||
+    p === '/construction/roofing-calculator' ||
+    p === '/construction/wall-area-calculator' ||
+    p === '/construction/excavation-calculator' ||
     p === '/construction/planner'
   ) {
     return true;

@@ -3,6 +3,8 @@
  * Pure mapping — UI lives in the web app; do not hardcode CTAs per page.
  */
 
+import { plannerToolHref } from '../construction-planner-handoff';
+
 export type ConstructionWhatNextContext = {
   calculatorSlug: string;
   outputs?: unknown;
@@ -61,6 +63,37 @@ function readVolumeM3(ctx: ConstructionWhatNextContext): number | null {
   );
 }
 
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function plannerHandoffFromCtx(ctx: ConstructionWhatNextContext) {
+  const i = {
+    ...((ctx.inputs ?? {}) as Record<string, unknown>),
+    ...((ctx.normalizedInputs ?? {}) as Record<string, unknown>),
+    ...((ctx.outputs ?? {}) as Record<string, unknown>),
+  };
+  const area = readAreaSqft(ctx) ?? asNumber(i.builtUpArea);
+  const unit = i.areaUnit === 'sqm' || i.areaUnit === 'sqft' ? i.areaUnit : undefined;
+  return {
+    location: asString(i.location),
+    builtUpArea: area != null && area > 0 ? area : undefined,
+    areaUnit: unit as 'sqft' | 'sqm' | undefined,
+    floors: asNumber(i.floors) ?? undefined,
+    propertyType: asString(i.propertyType),
+    quality: asString(i.quality),
+    structureType: asString(i.structureType),
+    foundationType: asString(i.foundationType),
+    basement: i.basement === true,
+    parkingSlots: asNumber(i.parkingSlots) ?? undefined,
+    lift: i.lift === true,
+    compoundWall: i.compoundWall === true,
+    modularKitchen: i.modularKitchen === true,
+    budgetInr:
+      asNumber(i.budgetInr) ?? asNumber(i.estimatedTotal) ?? asNumber(i.totalCostInr) ?? undefined,
+  };
+}
+
 function readAreaSqft(ctx: ConstructionWhatNextContext): number | null {
   const o = ctx.outputs as Record<string, unknown> | null;
   const n = ctx.normalizedInputs;
@@ -89,7 +122,7 @@ function projectActions(ctx: ConstructionWhatNextContext): ActionCandidate[] {
       {
         id: 'generate-boq',
         label: 'Add to BOQ',
-        href: `/construction/boq-generator${qs({ from: ctx.calculatorSlug })}`,
+        href: `/construction/boq${qs({ from: ctx.calculatorSlug })}`,
         reason: 'Turn quantities into a bill of quantities.',
         priority: 35,
       },
@@ -108,7 +141,7 @@ function projectActions(ctx: ConstructionWhatNextContext): ActionCandidate[] {
     {
       id: 'generate-boq',
       label: 'Add to BOQ',
-      href: `/construction/boq-generator${qs({ from: ctx.calculatorSlug })}`,
+      href: `/construction/boq${qs({ from: ctx.calculatorSlug })}`,
       reason: 'Draft a BOQ from your quantities.',
       priority: 36,
     },
@@ -318,19 +351,19 @@ const MAP: Record<string, (ctx: ConstructionWhatNextContext) => ActionCandidate[
   ],
 
   'cost-calculator': (ctx) => {
-    const area = readAreaSqft(ctx);
+    const handoff = plannerHandoffFromCtx(ctx);
     return [
       {
         id: 'calc-materials',
-        label: 'Calculate materials',
-        href: `/construction/cement-calculator${qs(area != null ? { area: Math.round(area), areaUnit: 'sqft' } : {})}`,
-        reason: 'Drill into cement and related quantities.',
+        label: 'View material quantities',
+        href: plannerToolHref('/construction/material-calculator', handoff),
+        reason: 'See cement, steel and other quantities for this project.',
         priority: 10,
       },
       {
         id: 'generate-boq',
         label: 'Generate BOQ',
-        href: `/construction/boq-generator${qs({ from: 'cost-calculator' })}`,
+        href: plannerToolHref('/construction/boq', handoff),
         reason: 'Itemise the estimate into a BOQ.',
         priority: 12,
       },
@@ -370,6 +403,27 @@ const MAP: Record<string, (ctx: ConstructionWhatNextContext) => ActionCandidate[
         reason: 'See if the estimate fits your budget.',
         priority: 24,
       },
+    ];
+  },
+
+  'material-calculator': (ctx) => {
+    const handoff = plannerHandoffFromCtx(ctx);
+    return [
+      {
+        id: 'estimate-cost',
+        label: 'Construction cost calculator',
+        href: plannerToolHref('/construction/cost-calculator', handoff),
+        reason: 'See the budget that matches these quantities.',
+        priority: 10,
+      },
+      {
+        id: 'generate-boq',
+        label: 'BOQ generator',
+        href: plannerToolHref('/construction/boq', handoff),
+        reason: 'Turn quantities into a bill of quantities.',
+        priority: 12,
+      },
+      ...projectActions(ctx),
     ];
   },
 
@@ -632,6 +686,24 @@ const MAP: Record<string, (ctx: ConstructionWhatNextContext) => ActionCandidate[
     },
   ],
 
+  boq: (ctx) => [
+    {
+      id: 'calc-materials',
+      label: 'Material quantity calculator',
+      href: '/construction/material-calculator',
+      reason: 'Refresh planning quantities for this BOQ.',
+      priority: 10,
+    },
+    {
+      id: 'estimate-cost',
+      label: 'Construction cost calculator',
+      href: '/construction/cost-calculator',
+      reason: 'Cross-check BOQ totals with a cost model.',
+      priority: 12,
+    },
+    ...projectActions(ctx),
+  ],
+
   'scenario-compare': (ctx) => [
     {
       id: 'cost-optimize',
@@ -643,7 +715,7 @@ const MAP: Record<string, (ctx: ConstructionWhatNextContext) => ActionCandidate[
     {
       id: 'generate-boq',
       label: 'Generate BOQ',
-      href: '/construction/boq-generator',
+      href: '/construction/boq',
       reason: 'Detail the preferred scenario.',
       priority: 16,
     },

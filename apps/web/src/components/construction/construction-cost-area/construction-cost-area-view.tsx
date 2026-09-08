@@ -26,8 +26,8 @@ const HERO_POINTS = [
 
 const ADVANCED_CALCS = [
   { href: '/construction/aac-block-calculator', label: 'AAC block' },
-  { href: '/construction/plaster-calculator', label: 'Wall area' },
-  { href: '/construction/footing-calculator', label: 'Excavation' },
+  { href: '/construction/wall-area-calculator', label: 'Wall area' },
+  { href: '/construction/excavation-calculator', label: 'Excavation' },
   { href: '/construction/rcc-calculator', label: 'RCC' },
   { href: '/construction/slab-calculator', label: 'Slab' },
   { href: '/construction/paint-calculator', label: 'Paint' },

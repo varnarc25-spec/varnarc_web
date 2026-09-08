@@ -15,9 +15,13 @@ export const CONSTRUCTION_HERO_POINTS = [
 
 export const ADVANCED_CALCULATORS = [
   { href: '/construction/aac-block-calculator', label: 'AAC block' },
-  { href: '/construction/plaster-calculator', label: 'Wall area' },
-  { href: '/construction/footing-calculator', label: 'Excavation' },
+  { href: '/construction/wall-area-calculator', label: 'Wall area' },
+  { href: '/construction/excavation-calculator', label: 'Excavation' },
   { href: '/construction/rcc-calculator', label: 'RCC' },
+  { href: '/construction/false-ceiling-calculator', label: 'False ceiling' },
+  { href: '/construction/staircase-calculator', label: 'Staircase' },
+  { href: '/construction/water-tank-calculator', label: 'Water tank' },
+  { href: '/construction/roofing-calculator', label: 'Roofing' },
   { href: '/construction/slab-calculator', label: 'Slab' },
   { href: '/construction/paint-calculator', label: 'Paint' },
   { href: '/construction/flooring-calculator', label: 'Flooring' },
@@ -56,7 +60,7 @@ export function ConstructionHeroActions({ areaSqft }: { areaSqft?: number }) {
       <Link href={`/construction/project/new${qs}`} className={cx.accentBtn}>
         Create project
       </Link>
-      <Link href={`/construction/boq-generator${qs}`} className={cx.secondaryBtn}>
+      <Link href={`/construction/boq${qs}`} className={cx.secondaryBtn}>
         Open BOQ
       </Link>
     </div>
@@ -131,8 +135,10 @@ export function ConstructionProjectSummaryBar({
 
 export function ConstructionMaterialLinesTable({
   lines,
+  quantityHref,
 }: {
   lines: ConstructionCostAreaMaterialLine[];
+  quantityHref?: string;
 }) {
   return (
     <div className={cn(cx.card, 'overflow-x-auto p-0')}>
@@ -151,7 +157,15 @@ export function ConstructionMaterialLinesTable({
         <tbody>
           {lines.map((line) => (
             <tr key={line.id} className="border-t border-slate-100">
-              <td className="px-3 py-2 font-medium text-[#0b1f3a]">{line.label}</td>
+              <td className="px-3 py-2 font-medium text-[#0b1f3a]">
+                {quantityHref ? (
+                  <Link href={quantityHref} className={cx.link}>
+                    {line.label}
+                  </Link>
+                ) : (
+                  line.label
+                )}
+              </td>
               <td className="px-3 py-2 tabular-nums">{line.quantity.toLocaleString('en-IN')}</td>
               <td className="px-3 py-2 text-slate-600">{line.unit}</td>
               <td className="px-3 py-2 tabular-nums text-slate-600">
@@ -175,11 +189,15 @@ export function ConstructionCostDonut({
   labourCost,
   otherCost,
   areaSqft,
+  quantityHref,
+  boqHref: boqHrefProp,
 }: {
   materialCost: number;
   labourCost: number;
   otherCost: number;
   areaSqft?: number;
+  quantityHref?: string;
+  boqHref?: string;
 }) {
   const split = materialCost + labourCost + otherCost;
   const pct = (n: number) => (split > 0 ? Math.round((n / split) * 100) : 0);
@@ -188,19 +206,25 @@ export function ConstructionCostDonut({
   const otherPct = Math.max(0, 100 - materialPct - labourPct);
   const donut = `conic-gradient(#0b1f3a 0 ${materialPct}%, #f97316 ${materialPct}% ${materialPct + labourPct}%, #cbd5e1 ${materialPct + labourPct}% 100%)`;
   const boqHref =
-    areaSqft && areaSqft > 0
-      ? `/construction/boq-generator?builtUpArea=${Math.round(areaSqft)}`
-      : '/construction/boq-generator';
+    boqHrefProp ??
+    (areaSqft && areaSqft > 0
+      ? `/construction/boq?builtUpArea=${Math.round(areaSqft)}`
+      : '/construction/boq');
   return (
     <aside className={cn(cx.card, 'space-y-4 p-4')}>
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-          Materials share
+          Estimated materials
         </p>
         <p className="mt-1 text-2xl font-extrabold tabular-nums text-[#0b1f3a]">
           {formatInr(materialCost)}
         </p>
         <p className="text-xs text-slate-500">{materialPct}% of estimated total</p>
+        {quantityHref ? (
+          <Link href={quantityHref} className={cn(cx.link, 'mt-2 inline-block')}>
+            View quantity breakdown →
+          </Link>
+        ) : null}
       </div>
       <div
         className="mx-auto h-36 w-36 rounded-full"
@@ -247,7 +271,7 @@ export function ConstructionBoqPreview({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-bold text-[#0b1f3a]">BOQ generator</h2>
         <div className="flex flex-wrap gap-2">
-          <Link href="/construction/boq-generator" className={cx.secondaryBtn}>
+          <Link href="/construction/boq" className={cx.secondaryBtn}>
             Open full BOQ
           </Link>
           <Link href="/construction/suppliers" className={cx.secondaryBtn}>

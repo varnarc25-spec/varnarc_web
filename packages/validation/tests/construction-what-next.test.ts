@@ -31,6 +31,9 @@ describe('construction-what-next', () => {
     expect(guest.map((a) => a.id)).toContain('create-project');
     expect(guest.map((a) => a.id)).toContain('compare-scenario');
     expect(guest.map((a) => a.id)).toContain('generate-boq');
+    expect(guest.find((a) => a.id === 'calc-materials')?.href).toContain(
+      '/construction/material-calculator',
+    );
 
     const withProject = getConstructionWhatNext({
       calculatorSlug: 'cost-calculator',
