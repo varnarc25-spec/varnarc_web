@@ -149,6 +149,7 @@ export function isConstructionCalculatorPath(pathname: string): boolean {
   if (
     p === '/construction/estimate' ||
     p === '/construction/cost-calculator' ||
+    p.startsWith('/construction/cost-calculator/') ||
     p === '/construction/renovation-cost-calculator' ||
     p === '/construction/interior-cost-calculator' ||
     p === '/construction/affordability-calculator' ||
@@ -208,6 +209,7 @@ export function constructionCanonicalPath(pathname: string): string {
   const p = pathname.startsWith('/') ? pathname.replace(/\/$/, '') || '/' : `/${pathname}`;
   if (p === '/construction/compare') return '/construction/compare';
   if (p === '/construction/prices') return '/construction/prices';
+  if (p.startsWith('/construction/cost-calculator/')) return '/construction/cost-calculator';
   // Nested compare/prices landings keep their own canonical path
   return p;
 }
@@ -242,6 +244,17 @@ export function resolveConstructionIndexing(
   }
 
   const isCalc = isConstructionCalculatorPath(pathname);
+
+  if (isCalc && pathname.replace(/\/$/, '').startsWith('/construction/cost-calculator/')) {
+    return {
+      canonicalPath,
+      canonicalUrl,
+      index: false,
+      follow: true,
+      robots: { index: false, follow: true },
+      reason: 'calculator_share_params',
+    };
+  }
 
   if (isCalc && hasAnyKey(sp, CONSTRUCTION_CALC_SHARE_QUERY_KEYS)) {
     return {

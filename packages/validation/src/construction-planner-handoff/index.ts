@@ -1,5 +1,7 @@
 /** URL-safe planning state shared across cost, material-quantity, and BOQ tools. */
 
+import { constructionCostCalculatorHref } from '../construction-calculator-slug';
+
 export const PLANNER_HANDOFF_STORAGE_KEY = 'varnarc.construction.planner-handoff.v1';
 
 export type ConstructionPlannerHandoff = {
@@ -127,6 +129,9 @@ export function plannerToolHref(
   handoff: ConstructionPlannerHandoff,
   hash?: string,
 ): string {
+  if (path === '/construction/cost-calculator') {
+    return constructionCostCalculatorHref(handoff, hash);
+  }
   const q = buildPlannerHandoffQuery(handoff);
   const href = q ? `${path}?${q}` : path;
   return hash ? `${href}#${hash}` : href;

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateConstructionCost,
+  constructionCostCalculatorHref,
   estimateCostAreaMaterialLines,
   parsePlannerHandoffQuery,
   plannerToolHref,
@@ -276,21 +277,6 @@ function toInput(form: FormState): ConstructionCostInput {
   };
 }
 
-function buildShareParams(form: FormState): URLSearchParams {
-  const sp = new URLSearchParams();
-  sp.set('mode', form.mode);
-  sp.set('location', form.location);
-  if (form.mode === 'reverse') sp.set('budgetInr', form.budgetInr);
-  else sp.set('builtUpArea', form.builtUpArea);
-  sp.set('areaUnit', form.areaUnit);
-  sp.set('floors', form.floors);
-  sp.set('quality', form.quality);
-  sp.set('propertyType', form.propertyType);
-  sp.set('contingencyPercent', form.contingencyPercent);
-  if (form.customCostPerSqft.trim()) sp.set('customRate', form.customCostPerSqft);
-  return sp;
-}
-
 function downloadBoq(result: ConstructionCostResult, form: FormState) {
   const lines = [
     'Category,Amount (INR),Percent of total',
@@ -445,8 +431,7 @@ export function ConstructionCostCalculatorClient({
         /* ignore */
       }
       if (typeof window !== 'undefined') {
-        const url = `${window.location.pathname}?${buildShareParams(form).toString()}`;
-        window.history.replaceState({}, '', url);
+        window.history.replaceState({}, '', constructionCostCalculatorHref(form));
       }
       trackCalculatorModeCompleted({
         mode: form.mode,
@@ -527,7 +512,7 @@ export function ConstructionCostCalculatorClient({
     if (!result) return;
     const url =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/construction/cost-calculator?${buildShareParams(form)}`
+        ? `${window.location.origin}${constructionCostCalculatorHref(form)}`
         : '';
     const text = `Indicative construction cost: ${formatInr(result.estimatedTotal)} (range ${formatInr(result.rangeLow)}–${formatInr(result.rangeHigh)}). Not a quote.`;
     try {

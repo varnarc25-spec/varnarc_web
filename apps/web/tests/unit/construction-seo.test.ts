@@ -114,6 +114,18 @@ describe('resolveConstructionIndexing', () => {
     expect(shared.reason).toBe('calculator_share_params');
   });
 
+  it('noindexes cost-calculator slug share paths and canonicalizes to the tool', () => {
+    expect(isConstructionCalculatorPath('/construction/cost-calculator/builtUpArea_1500_sft')).toBe(
+      true,
+    );
+    const slug = resolveConstructionIndexing({
+      pathname: '/construction/cost-calculator/builtUpArea_1500_sft',
+    });
+    expect(slug.index).toBe(false);
+    expect(slug.canonicalPath).toBe('/construction/cost-calculator');
+    expect(slug.reason).toBe('calculator_share_params');
+  });
+
   it('indexes renovation cost calculator and noindexes share params', () => {
     expect(isConstructionCalculatorPath('/construction/renovation-cost-calculator')).toBe(true);
     const clean = resolveConstructionIndexing({

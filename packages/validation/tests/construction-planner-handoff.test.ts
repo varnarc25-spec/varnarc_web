@@ -28,6 +28,9 @@ describe('construction planner handoff', () => {
     expect(plannerToolHref('/construction/material-calculator', parsed)).toContain(
       '/construction/material-calculator?',
     );
+    expect(plannerToolHref('/construction/cost-calculator', { builtUpArea: 1500 })).toBe(
+      '/construction/cost-calculator/builtUpArea_1500_sft',
+    );
   });
 
   it('omits empty and sensitive-looking blanks from the query', () => {

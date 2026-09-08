@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   computeConstructionCostAreaEstimate,
+  constructionCostCalculatorHref,
   COST_AREA_CITY_OPTIONS,
   formatInr,
   type ConstructionCostAreaLanding,
@@ -89,6 +90,13 @@ export function ConstructionCostAreaView({ landing }: { landing: ConstructionCos
   const labourPct = pct(estimate.labourCost, totalSplit);
   const otherPct = Math.max(0, 100 - materialPct - labourPct);
   const donut = `conic-gradient(#0b1f3a 0 ${materialPct}%, #f97316 ${materialPct}% ${materialPct + labourPct}%, #cbd5e1 ${materialPct + labourPct}% 100%)`;
+  const calculatorHref = constructionCostCalculatorHref({
+    builtUpArea: landing.areaSqft,
+    areaUnit: 'sqft',
+    floors: estimate.floors,
+    quality: estimate.quality,
+    location: estimate.locationLabel,
+  });
   const calculatorQs = `builtUpArea=${landing.areaSqft}&floors=${estimate.floors}&quality=${estimate.quality}&location=${encodeURIComponent(estimate.locationLabel)}`;
   const activeBoq = estimate.breakdown[boqTab] ?? estimate.breakdown[0];
 
@@ -321,7 +329,7 @@ export function ConstructionCostAreaView({ landing }: { landing: ConstructionCos
                 View detailed breakdown
               </a>
               <Link
-                href={`/construction/cost-calculator?${calculatorQs}`}
+                href={calculatorHref}
                 className={cn(cx.secondaryBtn, 'w-full')}
                 onClick={() => trackHouseSizePageCalculator()}
               >

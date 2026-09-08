@@ -4,7 +4,7 @@ import { resolveConstructionLandingSearch } from '@/lib/construction/landing';
 describe('resolveConstructionLandingSearch', () => {
   it('routes cost and area queries to the estimator', () => {
     expect(resolveConstructionLandingSearch('Cost to build 1500 sqft house')).toBe(
-      '/construction/cost-calculator?builtUpArea=1500',
+      '/construction/cost-calculator/builtUpArea_1500_sft',
     );
   });
 

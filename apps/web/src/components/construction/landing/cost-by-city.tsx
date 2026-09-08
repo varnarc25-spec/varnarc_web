@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ConstructionSection } from '@/components/construction/construction-section';
 import { cn, cx } from '@/components/construction/styles';
 import { LANDING_CITIES } from '@/lib/construction/landing';
+import { constructionCostCalculatorHref } from '@varnarc/validation';
 
 export function ConstructionCostByCity() {
   return (
@@ -15,7 +16,9 @@ export function ConstructionCostByCity() {
         {LANDING_CITIES.map((city) => (
           <li key={city.slug}>
             <Link
-              href={`/construction/cost-calculator?location=${encodeURIComponent(city.name.replace(' NCR', ''))}`}
+              href={constructionCostCalculatorHref({
+                location: city.name.replace(' NCR', ''),
+              })}
               className={cn(
                 'flex min-h-11 items-center justify-between rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-[#0b1f3a]',
                 'hover:border-[#f97316] hover:text-[#f97316]',

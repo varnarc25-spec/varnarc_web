@@ -1,6 +1,7 @@
 /** Programmatic house-size construction cost landings — curated areas only. */
 
 import { calculateConstructionCost } from '../construction-cost/calculate';
+import { constructionCostCalculatorHref } from '../construction-calculator-slug';
 import {
   COST_CALC_VERSION,
   DEFAULT_MARKET_RATES,
@@ -452,7 +453,13 @@ export function buildConstructionCostAreaLanding(
   });
 
   const area = profile.label;
-  const qs = `builtUpArea=${profile.areaSqft}&floors=${floors}&quality=standard&location=${encodeURIComponent(estimate.locationLabel)}`;
+  const calculatorHref = constructionCostCalculatorHref({
+    builtUpArea: profile.areaSqft,
+    areaUnit: 'sqft',
+    floors,
+    quality: 'standard',
+    location: estimate.locationLabel,
+  });
 
   return {
     slug,
@@ -485,7 +492,7 @@ export function buildConstructionCostAreaLanding(
       },
     ],
     relatedTools: [
-      { href: `/construction/cost-calculator?${qs}`, label: 'Full cost calculator' },
+      { href: calculatorHref, label: 'Full cost calculator' },
       {
         href: `/construction/cement-calculator?area=${profile.areaSqft}`,
         label: 'Cement calculator',

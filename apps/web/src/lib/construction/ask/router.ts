@@ -9,6 +9,7 @@ import {
   shouldAutoRouteAsk,
   type AskParseResult,
 } from '@/lib/construction/ask/parser';
+import { constructionCostCalculatorHref } from '@varnarc/validation';
 
 export type AskRouteDecision = {
   parse: AskParseResult;
@@ -52,12 +53,12 @@ function buildEstimateHref(parse: AskParseResult): string {
       ? `/construction/renovation-cost-calculator?${qs}`
       : '/construction/renovation-cost-calculator';
   }
-  const sp = new URLSearchParams();
-  if (parse.values.area) sp.set('builtUpArea', String(parse.values.area));
-  if (parse.values.location) sp.set('location', parse.values.location);
-  if (parse.values.floorCount) sp.set('floors', String(parse.values.floorCount));
-  const qs = sp.toString();
-  return qs ? `/construction/cost-calculator?${qs}` : '/construction/cost-calculator';
+  return constructionCostCalculatorHref({
+    builtUpArea: parse.values.area,
+    location: parse.values.location,
+    floors: parse.values.floorCount,
+    areaUnit: 'sqft',
+  });
 }
 
 function buildCalculatorHref(parse: AskParseResult): string | null {
@@ -183,7 +184,7 @@ function buildPrimaryHref(parse: AskParseResult): string | null {
       return buildMaterialsHref(parse);
     case 'location':
       return parse.values.location
-        ? `/construction/cost-calculator?location=${encodeURIComponent(parse.values.location)}`
+        ? constructionCostCalculatorHref({ location: parse.values.location })
         : '/construction/cost-calculator';
     case 'guide':
       return '/construction/guides';

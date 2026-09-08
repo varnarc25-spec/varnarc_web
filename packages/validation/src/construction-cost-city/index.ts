@@ -1,6 +1,7 @@
 /** Location-specific Construction Cost landings — data-gated, anti-thin-SEO. */
 
 import { calculateConstructionCost } from '../construction-cost/calculate';
+import { constructionCostCalculatorHref } from '../construction-calculator-slug';
 import {
   COST_CALC_VERSION,
   DEFAULT_COST_SPLIT,
@@ -555,7 +556,13 @@ export function buildConstructionCostCityLanding(input: {
     indexBlockReason: gate.reason,
     city: { slug: input.citySlug, name: profile.name },
     canonicalPath: `/construction/construction-cost/${input.citySlug}`,
-    calculatorHref: `/construction/cost-calculator?location=${encodeURIComponent(profile.name)}&builtUpArea=${COST_CITY_REFERENCE_AREA_SQFT}&floors=${COST_CITY_REFERENCE_FLOORS}&quality=standard`,
+    calculatorHref: constructionCostCalculatorHref({
+      location: profile.name.replace(' NCR', ''),
+      builtUpArea: COST_CITY_REFERENCE_AREA_SQFT,
+      areaUnit: 'sqft',
+      floors: COST_CITY_REFERENCE_FLOORS,
+      quality: 'standard',
+    }),
     locationMultiplier: locMeta.multiplier,
     nationalBaseRatePerSqft: NATIONAL_BASE_RATE_PER_SQFT,
     costPerSqftReliable: gate.indexable,

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AFFORDABILITY_CALC_VERSION,
   calculateConstructionAffordability,
+  constructionCostCalculatorHref,
   type AffordabilityCostResult,
 } from '@varnarc/validation';
 import {
@@ -234,8 +235,12 @@ export function AffordabilityCalculatorClient({
     ];
   }, [result, statusLabel]);
 
-  const qualityHref = '/construction/cost-calculator?quality=basic';
-  const reduceAreaHref = '/construction/cost-calculator?builtUpArea=1200&quality=standard';
+  const qualityHref = constructionCostCalculatorHref({ quality: 'basic' });
+  const reduceAreaHref = constructionCostCalculatorHref({
+    builtUpArea: 1200,
+    areaUnit: 'sqft',
+    quality: 'standard',
+  });
 
   const formNode = (
     <CalculatorForm

@@ -34,6 +34,7 @@ export * from './cost-optimization';
 export * from './cement-calculator';
 export * from './material-quantity-calculator';
 export * from './construction-planner-handoff';
+export * from './construction-calculator-slug';
 export * from './concrete-calculator';
 export * from './brick-calculator';
 export * from './aac-block-calculator';
