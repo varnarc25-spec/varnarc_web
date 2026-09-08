@@ -93,7 +93,7 @@ export type RenovationPropertyType = z.infer<typeof renovationPropertyTypeSchema
 export type RenovationRoomsBhk = z.infer<typeof renovationRoomsBhkSchema>;
 export type RenovationWorkDetails = z.infer<typeof renovationWorkDetailsSchema>;
 export type RenovationWorkItem = z.infer<typeof renovationWorkItemSchema>;
-export type RenovationCostInput = z.infer<typeof renovationCostInputSchema>;
+export type RenovationCostInput = z.input<typeof renovationCostInputSchema>;
 
 export type RenovationBreakdownLine = {
   id: string;

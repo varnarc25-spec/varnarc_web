@@ -35,6 +35,7 @@ export function ConstructionRenovationCostCompact() {
         roomsBhk: '2bhk',
         finishTier: finish,
         propertyAgeYears: 10,
+        contingencyPercent: 12,
         workItems: RENOVATION_CATEGORY_CARDS.map((card) => ({
           id: card.id,
           enabled: selected.includes(card.id),
