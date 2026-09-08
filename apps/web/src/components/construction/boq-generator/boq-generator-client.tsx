@@ -24,6 +24,8 @@ import {
   trackBoqGenerated,
   trackCalculationAddedToProject,
   trackCalculationShared,
+  trackPdfExport,
+  trackExcelExport,
   trackCalculatorCompleted,
   trackCalculatorError,
 } from '@/lib/construction/analytics';
@@ -439,6 +441,7 @@ export function BoqGeneratorClient() {
       `NOTE,${csvEscape(BOQ_QUALIFICATION)}`,
     ].filter(Boolean);
     downloadCsv('varnarc-indicative-boq.csv', linesCsv);
+    trackExcelExport();
     trackBoqGenerated({
       logged_in: Boolean(projectId),
       item_count_bucket: next.lines.length <= 10 ? 'few' : 'many',
@@ -554,6 +557,7 @@ export function BoqGeneratorClient() {
       a.download = 'varnarc-indicative-boq.pdf';
       a.click();
       URL.revokeObjectURL(url);
+      trackPdfExport();
       setActionMsg('PDF downloaded (indicative planning BOQ).');
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : 'PDF download failed');

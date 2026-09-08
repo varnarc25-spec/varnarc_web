@@ -12,6 +12,7 @@ import {
 import { ConstructionBreadcrumbs } from '@/components/construction/construction-breadcrumbs';
 import { ConstructionFAQ } from '@/components/construction/construction-faq';
 import { LANDING_JOURNEY } from '@/lib/construction/landing';
+import { trackHouseSizePageCalculator } from '@/lib/construction/analytics';
 import { cn, cx } from '@/components/construction/styles';
 
 const QUALITIES: ConstructionCostQuality[] = ['basic', 'standard', 'premium', 'luxury'];
@@ -322,6 +323,7 @@ export function ConstructionCostAreaView({ landing }: { landing: ConstructionCos
               <Link
                 href={`/construction/cost-calculator?${calculatorQs}`}
                 className={cn(cx.secondaryBtn, 'w-full')}
+                onClick={() => trackHouseSizePageCalculator()}
               >
                 Edit local prices
               </Link>

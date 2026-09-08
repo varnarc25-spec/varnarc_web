@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { ProfessionalCard } from '@/lib/construction/professionals-directory/api';
+import { trackProfessionalCtaClicked } from '@/lib/construction/analytics';
 import { cn } from '@/components/construction/styles';
 
 export function ProfessionalCardView({
@@ -12,6 +15,7 @@ export function ProfessionalCardView({
   return (
     <Link
       href={professional.href}
+      onClick={() => trackProfessionalCtaClicked({ path: professional.href })}
       className={cn(
         'block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow',
         className,

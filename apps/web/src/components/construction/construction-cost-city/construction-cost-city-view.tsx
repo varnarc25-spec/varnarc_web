@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ConstructionCostCityLanding } from '@varnarc/validation';
 import { ConstructionFAQ } from '@/components/construction/construction-faq';
+import { ConstructionCostCityCtas } from '@/components/construction/construction-cost-city/construction-cost-city-ctas';
 import { cn, cx } from '@/components/construction/styles';
 
 function money(n: number) {
@@ -66,14 +67,10 @@ export function ConstructionCostCityView({ landing }: { landing: ConstructionCos
         </div>
       </section>
 
-      <div className="flex flex-wrap gap-2">
-        <Link href={landing.calculatorHref} className={cx.primaryBtn}>
-          Open calculator prefilled for {landing.city.name}
-        </Link>
-        <Link href="/construction/cost-calculator" className={cx.secondaryBtn}>
-          Full cost calculator
-        </Link>
-      </div>
+      <ConstructionCostCityCtas
+        calculatorHref={landing.calculatorHref}
+        cityName={landing.city.name}
+      />
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold text-[#0b1f3a]">Construction quality scenarios</h2>
@@ -125,6 +122,64 @@ export function ConstructionCostCityView({ landing }: { landing: ConstructionCos
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold text-[#0b1f3a]">Rate provenance &amp; local factors</h2>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {landing.intelligence.rateLabel} · source {landing.intelligence.sourceType} · confidence{' '}
+          {landing.intelligence.confidence}. Last verified:{' '}
+          {landing.intelligence.lastVerifiedAt
+            ? formatDate(landing.intelligence.lastVerifiedAt)
+            : 'not verified — no official city extract loaded'}
+          .
+        </p>
+        <p className="text-xs text-slate-500">{landing.intelligence.locationFactors.notes}</p>
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="px-3 py-2 font-semibold">Factor</th>
+                <th className="px-3 py-2 font-semibold">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                [
+                  ['Material transport', landing.intelligence.locationFactors.materialTransport],
+                  ['Labour', landing.intelligence.locationFactors.labour],
+                  ['Equipment', landing.intelligence.locationFactors.equipment],
+                  ['Interior', landing.intelligence.locationFactors.interior],
+                  ['Logistics', landing.intelligence.locationFactors.logistics],
+                ] as const
+              ).map(([label, value]) => (
+                <tr key={label} className="border-t border-slate-100">
+                  <td className="px-3 py-2">{label}</td>
+                  <td className="px-3 py-2 tabular-nums">{value.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <h3 className="text-sm font-bold text-[#0b1f3a]">Standard quality specifications</h3>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {landing.intelligence.qualitySpecifications.map((spec) => (
+            <li key={spec.categoryKey} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+              <span className="font-medium">{spec.label}</span>
+              <span className="block text-xs text-slate-500">{spec.categoryKey}</span>
+            </li>
+          ))}
+        </ul>
+        <h3 className="text-sm font-bold text-[#0b1f3a]">Commercial planning rules</h3>
+        <ul className="space-y-1 text-sm text-slate-700">
+          {landing.intelligence.commercialRules.map((rule) => (
+            <li key={rule.kind}>
+              {rule.kind}
+              {rule.percent != null ? ` ${rule.percent}%` : ''}
+              {rule.indexFactor != null ? ` index ${rule.indexFactor}` : ''} — {rule.notes}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="space-y-2">

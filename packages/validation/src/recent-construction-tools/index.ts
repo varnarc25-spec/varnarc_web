@@ -27,6 +27,7 @@ const TOOL_LABELS: Record<string, string> = {
   'bbs-calculator': 'Bar Bending Schedule',
   'boq-generator': 'BOQ Generator',
   'renovation-cost-calculator': 'Renovation Cost Calculator',
+  'interior-cost-calculator': 'Interior Cost Calculator',
   'affordability-calculator': 'Affordability Calculator',
   'scenario-compare': 'Scenario Compare',
   'cost-optimization': 'Cost Optimization',

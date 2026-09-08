@@ -1,4 +1,10 @@
 import { roundMoney, roundQuantity } from '../construction-engine/money';
+import { requiredLabourDays, workItemMaterialQuantity } from '../construction-boq-engine';
+import {
+  DEFAULT_COMMERCIAL_RULES,
+  PRODUCTIVITY_NORMS,
+  WORK_ITEM_PLANNING_RESOURCES,
+} from '../construction-intelligence-catalog';
 import { BOQ_CALC_VERSION, BOQ_DEFAULT_RATES_INR, BOQ_QUALIFICATION } from './rates';
 import {
   boqGenerateFromProjectSchema,
@@ -332,6 +338,53 @@ export function generateBoqFromProjectAssumptions(
     });
   }
 
+  const masonryCum = roundQuantity(areaM2 * 0.23, 3);
+  const plasterM2 = roundQuantity(areaM2 * 2.8, 2);
+  const rccM3 = renovation ? 0 : roundQuantity(areaM2 * 0.12 * Math.max(1, F * 0.85), 3);
+  const workQty: Record<string, number> = {
+    BRICK_MASONRY: masonryCum,
+    INTERNAL_PLASTER: plasterM2,
+    RCC_SLAB: rccM3,
+  };
+  for (const res of WORK_ITEM_PLANNING_RESOURCES) {
+    const qtyBase = workQty[res.workItemCode] ?? 0;
+    if (qtyBase <= 0) continue;
+    const qty = workItemMaterialQuantity(qtyBase, res.quantityCoefficient, res.wastagePercent);
+    const category =
+      res.workItemCode === 'INTERNAL_PLASTER'
+        ? 'Plaster'
+        : res.workItemCode === 'RCC_SLAB'
+          ? 'RCC'
+          : 'Masonry';
+    push({
+      category,
+      item: `${res.resourceKey} (${res.workItemCode})`,
+      description:
+        'Work-item coefficient × measured quantity + wastage (planning, ESTIMATED_FALLBACK)',
+      unit: res.unit,
+      quantity: roundQuantity(qty, 3),
+      rate: res.planningRate,
+      assumption: `${res.workItemCode} qty ${qtyBase} × coeff ${res.quantityCoefficient} + ${res.wastagePercent}% wastage. Indicative planning coefficient — not an official SOR analysis of rates.`,
+      formulaKey: `coeff_${res.workItemCode}_${res.resourceKey}`,
+    });
+  }
+  if (!renovation) {
+    const brickNorm = PRODUCTIVITY_NORMS.find((n) => n.workItemCode === 'BRICK_MASONRY');
+    if (brickNorm && masonryCum > 0) {
+      const days = requiredLabourDays(masonryCum, brickNorm.outputPerDay);
+      push({
+        category: 'Masonry',
+        item: 'Mason days (productivity norm)',
+        description: brickNorm.crewComposition,
+        unit: 'day',
+        quantity: roundQuantity(days, 2),
+        rate: 900,
+        assumption: `Masonry ${masonryCum} cum ÷ ${brickNorm.outputPerDay} cum/day. Planning productivity — not a CPWD output statement.`,
+        formulaKey: 'prod_BRICK_MASONRY',
+      });
+    }
+  }
+
   const lines: BoqGeneratorLineResult[] = drafts.map((d) => ({
     id: d.id,
     category: d.category,
@@ -359,6 +412,8 @@ export function generateBoqFromProjectAssumptions(
         ? `Plot area ${plot} sq ft used for excavation where applicable.`
         : 'Plot area defaulted to 1.2 × built-up where not provided.',
       'Unit rates are indicative defaults scaled by quality — edit before use.',
+      `Work-item resource coefficients and productivity norms are ESTIMATED_FALLBACK planning values, not official SOR rates.`,
+      `Commercial planning: overhead ${DEFAULT_COMMERCIAL_RULES.find((r) => r.kind === 'OVERHEAD')?.percent ?? 0}% and profit ${DEFAULT_COMMERCIAL_RULES.find((r) => r.kind === 'PROFIT')?.percent ?? 0}% are shown as rules only; this public BOQ applies contingency % and optional tax when enabled. Escalation index defaults to 1.0.`,
     ],
   );
 }

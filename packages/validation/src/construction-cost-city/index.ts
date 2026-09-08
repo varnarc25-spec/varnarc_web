@@ -10,6 +10,10 @@ import {
   normalizeLocationKey,
 } from '../construction-cost/rates';
 import {
+  DEFAULT_COMMERCIAL_RULES,
+  QUALITY_SPECIFICATIONS,
+} from '../construction-intelligence-catalog';
+import {
   PRICE_HUB_CITIES,
   PRICE_HUB_MATERIALS,
   computePricePeriodChanges,
@@ -27,7 +31,7 @@ export const CONSTRUCTION_COST_CITY_QUALIFICATION =
   'Indicative planning figures for education only — not a quotation, tender or guarantee. Local labour, material grades, design and market conditions change final prices.';
 
 export const CONSTRUCTION_COST_CITY_METHODOLOGY =
-  'City pages start from Varnarc’s national indicative base rate per sq ft, apply the published location multiplier and quality scenarios, and surface local material observation freshness where available. Pages are only indexable when editorial city profile content exists and enough reliable local material price observations are present — we do not publish thin template-only city URLs.';
+  'City pages combine a unique editorial profile, local material observation freshness, quality specification mapping, default location cost factors (1.0 until researched), and commercial planning rules. The published ₹/sq ft figure remains an indicative planning rate (ESTIMATED_FALLBACK, LOW confidence) unless a dated official extract is ingested. Pages are only indexable when editorial city profile content exists and enough reliable local material price observations are present — we do not publish thin template-only city URLs.';
 
 /** Minimum distinct materials with a reliable current observation. */
 export const COST_CITY_MIN_MATERIALS_WITH_CURRENT = 3;
@@ -267,6 +271,22 @@ export type ConstructionCostCityLanding = {
   methodology: string;
   qualification: string;
   version: string;
+  intelligence: {
+    rateLabel: 'Indicative planning rate';
+    sourceType: 'ESTIMATED_FALLBACK';
+    confidence: 'LOW';
+    lastVerifiedAt: string | null;
+    locationFactors: {
+      materialTransport: number;
+      labour: number;
+      equipment: number;
+      interior: number;
+      logistics: number;
+      notes: string;
+    };
+    qualitySpecifications: Array<{ categoryKey: string; specKey: string; label: string }>;
+    commercialRules: typeof DEFAULT_COMMERCIAL_RULES;
+  };
 };
 
 function moneyRound(n: number): number {
@@ -560,6 +580,23 @@ export function buildConstructionCostCityLanding(input: {
     methodology: CONSTRUCTION_COST_CITY_METHODOLOGY,
     qualification: CONSTRUCTION_COST_CITY_QUALIFICATION,
     version: `${CONSTRUCTION_COST_CITY_VERSION}+${COST_CALC_VERSION}`,
+    intelligence: {
+      rateLabel: 'Indicative planning rate',
+      sourceType: 'ESTIMATED_FALLBACK',
+      confidence: 'LOW',
+      lastVerifiedAt: null,
+      locationFactors: {
+        materialTransport: 1,
+        labour: 1,
+        equipment: 1,
+        interior: 1,
+        logistics: 1,
+        notes:
+          'Location cost factors default to 1.0 until researched city values are loaded. They are not invented metro premiums.',
+      },
+      qualitySpecifications: QUALITY_SPECIFICATIONS.STANDARD ?? [],
+      commercialRules: DEFAULT_COMMERCIAL_RULES,
+    },
   };
 }
 

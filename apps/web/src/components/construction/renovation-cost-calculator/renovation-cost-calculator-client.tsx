@@ -32,6 +32,7 @@ import {
   trackCalculatorCompleted,
   trackCalculatorError,
   trackProjectCreated,
+  trackRenovationEstimateCompleted,
 } from '@/lib/construction/analytics';
 import {
   clearConstructionCalculationSave,
@@ -275,6 +276,7 @@ export function RenovationCostCalculatorClient({
           result_range_category: categorizeConstructionResultRange(next.estimatedTotal),
           logged_in: isAuthenticated,
         });
+        trackRenovationEstimateCompleted();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed');

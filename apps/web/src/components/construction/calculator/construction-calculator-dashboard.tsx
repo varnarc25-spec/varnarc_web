@@ -144,6 +144,8 @@ export function ConstructionMaterialLinesTable({
             <th className="px-3 py-2.5 font-semibold">Unit</th>
             <th className="px-3 py-2.5 font-semibold">Indicative rate (₹)</th>
             <th className="px-3 py-2.5 font-semibold">Estimated cost (₹)</th>
+            <th className="px-3 py-2.5 font-semibold">Source</th>
+            <th className="px-3 py-2.5 font-semibold">Confidence</th>
           </tr>
         </thead>
         <tbody>
@@ -158,6 +160,8 @@ export function ConstructionMaterialLinesTable({
               <td className="px-3 py-2 tabular-nums font-semibold">
                 {line.cost == null ? 'Lot' : formatInr(line.cost)}
               </td>
+              <td className="px-3 py-2 text-xs text-slate-600">Indicative planning rate</td>
+              <td className="px-3 py-2 text-xs text-slate-600">LOW</td>
             </tr>
           ))}
         </tbody>

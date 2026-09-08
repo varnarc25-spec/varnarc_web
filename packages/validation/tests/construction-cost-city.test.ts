@@ -89,6 +89,10 @@ describe('buildConstructionCostCityLanding', () => {
     expect(landing.relatedCityHrefs.some((l) => l.href.includes('bengaluru'))).toBe(true);
     expect(landing.faqs.length).toBeGreaterThan(3);
     expect(landing.methodology).toMatch(/thin template/i);
+    expect(landing.intelligence.rateLabel).toBe('Indicative planning rate');
+    expect(landing.intelligence.locationFactors.labour).toBe(1);
+    expect(landing.intelligence.qualitySpecifications.length).toBeGreaterThan(0);
+    expect(landing.intelligence.lastVerifiedAt).toBeNull();
   });
 
   it('marks non-indexable when data thin but still returns null only without profile', () => {

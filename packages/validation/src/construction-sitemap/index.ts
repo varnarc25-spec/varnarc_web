@@ -82,6 +82,7 @@ export const CONSTRUCTION_SITEMAP_CALCULATOR_PATHS = [
   '/construction/estimate',
   '/construction/cost-calculator',
   '/construction/renovation-cost-calculator',
+  '/construction/interior-cost-calculator',
   '/construction/affordability-calculator',
   '/construction/scenario-compare',
   '/construction/cost-change-simulator',

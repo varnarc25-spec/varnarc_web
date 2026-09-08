@@ -52,6 +52,10 @@ describe('calculateConstructionCost — rate application', () => {
     expect(premium.costPerSqft).toBeGreaterThan(standard.costPerSqft);
     expect(luxury.costPerSqft).toBeGreaterThan(premium.costPerSqft);
     expect(luxury.qualityMultiplier).toBe(QUALITY_MULTIPLIERS.luxury);
+    expect(standard.qualityTierCode).toBe('STANDARD');
+    expect(standard.qualitySpecifications.some((s) => s.categoryKey === 'steel')).toBe(true);
+    expect(basic.qualityTierCode).toBe('ECONOMY');
+    expect(luxury.qualityTierCode).toBe('LUXURY');
   });
 
   it('applies location multipliers vs national base', () => {

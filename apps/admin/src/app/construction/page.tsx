@@ -13,6 +13,7 @@ type DashboardData = {
 };
 
 const sections = [
+  { href: '/construction/intelligence', label: 'Intelligence' },
   { href: '/construction/categories', label: 'Categories' },
   { href: '/construction/materials', label: 'Materials' },
   { href: '/construction/brands', label: 'Brands' },

@@ -8,6 +8,7 @@ export const CONSTRUCTION_PAGE_KEYS = [
   'cost-calculator',
   'construction-cost',
   'renovation-cost-calculator',
+  'interior-cost-calculator',
   'affordability-calculator',
   'scenario-compare',
   'cost-change-simulator',
@@ -132,6 +133,15 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
       description:
         'Estimate renovation expenses by selecting painting, flooring, kitchen, bathroom and more. See category breakdown and contingency — indicative only, not a quote.',
       h1: 'Renovation cost calculator',
+      indexable: true,
+    },
+    'interior-cost-calculator': {
+      path: '/construction/interior-cost-calculator',
+      label: 'Interior cost calculator',
+      title: 'Interior Design Cost Calculator — Kitchen, Wardrobe & Fit-out | Varnarc',
+      description:
+        'Estimate interior fit-out for kitchen, wardrobes, rooms, ceiling, lighting and painting. Indicative planning rates — not live dealer prices.',
+      h1: 'Interior design cost calculator',
       indexable: true,
     },
     'affordability-calculator': {

@@ -1,4 +1,9 @@
 import {
+  COST_QUALITY_TO_TIER,
+  DEFAULT_COMMERCIAL_RULES,
+  qualitySpecificationsForCostQuality,
+} from '../construction-intelligence-catalog';
+import {
   CATEGORY_SHARES,
   COST_CALC_VERSION,
   DEFAULT_COST_SPLIT,
@@ -219,7 +224,7 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
 
   const assumptions = [
     `Base rate ₹${roundMoney(baseRatePerSqft)}/sqft (${input.customCostPerSqft ? 'custom override' : 'national indicative'}) for ${locationMeta.label}.`,
-    `Quality multiplier ×${qualityMultiplier} (${input.quality}).`,
+    `Quality multiplier ×${qualityMultiplier} (${input.quality}) maps to ${COST_QUALITY_TO_TIER[input.quality]} specifications for detailed BOQ — the ₹/sq ft total remains a quick estimate.`,
     `Floor multiplier ×${floorMultiplier.toFixed(2)} for ${input.floors} floor(s).`,
     `Location multiplier ×${locationMultiplier}.`,
     `Cost split material ${Math.round(mShare * 100)}% / labour ${Math.round(lShare * 100)}% / misc ${Math.round(xShare * 100)}%.`,
@@ -293,6 +298,9 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
     floorBreakdown,
     monthlyCashRequirement,
     assumptions,
+    qualityTierCode: COST_QUALITY_TO_TIER[input.quality],
+    qualitySpecifications: qualitySpecificationsForCostQuality(input.quality),
+    commercialRules: DEFAULT_COMMERCIAL_RULES,
     methodology: {
       title: isReverse ? 'How Varnarc reversed this budget' : 'How Varnarc calculated this',
       steps: isReverse
@@ -305,7 +313,7 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
           ]
         : [
             `Start from base location rate (₹${roundMoney(baseRatePerSqft)}/sqft) for ${locationMeta.label}.`,
-            `Apply quality multiplier (${input.quality}: ×${qualityMultiplier}).`,
+            `Apply quality multiplier (${input.quality}: ×${qualityMultiplier}) and attach ${COST_QUALITY_TO_TIER[input.quality]} specification mapping (not a substitute for a detailed BOQ).`,
             `Apply floor multiplier (×${floorMultiplier.toFixed(2)}).`,
             input.foundationType
               ? `Apply foundation type (${input.foundationType}: ×${foundationMultiplier}).`

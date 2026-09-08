@@ -44,6 +44,15 @@ export const CONSTRUCTION_ANALYTICS_EVENTS = [
   'ask_result_clicked',
   'what_next_clicked',
   'related_link_clicked',
+  'interior_estimate_completed',
+  'renovation_estimate_completed',
+  'user_rate_override',
+  'material_price_view',
+  'city_page_calculator',
+  'house_size_page_calculator',
+  'pdf_export',
+  'excel_export',
+  'professional_cta_clicked',
 ] as const;
 
 export type ConstructionAnalyticsEvent = (typeof CONSTRUCTION_ANALYTICS_EVENTS)[number];
@@ -594,6 +603,13 @@ export function trackPriceViewed(input: {
       location_level: input.location_level ?? 'unknown',
     },
   });
+  trackConstructionEvent('material_price_view', {
+    path: input.path,
+    metadata: {
+      material_key: input.material_key,
+      location_level: input.location_level ?? 'unknown',
+    },
+  });
 }
 
 export function trackPricePositionViewed(input: {
@@ -827,6 +843,48 @@ export function trackAskResultClicked(input: {
       result_type: input.result_type,
     },
   });
+}
+
+export function trackInteriorEstimateCompleted(input?: { path?: string; logged_in?: boolean }) {
+  trackConstructionEvent('interior_estimate_completed', {
+    path: input?.path,
+    metadata: { logged_in: Boolean(input?.logged_in) },
+  });
+}
+
+export function trackRenovationEstimateCompleted(input?: { path?: string; logged_in?: boolean }) {
+  trackConstructionEvent('renovation_estimate_completed', {
+    path: input?.path,
+    metadata: { logged_in: Boolean(input?.logged_in) },
+  });
+}
+
+export function trackUserRateOverride(input?: { path?: string }) {
+  trackConstructionEvent('user_rate_override', { path: input?.path });
+}
+
+export function trackMaterialPriceView(input?: { path?: string }) {
+  trackConstructionEvent('material_price_view', { path: input?.path });
+}
+
+export function trackCityPageCalculator(input?: { path?: string }) {
+  trackConstructionEvent('city_page_calculator', { path: input?.path });
+}
+
+export function trackHouseSizePageCalculator(input?: { path?: string }) {
+  trackConstructionEvent('house_size_page_calculator', { path: input?.path });
+}
+
+export function trackPdfExport(input?: { path?: string }) {
+  trackConstructionEvent('pdf_export', { path: input?.path });
+}
+
+export function trackExcelExport(input?: { path?: string }) {
+  trackConstructionEvent('excel_export', { path: input?.path });
+}
+
+export function trackProfessionalCtaClicked(input?: { path?: string }) {
+  trackConstructionEvent('professional_cta_clicked', { path: input?.path });
 }
 
 export function queryLengthBucket(query: string | null | undefined) {

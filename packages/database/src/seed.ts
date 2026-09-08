@@ -9,6 +9,7 @@ import { seedAiOps } from './seed-ai';
 import { seedHomepage } from './seed-homepage';
 import { seedNewsletter } from './seed-newsletter';
 import { seedPremiumPlans } from './seed-premium';
+import { seedConstructionIntelligence } from './seed-construction-intelligence';
 import { seedExpandedComparisons } from './seed-comparisons-expanded';
 
 const prisma = new PrismaClient();
@@ -112,6 +113,34 @@ async function main() {
     },
     [PERMISSIONS.CONSTRUCTION_DELETE]: {
       name: 'Delete construction content',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_MANAGE]: {
+      name: 'Manage construction intelligence',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_RATES_VIEW]: {
+      name: 'View construction rates',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_RATES_MANAGE]: {
+      name: 'Manage construction rates',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_RATES_VERIFY]: {
+      name: 'Verify construction rates',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_SOURCES_MANAGE]: {
+      name: 'Manage construction sources',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_IMPORT]: {
+      name: 'Import construction rates',
+      module: 'construction',
+    },
+    [PERMISSIONS.CONSTRUCTION_SETTINGS_MANAGE]: {
+      name: 'Manage construction calculator settings',
       module: 'construction',
     },
     [PERMISSIONS.AUTOMOBILE_VIEW]: { name: 'View automobile', module: 'automobile' },
@@ -2488,6 +2517,7 @@ async function main() {
   }
 
   await seedContent(prisma);
+  await seedConstructionIntelligence(prisma);
 
   await seedMenu('main-header', 'Main header', 'header', [
     { label: 'Home', href: '/' },

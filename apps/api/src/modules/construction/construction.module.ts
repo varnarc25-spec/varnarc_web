@@ -12,6 +12,8 @@ import { ConstructionSeoAuditService } from './construction-seo-audit.service';
 import { ConstructionSearchOpportunityController } from './construction-search-opportunity.controller';
 import { ConstructionSearchOpportunitySchedulerService } from './construction-search-opportunity.scheduler';
 import { ConstructionSearchOpportunityService } from './construction-search-opportunity.service';
+import { ConstructionIntelligenceController } from './construction-intelligence.controller';
+import { ConstructionIntelligenceService } from './construction-intelligence.service';
 
 @Module({
   imports: [MediaModule, NotificationsModule],
@@ -19,9 +21,11 @@ import { ConstructionSearchOpportunityService } from './construction-search-oppo
     ConstructionController,
     ConstructionSeoAuditController,
     ConstructionSearchOpportunityController,
+    ConstructionIntelligenceController,
   ],
   providers: [
     ConstructionService,
+    ConstructionIntelligenceService,
     PriceAlertsService,
     PriceAlertsSchedulerService,
     CommunityPriceReportsService,

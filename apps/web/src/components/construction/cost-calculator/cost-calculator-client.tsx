@@ -39,6 +39,7 @@ import {
   trackCalculatorModeCompleted,
   trackCalculatorModeError,
   trackProjectCreated,
+  trackUserRateOverride,
 } from '@/lib/construction/analytics';
 import {
   clearConstructionCalculationSave,
@@ -414,6 +415,9 @@ export function ConstructionCostCalculatorClient({
             : categorizeConstructionResultRange(next.estimatedTotal),
         logged_in: isAuthenticated,
       });
+      if (form.baseRateOverride.trim() || form.customCostPerSqft?.trim()) {
+        trackUserRateOverride();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Calculation failed');
       setResult(null);
@@ -1002,7 +1006,15 @@ export function ConstructionCostCalculatorClient({
         }
         workspace={
           result && materialLines.length ? (
-            <ConstructionMaterialLinesTable lines={materialLines} />
+            <div className="space-y-3">
+              <h2 className="text-sm font-bold text-[#0b1f3a]">Prices used in this estimate</h2>
+              <p className="text-xs leading-relaxed text-slate-600">
+                These are national planning rates (ESTIMATED_FALLBACK), not live market or official
+                city SOR prices. Enter your contractor rate below to override this estimate only —
+                global admin rates are never changed.
+              </p>
+              <ConstructionMaterialLinesTable lines={materialLines} />
+            </div>
           ) : undefined
         }
         result={
@@ -1020,14 +1032,33 @@ export function ConstructionCostCalculatorClient({
         }
         extra={
           result ? (
-            <ConstructionBoqPreview
-              rows={result.phaseBreakdown.map((row) => ({
-                id: row.id,
-                label: row.label,
-                amount: row.amount,
-                percentOfTotal: row.percentOfTotal,
-              }))}
-            />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-sm font-bold text-[#0b1f3a]">
+                  Quality specifications ({result.qualityTierCode})
+                </h2>
+                <p className="text-xs text-slate-600">
+                  The published total is still a quick ₹/sq ft estimate. These specs describe the
+                  quality tier used for a detailed BOQ — they do not change the shell multiplier
+                  model.
+                </p>
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {result.qualitySpecifications.map((spec) => (
+                    <li key={spec.categoryKey} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+                      {spec.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <ConstructionBoqPreview
+                rows={result.phaseBreakdown.map((row) => ({
+                  id: row.id,
+                  label: row.label,
+                  amount: row.amount,
+                  percentOfTotal: row.percentOfTotal,
+                }))}
+              />
+            </div>
           ) : null
         }
         formula={

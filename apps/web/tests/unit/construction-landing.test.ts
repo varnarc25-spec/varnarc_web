@@ -42,6 +42,7 @@ describe('construction intent navigator data', () => {
       'Concrete',
       'RCC',
       'Steel',
+      'Bar bending schedule',
       'Bricks',
       'AAC blocks',
       'Sand',

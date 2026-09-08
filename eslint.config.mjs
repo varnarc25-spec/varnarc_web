@@ -45,7 +45,18 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.config.{js,mjs,cjs,ts}', '**/scripts/**', 'performance/**'],
+    files: ['**/*.config.{js,mjs,cjs,ts}', '**/scripts/**', 'performance/**', '**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
     rules: {
       'no-console': 'off',
     },
@@ -62,6 +73,7 @@ export default tseslint.config(
       '**/next.config.ts',
       '**/next-env.d.ts',
       '**/scripts/**',
+      '**/*.mjs',
     ],
     extends: [tseslint.configs.disableTypeChecked],
   },

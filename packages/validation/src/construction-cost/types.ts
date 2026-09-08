@@ -3,6 +3,13 @@
 import { z } from 'zod';
 import type { ReverseCalculationDisplay } from '../reverse-calculator';
 
+export type ConstructionCommercialRuleSnapshot = {
+  kind: 'CONTINGENCY' | 'OVERHEAD' | 'PROFIT' | 'TAX' | 'ESCALATION';
+  percent: number | null;
+  indexFactor: number | null;
+  notes: string;
+};
+
 export const constructionCostModeSchema = z.enum(['forward', 'reverse']);
 export type ConstructionCostMode = z.infer<typeof constructionCostModeSchema>;
 
@@ -130,6 +137,9 @@ export type ConstructionCostResult = {
   floorBreakdown: CostBreakdownLine[];
   monthlyCashRequirement: number;
   assumptions: string[];
+  qualityTierCode: string;
+  qualitySpecifications: Array<{ categoryKey: string; specKey: string; label: string }>;
+  commercialRules: ConstructionCommercialRuleSnapshot[];
   methodology: {
     title: string;
     steps: string[];

@@ -30,6 +30,8 @@ describe('generateBoqFromProjectAssumptions', () => {
     expect(cats.has('Preliminaries')).toBe(true);
     expect(cats.has('RCC')).toBe(true);
     expect(cats.has('Masonry')).toBe(true);
+    expect(r.lines.some((l) => l.formulaKey?.startsWith('coeff_'))).toBe(true);
+    expect(r.assumptions.some((a) => a.includes('ESTIMATED_FALLBACK'))).toBe(true);
     for (const c of cats) {
       expect(BOQ_CATEGORIES.includes(c as (typeof BOQ_CATEGORIES)[number]) || c === 'Other').toBe(
         true,

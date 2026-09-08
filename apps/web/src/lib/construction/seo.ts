@@ -150,6 +150,7 @@ export function isConstructionCalculatorPath(pathname: string): boolean {
     p === '/construction/estimate' ||
     p === '/construction/cost-calculator' ||
     p === '/construction/renovation-cost-calculator' ||
+    p === '/construction/interior-cost-calculator' ||
     p === '/construction/affordability-calculator' ||
     p === '/construction/scenario-compare' ||
     p === '/construction/cost-change-simulator' ||

@@ -42,6 +42,15 @@ describe('construction analytics catalog', () => {
       'construction_search_no_result',
       'guide_clicked',
       'supplier_clicked',
+      'interior_estimate_completed',
+      'renovation_estimate_completed',
+      'user_rate_override',
+      'material_price_view',
+      'city_page_calculator',
+      'house_size_page_calculator',
+      'pdf_export',
+      'excel_export',
+      'professional_cta_clicked',
     ];
     expect(CONSTRUCTION_ANALYTICS_EVENTS).toContain('intent_card_clicked');
     expect(CONSTRUCTION_ANALYTICS_EVENTS).toContain('landing_cta_clicked');
