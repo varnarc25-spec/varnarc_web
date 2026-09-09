@@ -11,6 +11,7 @@ import {
   clearProjectWizardDraft,
   defaultProjectWizardDraft,
   loadProjectWizardDraft,
+  plotAreaFromDimensions,
   preliminaryCostInr,
   saveProjectWizardDraft,
   type ProjectQuality,
@@ -72,9 +73,18 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
       if (!Number.isFinite(built) || built <= 0) return 'Enter a valid built-up area (sq ft).';
       const floors = Number(draft.floors);
       if (!Number.isFinite(floors) || floors < 1) return 'Enter at least 1 floor.';
-      if (draft.plotAreaSqft.trim()) {
-        const plot = Number(draft.plotAreaSqft);
-        if (!Number.isFinite(plot) || plot <= 0) return 'Plot area must be a positive number.';
+      const lengthRaw = draft.plotLengthFt.trim();
+      const widthRaw = draft.plotWidthFt.trim();
+      const needsPlotSize = draft.projectType === 'house-construction' && draft.buildMode === 'new';
+      if (needsPlotSize || lengthRaw || widthRaw) {
+        const length = Number(lengthRaw);
+        const width = Number(widthRaw);
+        if (!Number.isFinite(length) || length <= 0) {
+          return 'Enter plot length in feet.';
+        }
+        if (!Number.isFinite(width) || width <= 0) {
+          return 'Enter plot width in feet.';
+        }
       }
       if (draft.bedrooms.trim()) {
         const beds = Number(draft.bedrooms);
@@ -125,7 +135,11 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
     setError(null);
     try {
       const builtUp = Number(draft.builtUpAreaSqft);
-      const plot = draft.plotAreaSqft.trim() ? Number(draft.plotAreaSqft) : null;
+      const length = draft.plotLengthFt.trim() ? Number(draft.plotLengthFt) : null;
+      const width = draft.plotWidthFt.trim() ? Number(draft.plotWidthFt) : null;
+      const plot =
+        plotAreaFromDimensions(draft.plotLengthFt, draft.plotWidthFt) ??
+        (draft.plotAreaSqft.trim() ? Number(draft.plotAreaSqft) : null);
       const floors = Number(draft.floors);
       const bedrooms = draft.bedrooms.trim() ? Number(draft.bedrooms) : null;
       const budget = draft.budgetInr.trim() ? Number(draft.budgetInr) : null;
@@ -146,14 +160,17 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
         notes: [
           draft.buildMode === 'renovation' ? 'Renovation project' : 'New construction',
           floors ? `${floors} floor(s)` : null,
+          length && width ? `Plot ${length} × ${width} ft` : null,
           bedrooms != null ? `${bedrooms} bedroom(s)` : null,
         ]
           .filter(Boolean)
           .join(' · '),
         breakdown: {
           source: 'project-wizard',
-          wizardVersion: '2026.08.1',
+          wizardVersion: '2026.09.1',
           buildMode: draft.buildMode,
+          plotLengthFt: length && Number.isFinite(length) && length > 0 ? length : null,
+          plotWidthFt: width && Number.isFinite(width) && width > 0 ? width : null,
           plotAreaSqft: plot,
           builtUpAreaSqft: builtUp,
           floors,
@@ -327,17 +344,53 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
         {step === 2 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">
-              <span className="mb-1 block font-medium text-slate-700">Plot area (sq ft)</span>
+              <span className="mb-1 block font-medium text-slate-700">Plot length (ft)</span>
               <input
                 className={cx.input}
                 type="number"
                 min={1}
                 step="any"
-                value={draft.plotAreaSqft}
-                onChange={(e) => patch({ plotAreaSqft: e.target.value })}
-                placeholder="Optional"
+                value={draft.plotLengthFt}
+                onChange={(e) => {
+                  const plotLengthFt = e.target.value;
+                  const area = plotAreaFromDimensions(plotLengthFt, draft.plotWidthFt);
+                  patch({
+                    plotLengthFt,
+                    plotAreaSqft: area != null ? String(area) : '',
+                  });
+                }}
+                placeholder="e.g. 60"
               />
             </label>
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium text-slate-700">Plot width (ft)</span>
+              <input
+                className={cx.input}
+                type="number"
+                min={1}
+                step="any"
+                value={draft.plotWidthFt}
+                onChange={(e) => {
+                  const plotWidthFt = e.target.value;
+                  const area = plotAreaFromDimensions(draft.plotLengthFt, plotWidthFt);
+                  patch({
+                    plotWidthFt,
+                    plotAreaSqft: area != null ? String(area) : '',
+                  });
+                }}
+                placeholder="e.g. 40"
+              />
+            </label>
+            <p className="sm:col-span-2 text-sm text-slate-600">
+              Plot area:{' '}
+              <span className="font-semibold tabular-nums text-[#0b1f3a]">
+                {plotAreaFromDimensions(draft.plotLengthFt, draft.plotWidthFt)?.toLocaleString(
+                  'en-IN',
+                ) ?? '—'}{' '}
+                sq ft
+              </span>
+              <span className="text-slate-500"> (length × width)</span>
+            </p>
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">Built-up area (sq ft)</span>
               <input
@@ -361,7 +414,7 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
                 onChange={(e) => patch({ floors: e.target.value })}
               />
             </label>
-            <label className="block text-sm">
+            <label className="block text-sm sm:col-span-2">
               <span className="mb-1 block font-medium text-slate-700">Bedrooms (optional)</span>
               <input
                 className={cx.input}
@@ -453,6 +506,15 @@ export function ProjectWizardClient({ isAuthenticated }: { isAuthenticated: bool
                   Built-up {draft.builtUpAreaSqft || '—'} sq ft · {draft.floors || '—'} floors ·{' '}
                   {draft.quality}
                 </li>
+                {plotAreaFromDimensions(draft.plotLengthFt, draft.plotWidthFt) != null ? (
+                  <li>
+                    Plot {draft.plotLengthFt} × {draft.plotWidthFt} ft (
+                    {plotAreaFromDimensions(draft.plotLengthFt, draft.plotWidthFt)?.toLocaleString(
+                      'en-IN',
+                    )}{' '}
+                    sq ft)
+                  </li>
+                ) : null}
                 {previewCost != null ? <li>Indicative cost {formatInr(previewCost)}</li> : null}
               </ul>
               {!isAuthenticated ? (

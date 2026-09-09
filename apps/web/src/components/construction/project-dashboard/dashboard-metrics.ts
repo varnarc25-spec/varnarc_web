@@ -53,6 +53,8 @@ export function wizardMeta(project: ConstructionProject) {
   return rec as {
     source?: string;
     buildMode?: string;
+    plotLengthFt?: number | null;
+    plotWidthFt?: number | null;
     plotAreaSqft?: number | null;
     builtUpAreaSqft?: number | null;
     floors?: number | null;

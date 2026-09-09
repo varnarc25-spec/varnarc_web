@@ -11,6 +11,8 @@ export type ProjectWizardDraft = {
   location: string;
   projectType: string;
   buildMode: ProjectBuildMode;
+  plotLengthFt: string;
+  plotWidthFt: string;
   plotAreaSqft: string;
   builtUpAreaSqft: string;
   floors: string;
@@ -24,7 +26,7 @@ export type ProjectWizardDraft = {
 export const PROJECT_WIZARD_STEPS = [
   { id: 'basics', title: 'Basics', description: 'Name and location' },
   { id: 'type', title: 'Type', description: 'What you are building' },
-  { id: 'size', title: 'Size', description: 'Areas and floors' },
+  { id: 'size', title: 'Size', description: 'Plot size, built-up and floors' },
   { id: 'quality', title: 'Quality', description: 'Construction finish' },
   { id: 'optional', title: 'Optional', description: 'Timing and budget' },
 ] as const;
@@ -44,6 +46,8 @@ export function defaultProjectWizardDraft(): ProjectWizardDraft {
     location: '',
     projectType: 'house-construction',
     buildMode: 'new',
+    plotLengthFt: '',
+    plotWidthFt: '',
     plotAreaSqft: '',
     builtUpAreaSqft: '',
     floors: '1',
@@ -76,6 +80,15 @@ export function saveProjectWizardDraft(draft: ProjectWizardDraft): void {
   } catch {
     /* ignore quota */
   }
+}
+
+export function plotAreaFromDimensions(lengthFt: string, widthFt: string): number | null {
+  const length = Number(lengthFt);
+  const width = Number(widthFt);
+  if (!Number.isFinite(length) || !Number.isFinite(width) || length <= 0 || width <= 0) {
+    return null;
+  }
+  return Math.round(length * width * 100) / 100;
 }
 
 export function clearProjectWizardDraft(): void {

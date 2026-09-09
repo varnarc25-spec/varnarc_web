@@ -70,6 +70,8 @@ export type ConstructionProjectItem = {
 export type ConstructionProjectWizardBreakdown = {
   source?: string;
   buildMode?: 'new' | 'renovation';
+  plotLengthFt?: number | null;
+  plotWidthFt?: number | null;
   plotAreaSqft?: number | null;
   builtUpAreaSqft?: number | null;
   floors?: number | null;
