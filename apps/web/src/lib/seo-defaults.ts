@@ -18,3 +18,24 @@ export function seoTitleFromBranding(siteName: string, tagline: string): string 
   if (line.length >= 24) return `${name} — ${line}`.slice(0, 70);
   return DEFAULT_SEO_TITLE;
 }
+
+/**
+ * Page titles that already include `| Varnarc` stay as-is.
+ * Other titles get a single `| Varnarc` suffix.
+ */
+export function brandTitleOnce(title: string, siteName = 'Varnarc'): string {
+  const name = siteName.trim() || 'Varnarc';
+  const suffix = ` | ${name}`;
+  let next = title.trim();
+  while (next.endsWith(suffix)) {
+    next = next.slice(0, -suffix.length).trimEnd();
+  }
+  if (!next || next === name || next.startsWith(`${name} —`) || next.startsWith(`${name} -`)) {
+    return next || name;
+  }
+  return `${next}${suffix}`;
+}
+
+export function isTemplatedCalculatorGuide(title: string): boolean {
+  return /:\s*Complete Guide\b/i.test(title);
+}

@@ -4,11 +4,14 @@ import { HubSectionHeader } from '@/components/hub/hub-section-header';
 import { HubIconGrid } from '@/components/hub/hub-icon-grid';
 import { HubGuideGrid } from '@/components/hub/hub-guide-grid';
 import { HubFaqSection } from '@/components/hub/hub-faq-section';
+import { brandTitleOnce } from '@/lib/seo-defaults';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'Solar & Energy',
+  title: { absolute: brandTitleOnce('Solar & Energy') },
   description:
-    'Solar calculators, panel comparisons, inverters, subsidies, and energy-saving guides.',
+    'Rooftop solar planning for Indian homes: payback, net metering, panel types, inverters, and subsidy context — not generic energy slogans.',
   alternates: { canonical: '/solar' },
 };
 
@@ -67,25 +70,27 @@ const popularLinks = [
 const solarFaqs = [
   {
     id: '1',
-    question: 'How much can I save with rooftop solar?',
+    question: 'What size rooftop system fits a typical Indian home?',
     answer:
-      'Savings depend on system size, tariff, and sunlight. Use our solar calculator for an estimate.',
+      'Many 2–3 BHK homes land in the 3–5 kW range once you account for sanctioned load, shadow-free roof, and daytime usage. Oversizing without net-metering approval usually wastes capital.',
   },
   {
     id: '2',
-    question: 'What is net metering?',
-    answer: 'Net metering lets you export excess power to the grid and earn credits on your bill.',
+    question: 'How does net metering work with my DISCOM?',
+    answer:
+      'You export surplus daytime units and import at night. Credits follow your state DISCOM’s rules (settlement period, banking, and whether they use net or gross metering). Confirm the application queue before you pay an installer.',
   },
   {
     id: '3',
-    question: 'Are subsidies available in India?',
-    answer: 'Central and state schemes exist. See our solar subsidy guide for current programs.',
+    question: 'Are rooftop subsidies still worth checking in 2026?',
+    answer:
+      'Central MNRE residential support and some state top-ups still exist, but amounts and portals change. Treat any quote that “includes subsidy” as provisional until the portal shows your application status.',
   },
   {
     id: '4',
-    question: 'Mono vs polycrystalline panels?',
+    question: 'Mono vs polycrystalline for Indian rooftops?',
     answer:
-      'Mono panels are more efficient; poly panels are often cheaper. Compare both for your roof.',
+      'Mono typically delivers more watts per square metre on small roofs and hotter climates. Poly can still win on budget if roof area is ample. Compare efficiency, warranty years, and degradation — not just watt-peak price.',
   },
 ];
 
@@ -111,7 +116,7 @@ export default function SolarHubPage() {
     <ModuleHubShell
       moduleKey="solar"
       title="Solar calculators, comparisons & energy guides"
-      description="Plan rooftop solar, compare panels and inverters, and estimate savings with trusted tools and guides."
+      description="Plan a rooftop plant around your DISCOM tariff, roof area, and subsidy paperwork. Start with payback, then compare panels and inverters for Indian heat and dust — not a generic “go solar” landing page."
       breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Solar' }]}
       popularLinks={popularLinks}
       overviewTitle="Solar overview"

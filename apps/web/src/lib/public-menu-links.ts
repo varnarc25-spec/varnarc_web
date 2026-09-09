@@ -11,7 +11,7 @@ type PublicMenu = {
 export function canonicalPublicHref(href: string): string {
   try {
     const url = href.startsWith('http://') || href.startsWith('https://') ? new URL(href) : null;
-    const path = (url ? url.pathname : href.split('?')[0]).replace(/\/+$/, '') || '/';
+    const path = (url ? url.pathname : (href.split('?')[0] ?? href)).replace(/\/+$/, '') || '/';
     if (path === '/blog') {
       return '/articles';
     }

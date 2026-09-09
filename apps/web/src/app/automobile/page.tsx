@@ -66,16 +66,6 @@ const productLinks = [
   },
 ];
 
-const iaSections = AUTOMOBILE_IA.map((group) => ({
-  title: group.title,
-  items: group.items.map((item) => ({
-    label: item.label,
-    href: item.href,
-    description: group.title,
-    icon: 'car' as const,
-  })),
-}));
-
 const popularLinks = [
   { label: 'Car Loan EMI', href: '/automobile/calculators/car-loan' },
   { label: 'Compare Cars', href: '/automobile/compare' },
@@ -159,7 +149,10 @@ export default async function AutomobilePage() {
         itemList={{
           name: 'Browse automobile',
           path: '/automobile',
-          items: AUTOMOBILE_IA.flatMap((g) => g.items).map((c) => ({ name: c.label, path: c.href })),
+          items: AUTOMOBILE_IA.flatMap((g) => g.items).map((c) => ({
+            name: c.label,
+            path: c.href,
+          })),
         }}
       />
       <ModuleHubShell
@@ -178,16 +171,9 @@ export default async function AutomobilePage() {
           <HubIconGrid items={relatedCalculators} columns={4} />
         </section>
 
-        {iaSections.map((section) => (
-          <section key={section.title}>
-            <HubSectionHeader title={section.title} viewAllHref="/automobile/vehicles" />
-            <HubIconGrid items={section.items} columns={4} />
-          </section>
-        ))}
-
         <section>
           <HubSectionHeader
-            title="Explore vehicles & services"
+            title="Explore vehicles & ownership tools"
             viewAllHref="/automobile/vehicles"
           />
           <HubIconGrid items={productLinks} columns={4} />

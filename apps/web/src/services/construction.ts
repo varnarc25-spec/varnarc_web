@@ -290,9 +290,7 @@ function buildQs(options?: ListOptions) {
 
 export async function fetchConstructionDashboard() {
   try {
-    return await apiPublicFetch<ConstructionDashboard>('/construction/dashboard', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionDashboard>('/construction/dashboard');
   } catch {
     return { data: null };
   }
@@ -300,9 +298,7 @@ export async function fetchConstructionDashboard() {
 
 export async function fetchConstructionCategories() {
   try {
-    return await apiPublicFetch<ConstructionCategory[]>('/construction/categories', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionCategory[]>('/construction/categories');
   } catch {
     return { data: [] as ConstructionCategory[] };
   }
@@ -312,9 +308,6 @@ export async function fetchConstructionMaterials(options?: ListOptions) {
   try {
     return await apiPublicFetch<ConstructionMaterial[]>(
       `/construction/materials?${buildQs(options)}`,
-      {
-        cache: 'no-store',
-      },
     );
   } catch {
     return { data: [] as ConstructionMaterial[], meta: undefined };
@@ -322,16 +315,12 @@ export async function fetchConstructionMaterials(options?: ListOptions) {
 }
 
 export async function fetchConstructionMaterial(id: string) {
-  return apiPublicFetch<ConstructionMaterial>(`/construction/materials/${id}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<ConstructionMaterial>(`/construction/materials/${id}`);
 }
 
 export async function fetchConstructionBrands(options?: ListOptions) {
   try {
-    return await apiPublicFetch<ConstructionBrand[]>(`/construction/brands?${buildQs(options)}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionBrand[]>(`/construction/brands?${buildQs(options)}`);
   } catch {
     return { data: [] as ConstructionBrand[], meta: undefined };
   }
@@ -339,9 +328,7 @@ export async function fetchConstructionBrands(options?: ListOptions) {
 
 export async function fetchConstructionBrandBySlug(slug: string) {
   try {
-    return await apiPublicFetch<ConstructionBrand>(`/construction/brands/slug/${slug}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionBrand>(`/construction/brands/slug/${slug}`);
   } catch {
     throw new Error('Brand not found');
   }
@@ -349,16 +336,12 @@ export async function fetchConstructionBrandBySlug(slug: string) {
 
 export async function fetchConstructionCompare(ids: string[]) {
   const qs = new URLSearchParams({ ids: ids.join(',') });
-  return apiPublicFetch<ConstructionMaterial[]>(`/construction/compare?${qs.toString()}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<ConstructionMaterial[]>(`/construction/compare?${qs.toString()}`);
 }
 
 export async function fetchConstructionCostTemplates() {
   try {
-    return await apiPublicFetch<ConstructionCostTemplate[]>('/construction/cost-templates', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionCostTemplate[]>('/construction/cost-templates');
   } catch {
     return { data: [] as ConstructionCostTemplate[] };
   }
@@ -401,18 +384,14 @@ export async function fetchConstructionProjects(): Promise<{
 
 export async function fetchConstructionChecklists() {
   try {
-    return await apiPublicFetch<ConstructionChecklistSummary[]>('/construction/checklists', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ConstructionChecklistSummary[]>('/construction/checklists');
   } catch {
     return { data: [] as ConstructionChecklistSummary[] };
   }
 }
 
 export async function fetchConstructionChecklist(slug: string) {
-  return apiPublicFetch<ConstructionChecklist>(`/construction/checklists/${slug}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<ConstructionChecklist>(`/construction/checklists/${slug}`);
 }
 
 export async function fetchConstructionSuppliers(params?: {
@@ -431,7 +410,7 @@ export async function fetchConstructionSuppliers(params?: {
     const result = await apiPublicFetch<
       | ConstructionSupplier[]
       | { businesses?: ConstructionSupplier[]; listings?: ConstructionSupplier[] }
-    >(`/construction/suppliers${qs ? `?${qs}` : ''}`, { cache: 'no-store' });
+    >(`/construction/suppliers${qs ? `?${qs}` : ''}`);
     const data = result.data;
     if (Array.isArray(data)) {
       return { data };
@@ -489,19 +468,19 @@ export async function fetchConstructionProject(id: string): Promise<{
 
 export async function fetchConstructionGuides() {
   try {
-    return await apiPublicFetch<ConstructionGuide[]>('/construction/guides', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionGuide[]>('/construction/guides');
   } catch {
     return { data: [] as ConstructionGuide[] };
   }
 }
 
 export async function fetchConstructionGuide(slug: string) {
-  return apiPublicFetch<ConstructionGuide>(`/construction/guides/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<ConstructionGuide>(`/construction/guides/${slug}`);
 }
 
 export async function fetchConstructionFaqs() {
   try {
-    return await apiPublicFetch<ConstructionFaq[]>('/construction/faqs', { cache: 'no-store' });
+    return await apiPublicFetch<ConstructionFaq[]>('/construction/faqs');
   } catch {
     return { data: [] as ConstructionFaq[] };
   }

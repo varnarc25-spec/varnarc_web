@@ -5,6 +5,7 @@ import type {
   ReviewListItem,
   TrendingSearchItem,
 } from '@/services/content';
+import { isTemplatedCalculatorGuide } from '@/lib/seo-defaults';
 import {
   aiToolsTiles,
   articles as staticArticles,
@@ -78,11 +79,12 @@ export function mapCalculatorTiles(
 }
 
 export function mapArticleCards(articles: ArticleListItem[], limit = 5): ClassicArticleCard[] {
-  if (!articles.length) {
+  const editorial = articles.filter((a) => !isTemplatedCalculatorGuide(a.title));
+  if (!editorial.length) {
     return staticArticles.slice(0, limit).map((a) => ({ ...a }));
   }
   const placeholders = staticArticles.map((a) => a.image);
-  return articles.slice(0, limit).map((a, i) => ({
+  return editorial.slice(0, limit).map((a, i) => ({
     title: a.title,
     category: 'Article',
     date: formatArticleDate(a.publishedAt),

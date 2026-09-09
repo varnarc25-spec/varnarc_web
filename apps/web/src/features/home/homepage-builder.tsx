@@ -13,6 +13,7 @@ import {
   type ClassicHomeData,
 } from '@/features/home/classic-home-renderer';
 import type { ArticleListItem, HomepageLayout } from '@/services/content';
+import { isTemplatedCalculatorGuide } from '@/lib/seo-defaults';
 
 type HomeData = ClassicHomeData & {
   layout: HomepageLayout | null;
@@ -115,12 +116,19 @@ export function HomepageBuilder({ data }: { data: HomeData }) {
           const widget = widgets.find((w) => w.widget.slug === 'articles');
           const settings = (widget?.settings || {}) as { source?: string; categoryId?: string };
           const source = settings.source || 'latest';
-          let list: ArticleListItem[] = data.articles;
+          let list: ArticleListItem[] = data.articles.filter(
+            (a) => !isTemplatedCalculatorGuide(a.title),
+          );
           if (source === 'featured') {
-            list = data.featuredArticles?.length ? data.featuredArticles : data.articles;
+            const featured = (data.featuredArticles ?? []).filter(
+              (a) => !isTemplatedCalculatorGuide(a.title),
+            );
+            list = featured.length ? featured : list;
           } else if (source === 'category' && settings.categoryId) {
-            const byCategory = data.articlesByCategory?.[settings.categoryId];
-            list = byCategory?.length ? byCategory : data.articles;
+            const byCategory = (data.articlesByCategory?.[settings.categoryId] ?? []).filter(
+              (a) => !isTemplatedCalculatorGuide(a.title),
+            );
+            list = byCategory.length ? byCategory : list;
           }
 
           return (

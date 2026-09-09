@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { apiPublicFetch } from '@/services/api-client';
+import { brandTitleOnce } from '@/lib/seo-defaults';
 import { getPublicSiteUrlSync } from '@/lib/public-site-url';
 
 export type SeoOverride = {
@@ -55,7 +56,8 @@ export async function buildSeoMetadata(input: SeoMetadataInput): Promise<Metadat
   const override =
     input.entityId != null ? await fetchSeoOverride(input.entityType, input.entityId) : null;
 
-  const title = override?.title?.trim() || input.title;
+  const rawTitle = override?.title?.trim() || input.title;
+  const title = brandTitleOnce(rawTitle);
   const description = override?.description?.trim() || input.description?.trim() || undefined;
   const canonical =
     override?.canonicalUrl?.trim() ||
@@ -66,7 +68,7 @@ export async function buildSeoMetadata(input: SeoMetadataInput): Promise<Metadat
     override?.twitterCard === 'summary_large_image' ? 'summary_large_image' : 'summary';
 
   return {
-    title,
+    title: { absolute: title },
     description,
     keywords: override?.metaKeywords?.trim() || undefined,
     alternates: {

@@ -216,9 +216,7 @@ function buildQs(options?: ListOptions) {
 
 export async function fetchAutomobileDashboard() {
   try {
-    return await apiPublicFetch<AutomobileDashboard>('/automobile/dashboard', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileDashboard>('/automobile/dashboard');
   } catch {
     return { data: null };
   }
@@ -228,9 +226,6 @@ export async function fetchAutomobileManufacturers(options?: ListOptions) {
   try {
     return await apiPublicFetch<AutomobileManufacturer[]>(
       `/automobile/manufacturers?${buildQs(options)}`,
-      {
-        cache: 'no-store',
-      },
     );
   } catch {
     return { data: [] as AutomobileManufacturer[], meta: undefined };
@@ -238,16 +233,12 @@ export async function fetchAutomobileManufacturers(options?: ListOptions) {
 }
 
 export async function fetchAutomobileManufacturerBySlug(slug: string) {
-  return apiPublicFetch<AutomobileManufacturer>(`/automobile/manufacturers/slug/${slug}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<AutomobileManufacturer>(`/automobile/manufacturers/slug/${slug}`);
 }
 
 export async function fetchAutomobileVehicles(options?: ListOptions) {
   try {
-    return await apiPublicFetch<AutomobileVehicle[]>(`/automobile/vehicles?${buildQs(options)}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileVehicle[]>(`/automobile/vehicles?${buildQs(options)}`);
   } catch {
     return { data: [] as AutomobileVehicle[], meta: undefined };
   }
@@ -260,9 +251,7 @@ export async function fetchAutomobileModels(options?: ListOptions) {
       total: number;
       page: number;
       pageSize: number;
-    }>(`/automobile/vehicles/models?${buildQs({ ...options, limit: options?.limit ?? 12 })}`, {
-      cache: 'no-store',
-    });
+    }>(`/automobile/vehicles/models?${buildQs({ ...options, limit: options?.limit ?? 12 })}`);
   } catch {
     return {
       data: { items: [] as AutomobileModelSummary[], total: 0, page: 1, pageSize: 12 },
@@ -271,28 +260,22 @@ export async function fetchAutomobileModels(options?: ListOptions) {
 }
 
 export async function fetchAutomobileVehicleBySlug(slug: string) {
-  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/slug/${slug}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/slug/${slug}`);
 }
 
 export async function fetchAutomobileVehicle(id: string) {
-  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/${id}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileVehicle>(`/automobile/vehicles/${id}`);
 }
 
 export async function fetchAutomobileCompare(ids: string[]) {
   const qs = new URLSearchParams({ ids: ids.join(',') });
-  return apiPublicFetch<AutomobileVehicle[]>(`/automobile/compare?${qs.toString()}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<AutomobileVehicle[]>(`/automobile/compare?${qs.toString()}`);
 }
 
 export async function fetchAutomobileMaintenance(vehicleId?: string) {
   try {
     const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
-    return await apiPublicFetch<AutomobileMaintenance[]>(`/automobile/maintenance${qs}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileMaintenance[]>(`/automobile/maintenance${qs}`);
   } catch {
     return { data: [] as AutomobileMaintenance[] };
   }
@@ -302,7 +285,6 @@ export async function fetchAutomobileDealers() {
   try {
     const result = await apiPublicFetch<{ businesses?: AutomobileDealer[] } | AutomobileDealer[]>(
       '/automobile/dealers',
-      { cache: 'no-store' },
     );
     const data = result.data;
     if (Array.isArray(data)) return { data };
@@ -318,9 +300,7 @@ export async function fetchAutomobileDealers() {
 export async function fetchAutomobileReviews(vehicleId?: string) {
   try {
     const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
-    return await apiPublicFetch<AutomobileReview[]>(`/automobile/reviews${qs}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileReview[]>(`/automobile/reviews${qs}`);
   } catch {
     return { data: [] as AutomobileReview[] };
   }
@@ -328,9 +308,7 @@ export async function fetchAutomobileReviews(vehicleId?: string) {
 
 export async function fetchAutomobileVehicleOffers(vehicleId: string) {
   try {
-    return await apiPublicFetch<AutomobileOffers>(`/automobile/vehicles/${vehicleId}/offers`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileOffers>(`/automobile/vehicles/${vehicleId}/offers`);
   } catch {
     return { data: { loans: [], insurance: [] } as AutomobileOffers };
   }
@@ -338,7 +316,7 @@ export async function fetchAutomobileVehicleOffers(vehicleId: string) {
 
 export async function fetchAutomobileFaqs() {
   try {
-    return await apiPublicFetch<AutomobileFaq[]>('/automobile/faqs', { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileFaq[]>('/automobile/faqs');
   } catch {
     return { data: [] as AutomobileFaq[] };
   }
@@ -346,14 +324,14 @@ export async function fetchAutomobileFaqs() {
 
 export async function fetchAutomobileGuides() {
   try {
-    return await apiPublicFetch<AutomobileGuide[]>('/automobile/guides', { cache: 'no-store' });
+    return await apiPublicFetch<AutomobileGuide[]>('/automobile/guides');
   } catch {
     return { data: [] as AutomobileGuide[] };
   }
 }
 
 export async function fetchAutomobileGuide(slug: string) {
-  return apiPublicFetch<AutomobileGuide>(`/automobile/guides/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<AutomobileGuide>(`/automobile/guides/${slug}`);
 }
 
 export type AutomobileSavedComparison = {
@@ -368,18 +346,14 @@ export type AutomobileSavedComparison = {
 
 export async function fetchAutomobileComparisons() {
   try {
-    return await apiPublicFetch<AutomobileSavedComparison[]>('/automobile/comparisons', {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<AutomobileSavedComparison[]>('/automobile/comparisons');
   } catch {
     return { data: [] as AutomobileSavedComparison[] };
   }
 }
 
 export async function fetchAutomobileComparisonBySlug(slug: string) {
-  return apiPublicFetch<AutomobileSavedComparison>(`/automobile/comparisons/slug/${slug}`, {
-    cache: 'no-store',
-  });
+  return apiPublicFetch<AutomobileSavedComparison>(`/automobile/comparisons/slug/${slug}`);
 }
 
 export async function trackAutomobileAffiliateLead(input: {
@@ -392,6 +366,7 @@ export async function trackAutomobileAffiliateLead(input: {
 }) {
   return apiPublicFetch<{ id: string }>('/automobile/affiliate/lead', {
     method: 'POST',
+    cache: 'no-store',
     body: JSON.stringify({
       entityType: input.entityType ?? 'automobile_vehicle',
       entityId: input.entityId,

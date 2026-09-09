@@ -110,9 +110,7 @@ export async function fetchArticles(
     if (options?.featured) qs.set('featured', 'true');
     if (options?.categoryId) qs.set('categoryId', options.categoryId);
     if (options?.search) qs.set('search', options.search);
-    return await apiPublicFetch<ArticleListItem[]>(`/articles?${qs.toString()}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ArticleListItem[]>(`/articles?${qs.toString()}`);
   } catch {
     return { data: [] as ArticleListItem[], meta: undefined };
   }
@@ -146,19 +144,17 @@ export async function fetchArticleBySlug(slug: string) {
         structuredData?: { ogTitle?: string; ogDescription?: string } | null;
       } | null;
     }
-  >(`/articles/slug/${slug}`, {
-    cache: 'no-store',
-  });
+  >(`/articles/slug/${slug}`);
 }
 
 export async function fetchPageBySlug(slug: string) {
-  return apiPublicFetch<CmsPage>(`/pages/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<CmsPage>(`/pages/slug/${slug}`);
 }
 
 export async function fetchMenuByLocation(location: string) {
   try {
     return await apiPublicFetch<MenuPayload>(`/menus/location/${location}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
     });
   } catch (error) {
     console.error(`[cms] menu location "${location}" failed`, error);
@@ -168,9 +164,7 @@ export async function fetchMenuByLocation(location: string) {
 
 export async function searchContent(q: string, limit = 20) {
   try {
-    return await apiPublicFetch<SearchResult>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<SearchResult>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`);
   } catch {
     return { data: { query: q, articles: [], pages: [] } as SearchResult };
   }
@@ -238,9 +232,7 @@ export async function fetchReviews(limit = 12, options?: { search?: string; enti
     const qs = new URLSearchParams({ limit: String(limit) });
     if (options?.search) qs.set('search', options.search);
     if (options?.entityType) qs.set('entityType', options.entityType);
-    return await apiPublicFetch<ReviewListItem[]>(`/reviews?${qs.toString()}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ReviewListItem[]>(`/reviews?${qs.toString()}`);
   } catch {
     return { data: [] as ReviewListItem[], meta: undefined };
   }
@@ -248,9 +240,7 @@ export async function fetchReviews(limit = 12, options?: { search?: string; enti
 
 export async function fetchCalculators(limit = 12) {
   try {
-    return await apiPublicFetch<CalculatorListItem[]>(`/calculators?limit=${limit}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<CalculatorListItem[]>(`/calculators?limit=${limit}`);
   } catch {
     return { data: [] as CalculatorListItem[], meta: undefined };
   }
@@ -258,9 +248,7 @@ export async function fetchCalculators(limit = 12) {
 
 export async function fetchBusinesses(limit = 12) {
   try {
-    return await apiPublicFetch<BusinessListItem[]>(`/directory/businesses?limit=${limit}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<BusinessListItem[]>(`/directory/businesses?limit=${limit}`);
   } catch {
     return { data: [] as BusinessListItem[], meta: undefined };
   }
@@ -268,7 +256,7 @@ export async function fetchBusinesses(limit = 12) {
 
 export async function fetchHomepageDefault() {
   try {
-    return await apiPublicFetch<HomepageLayout>('/homepage/default', { cache: 'no-store' });
+    return await apiPublicFetch<HomepageLayout>('/homepage/default');
   } catch {
     return { data: null };
   }
@@ -331,21 +319,19 @@ export type ComparisonDetail = {
 
 export async function fetchTags(limit = 50) {
   try {
-    return await apiPublicFetch<TagListItem[]>(`/tags?limit=${limit}`, { cache: 'no-store' });
+    return await apiPublicFetch<TagListItem[]>(`/tags?limit=${limit}`);
   } catch {
     return { data: [] as TagListItem[], meta: undefined };
   }
 }
 
 export async function fetchTagBySlug(slug: string) {
-  return apiPublicFetch<TagListItem>(`/tags/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<TagListItem>(`/tags/slug/${slug}`);
 }
 
 export async function fetchArticlesByTagSlug(slug: string, limit = 24) {
   try {
-    return await apiPublicFetch<ArticleListItem[]>(`/tags/slug/${slug}/articles?limit=${limit}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ArticleListItem[]>(`/tags/slug/${slug}/articles?limit=${limit}`);
   } catch {
     return { data: [] as ArticleListItem[], meta: undefined };
   }
@@ -355,14 +341,12 @@ export async function fetchComparisons(limit = 24, options?: { comparisonType?: 
   try {
     const qs = new URLSearchParams({ limit: String(limit) });
     if (options?.comparisonType) qs.set('comparisonType', options.comparisonType);
-    return await apiPublicFetch<ComparisonListItem[]>(`/comparisons?${qs.toString()}`, {
-      cache: 'no-store',
-    });
+    return await apiPublicFetch<ComparisonListItem[]>(`/comparisons?${qs.toString()}`);
   } catch {
     return { data: [] as ComparisonListItem[], meta: undefined };
   }
 }
 
 export async function fetchComparisonBySlug(slug: string) {
-  return apiPublicFetch<ComparisonDetail>(`/comparisons/slug/${slug}`, { cache: 'no-store' });
+  return apiPublicFetch<ComparisonDetail>(`/comparisons/slug/${slug}`);
 }

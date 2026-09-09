@@ -6,6 +6,18 @@ export const CDN_CACHE = {
   noStore: 'private, no-store',
 } as const;
 
+const PUBLIC_HTML_SOURCES = [
+  '/',
+  '/construction',
+  '/automobile',
+  '/solar',
+  '/reviews',
+  '/articles',
+  '/calculators',
+  '/finance',
+  '/compare',
+] as const;
+
 export const CDN_HEADER_RULES = [
   {
     source: '/_next/static/:path*',
@@ -15,6 +27,10 @@ export const CDN_HEADER_RULES = [
     source: '/fonts/:path*',
     headers: [{ key: 'Cache-Control', value: CDN_CACHE.staticImmutable }],
   },
+  ...PUBLIC_HTML_SOURCES.map((source) => ({
+    source,
+    headers: [{ key: 'Cache-Control', value: CDN_CACHE.publicShort }],
+  })),
 ] as const;
 
 /** Mutable copy for Next.js `headers()` config. */

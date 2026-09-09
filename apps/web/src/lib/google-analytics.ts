@@ -9,7 +9,7 @@ export async function fetchPublicGoogleAnalyticsId(): Promise<string | null> {
   try {
     const { data } = await apiPublicFetch<{ googleAnalyticsId?: string | null }>(
       '/analytics/integrations/public',
-      { cache: 'no-store' },
+      { next: { revalidate: 300 } },
     );
     return safeGoogleAnalyticsId(data?.googleAnalyticsId);
   } catch {

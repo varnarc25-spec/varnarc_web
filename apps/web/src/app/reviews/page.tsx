@@ -17,7 +17,7 @@ import {
 import { fetchReviews, type ReviewListItem } from '@/services/content';
 
 export const metadata: Metadata = {
-  title: 'Product & Service Reviews | Varnarc',
+  title: { absolute: 'Product & Service Reviews | Varnarc' },
   description:
     'Explore Varnarc product and service reviews with clear evaluation criteria, transparent editorial ratings and practical research.',
   alternates: { canonical: '/reviews' },

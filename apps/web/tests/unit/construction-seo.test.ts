@@ -393,7 +393,9 @@ describe('buildConstructionJsonLdGraph', () => {
 describe('buildConstructionPageMetadata', () => {
   it('returns title/description/canonical/robots/og/twitter for hub', async () => {
     const meta = await buildConstructionPageMetadata('hub');
-    expect(meta.title).toBe('Home Construction Calculators, Cost Estimator & BOQ Tools | Varnarc');
+    expect(meta.title).toEqual({
+      absolute: 'Home Construction Calculators, Cost Estimator & BOQ Tools | Varnarc',
+    });
     expect(meta.description).toBe(CONSTRUCTION_PAGE_DEFAULTS.hub.description);
     expect(meta.alternates?.canonical).toBe('/construction');
     expect(meta.robots).toEqual({ index: true, follow: true });

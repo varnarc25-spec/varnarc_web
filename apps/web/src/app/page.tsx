@@ -20,7 +20,7 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: DEFAULT_SEO_TITLE,
+  title: { absolute: DEFAULT_SEO_TITLE },
   description: DEFAULT_SEO_DESCRIPTION,
   alternates: {
     canonical: '/',
