@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { neonPoolerToDirect, summarizeDumpConnection } from '../../packages/database/src/pg-backup';
+import { sqlLiteral, sortTablesByForeignKeys } from '../../packages/database/src/pg-logical-dump';
 
 describe('neonPoolerToDirect', () => {
   it('rewrites Neon pooler host and drops channel_binding', () => {
@@ -22,5 +23,21 @@ describe('summarizeDumpConnection', () => {
     expect(summary.database).toBe('varnarc_db');
     expect(JSON.stringify(summary)).not.toContain('secret');
     expect(summary.host).toContain('***');
+  });
+});
+
+describe('sqlLiteral', () => {
+  it('encodes SQL-safe values', () => {
+    expect(sqlLiteral(null)).toBe('NULL');
+    expect(sqlLiteral(true)).toBe('TRUE');
+    expect(sqlLiteral("O'Brien")).toBe("'O''Brien'");
+  });
+});
+
+describe('sortTablesByForeignKeys', () => {
+  it('puts referenced tables first', () => {
+    expect(
+      sortTablesByForeignKeys(['child', 'parent'], [{ table: 'child', references: 'parent' }]),
+    ).toEqual(['parent', 'child']);
   });
 });

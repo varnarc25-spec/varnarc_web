@@ -63,8 +63,12 @@ export function DatabaseBackupPanel({ initial }: { initial: DatabaseBackupStatus
           <dd>{initial.providerHint === 'neon' ? 'Neon PostgreSQL' : 'PostgreSQL'}</dd>
         </div>
         <div>
-          <dt className="text-[var(--varnarc-subtle)]">pg_dump on API host</dt>
-          <dd>{initial.pgDumpAvailable ? 'Available' : 'Not installed'}</dd>
+          <dt className="text-[var(--varnarc-subtle)]">Dump engine</dt>
+          <dd>
+            {initial.pgDumpAvailable
+              ? 'pg_dump'
+              : 'Built-in SQL export (pg_dump not installed on API host)'}
+          </dd>
         </div>
       </dl>
 
@@ -84,9 +88,10 @@ export function DatabaseBackupPanel({ initial }: { initial: DatabaseBackupStatus
             (uses the non-pooler host).
           </li>
           <li>
-            On the VPS: create an empty database, then restore:
+            On the VPS: create an empty database, apply Prisma migrations, then restore:
             <pre className="mt-2 overflow-x-auto rounded-md border border-[var(--varnarc-border)] bg-[var(--varnarc-muted)] p-3 font-mono text-xs text-[var(--varnarc-ink)]">
               {`createdb varnarc
+DATABASE_URL=postgresql://USER:PASS@VPS_HOST:5432/varnarc pnpm --filter @varnarc/database migrate:deploy
 pnpm db:restore -- --url=postgresql://USER:PASS@VPS_HOST:5432/varnarc --file=backups/varnarc.sql`}
             </pre>
           </li>

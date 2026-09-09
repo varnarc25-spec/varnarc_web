@@ -2,7 +2,7 @@ import { Injectable, ServiceUnavailableException, StreamableFile } from '@nestjs
 import {
   dumpConnectionUrl,
   isPgDumpAvailable,
-  spawnPgDump,
+  openDatabaseDump,
   summarizeDumpConnection,
 } from '@varnarc/database';
 
@@ -10,10 +10,11 @@ import {
 export class DatabaseBackupService {
   async status() {
     const url = dumpConnectionUrl();
+    const pgDumpAvailable = await isPgDumpAvailable();
     return {
       ...summarizeDumpConnection(url),
-      dumpTool: 'pg_dump' as const,
-      pgDumpAvailable: await isPgDumpAvailable(),
+      dumpTool: pgDumpAvailable ? ('pg_dump' as const) : ('sql' as const),
+      pgDumpAvailable,
     };
   }
 
@@ -22,13 +23,8 @@ export class DatabaseBackupService {
     if (!url) {
       throw new ServiceUnavailableException('DATABASE_URL is not configured');
     }
-    if (!(await isPgDumpAvailable())) {
-      throw new ServiceUnavailableException(
-        'pg_dump is not installed on the API host. Run `pnpm db:backup` on a machine with PostgreSQL client tools.',
-      );
-    }
 
-    const { stdout, filename } = spawnPgDump(url);
+    const { stdout, filename } = await openDatabaseDump(url);
     return new StreamableFile(stdout, {
       type: 'application/sql; charset=utf-8',
       disposition: `attachment; filename="${filename}"`,

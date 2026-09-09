@@ -29,8 +29,10 @@ export {
   dumpConnectionUrl,
   isPgDumpAvailable,
   neonPoolerToDirect,
+  openDatabaseDump,
   spawnPgDump,
   summarizeDumpConnection,
   writePgDumpFile,
 } from './pg-backup';
 export type { DumpConnectionSummary, PgDumpHandle } from './pg-backup';
+export { sqlLiteral, sortTablesByForeignKeys } from './pg-logical-dump';

@@ -2,7 +2,8 @@ import { spawn } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import type { Readable } from 'node:stream';
+import { PassThrough, type Readable } from 'node:stream';
+import { writeLogicalSqlDump } from './pg-logical-dump';
 
 export type DumpConnectionSummary = {
   configured: boolean;
@@ -155,11 +156,30 @@ export function spawnPgDump(connectionString: string): PgDumpHandle {
   return { stdout: child.stdout, filename, wait };
 }
 
+export async function openDatabaseDump(connectionString: string): Promise<PgDumpHandle> {
+  const filename = defaultBackupFilename();
+  if (await isPgDumpAvailable()) {
+    return spawnPgDump(connectionString);
+  }
+
+  const stdout = new PassThrough();
+  const wait = writeLogicalSqlDump(neonPoolerToDirect(connectionString), stdout).then(
+    () => {
+      stdout.end();
+    },
+    (error: unknown) => {
+      stdout.destroy(error instanceof Error ? error : new Error(String(error)));
+      throw error;
+    },
+  );
+  return { stdout, filename, wait };
+}
+
 export async function writePgDumpFile(
   connectionString: string,
   outputPath: string,
 ): Promise<string> {
-  const { stdout, wait } = spawnPgDump(connectionString);
+  const { stdout, wait } = await openDatabaseDump(connectionString);
   await mkdir(path.dirname(outputPath), { recursive: true });
   await new Promise<void>((resolve, reject) => {
     const file = createWriteStream(outputPath);
