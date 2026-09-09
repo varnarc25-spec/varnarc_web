@@ -46,6 +46,7 @@ export type ConstructionMaterial = {
   cons?: string | null;
   category?: { id: string; name: string; slug: string } | null;
   brand?: { id: string; name: string; slug: string } | null;
+  materialComparisonGroup?: string | null;
 };
 
 export type ConstructionCostTemplate = {

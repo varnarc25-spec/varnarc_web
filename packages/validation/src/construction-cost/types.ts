@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import type { ReverseCalculationDisplay } from '../reverse-calculator';
+import type { ConstructionRateDisplay } from '../construction-location-catalog';
 
 export type ConstructionCommercialRuleSnapshot = {
   kind: 'CONTINGENCY' | 'OVERHEAD' | 'PROFIT' | 'TAX' | 'ESCALATION';
@@ -137,6 +138,7 @@ export type ConstructionCostResult = {
   floorBreakdown: CostBreakdownLine[];
   monthlyCashRequirement: number;
   assumptions: string[];
+  rateDisplay: ConstructionRateDisplay;
   qualityTierCode: string;
   qualitySpecifications: Array<{ categoryKey: string; specKey: string; label: string }>;
   commercialRules: ConstructionCommercialRuleSnapshot[];

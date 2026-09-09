@@ -83,9 +83,9 @@ export const CONSTRUCTION_PAGE_DEFAULTS: Record<ConstructionPageKey, Constructio
     hub: {
       path: '/construction',
       label: 'Construction',
-      title: 'Plan Construction with Cost Estimators & Material Calculators | Varnarc',
+      title: 'Home Construction Calculators, Cost Estimator & BOQ Tools | Varnarc',
       description:
-        'Estimate construction costs, calculate materials, compare options and plan your project with transparent Varnarc construction tools.',
+        'Home construction planning tools to estimate cost, quantities and BOQ, then check city rates and renovation scope. Indicative figures — verify locally before you budget.',
       h1: 'Plan, quantify and manage your construction project',
       indexable: true,
     },

@@ -134,6 +134,8 @@ export default async function ConstructionPage({ searchParams }: Props) {
       item.approximatePrice != null
         ? `₹${item.approximatePrice}${item.unit ? ` / ${item.unit}` : ''}`
         : null,
+    categoryName: item.category?.name ?? null,
+    categorySlug: item.category?.slug ?? null,
   }));
 
   const guides =

@@ -138,7 +138,7 @@ export function CurrentConstructionProjectSummary({
       className="site-container py-5 sm:py-6"
       aria-labelledby="current-construction-project-heading"
     >
-      <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_1px_8px_rgba(15,23,42,0.06)] sm:p-5">
+      <div className="rounded-[12px] border border-slate-200 bg-white p-4 sm:p-5">
         {!project ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

@@ -7,6 +7,9 @@ import {
   parseRateImportCsv,
   publicRateLabel,
   resolveRate,
+  catalogNationalPriceAsResolvable,
+  CITY_RATE_UNAVAILABLE_NOTE,
+  LOCAL_VERIFICATION_WARNING,
   type RateLocationLevel,
   type RateSourceType,
   type ResolvableRate,
@@ -364,6 +367,8 @@ export class ConstructionIntelligenceService {
       effectiveFrom: row.effectiveFrom.toISOString(),
       sourceName: row.sourceRecord?.name ?? row.source,
     }));
+    const catalog = catalogNationalPriceAsResolvable(material.slug);
+    if (catalog) candidates.push(catalog);
     const resolved = resolveRate({
       candidates,
       ancestry: ancestry.map((node) => ({ id: node.id, type: node.type })),
@@ -373,15 +378,26 @@ export class ConstructionIntelligenceService {
         material: material.name,
         resolved: null,
         publicLabel: 'Indicative planning rate',
-        note: 'No ingested rate for this material. Use a supplier quote as a user override — do not treat national ₹/sq ft as a bag/kg market price.',
+        usedFallback: true,
+        fallbackNote: CITY_RATE_UNAVAILABLE_NOTE,
+        localVerificationWarning: LOCAL_VERIFICATION_WARNING,
+        note: 'No ingested rate for this material. Using catalog national indicative rate is not available for this SKU — enter a supplier quote as a user override. Do not treat these figures as live prices.',
       };
     }
+    const usedFallback =
+      resolved.locationLevel === 'NATIONAL' ||
+      resolved.locationLevel === 'FALLBACK' ||
+      resolved.locationLevel === 'REGION' ||
+      resolved.locationLevel === 'STATE';
     return {
       material: material.name,
       resolved: {
         ...resolved,
         publicLabel: publicRateLabel(resolved),
       },
+      usedFallback,
+      fallbackNote: usedFallback ? CITY_RATE_UNAVAILABLE_NOTE : null,
+      localVerificationWarning: LOCAL_VERIFICATION_WARNING,
     };
   }
 

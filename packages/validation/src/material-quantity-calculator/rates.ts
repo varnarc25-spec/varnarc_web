@@ -1,10 +1,7 @@
 /** Centralized planning factors for the whole-house material quantity calculator. */
 
-import {
-  DEFAULT_COST_SPLIT,
-  LOCATION_MULTIPLIERS,
-  QUALITY_QTY_FACTOR,
-} from '../construction-cost/rates';
+import { DEFAULT_COST_SPLIT, QUALITY_QTY_FACTOR } from '../construction-cost/rates';
+import { LOCATION_MULTIPLIERS, typicalNationalPrice } from '../construction-location-catalog';
 import type { ConstructionCostQuality } from '../construction-cost/types';
 
 export const MATERIAL_QUANTITY_CALC_VERSION = '2026.09.1';
@@ -32,16 +29,16 @@ export const constructionMaterialFactors = {
 } as const;
 
 export const materialRates = {
-  cementPerBag: 390,
-  steelPerKg: 64,
-  sandPerTonne: 2200,
-  aggregatePerTonne: 1800,
-  brickEach: 8,
-  aacBlockEach: 42,
-  tilePerSqft: 55,
-  paintPerLitre: 280,
-  electricalPerSqft: 185,
-  plumbingPerSqft: 145,
+  cementPerBag: typicalNationalPrice('cement'),
+  steelPerKg: typicalNationalPrice('steel'),
+  sandPerTonne: typicalNationalPrice('sand'),
+  aggregatePerTonne: typicalNationalPrice('aggregate'),
+  brickEach: typicalNationalPrice('brick'),
+  aacBlockEach: typicalNationalPrice('aac'),
+  tilePerSqft: typicalNationalPrice('tiles'),
+  paintPerLitre: typicalNationalPrice('paint'),
+  electricalPerSqft: typicalNationalPrice('electrical'),
+  plumbingPerSqft: typicalNationalPrice('plumbing'),
 } as const;
 
 /** City multipliers applied to indicative rates (not quantities). */

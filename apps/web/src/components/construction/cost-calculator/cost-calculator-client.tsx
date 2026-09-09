@@ -14,6 +14,7 @@ import {
   type ConstructionCostResult,
   type ConstructionPlannerHandoff,
   COST_CALC_VERSION,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
 } from '@varnarc/validation';
 import {
   CalculationBreakdown,
@@ -33,6 +34,7 @@ import {
   ConstructionProjectSummaryBar,
 } from '@/components/construction/calculator/construction-calculator-dashboard';
 import { ConstructionRelatedSection } from '@/components/construction/construction-related-section';
+import { ConstructionRateAttribution } from '@/components/construction/rate-attribution';
 import { cn, cx } from '@/components/construction/styles';
 import {
   categorizeConstructionResultRange,
@@ -104,7 +106,7 @@ type FormState = {
 
 const DEFAULT_FORM: FormState = {
   mode: 'forward',
-  location: 'Hyderabad',
+  location: DEFAULT_CONSTRUCTION_LOCATION_NAME,
   propertyType: 'independent_house',
   builtUpArea: '1500',
   areaUnit: 'sqft',
@@ -849,6 +851,7 @@ export function ConstructionCostCalculatorClient({
 
   const resultNode = result ? (
     <div className="space-y-4 print:space-y-3">
+      <ConstructionRateAttribution display={result.rateDisplay} />
       <CalculationResult
         label={result.mode === 'reverse' ? 'Approximate buildable area' : 'Estimated total cost'}
         value={
@@ -1066,7 +1069,11 @@ export function ConstructionCostCalculatorClient({
                 city SOR prices. Enter your contractor rate below to override this estimate only —
                 global admin rates are never changed.
               </p>
-              <ConstructionMaterialLinesTable lines={materialLines} quantityHref={quantityHref} />
+              <ConstructionMaterialLinesTable
+                lines={materialLines}
+                quantityHref={quantityHref}
+                rateDisplay={result.rateDisplay}
+              />
             </div>
           ) : undefined
         }
@@ -1181,8 +1188,12 @@ export function ConstructionCostCalculatorClient({
         }
         faqs={COST_CALC_FAQS}
         relatedTools={[
-          { label: 'Material quantity calculator', href: costToMaterialsHref },
-          { label: 'BOQ generator', href: boqPlannerHref },
+          { label: 'Material calculator', href: '/construction/material-calculator' },
+          { label: 'Cement calculator', href: '/construction/cement-calculator' },
+          { label: 'Steel calculator', href: '/construction/steel-calculator' },
+          { label: 'BOQ generator', href: '/construction/boq' },
+          { label: 'Construction by city', href: '/construction/construction-cost' },
+          { label: 'Professionals', href: '/construction/professionals' },
         ]}
         stickyCta={{
           primary: {

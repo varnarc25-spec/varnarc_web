@@ -19,7 +19,7 @@ import {
   MethodologyPanel,
 } from '@/components/construction/calculator';
 import { ConstructionRelatedLinks } from '@/components/construction/construction-related-links';
-import { GroupedBarChart, SimpleLineChart } from '@/components/shared/simple-chart';
+import { GroupedBarChart, SimpleLineChart } from '@/components/construction/lazy-charts';
 import { cn, cx } from '@/components/construction/styles';
 import { wizardMeta } from '@/components/construction/project-dashboard/dashboard-metrics';
 import {

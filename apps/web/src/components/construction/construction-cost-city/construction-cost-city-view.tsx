@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ConstructionCostCityLanding } from '@varnarc/validation';
 import { ConstructionFAQ } from '@/components/construction/construction-faq';
 import { ConstructionCostCityCtas } from '@/components/construction/construction-cost-city/construction-cost-city-ctas';
+import { ConstructionRateAttribution } from '@/components/construction/rate-attribution';
 import { cn, cx } from '@/components/construction/styles';
 
 function money(n: number) {
@@ -32,6 +33,7 @@ export function ConstructionCostCityView({ landing }: { landing: ConstructionCos
           Location multiplier ×{landing.locationMultiplier} vs national base ₹
           {landing.nationalBaseRatePerSqft.toLocaleString('en-IN')}/sq ft
         </p>
+        <ConstructionRateAttribution display={landing.rateDisplay} />
       </section>
 
       <section className={cn(cx.card, 'grid gap-4 p-4 sm:grid-cols-3 sm:p-5')}>

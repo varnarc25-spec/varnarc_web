@@ -252,7 +252,26 @@ export class ConstructionProjectRepository extends BaseRepository {
     return this.db.constructionProject.findMany({
       where: { userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
-      include: { items: true },
+      include: {
+        items: true,
+        calculations: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          take: 40,
+          select: { id: true, calculatorSlug: true },
+        },
+        _count: {
+          select: {
+            calculations: { where: { deletedAt: null } },
+            boqs: { where: { deletedAt: null } },
+            phases: { where: { deletedAt: null } },
+            budgetItems: { where: { deletedAt: null } },
+            expenses: { where: { deletedAt: null } },
+            documents: { where: { deletedAt: null } },
+            items: true,
+          },
+        },
+      },
     });
   }
 

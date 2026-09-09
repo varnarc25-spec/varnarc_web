@@ -27,6 +27,31 @@ const nextConfig: NextConfig = withSecurityHeaders(
     async redirects() {
       return [
         {
+          source: '/home',
+          destination: '/',
+          permanent: true,
+        },
+        {
+          source: '/pages/term-conditions',
+          destination: '/terms',
+          permanent: true,
+        },
+        {
+          source: '/pages/terms-conditions',
+          destination: '/terms',
+          permanent: true,
+        },
+        {
+          source: '/pages/terms-and-conditions',
+          destination: '/terms',
+          permanent: true,
+        },
+        {
+          source: '/digitalmarketing/:path*',
+          destination: '/',
+          permanent: true,
+        },
+        {
           source: '/finance/methodology',
           destination: '/finance/loans/methodology',
           permanent: true,

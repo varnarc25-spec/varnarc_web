@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { SimpleLineChart } from '@/components/shared/simple-chart';
+import { SimpleLineChart } from '@/components/construction/lazy-charts';
 import type { VcciHubPayload, VcciSnapshot } from '@/lib/construction/vcci/api';
 import { cn, cx } from '@/components/construction/styles';
 import { VCCI_QUALIFICATION } from '@varnarc/validation';

@@ -3,6 +3,7 @@ import {
   DEFAULT_COMMERCIAL_RULES,
   qualitySpecificationsForCostQuality,
 } from '../construction-intelligence-catalog';
+import { resolveConstructionCostRateDisplay } from '../construction-location-catalog';
 import {
   CATEGORY_SHARES,
   COST_CALC_VERSION,
@@ -58,6 +59,7 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
   const input = constructionCostInputSchema.parse(raw);
   const locationKey = normalizeLocationKey(input.location);
   const locationMeta = LOCATION_MULTIPLIERS[locationKey] ?? LOCATION_MULTIPLIERS.default!;
+  const rateDisplay = resolveConstructionCostRateDisplay(input.location);
 
   const qualityMultiplier = QUALITY_MULTIPLIERS[input.quality];
   const floorMultiplier = 1 + Math.max(0, input.floors - 1) * 0.04;
@@ -237,6 +239,8 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
         ]
       : ['Category and phase shares are planning allocations, not contractor bills.']),
     'Always verify rates with local contractors and suppliers before budgeting.',
+    ...(rateDisplay.fallbackNote ? [rateDisplay.fallbackNote] : []),
+    rateDisplay.localVerificationWarning,
   ];
 
   const formula = isReverse
@@ -298,6 +302,7 @@ export function calculateConstructionCost(raw: ConstructionCostInputRaw): Constr
     floorBreakdown,
     monthlyCashRequirement,
     assumptions,
+    rateDisplay,
     qualityTierCode: COST_QUALITY_TO_TIER[input.quality],
     qualitySpecifications: qualitySpecificationsForCostQuality(input.quality),
     commercialRules: DEFAULT_COMMERCIAL_RULES,

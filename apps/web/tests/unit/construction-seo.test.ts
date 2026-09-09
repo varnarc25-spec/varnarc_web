@@ -114,6 +114,16 @@ describe('resolveConstructionIndexing', () => {
     expect(shared.reason).toBe('calculator_share_params');
   });
 
+  it('noindexes calculator budgetInr/region prefills with a clean canonical', () => {
+    const shared = resolveConstructionIndexing({
+      pathname: '/construction/cost-calculator',
+      searchParams: { budgetInr: '5000000', region: 'Hyderabad' },
+    });
+    expect(shared.index).toBe(false);
+    expect(shared.canonicalPath).toBe('/construction/cost-calculator');
+    expect(shared.reason).toBe('calculator_share_params');
+  });
+
   it('noindexes cost-calculator slug share paths and canonicalizes to the tool', () => {
     expect(isConstructionCalculatorPath('/construction/cost-calculator/builtUpArea_1500_sft')).toBe(
       true,
@@ -383,12 +393,20 @@ describe('buildConstructionJsonLdGraph', () => {
 describe('buildConstructionPageMetadata', () => {
   it('returns title/description/canonical/robots/og/twitter for hub', async () => {
     const meta = await buildConstructionPageMetadata('hub');
-    expect(meta.title).toBe(CONSTRUCTION_PAGE_DEFAULTS.hub.title);
+    expect(meta.title).toBe('Home Construction Calculators, Cost Estimator & BOQ Tools | Varnarc');
     expect(meta.description).toBe(CONSTRUCTION_PAGE_DEFAULTS.hub.description);
     expect(meta.alternates?.canonical).toBe('/construction');
     expect(meta.robots).toEqual({ index: true, follow: true });
     expect(meta.openGraph?.title).toBe(CONSTRUCTION_PAGE_DEFAULTS.hub.title);
     expect(meta.twitter?.title).toBe(CONSTRUCTION_PAGE_DEFAULTS.hub.title);
+  });
+
+  it('noindexes hub intent query while canonical stays /construction', async () => {
+    const meta = await buildConstructionPageMetadata('hub', {
+      searchParams: { intent: 'build_home' },
+    });
+    expect(meta.alternates?.canonical).toBe('/construction');
+    expect(meta.robots).toEqual({ index: false, follow: true });
   });
 
   it('noindexes projects page by default', async () => {

@@ -26,7 +26,7 @@ describe('parseAskConstructionQuery examples', () => {
     const route = resolveAskConstructionQuery('cost to build 3 bhk in Hyderabad');
     expect(route.autoRoute).toBe(true);
     expect(route.href).toContain('/construction/cost-calculator');
-    expect(route.href).toContain('location=Hyderabad');
+    expect(route.href).toContain('location_Hyderabad');
   });
 
   it('routes renovation cost queries to renovation calculator', () => {

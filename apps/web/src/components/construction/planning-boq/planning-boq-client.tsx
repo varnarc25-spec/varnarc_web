@@ -23,6 +23,7 @@ import {
 import { CalculatorShell, MethodologyPanel } from '@/components/construction/calculator';
 import { ConstructionRelatedSection } from '@/components/construction/construction-related-section';
 import { ConstructionReportActions, reportFromPlanningBoq } from '@/components/construction/report';
+import { ConstructionScrollTable } from '@/components/construction/construction-scroll-table';
 import { cn, cx } from '@/components/construction/styles';
 import { csvEscape, downloadCsv } from '@/lib/construction/export';
 import {
@@ -488,94 +489,106 @@ export function PlanningBoqClient() {
           </button>
         ))}
       </div>
-      <div className={cn(cx.card, 'overflow-x-auto p-0')}>
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-3 py-2.5">#</th>
-              <th className="px-3 py-2.5">Item description</th>
-              <th className="px-3 py-2.5">Unit</th>
-              <th className="px-3 py-2.5">Quantity</th>
-              <th className="px-3 py-2.5">Rate</th>
-              <th className="px-3 py-2.5">Amount</th>
-              <th className="px-3 py-2.5">Status</th>
-              <th className="px-3 py-2.5">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleItems.map((item, index) => (
-              <tr key={item.id} className="border-t border-slate-100 align-top">
-                <td className="px-3 py-2 tabular-nums text-slate-500">{index + 1}</td>
-                <td className="px-3 py-2">
-                  <input
-                    className={cx.input}
-                    value={item.description}
-                    onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                  />
-                  {item.notes ? (
-                    <p className="mt-1 text-[11px] text-slate-500">{item.notes}</p>
-                  ) : null}
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    className={cn(cx.input, 'w-24')}
-                    value={item.unit}
-                    onChange={(e) => updateItem(item.id, { unit: e.target.value })}
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    className={cn(cx.input, 'w-28')}
-                    type="number"
-                    min={0}
-                    value={item.quantity}
-                    onChange={(e) => updateItem(item.id, { quantity: Number(e.target.value) || 0 })}
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    className={cn(cx.input, 'w-28')}
-                    type="number"
-                    min={0}
-                    value={item.rate}
-                    onChange={(e) => updateItem(item.id, { rate: Number(e.target.value) || 0 })}
-                  />
-                </td>
-                <td className="px-3 py-2 font-semibold tabular-nums">{formatInr(item.amount)}</td>
-                <td className="px-3 py-2">
-                  <label className="flex items-center gap-2 text-xs">
+      <div className={cn(cx.card, 'p-0')}>
+        <ConstructionScrollTable
+          minWidthClass="min-w-[960px]"
+          caption="Swipe sideways to edit all BOQ columns."
+          className="p-0"
+        >
+          <table className="w-full min-w-[960px] text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="px-3 py-2.5">#</th>
+                <th className="px-3 py-2.5">Item description</th>
+                <th className="px-3 py-2.5">Unit</th>
+                <th className="px-3 py-2.5">Quantity</th>
+                <th className="px-3 py-2.5">Rate</th>
+                <th className="px-3 py-2.5">Amount</th>
+                <th className="px-3 py-2.5">Status</th>
+                <th className="px-3 py-2.5">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleItems.map((item, index) => (
+                <tr key={item.id} className="border-t border-slate-100 align-top">
+                  <td className="px-3 py-2 tabular-nums text-slate-500">{index + 1}</td>
+                  <td className="px-3 py-2">
                     <input
-                      type="checkbox"
-                      checked={item.isIncluded}
-                      onChange={(e) => updateItem(item.id, { isIncluded: e.target.checked })}
+                      className={cx.input}
+                      aria-label="Item description"
+                      value={item.description}
+                      onChange={(e) => updateItem(item.id, { description: e.target.value })}
                     />
-                    {item.isIncluded ? 'Included' : 'Excluded'}
-                  </label>
-                </td>
-                <td className="px-3 py-2">
-                  <div className="flex flex-wrap gap-1">
-                    <button
-                      type="button"
-                      className={cx.link}
-                      onClick={() => setBoq((prev) => duplicateBoqItem(prev, item.id))}
-                    >
-                      Duplicate
-                    </button>
-                    {item.isCustom ? (
+                    {item.notes ? (
+                      <p className="mt-1 text-[11px] text-slate-500">{item.notes}</p>
+                    ) : null}
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      className={cn(cx.input, 'w-24')}
+                      aria-label="Unit"
+                      value={item.unit}
+                      onChange={(e) => updateItem(item.id, { unit: e.target.value })}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      className={cn(cx.input, 'w-28')}
+                      type="number"
+                      min={0}
+                      aria-label="Quantity"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateItem(item.id, { quantity: Number(e.target.value) || 0 })
+                      }
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      className={cn(cx.input, 'w-28')}
+                      type="number"
+                      min={0}
+                      aria-label="Rate"
+                      value={item.rate}
+                      onChange={(e) => updateItem(item.id, { rate: Number(e.target.value) || 0 })}
+                    />
+                  </td>
+                  <td className="px-3 py-2 font-semibold tabular-nums">{formatInr(item.amount)}</td>
+                  <td className="px-3 py-2">
+                    <label className="flex items-center gap-2 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={item.isIncluded}
+                        onChange={(e) => updateItem(item.id, { isIncluded: e.target.checked })}
+                      />
+                      {item.isIncluded ? 'Included' : 'Excluded'}
+                    </label>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap gap-1">
                       <button
                         type="button"
                         className={cx.link}
-                        onClick={() => setBoq((prev) => removeBoqItem(prev, item.id))}
+                        onClick={() => setBoq((prev) => duplicateBoqItem(prev, item.id))}
                       >
-                        Delete
+                        Duplicate
                       </button>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {item.isCustom ? (
+                        <button
+                          type="button"
+                          className={cx.link}
+                          onClick={() => setBoq((prev) => removeBoqItem(prev, item.id))}
+                        >
+                          Delete
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ConstructionScrollTable>
       </div>
       <button
         type="button"

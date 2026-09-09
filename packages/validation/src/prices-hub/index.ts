@@ -1,6 +1,7 @@
 /** Construction Prices hub — freshness, gating, and material/city allowlists. */
 
 import { getPriceCityLocalNote, isPriceMaterialSeoKey } from './seo-landing';
+import { PRICE_HUB_CITY_DEFS } from '../construction-location-catalog';
 
 export const PRICE_HUB_VERSION = '2026.08.1';
 
@@ -202,16 +203,7 @@ export const PRICE_HUB_MATERIALS = [
 
 export type PriceHubMaterialKey = (typeof PRICE_HUB_MATERIALS)[number]['key'];
 
-export const PRICE_HUB_CITIES = [
-  { slug: 'hyderabad', name: 'Hyderabad' },
-  { slug: 'bengaluru', name: 'Bengaluru' },
-  { slug: 'chennai', name: 'Chennai' },
-  { slug: 'mumbai', name: 'Mumbai' },
-  { slug: 'pune', name: 'Pune' },
-  { slug: 'delhi', name: 'Delhi NCR' },
-  { slug: 'ahmedabad', name: 'Ahmedabad' },
-  { slug: 'kolkata', name: 'Kolkata' },
-] as const;
+export const PRICE_HUB_CITIES = PRICE_HUB_CITY_DEFS;
 
 export type PriceHubCitySlug = (typeof PRICE_HUB_CITIES)[number]['slug'];
 

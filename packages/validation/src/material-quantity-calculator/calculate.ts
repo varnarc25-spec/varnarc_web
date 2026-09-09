@@ -1,4 +1,5 @@
 import { normalizeLocationKey, toSqft } from '../construction-cost/rates';
+import { resolveMaterialPrice } from '../construction-location-catalog';
 import {
   MATERIAL_LINE_META,
   MATERIAL_QUANTITY_CALC_VERSION,
@@ -138,6 +139,10 @@ export function calculateMaterialQuantities(raw: unknown): MaterialQuantityResul
   const areaSqft = toSqft(input.builtUpArea, input.areaUnit);
   const locationKey = normalizeLocationKey(input.location);
   const cityMultiplier = cityRateMultipliers[locationKey] ?? cityRateMultipliers.default ?? 1;
+  const materialPrice = resolveMaterialPrice({
+    materialId: 'cement',
+    locationQuery: input.location,
+  });
   const wall = wallTypeFactors[input.wallType];
 
   const ids: MaterialLineId[] = [
@@ -212,7 +217,10 @@ export function calculateMaterialQuantities(raw: unknown): MaterialQuantityResul
       `Default wastage is ${input.wastagePercent}%.`,
       'Electrical and plumbing use ₹/sq ft service allowances, not a point schedule.',
       MATERIAL_QUANTITY_DISCLAIMER,
+      ...(materialPrice.display.fallbackNote ? [materialPrice.display.fallbackNote] : []),
+      materialPrice.display.localVerificationWarning,
     ],
     disclaimer: MATERIAL_QUANTITY_DISCLAIMER,
+    rateDisplay: materialPrice.display,
   };
 }

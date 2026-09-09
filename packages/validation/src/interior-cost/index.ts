@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { rangeFromExpected } from '../construction-rate-resolution';
+import {
+  resolveConstructionCostRateDisplay,
+  type ConstructionRateDisplay,
+} from '../construction-location-catalog';
 
 export const INTERIOR_CALC_VERSION = '2026.09.1';
 export const INTERIOR_QUALIFICATION =
@@ -81,6 +85,7 @@ export type InteriorCostResult = {
   qualification: string;
   version: string;
   assumptions: string[];
+  rateDisplay: ConstructionRateDisplay;
 };
 
 function line(id: string, label: string, amount: number): InteriorLine {
@@ -151,5 +156,6 @@ export function calculateInteriorCost(raw: InteriorCostInput): InteriorCostResul
       'Quality maps to specification intensity, then a documented factor — not a hidden city multiplier.',
       INTERIOR_QUALIFICATION,
     ],
+    rateDisplay: resolveConstructionCostRateDisplay(input.location),
   };
 }

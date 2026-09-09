@@ -1,32 +1,16 @@
 /** Indicative location rates and multipliers for the Construction Cost Calculator. */
 
 import type { ConstructionCostQuality, ConstructionCostPropertyType } from './types';
+import {
+  DEFAULT_MARKET_RATES as CATALOG_MARKET_RATES,
+  LOCATION_MULTIPLIERS,
+  NATIONAL_BASE_RATE_PER_SQFT,
+  normalizeLocationKey,
+} from '../construction-location-catalog';
 
 export const COST_CALC_VERSION = '2026.08.1';
 
-/** National baseline ₹/sqft for standard quality RCC shell (indicative). */
-export const NATIONAL_BASE_RATE_PER_SQFT = 1800;
-
-/** Location multipliers applied to national base (indicative metro/tier adjustments). */
-export const LOCATION_MULTIPLIERS: Record<string, { label: string; multiplier: number }> = {
-  hyderabad: { label: 'Hyderabad', multiplier: 1.0 },
-  bengaluru: { label: 'Bengaluru', multiplier: 1.12 },
-  bangalore: { label: 'Bengaluru', multiplier: 1.12 },
-  chennai: { label: 'Chennai', multiplier: 1.05 },
-  mumbai: { label: 'Mumbai', multiplier: 1.28 },
-  pune: { label: 'Pune', multiplier: 1.1 },
-  delhi: { label: 'Delhi NCR', multiplier: 1.18 },
-  noida: { label: 'Noida', multiplier: 1.15 },
-  gurugram: { label: 'Gurugram', multiplier: 1.2 },
-  gurgaon: { label: 'Gurugram', multiplier: 1.2 },
-  ahmedabad: { label: 'Ahmedabad', multiplier: 0.98 },
-  kolkata: { label: 'Kolkata', multiplier: 0.95 },
-  jaipur: { label: 'Jaipur', multiplier: 0.92 },
-  coimbatore: { label: 'Coimbatore', multiplier: 0.9 },
-  indore: { label: 'Indore', multiplier: 0.9 },
-  lucknow: { label: 'Lucknow', multiplier: 0.9 },
-  default: { label: 'India average', multiplier: 1.0 },
-};
+export { LOCATION_MULTIPLIERS, NATIONAL_BASE_RATE_PER_SQFT, normalizeLocationKey };
 
 export const QUALITY_MULTIPLIERS: Record<ConstructionCostQuality, number> = {
   basic: 0.85,
@@ -117,11 +101,7 @@ export const FEATURE_COSTS = {
 };
 
 /** Indicative market defaults for commodity / labour rate overrides. */
-export const DEFAULT_MARKET_RATES = {
-  steelRatePerKg: 55,
-  cementRatePerBag: 380,
-  labourRateIndex: 100,
-} as const;
+export const DEFAULT_MARKET_RATES = CATALOG_MARKET_RATES;
 
 /** Planning quantity factors used when applying steel/cement rate deltas. */
 export const RATE_QTY_PER_SQFT = {
@@ -137,21 +117,6 @@ export const QUALITY_QTY_FACTOR: Record<ConstructionCostQuality, number> = {
 };
 
 export const RANGE_SPREAD = 0.12;
-
-export function normalizeLocationKey(location: string): string {
-  const key = location
-    .trim()
-    .toLowerCase()
-    .replace(/\s+ncr$/, '')
-    .replace(/[^a-z]/g, '');
-  if (!key) return 'default';
-  if (LOCATION_MULTIPLIERS[key]) return key;
-  // soft match
-  for (const k of Object.keys(LOCATION_MULTIPLIERS)) {
-    if (k !== 'default' && (key.includes(k) || k.includes(key))) return k;
-  }
-  return 'default';
-}
 
 export function toSqft(area: number, unit: 'sqft' | 'sqm'): number {
   if (unit === 'sqm') return Math.round(area * 10.7639 * 100) / 100;

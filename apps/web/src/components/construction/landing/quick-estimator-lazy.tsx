@@ -11,6 +11,5 @@ export const ConstructionQuickEstimator = dynamic(
     ),
   {
     loading: () => <LoadingState label="Loading estimator" variant="form" />,
-    ssr: false,
   },
 );

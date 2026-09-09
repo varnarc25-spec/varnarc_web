@@ -85,14 +85,16 @@ describe('buildConstructionCostCityLanding', () => {
     expect(landing.costPerSqft).toBeGreaterThan(1000);
     expect(landing.indicativeRange.mid).toBeGreaterThan(landing.indicativeRange.low);
     expect(landing.qualityScenarios).toHaveLength(3);
-    expect(landing.calculatorHref).toContain('location=Hyderabad');
+    expect(landing.calculatorHref).toContain('location_Hyderabad');
     expect(landing.relatedCityHrefs.some((l) => l.href.includes('bengaluru'))).toBe(true);
     expect(landing.faqs.length).toBeGreaterThan(3);
     expect(landing.methodology).toMatch(/thin template/i);
     expect(landing.intelligence.rateLabel).toBe('Indicative planning rate');
     expect(landing.intelligence.locationFactors.labour).toBe(1);
     expect(landing.intelligence.qualitySpecifications.length).toBeGreaterThan(0);
-    expect(landing.intelligence.lastVerifiedAt).toBeNull();
+    expect(landing.intelligence.lastVerifiedAt).toBe('2026-08-01');
+    expect(landing.rateDisplay.publicLabel).toBe('Indicative planning rate');
+    expect(landing.rateDisplay.localVerificationWarning).toMatch(/Verify locally/);
   });
 
   it('marks non-indexable when data thin but still returns null only without profile', () => {

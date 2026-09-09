@@ -1,6 +1,7 @@
 /** Cost optimization — types. Never auto-downgrade structural safety items. */
 
 import { z } from 'zod';
+import { DEFAULT_CONSTRUCTION_LOCATION_NAME } from '../construction-location-catalog';
 import {
   constructionCostInteriorSchema,
   constructionCostQualitySchema,
@@ -13,7 +14,7 @@ export const optimizationSafetyClassSchema = z.enum([
 ]);
 
 export const costOptimizationInputSchema = z.object({
-  location: z.string().min(1).max(80).default('Hyderabad'),
+  location: z.string().min(1).max(80).default(DEFAULT_CONSTRUCTION_LOCATION_NAME),
   builtUpArea: z.number().positive().max(200_000),
   areaUnit: z.enum(['sqft', 'sqm']).default('sqft'),
   floors: z.number().int().min(1).max(50).default(2),

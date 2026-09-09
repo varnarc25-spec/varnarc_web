@@ -17,7 +17,7 @@ export function ConstructionPricesNearYou({
     <ConstructionSection
       id="prices-near-you"
       title="Construction prices near you"
-      description="Indicative material prices to orient your budget — always verify locally."
+      description="Indicative national planning rates when a city observation is not published — always verify locally. Not live dealer prices."
       action={{ href: '/construction/prices', label: 'Open prices hub →' }}
     >
       {materials.length ? (

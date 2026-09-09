@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ConstructionBreadcrumbs } from '@/components/construction/construction-breadcrumbs';
 import { ConstructionSection } from '@/components/construction/construction-section';
@@ -73,14 +74,20 @@ export function CalculatorShell({
   const dashboardGrid = Boolean(workspace);
 
   return (
-    <main className={cn('w-full bg-white', stickyCta ? 'pb-24 md:pb-0' : '', className)}>
+    <main
+      className={cn('w-full overflow-x-clip bg-white', stickyCta ? 'pb-24 md:pb-0' : '', className)}
+    >
       <header className="full-bleed border-b border-slate-200/70 bg-[#f4f7fb]">
         <div className="site-container py-8 sm:py-10">
           {breadcrumbs?.length ? <ConstructionBreadcrumbs items={breadcrumbs} /> : null}
           <div className="mt-4 max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#f97316]">{title}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#f97316]">
+              <Link href="/construction" className="hover:text-[#ea580c]">
+                Construction
+              </Link>
+            </p>
             <h1 className="mt-1 text-[1.75rem] font-extrabold tracking-tight text-[#0b1f3a] sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
-              Plan, quantify and manage your construction project
+              {title}
             </h1>
             {description ? (
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">

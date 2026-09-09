@@ -4,11 +4,14 @@ import { calculateConstructionCost } from '../construction-cost/calculate';
 import { constructionCostCalculatorHref } from '../construction-calculator-slug';
 import {
   COST_CALC_VERSION,
-  DEFAULT_MARKET_RATES,
   LOCATION_MULTIPLIERS,
   QUALITY_QTY_FACTOR,
   RATE_QTY_PER_SQFT,
 } from '../construction-cost/rates';
+import {
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
+  typicalNationalPrice,
+} from '../construction-location-catalog';
 import type { ConstructionCostQuality, ConstructionCostResult } from '../construction-cost/types';
 
 export const CONSTRUCTION_COST_AREA_VERSION = '2026.09.1';
@@ -19,7 +22,7 @@ export const CONSTRUCTION_COST_AREA_QUALIFICATION =
 export const CONSTRUCTION_COST_AREA_METHODOLOGY =
   'Each size page runs Varnarc’s published construction-cost engine for an independent house at the stated built-up area. Quality rows reuse the same rate model. Material quantities use documented per-sq-ft planning factors, scaled by quality. Pages are published only from a curated size allowlist.';
 
-export const COST_AREA_DEFAULT_LOCATION = 'Hyderabad';
+export const COST_AREA_DEFAULT_LOCATION = DEFAULT_CONSTRUCTION_LOCATION_NAME;
 export const COST_AREA_DEFAULT_QUALITY: ConstructionCostQuality = 'standard';
 
 export type ConstructionCostAreaSlug =
@@ -55,13 +58,13 @@ export const COST_AREA_QTY_PER_SQFT = {
 } as const;
 
 export const COST_AREA_INDICATIVE_RATES = {
-  cementPerBag: DEFAULT_MARKET_RATES.cementRatePerBag,
-  steelPerKg: DEFAULT_MARKET_RATES.steelRatePerKg,
-  sandPerTonne: 2200,
-  aggregatePerTonne: 1800,
-  brickEach: 8,
-  tilePerSqft: 55,
-  paintPerLitre: 280,
+  cementPerBag: typicalNationalPrice('cement'),
+  steelPerKg: typicalNationalPrice('steel'),
+  sandPerTonne: typicalNationalPrice('sand'),
+  aggregatePerTonne: typicalNationalPrice('aggregate'),
+  brickEach: typicalNationalPrice('brick'),
+  tilePerSqft: typicalNationalPrice('tiles'),
+  paintPerLitre: typicalNationalPrice('paint'),
 } as const;
 
 export const CONSTRUCTION_COST_AREA_PROFILES: Record<

@@ -1,5 +1,6 @@
 /** Static content for the Construction intent-first landing page. */
 
+import { listPriceHubLocations, listQuickEstimatorLocations } from '@varnarc/validation';
 import { askResultsPath, resolveAskConstructionQuery } from '@/lib/construction/ask';
 
 export const LANDING_SEARCH_EXAMPLES = [
@@ -365,37 +366,37 @@ export const LANDING_JOURNEY = [
   {
     key: 'estimate',
     title: 'Estimate',
-    description: 'Set area, quality and location for a cost range.',
+    description: 'Calculate cost & materials',
     href: '/construction/cost-calculator',
   },
   {
     key: 'materials',
     title: 'Materials',
-    description: 'Educational guides, calculators and catalog prices.',
-    href: '/construction/materials',
+    description: 'Finalize quantities',
+    href: '/construction/material-calculator',
   },
   {
     key: 'boq',
     title: 'BOQ',
-    description: 'Organise line items for quotes and tracking.',
+    description: 'Generate detailed BOQ',
     href: '/construction/boq',
   },
   {
     key: 'timeline',
     title: 'Timeline',
-    description: 'Phase-wise planning with estimated durations.',
+    description: 'Plan construction schedule',
     href: '/construction/timeline-planner',
   },
   {
     key: 'budget',
     title: 'Budget',
-    description: 'Track spend against planned categories.',
+    description: 'Track expenses',
     href: '/construction/budget-tracker',
   },
   {
     key: 'documents',
     title: 'Documents',
-    description: 'Private vault for drawings, invoices and photos.',
+    description: 'Save and manage files',
     href: '/construction/document-vault',
   },
   {
@@ -406,16 +407,7 @@ export const LANDING_JOURNEY = [
   },
 ] as const;
 
-export const LANDING_CITIES = [
-  { name: 'Hyderabad', slug: 'hyderabad' },
-  { name: 'Bengaluru', slug: 'bengaluru' },
-  { name: 'Chennai', slug: 'chennai' },
-  { name: 'Mumbai', slug: 'mumbai' },
-  { name: 'Pune', slug: 'pune' },
-  { name: 'Delhi NCR', slug: 'delhi' },
-  { name: 'Ahmedabad', slug: 'ahmedabad' },
-  { name: 'Kolkata', slug: 'kolkata' },
-] as const;
+export const LANDING_CITIES = listPriceHubLocations();
 
 export const LANDING_WHY = [
   {
@@ -441,41 +433,101 @@ export const LANDING_FALLBACK_FAQS = [
     id: 'faq-cost',
     question: 'How accurate are Varnarc construction cost estimates?',
     answer:
-      'Estimates are indicative planning ranges based on area, quality tier and region factors. Always confirm rates with local contractors and suppliers before budgeting.',
+      'Estimates are indicative planning ranges based on area, quality and location factors. Confirm rates with local contractors and suppliers before you budget.',
   },
   {
     id: 'faq-materials',
-    question: 'Can I calculate cement, steel and paint quantities?',
+    question: 'Can I calculate cement, steel, brick, tile and paint quantities?',
     answer:
-      'Yes. Use material calculators for cement, concrete, brick, steel, paint, tile and related quantities. Results include wastage assumptions you can review.',
-  },
-  {
-    id: 'faq-compare',
-    question: 'How do I compare construction materials?',
-    answer:
-      'Open Compare materials, select published materials, and review specs, units and indicative prices side by side.',
+      'Yes. Start from the material calculator for a whole-house sketch, then refine with cement, steel, concrete, brick, tile and paint calculators. Each result shows the assumptions to review.',
   },
   {
     id: 'faq-boq',
     question: 'What is a BOQ and how does Varnarc help?',
     answer:
-      'A Bill of Quantities lists materials and work items for quoting and tracking. Use the BOQ Generator for an indicative planning BOQ (with visible assumptions), refine quantities in calculators, and save to a construction project. It is not a professional tender BOQ.',
+      'A Bill of Quantities lists materials and work items for quoting and tracking. The BOQ Generator produces an indicative planning BOQ. It is not a professional tender document.',
+  },
+  {
+    id: 'faq-city',
+    question: 'Can I see construction cost by city?',
+    answer:
+      'City pages are published when local editorial notes and material observations exist. Open Construction cost by city, then verify rates with suppliers. Figures are not live dealer prices.',
   },
 ] as const;
 
-export const LANDING_SEO_INTRO = `Varnarc Construction helps homeowners and professionals plan builds with cost estimators, material calculators, comparisons, checklists and guides. Start with a quick estimate, refine quantities, compare options and organise a project plan — with clear assumptions and local verification reminders.`;
+export const LANDING_SEO_INTRO =
+  'Use Varnarc to plan a house in a sensible order: estimate construction cost, size materials, refine cement and steel, generate a planning BOQ, check cost by city, then talk to professionals. Every figure is indicative until you verify it locally.';
 
-export const QUICK_ESTIMATOR_LOCATIONS = [
-  'Hyderabad',
-  'Bengaluru',
-  'Chennai',
-  'Mumbai',
-  'Pune',
-  'Delhi NCR',
-  'Ahmedabad',
-  'Kolkata',
-  'Other / India average',
+/** Crawlable Phase 2 tools for the hub — real hrefs, not a keyword dump. */
+export const PHASE2_HUB_TOOLS = [
+  {
+    href: '/construction/cost-calculator',
+    label: 'Construction Cost Calculator',
+    note: 'Indicative build cost from area, quality and location.',
+  },
+  {
+    href: '/construction/cement-calculator',
+    label: 'Cement Calculator',
+    note: 'Bags and mix for concrete, mortar and plaster.',
+  },
+  {
+    href: '/construction/steel-calculator',
+    label: 'Steel Calculator',
+    note: 'TMT / rebar weight from diameter and length.',
+  },
+  {
+    href: '/construction/concrete-calculator',
+    label: 'Concrete Calculator',
+    note: 'Volume and mix for slabs, beams and footings.',
+  },
+  {
+    href: '/construction/brick-calculator',
+    label: 'Brick Calculator',
+    note: 'Wall quantities with wastage you can review.',
+  },
+  {
+    href: '/construction/tile-calculator',
+    label: 'Tile Calculator',
+    note: 'Floor and wall tile area and boxes.',
+  },
+  {
+    href: '/construction/paint-calculator',
+    label: 'Paint Calculator',
+    note: 'Coverage for interiors and exteriors.',
+  },
+  {
+    href: '/construction/material-calculator',
+    label: 'Material Calculator',
+    note: 'Whole-house cement, steel, sand, brick and finishes.',
+  },
+  {
+    href: '/construction/boq',
+    label: 'BOQ Generator',
+    note: 'Planning bill of quantities — not a tender BOQ.',
+  },
+  {
+    href: '/construction/renovation-cost-calculator',
+    label: 'Renovation Calculator',
+    note: 'Kitchen, bathroom, paint and flooring packages.',
+  },
+  {
+    href: '/construction/prices',
+    label: 'Construction Prices',
+    note: 'Indicative material rates when observations exist.',
+  },
+  {
+    href: '/construction/construction-cost',
+    label: 'Construction by City',
+    note: 'City cost pages with local notes and freshness.',
+  },
+  {
+    href: '/construction/guides',
+    label: 'Construction Guides',
+    note: 'Practical reading for estimates, materials and site phases.',
+  },
 ] as const;
+
+export const QUICK_ESTIMATOR_LOCATIONS = listQuickEstimatorLocations();
 
 /** Map free-text landing search to a useful Construction destination. */
 export function resolveConstructionLandingSearch(query: string): string {

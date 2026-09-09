@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { getApiBaseUrl } from '@/services/api-client';
 import { ConstructionSection } from '@/components/construction/construction-section';
 import { cn, cx } from '@/components/construction/styles';
+import { DEFAULT_CONSTRUCTION_LOCATION_NAME } from '@varnarc/validation';
 import { QUICK_ESTIMATOR_LOCATIONS } from '@/lib/construction/landing';
 import {
   categorizeConstructionResultRange,
@@ -34,7 +35,9 @@ function formatInr(n: number) {
  * Uses the public estimate API and shows an approximate range only.
  */
 export function ConstructionQuickEstimator() {
-  const [location, setLocation] = useState<string>(QUICK_ESTIMATOR_LOCATIONS[0]);
+  const [location, setLocation] = useState<string>(
+    QUICK_ESTIMATOR_LOCATIONS[0] ?? DEFAULT_CONSTRUCTION_LOCATION_NAME,
+  );
   const [area, setArea] = useState('1500');
   const [floors, setFloors] = useState('1');
   const [quality, setQuality] = useState<'basic' | 'standard' | 'premium'>('standard');
@@ -186,7 +189,7 @@ export function ConstructionQuickEstimator() {
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
           <button
             type="button"
-            className={cx.primaryBtn}
+            className={cx.accentBtn}
             disabled={loading}
             onClick={() => void onEstimate()}
           >

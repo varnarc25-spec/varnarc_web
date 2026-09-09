@@ -36,6 +36,7 @@ import { fetchAutomobileComparisons, fetchAutomobileVehicles } from '@/services/
 import { fetchConstructionMaterials } from '@/services/construction';
 import { fetchComparisons, type ComparisonListItem } from '@/services/content';
 import { fetchFinanceCreditCards, fetchFinanceLoans } from '@/services/finance';
+import { resolveMaterialComparisonGroup } from '@varnarc/validation';
 
 const COMPARE_HUB_TITLE = 'Compare Cars, Loans, Materials & Solar Options | Varnarc';
 const COMPARE_HUB_DESCRIPTION =
@@ -232,7 +233,13 @@ export default async function CompareHubPage({
   const materialOptions = (materials.data ?? []).map((material) => ({
     id: material.id,
     label: material.name,
-    group: material.category?.slug || material.category?.name || 'material',
+    group:
+      resolveMaterialComparisonGroup({
+        name: material.name,
+        categoryName: material.category?.name,
+        categorySlug: material.category?.slug,
+        brandName: material.brand?.name,
+      }) ?? `unclassified:${material.id}`,
     sortValue: numberValue(material.approximatePrice),
     preview: previewRows([
       ['Approximate price', money(material.approximatePrice)],
@@ -245,7 +252,7 @@ export default async function CompareHubPage({
     builderCatalogs.push({
       key: 'home',
       label: 'Home & Construction',
-      hint: 'Only materials in the same category can be compared — for example cement vs cement, not cement vs steel.',
+      hint: 'Only substitutable materials in the same family can be compared — cement with cement, not paint with steel.',
       options: materialOptions,
     });
   }

@@ -55,7 +55,9 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix(API_PREFIX.replace(/^\//, ''));
+  app.setGlobalPrefix(API_PREFIX.replace(/^\//, ''), {
+    exclude: ['/', 'robots.txt'],
+  });
   app.enableCors({
     origin: securityConfig.getCorsOrigins(),
     credentials: true,

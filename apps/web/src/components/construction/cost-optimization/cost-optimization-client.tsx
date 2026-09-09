@@ -12,6 +12,7 @@ import {
   type OptimizationLever,
   type ConstructionCostQuality,
   type ConstructionCostInterior,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
 } from '@varnarc/validation';
 import {
   CalculatorForm,
@@ -45,7 +46,7 @@ type FormState = {
 };
 
 const DEFAULT_FORM: FormState = {
-  location: 'Hyderabad',
+  location: DEFAULT_CONSTRUCTION_LOCATION_NAME,
   builtUpArea: '1500',
   floors: '2',
   quality: 'premium',

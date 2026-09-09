@@ -2,8 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { formatInr, type ConstructionCostAreaMaterialLine } from '@varnarc/validation';
+import {
+  formatInr,
+  type ConstructionCostAreaMaterialLine,
+  type ConstructionRateDisplay,
+} from '@varnarc/validation';
 import { LANDING_JOURNEY } from '@/lib/construction/landing';
+import { ConstructionScrollTable } from '@/components/construction/construction-scroll-table';
 import { cn, cx } from '@/components/construction/styles';
 
 export const CONSTRUCTION_HERO_POINTS = [
@@ -136,50 +141,56 @@ export function ConstructionProjectSummaryBar({
 export function ConstructionMaterialLinesTable({
   lines,
   quantityHref,
+  rateDisplay,
 }: {
   lines: ConstructionCostAreaMaterialLine[];
   quantityHref?: string;
+  rateDisplay?: ConstructionRateDisplay;
 }) {
+  const sourceLabel = rateDisplay?.publicLabel ?? 'Indicative planning rate';
+  const confidence = rateDisplay?.isIndicative ? 'LOW' : 'MEDIUM';
   return (
-    <div className={cn(cx.card, 'overflow-x-auto p-0')}>
-      <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-          <tr>
-            <th className="px-3 py-2.5 font-semibold">Material</th>
-            <th className="px-3 py-2.5 font-semibold">Quantity</th>
-            <th className="px-3 py-2.5 font-semibold">Unit</th>
-            <th className="px-3 py-2.5 font-semibold">Indicative rate (₹)</th>
-            <th className="px-3 py-2.5 font-semibold">Estimated cost (₹)</th>
-            <th className="px-3 py-2.5 font-semibold">Source</th>
-            <th className="px-3 py-2.5 font-semibold">Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map((line) => (
-            <tr key={line.id} className="border-t border-slate-100">
-              <td className="px-3 py-2 font-medium text-[#0b1f3a]">
-                {quantityHref ? (
-                  <Link href={quantityHref} className={cx.link}>
-                    {line.label}
-                  </Link>
-                ) : (
-                  line.label
-                )}
-              </td>
-              <td className="px-3 py-2 tabular-nums">{line.quantity.toLocaleString('en-IN')}</td>
-              <td className="px-3 py-2 text-slate-600">{line.unit}</td>
-              <td className="px-3 py-2 tabular-nums text-slate-600">
-                {line.rate == null ? '—' : line.rate.toLocaleString('en-IN')}
-              </td>
-              <td className="px-3 py-2 tabular-nums font-semibold">
-                {line.cost == null ? 'Lot' : formatInr(line.cost)}
-              </td>
-              <td className="px-3 py-2 text-xs text-slate-600">Indicative planning rate</td>
-              <td className="px-3 py-2 text-xs text-slate-600">LOW</td>
+    <div className={cn(cx.card, 'p-0')}>
+      <ConstructionScrollTable minWidthClass="min-w-[800px]">
+        <table className="w-full min-w-[800px] text-left text-sm">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-3 py-2.5 font-semibold">Material</th>
+              <th className="px-3 py-2.5 font-semibold">Quantity</th>
+              <th className="px-3 py-2.5 font-semibold">Unit</th>
+              <th className="px-3 py-2.5 font-semibold">Indicative rate (₹)</th>
+              <th className="px-3 py-2.5 font-semibold">Estimated cost (₹)</th>
+              <th className="px-3 py-2.5 font-semibold">Source</th>
+              <th className="px-3 py-2.5 font-semibold">Confidence</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {lines.map((line) => (
+              <tr key={line.id} className="border-t border-slate-100">
+                <td className="px-3 py-2 font-medium text-[#0b1f3a]">
+                  {quantityHref ? (
+                    <Link href={quantityHref} className={cx.link}>
+                      {line.label}
+                    </Link>
+                  ) : (
+                    line.label
+                  )}
+                </td>
+                <td className="px-3 py-2 tabular-nums">{line.quantity.toLocaleString('en-IN')}</td>
+                <td className="px-3 py-2 text-slate-600">{line.unit}</td>
+                <td className="px-3 py-2 tabular-nums text-slate-600">
+                  {line.rate == null ? '—' : line.rate.toLocaleString('en-IN')}
+                </td>
+                <td className="px-3 py-2 tabular-nums font-semibold">
+                  {line.cost == null ? 'Lot' : formatInr(line.cost)}
+                </td>
+                <td className="px-3 py-2 text-xs text-slate-600">{sourceLabel}</td>
+                <td className="px-3 py-2 text-xs text-slate-600">{confidence}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ConstructionScrollTable>
     </div>
   );
 }
@@ -227,8 +238,8 @@ export function ConstructionCostDonut({
         ) : null}
       </div>
       <div
-        className="mx-auto h-36 w-36 rounded-full"
-        style={{ background: donut }}
+        className="mx-auto h-36 w-36 shrink-0 rounded-full"
+        style={{ background: donut, aspectRatio: '1 / 1' }}
         role="img"
         aria-label={`Materials ${materialPct}%, labour ${labourPct}%, other ${otherPct}%`}
       >
@@ -287,6 +298,7 @@ export function ConstructionBoqPreview({
             onClick={() => setTab(index)}
             className={cn(
               'min-h-10 rounded-lg px-3 text-sm font-semibold',
+              cx.focus,
               index === tab
                 ? 'bg-[#0b1f3a] text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
@@ -296,33 +308,35 @@ export function ConstructionBoqPreview({
           </button>
         ))}
       </div>
-      <div className={cn(cx.card, 'overflow-x-auto p-0')}>
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-3 py-2.5 font-semibold">Item description</th>
-              <th className="px-3 py-2.5 font-semibold">Share</th>
-              <th className="px-3 py-2.5 font-semibold">Amount (₹)</th>
-              <th className="px-3 py-2.5 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                className={cn(
-                  'border-t border-slate-100',
-                  row.id === active?.id ? 'bg-orange-50/60' : '',
-                )}
-              >
-                <td className="px-3 py-2 font-medium text-[#0b1f3a]">{row.label}</td>
-                <td className="px-3 py-2 tabular-nums">{row.percentOfTotal}%</td>
-                <td className="px-3 py-2 tabular-nums">{formatInr(row.amount)}</td>
-                <td className="px-3 py-2 text-emerald-700">Included</td>
+      <div className={cn(cx.card, 'p-0')}>
+        <ConstructionScrollTable minWidthClass="min-w-[520px]">
+          <table className="w-full min-w-[520px] text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="px-3 py-2.5 font-semibold">Item description</th>
+                <th className="px-3 py-2.5 font-semibold">Share</th>
+                <th className="px-3 py-2.5 font-semibold">Amount (₹)</th>
+                <th className="px-3 py-2.5 font-semibold">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className={cn(
+                    'border-t border-slate-100',
+                    row.id === active?.id ? 'bg-orange-50/60' : '',
+                  )}
+                >
+                  <td className="px-3 py-2 font-medium text-[#0b1f3a]">{row.label}</td>
+                  <td className="px-3 py-2 tabular-nums">{row.percentOfTotal}%</td>
+                  <td className="px-3 py-2 tabular-nums">{formatInr(row.amount)}</td>
+                  <td className="px-3 py-2 text-emerald-700">Included</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ConstructionScrollTable>
       </div>
     </section>
   );

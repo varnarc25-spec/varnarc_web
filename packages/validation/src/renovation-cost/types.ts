@@ -1,6 +1,7 @@
 /** Renovation Cost Calculator — types & Zod input. */
 
 import { z } from 'zod';
+import type { ConstructionRateDisplay } from '../construction-location-catalog';
 
 export const renovationWorkIdSchema = z.enum([
   'painting',
@@ -126,6 +127,7 @@ export type RenovationCostResult = {
   workBreakdown: RenovationBreakdownLine[];
   topCostDrivers: Array<{ id: string; label: string; amount: number; percentOfTotal: number }>;
   assumptions: string[];
+  rateDisplay: ConstructionRateDisplay;
   methodology: { title: string; steps: string[] };
   disclaimer: string;
   version: string;

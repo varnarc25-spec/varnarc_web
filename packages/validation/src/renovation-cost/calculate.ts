@@ -17,6 +17,7 @@ import {
   normalizeLocationKey,
   toSqft,
 } from './rates';
+import { resolveConstructionCostRateDisplay } from '../construction-location-catalog';
 import {
   renovationCostInputSchema,
   type RenovationBreakdownLine,
@@ -180,6 +181,7 @@ export function calculateRenovationCost(raw: RenovationCostInput): RenovationCos
       'Rates are indicative Indian market planning figures — local labour and material prices vary.',
       'Hidden damage, design changes and brand upgrades often increase real costs.',
     ],
+    rateDisplay: resolveConstructionCostRateDisplay(input.location),
     methodology: {
       title: 'How Varnarc calculated this renovation estimate',
       steps: [

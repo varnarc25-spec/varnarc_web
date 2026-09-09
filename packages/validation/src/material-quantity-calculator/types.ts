@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { constructionCostQualitySchema } from '../construction-cost/types';
+import type { ConstructionRateDisplay } from '../construction-location-catalog';
 
 export const materialQuantityAreaUnitSchema = z.enum(['sqft', 'sqm']);
 export const materialQuantityStructureSchema = z.enum(['rcc_framed', 'load_bearing', 'steel']);
@@ -80,4 +81,5 @@ export type MaterialQuantityResult = {
   formula: string;
   assumptions: string[];
   disclaimer: string;
+  rateDisplay: ConstructionRateDisplay;
 };

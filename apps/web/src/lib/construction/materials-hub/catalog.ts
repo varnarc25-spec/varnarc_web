@@ -1127,7 +1127,7 @@ export const MATERIAL_GUIDE_PAGES: MaterialGuidePage[] = [
     priceLink: priceSearch('switch'),
     comparisonLinks: [
       { href: '/construction/materials/electrical-wiring', label: 'Electrical wiring' },
-      { href: '/construction/compare', label: 'Compare switchgear SKUs' },
+      { href: '/construction/materials/electrical-wiring', label: 'Electrical wiring' },
     ],
     guideLinks: [guidesHub()],
     overview:

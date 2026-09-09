@@ -124,6 +124,8 @@ import {
   getProjectReadinessMeta,
   projectReadinessInputSchema,
   type ProjectReadinessInput,
+  areComparableMaterialSet,
+  resolveMaterialComparisonGroup,
   CANONICAL_CONSTRUCTION_CHECKLISTS,
   CONSTRUCTION_CHECKLIST_QUALIFICATION,
   CONSTRUCTION_CHECKLIST_PROFESSIONAL_REVIEW_NOTE,
@@ -960,8 +962,37 @@ export class ConstructionService {
     });
   }
 
-  compare(query: ConstructionCompareQuery) {
-    return this.repos.constructionMaterials.findManyByIds(query.ids);
+  async compare(query: ConstructionCompareQuery) {
+    const rows = await this.repos.constructionMaterials.findManyByIds(query.ids);
+    const comparable = areComparableMaterialSet(
+      rows.map((row) => ({
+        name: row.name,
+        slug: row.slug,
+        categoryName: row.category?.name,
+        categorySlug: row.category?.slug,
+        brandName: row.brand?.name,
+      })),
+    );
+    if (!comparable) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: 'INCOMPARABLE_MATERIALS',
+          message:
+            'Only substitutable materials in the same family can be compared — for example cement vs cement, not paint vs steel.',
+        },
+      });
+    }
+    return rows.map((row) => ({
+      ...row,
+      materialComparisonGroup: resolveMaterialComparisonGroup({
+        name: row.name,
+        slug: row.slug,
+        categoryName: row.category?.name,
+        categorySlug: row.category?.slug,
+        brandName: row.brand?.name,
+      }),
+    }));
   }
 
   async listProjects(userId?: string | null, admin = false) {

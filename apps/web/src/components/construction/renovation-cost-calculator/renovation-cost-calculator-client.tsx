@@ -6,6 +6,7 @@ import {
   RENOVATION_CATEGORY_CARDS,
   RENOVATION_WORK_RATES,
   calculateRenovationCost,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
   defaultRenovationWorkItems,
   type RenovationCostInput,
   type RenovationCostResult,
@@ -26,6 +27,7 @@ import {
   UnitSelector,
 } from '@/components/construction/calculator';
 import { ConstructionRelatedLinks } from '@/components/construction/construction-related-links';
+import { ConstructionRateAttribution } from '@/components/construction/rate-attribution';
 import { cn, cx } from '@/components/construction/styles';
 import { RenoCategoryIcon } from './reno-category-icon';
 import {
@@ -98,7 +100,7 @@ type FormState = {
 };
 
 const DEFAULT_FORM: FormState = {
-  location: 'Hyderabad',
+  location: DEFAULT_CONSTRUCTION_LOCATION_NAME,
   propertyType: 'apartment',
   renovationArea: '1000',
   areaUnit: 'sqft',
@@ -732,6 +734,7 @@ export function RenovationCostCalculatorClient({
 
   const resultNode = result ? (
     <div className="space-y-4 print:space-y-3">
+      <ConstructionRateAttribution display={result.rateDisplay} />
       <CalculationResult
         label="Estimated renovation cost"
         value={formatInr(result.estimatedTotal)}

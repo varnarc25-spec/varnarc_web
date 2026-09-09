@@ -1,5 +1,7 @@
 /** Static SEO / education copy for the Construction Cost Calculator. */
 
+import { listCalculatorLocationLabels } from '@varnarc/validation';
+
 export const COST_CALC_FAQS = [
   {
     id: 'faq-not-quote',
@@ -92,15 +94,4 @@ export const COST_CALC_EXAMPLE = {
   body: `Example: 1,500 sq ft independent house in Hyderabad, 2 floors, standard quality, 10% contingency. Varnarc applies the national base rate, location multiplier (~1.0 for Hyderabad), quality ×1.0, and floor multiplier (~1.04), then splits material / labour / misc and adds contingency. The result shows a mid estimate, a likely range (±12%), and category / phase breakdowns — always verify locally before budgeting.`,
 };
 
-export const LOCATION_SUGGESTIONS = [
-  'Hyderabad',
-  'Bengaluru',
-  'Chennai',
-  'Mumbai',
-  'Pune',
-  'Delhi',
-  'Ahmedabad',
-  'Kolkata',
-  'Jaipur',
-  'Coimbatore',
-];
+export const LOCATION_SUGGESTIONS = listCalculatorLocationLabels();

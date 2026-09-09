@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { recommendComparableCatalogPair } from '@varnarc/validation';
 import { ConstructionSection } from '@/components/construction/construction-section';
 import { ComparisonCard } from '@/components/construction/comparison-card';
 import { cx } from '@/components/construction/styles';
 
-const STATIC_COMPARISONS = [
+const EDITORIAL_COMPARISONS = [
   {
     href: '/construction/compare/aac-vs-brick',
     title: 'AAC blocks vs red bricks',
@@ -30,38 +31,46 @@ const STATIC_COMPARISONS = [
 export function ConstructionLandingCompare({
   materials,
 }: {
-  materials: Array<{ id: string; name: string }>;
+  materials: Array<{
+    id: string;
+    name: string;
+    category?: { name?: string; slug?: string } | null;
+  }>;
 }) {
-  const dynamicHref =
-    materials.length >= 2
-      ? `/construction/compare?ids=${materials
-          .slice(0, 2)
-          .map((m) => m.id)
-          .join(',')}`
-      : '/construction/compare';
+  const catalogPair = recommendComparableCatalogPair(
+    materials.map((m) => ({
+      id: m.id,
+      name: m.name,
+      categoryName: m.category?.name,
+      categorySlug: m.category?.slug,
+    })),
+  );
+
+  const cards = [
+    catalogPair
+      ? {
+          href: `/construction/compare?ids=${catalogPair[0].id},${catalogPair[1].id}`,
+          title: `${catalogPair[0].name} vs ${catalogPair[1].name}`,
+          leftLabel: catalogPair[0].name,
+          rightLabel: catalogPair[1].name,
+          summary: 'Like-for-like catalog options in the same material family.',
+        }
+      : EDITORIAL_COMPARISONS[0],
+    EDITORIAL_COMPARISONS[1],
+    EDITORIAL_COMPARISONS[2],
+  ];
 
   return (
     <ConstructionSection
       id="compare-materials"
       title="Compare materials"
-      description="Evaluate options side by side before you lock quantities."
+      description="Side-by-side options that can substitute for the same job — not unrelated products."
       action={{ href: '/construction/compare', label: 'Open compare →' }}
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <ComparisonCard
-          href={dynamicHref}
-          title={
-            materials.length >= 2
-              ? `${materials[0]?.name ?? 'Material A'} vs ${materials[1]?.name ?? 'Material B'}`
-              : STATIC_COMPARISONS[0].title
-          }
-          leftLabel={materials[0]?.name ?? STATIC_COMPARISONS[0].leftLabel}
-          rightLabel={materials[1]?.name ?? STATIC_COMPARISONS[0].rightLabel}
-          summary="Start a live comparison from featured catalogue materials."
-        />
-        {STATIC_COMPARISONS.slice(1).map((item) => (
+        {cards.map((item) => (
           <ComparisonCard
-            key={item.title}
+            key={item.href}
             href={item.href}
             title={item.title}
             leftLabel={item.leftLabel}
@@ -71,7 +80,7 @@ export function ConstructionLandingCompare({
         ))}
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600">
-        Use compare for walling, steel, cement and finishes, then jump back to{' '}
+        Compare cement with cement, walling with walling, and finishes with finishes. Then return to{' '}
         <Link href="/construction/cement-calculator" className={cx.link}>
           quantity calculators
         </Link>{' '}

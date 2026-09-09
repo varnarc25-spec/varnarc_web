@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   calculateMaterialQuantities,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
   MATERIAL_QUANTITY_CALC_VERSION,
   MATERIAL_QUANTITY_DISCLAIMER,
+  formatInr,
   materialRates,
   parsePlannerHandoffQuery,
   plannerToolHref,
@@ -25,6 +27,8 @@ import {
 } from '@/components/construction/calculator';
 import { ConstructionCostDonut } from '@/components/construction/calculator/construction-calculator-dashboard';
 import { ConstructionRelatedSection } from '@/components/construction/construction-related-section';
+import { ConstructionScrollTable } from '@/components/construction/construction-scroll-table';
+import { ConstructionRateAttribution } from '@/components/construction/rate-attribution';
 import { cn, cx } from '@/components/construction/styles';
 import {
   trackCalculatorModeCompleted,
@@ -67,7 +71,7 @@ const DEFAULT_FORM: FormState = {
   areaUnit: 'sqft',
   floors: '2',
   quality: 'standard',
-  location: 'Bengaluru',
+  location: DEFAULT_CONSTRUCTION_LOCATION_NAME,
   structureType: 'rcc_framed',
   wallType: 'clay_brick',
   slabType: 'rcc',
@@ -557,35 +561,37 @@ export function MaterialQuantityCalculatorClient({
       }
       workspace={
         result ? (
-          <div className={cn(cx.card, 'overflow-x-auto p-0')}>
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-3 py-2.5 font-semibold">Material</th>
-                  <th className="px-3 py-2.5 font-semibold">Quantity</th>
-                  <th className="px-3 py-2.5 font-semibold">Unit</th>
-                  <th className="px-3 py-2.5 font-semibold">Indicative rate</th>
-                  <th className="px-3 py-2.5 font-semibold">Estimated cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.lines.map((line) => (
-                  <tr key={line.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2 font-medium text-[#0b1f3a]">{line.label}</td>
-                    <td className="px-3 py-2 tabular-nums">
-                      {line.quantity.toLocaleString('en-IN', {
-                        maximumFractionDigits: line.unit === 'tonnes' ? 1 : 0,
-                      })}
-                    </td>
-                    <td className="px-3 py-2 text-slate-600">{line.unit}</td>
-                    <td className="px-3 py-2 tabular-nums">₹{line.rate.toLocaleString('en-IN')}</td>
-                    <td className="px-3 py-2 tabular-nums font-medium">
-                      ₹{line.estimatedCost.toLocaleString('en-IN')}
-                    </td>
+          <div className={cn(cx.card, 'p-0')}>
+            <ConstructionScrollTable minWidthClass="min-w-[640px]">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-3 py-2.5 font-semibold">Material</th>
+                    <th className="px-3 py-2.5 font-semibold">Quantity</th>
+                    <th className="px-3 py-2.5 font-semibold">Unit</th>
+                    <th className="px-3 py-2.5 font-semibold">Indicative rate</th>
+                    <th className="px-3 py-2.5 font-semibold">Estimated cost</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {result.lines.map((line) => (
+                    <tr key={line.id} className="border-t border-slate-100">
+                      <td className="px-3 py-2 font-medium text-[#0b1f3a]">{line.label}</td>
+                      <td className="px-3 py-2 tabular-nums">
+                        {line.quantity.toLocaleString('en-IN', {
+                          maximumFractionDigits: line.unit === 'tonnes' ? 1 : 0,
+                        })}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">{line.unit}</td>
+                      <td className="px-3 py-2 tabular-nums">{formatInr(line.rate)}</td>
+                      <td className="px-3 py-2 tabular-nums font-medium">
+                        {formatInr(line.estimatedCost)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ConstructionScrollTable>
           </div>
         ) : undefined
       }
@@ -604,7 +610,7 @@ export function MaterialQuantityCalculatorClient({
                 Material cost estimate
               </p>
               <p className="text-2xl font-extrabold tabular-nums text-[#0b1f3a]">
-                ₹{result.materialCost.toLocaleString('en-IN')}
+                {formatInr(result.materialCost)}
               </p>
               <p className="text-xs text-slate-600">
                 Materials {result.materialSharePercent}% · Labour {result.labourSharePercent}% ·
@@ -641,18 +647,21 @@ export function MaterialQuantityCalculatorClient({
       }
       assumptions={
         result ? (
-          <AssumptionPanel
-            items={[
-              {
-                label: 'Built-up',
-                value: `${Math.round(result.areaSqft).toLocaleString('en-IN')} sq ft`,
-              },
-              { label: 'Floors', value: String(result.floors) },
-              { label: 'Quality', value: result.quality },
-              { label: 'Wastage', value: `${result.wastagePercent}%` },
-            ]}
-            note={result.disclaimer}
-          />
+          <div className="space-y-3">
+            <AssumptionPanel
+              items={[
+                {
+                  label: 'Built-up',
+                  value: `${Math.round(result.areaSqft).toLocaleString('en-IN')} sq ft`,
+                },
+                { label: 'Floors', value: String(result.floors) },
+                { label: 'Quality', value: result.quality },
+                { label: 'Wastage', value: `${result.wastagePercent}%` },
+              ]}
+              note={result.disclaimer}
+            />
+            <ConstructionRateAttribution display={result.rateDisplay} />
+          </div>
         ) : null
       }
       breakdown={

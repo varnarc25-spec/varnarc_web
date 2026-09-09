@@ -21,6 +21,7 @@ import {
   MethodologyPanel,
 } from '@/components/construction/calculator';
 import { ConstructionRelatedSection } from '@/components/construction/construction-related-section';
+import { ConstructionScrollTable } from '@/components/construction/construction-scroll-table';
 import { cn, cx } from '@/components/construction/styles';
 import { wizardMeta } from '@/components/construction/project-dashboard/dashboard-metrics';
 import {
@@ -767,8 +768,11 @@ export function BoqGeneratorClient() {
         )}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-[960px] w-full border-collapse text-sm">
+      <ConstructionScrollTable
+        minWidthClass="min-w-[960px]"
+        caption="Swipe sideways to edit all BOQ columns."
+      >
+        <table className="w-full min-w-[960px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="py-2 pr-2">Category</th>
@@ -789,6 +793,7 @@ export function BoqGeneratorClient() {
                   <td className="py-2 pr-2">
                     <select
                       className={cx.input}
+                      aria-label="Category"
                       value={row.category}
                       onChange={(e) => updateLine(row.id, { category: e.target.value })}
                     >
@@ -802,6 +807,7 @@ export function BoqGeneratorClient() {
                   <td className="py-2 pr-2">
                     <input
                       className={cx.input}
+                      aria-label="Item"
                       value={row.item}
                       onChange={(e) => updateLine(row.id, { item: e.target.value })}
                     />
@@ -812,6 +818,7 @@ export function BoqGeneratorClient() {
                   <td className="py-2 pr-2">
                     <input
                       className={cx.input}
+                      aria-label="Description"
                       value={row.description}
                       onChange={(e) => updateLine(row.id, { description: e.target.value })}
                     />
@@ -819,6 +826,7 @@ export function BoqGeneratorClient() {
                   <td className="py-2 pr-2">
                     <select
                       className={cx.input}
+                      aria-label="Unit"
                       value={row.unit}
                       onChange={(e) => updateLine(row.id, { unit: e.target.value })}
                     >
@@ -835,6 +843,7 @@ export function BoqGeneratorClient() {
                       type="number"
                       min={0}
                       step="any"
+                      aria-label="Quantity"
                       value={row.quantity}
                       onChange={(e) =>
                         updateLine(row.id, {
@@ -850,6 +859,7 @@ export function BoqGeneratorClient() {
                       type="number"
                       min={0}
                       step="any"
+                      aria-label="Rate"
                       value={row.rate}
                       onChange={(e) => updateLine(row.id, { rate: e.target.value })}
                     />
@@ -878,7 +888,7 @@ export function BoqGeneratorClient() {
             })}
           </tbody>
         </table>
-      </div>
+      </ConstructionScrollTable>
 
       <div className="flex flex-wrap gap-2">
         <button type="button" className={cx.secondaryBtn} onClick={() => addLine()}>

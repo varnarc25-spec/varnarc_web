@@ -2,13 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Breadcrumbs } from '@/components/shared/breadcrumbs';
 import { AskConstructionSearch } from '@/components/construction/ask/ask-construction-search';
 import { cn, cx } from '@/components/construction/styles';
 import { LANDING_SEARCH_EXAMPLES } from '@/lib/construction/landing';
-import { resolveAskConstructionQuery, askResultsPath } from '@/lib/construction/ask';
 import { trackAskResultClicked, trackLandingCtaClicked } from '@/lib/construction/analytics';
-import { useRouter } from 'next/navigation';
 
 const TRUST_ITEMS = [
   { label: 'Accurate estimates', icon: 'chart' },
@@ -102,7 +99,6 @@ function HouseIllustration() {
 }
 
 export function ConstructionLandingHero() {
-  const router = useRouter();
   const [sticky, setSticky] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
 
@@ -121,21 +117,6 @@ export function ConstructionLandingHero() {
     return () => observer.disconnect();
   }, []);
 
-  function runExample(label: string, fallbackHref: string) {
-    const decision = resolveAskConstructionQuery(label);
-    const href =
-      decision.autoRoute && decision.href
-        ? decision.href
-        : (decision.results[0]?.href ?? askResultsPath(label));
-    trackAskResultClicked({
-      intent: decision.parse.intent,
-      result_type: 'example',
-      path: href || fallbackHref,
-    });
-    trackLandingCtaClicked({ cta_key: 'hero_example', surface: 'hero', path: href });
-    router.push(href || fallbackHref);
-  }
-
   return (
     <>
       <section
@@ -144,9 +125,10 @@ export function ConstructionLandingHero() {
         aria-labelledby="construction-landing-h1"
       >
         <div className="site-container py-8 sm:py-10 lg:py-12">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Home & Construction' }]} />
-
-          <div className="mt-5 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] lg:items-start lg:gap-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+            Phase 2
+          </p>
+          <div className="mt-3 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)] lg:items-start lg:gap-10">
             <div className="min-w-0">
               <h1
                 id="construction-landing-h1"
@@ -202,7 +184,7 @@ export function ConstructionLandingHero() {
             </div>
 
             <aside
-              className="min-w-0 rounded-[12px] border border-slate-200 bg-white p-5 shadow-[0_1px_8px_rgba(15,23,42,0.06)] sm:p-6"
+              className="min-w-0 rounded-[12px] border border-slate-200 bg-white p-5 sm:p-6"
               aria-labelledby="construction-hero-card-heading"
             >
               <HouseIllustration />
@@ -245,17 +227,28 @@ export function ConstructionLandingHero() {
             <ul className="mt-2 flex flex-wrap gap-2">
               {LANDING_SEARCH_EXAMPLES.map((example) => (
                 <li key={example.label}>
-                  <button
-                    type="button"
-                    onClick={() => runExample(example.label, example.href)}
+                  <Link
+                    href={example.href}
+                    onClick={() => {
+                      trackAskResultClicked({
+                        intent: 'unknown',
+                        result_type: 'example',
+                        path: example.href,
+                      });
+                      trackLandingCtaClicked({
+                        cta_key: 'hero_example',
+                        surface: 'hero',
+                        path: example.href,
+                      });
+                    }}
                     className={cn(
-                      'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-[#0b1f3a]',
+                      'inline-block rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-[#0b1f3a]',
                       'hover:border-[#f97316] hover:text-[#f97316]',
                       cx.focus,
                     )}
                   >
                     {example.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -264,7 +257,7 @@ export function ConstructionLandingHero() {
       </section>
 
       {sticky ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
           <div className="mx-auto flex max-w-lg gap-2">
             <Link
               href="/construction/boq"

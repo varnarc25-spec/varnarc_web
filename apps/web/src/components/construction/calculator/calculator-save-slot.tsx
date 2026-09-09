@@ -98,10 +98,7 @@ export function CalculatorSaveSlot() {
             required — your current inputs are preserved through login.
           </p>
         </div>
-        <Link
-          href="/construction/saved-calculations"
-          className="text-xs font-semibold text-[#f97316]"
-        >
+        <Link href="/construction/saved-calculations" className={cn(cx.link, 'text-xs')}>
           Saved list →
         </Link>
       </div>

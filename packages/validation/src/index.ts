@@ -19,6 +19,40 @@ export * from './construction-cost';
 export * from './construction-cost-city';
 export * from './construction-cost-area';
 export * from './construction-rate-resolution';
+export {
+  CONSTRUCTION_RATE_CATALOG_VERSION,
+  RATE_CATALOG_EFFECTIVE_FROM,
+  RATE_CATALOG_LAST_VERIFIED_AT,
+  LOCAL_VERIFICATION_WARNING,
+  CITY_RATE_UNAVAILABLE_NOTE,
+  CONSTRUCTION_LOCATIONS,
+  NATIONAL_LOCATION,
+  DEFAULT_CONSTRUCTION_LOCATION,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
+  NATIONAL_MATERIAL_PRICES,
+  typicalNationalPrice,
+  listActiveConstructionLocations,
+  listPriceHubLocations,
+  listCalculatorLocationLabels,
+  listQuickEstimatorLocations,
+  constructionRateForLocation,
+  resolveConstructionLocation,
+  resolveConstructionLocationRate,
+  matchCatalogMaterialId,
+  catalogNationalPriceAsResolvable,
+  toRateDisplay,
+  resolveMaterialPrice,
+  resolveConstructionCostRateDisplay,
+  listHubIndicativePriceCards,
+  assertNotLiveLabel,
+} from './construction-location-catalog';
+export type {
+  ConstructionLocation,
+  ConstructionRate,
+  MaterialPrice,
+  ConstructionRateDisplay,
+  CatalogMaterialId,
+} from './construction-location-catalog';
 export * from './construction-rate-import';
 export * from './construction-boq-engine';
 export * from './interior-cost';
@@ -34,6 +68,9 @@ export * from './cost-optimization';
 export * from './cement-calculator';
 export * from './material-quantity-calculator';
 export * from './construction-planner-handoff';
+export * from './construction-project-timeline';
+export * from './construction-hub-next-actions';
+export * from './construction-material-comparison';
 export * from './construction-calculator-slug';
 export * from './concrete-calculator';
 export * from './brick-calculator';

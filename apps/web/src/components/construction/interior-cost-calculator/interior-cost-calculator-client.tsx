@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import {
   INTERIOR_CALC_VERSION,
+  DEFAULT_CONSTRUCTION_LOCATION_NAME,
   calculateInteriorCost,
   type InteriorCostResult,
   type InteriorQuality,
@@ -16,6 +17,7 @@ import {
   CalculatorShell,
   MethodologyPanel,
 } from '@/components/construction/calculator';
+import { ConstructionRateAttribution } from '@/components/construction/rate-attribution';
 import { cn, cx } from '@/components/construction/styles';
 import { trackInteriorEstimateCompleted } from '@/lib/construction/analytics';
 
@@ -40,7 +42,7 @@ type FormState = {
 };
 
 const DEFAULT_FORM: FormState = {
-  location: 'Hyderabad',
+  location: DEFAULT_CONSTRUCTION_LOCATION_NAME,
   homeType: 'apartment',
   builtUpArea: '1200',
   quality: 'standard',
@@ -199,6 +201,7 @@ export function InteriorCostCalculatorClient({
         result ? (
           <div className="space-y-4">
             {error ? <p className="text-sm text-red-700">{error}</p> : null}
+            <ConstructionRateAttribution display={result.rateDisplay} />
             <CalculationResult
               label="Estimated interior cost"
               value={formatInr(result.total.expected)}

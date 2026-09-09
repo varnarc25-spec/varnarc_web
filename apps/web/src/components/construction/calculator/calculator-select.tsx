@@ -106,7 +106,7 @@ export function UnitSelector({
                 aria-checked={selected}
                 onClick={() => onChange(opt.value)}
                 className={cn(
-                  'min-h-11 rounded-lg border px-3 text-sm font-semibold transition',
+                  'min-h-11 rounded-lg border px-3 text-sm font-semibold transition motion-reduce:transition-none',
                   cx.focus,
                   selected
                     ? 'border-[#0b1f3a] bg-[#0b1f3a] text-white'

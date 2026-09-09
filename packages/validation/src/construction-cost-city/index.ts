@@ -5,11 +5,16 @@ import { constructionCostCalculatorHref } from '../construction-calculator-slug'
 import {
   COST_CALC_VERSION,
   DEFAULT_COST_SPLIT,
-  DEFAULT_MARKET_RATES,
   LOCATION_MULTIPLIERS,
   NATIONAL_BASE_RATE_PER_SQFT,
   normalizeLocationKey,
 } from '../construction-cost/rates';
+import {
+  RATE_CATALOG_LAST_VERIFIED_AT,
+  LOCAL_VERIFICATION_WARNING,
+  resolveConstructionCostRateDisplay,
+  type ConstructionRateDisplay,
+} from '../construction-location-catalog';
 import {
   DEFAULT_COMMERCIAL_RULES,
   QUALITY_SPECIFICATIONS,
@@ -272,11 +277,13 @@ export type ConstructionCostCityLanding = {
   methodology: string;
   qualification: string;
   version: string;
+  rateDisplay: ConstructionRateDisplay;
   intelligence: {
     rateLabel: 'Indicative planning rate';
     sourceType: 'ESTIMATED_FALLBACK';
     confidence: 'LOW';
     lastVerifiedAt: string | null;
+    localVerificationWarning: string;
     locationFactors: {
       materialTransport: number;
       labour: number;
@@ -587,11 +594,13 @@ export function buildConstructionCostCityLanding(input: {
     methodology: CONSTRUCTION_COST_CITY_METHODOLOGY,
     qualification: CONSTRUCTION_COST_CITY_QUALIFICATION,
     version: `${CONSTRUCTION_COST_CITY_VERSION}+${COST_CALC_VERSION}`,
+    rateDisplay: resolveConstructionCostRateDisplay(profile.name),
     intelligence: {
       rateLabel: 'Indicative planning rate',
       sourceType: 'ESTIMATED_FALLBACK',
       confidence: 'LOW',
-      lastVerifiedAt: null,
+      lastVerifiedAt: RATE_CATALOG_LAST_VERIFIED_AT,
+      localVerificationWarning: LOCAL_VERIFICATION_WARNING,
       locationFactors: {
         materialTransport: 1,
         labour: 1,

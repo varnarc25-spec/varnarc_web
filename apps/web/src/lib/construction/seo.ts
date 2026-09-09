@@ -100,6 +100,9 @@ export const CONSTRUCTION_CALC_SHARE_QUERY_KEYS = [
   'thickness',
   'density',
   'inputs',
+  'budgetInr',
+  'region',
+  'returnTo',
 ] as const;
 
 export type ConstructionCrumbInput = { name: string; path: string };

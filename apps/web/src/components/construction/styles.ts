@@ -13,7 +13,7 @@ export const cx = {
   touch: 'min-h-11',
   card: 'rounded-xl bg-white ring-1 ring-slate-200/80',
   input:
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-base text-slate-900 tabular-nums sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400',
+    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-base text-slate-900 tabular-nums sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 motion-reduce:transition-none',
   label: 'mb-1.5 block text-sm font-medium text-slate-700',
   helper: 'mt-1 text-xs text-slate-500',
   error: 'mt-1 text-xs font-medium text-red-600',

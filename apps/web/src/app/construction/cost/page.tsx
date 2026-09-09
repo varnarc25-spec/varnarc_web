@@ -7,20 +7,11 @@ import {
   CONSTRUCTION_COST_AREA_QUALIFICATION,
   listIndexableConstructionCostAreaLandings,
 } from '@varnarc/validation';
-import { constructionHubBreadcrumbs, resolveConstructionIndexing } from '@/lib/construction/seo';
+import { constructionHubBreadcrumbs, buildConstructionPageMetadata } from '@/lib/construction/seo';
 import { cx, cn } from '@/components/construction/styles';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const indexing = resolveConstructionIndexing({ pathname: '/construction/cost' });
-  const title = 'House Construction Cost by Area in India | Varnarc';
-  const description =
-    'Indicative construction cost for 500 to 3,000 sq ft houses in India — ranges, materials and calculators. Same engine as the Varnarc cost calculator. Not a quote.';
-  return {
-    title,
-    description,
-    alternates: { canonical: indexing.canonicalUrl },
-    robots: indexing.robots,
-  };
+  return buildConstructionPageMetadata('cost-by-area');
 }
 
 export const revalidate = 3600;

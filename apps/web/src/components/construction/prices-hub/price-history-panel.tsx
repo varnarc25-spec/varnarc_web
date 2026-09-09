@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { SimpleLineChart } from '@/components/shared/simple-chart';
+import { SimpleLineChart } from '@/components/construction/lazy-charts';
 import type { PriceObservation } from '@/lib/construction/prices-hub/api';
 import { cn, cx } from '@/components/construction/styles';
 import {

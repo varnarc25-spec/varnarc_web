@@ -113,7 +113,7 @@ export function ConstructionRecentlyUsedTools() {
       }}
     >
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
+        {items.slice(0, 3).map((item) => (
           <li key={item.calculatorSlug} className={cn(cx.card, 'flex h-full flex-col p-4')}>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-[#0b1f3a]">{item.label}</h3>
@@ -125,7 +125,7 @@ export function ConstructionRecentlyUsedTools() {
               )}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href={item.href} className={cx.primaryBtn}>
+              <Link href={item.href} className={cx.secondaryBtn}>
                 Continue
               </Link>
               <button
