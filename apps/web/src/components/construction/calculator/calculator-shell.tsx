@@ -121,13 +121,13 @@ export function CalculatorShell({
         <div
           className={
             dashboardGrid
-              ? 'grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(16rem,0.85fr)] lg:items-start'
+              ? 'grid gap-6 lg:grid-cols-[minmax(16rem,0.85fr)_minmax(0,1.25fr)_minmax(16rem,0.9fr)] lg:items-start'
               : 'grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start'
           }
         >
-          <section aria-label="Calculator inputs">{form}</section>
-          {dashboardGrid ? <section aria-label="Quantity results">{workspace}</section> : null}
-          <section aria-label="Calculator results" className="space-y-4 lg:sticky lg:top-24">
+          <section aria-label="Project calculator">{form}</section>
+          {dashboardGrid ? <section aria-label="Materials">{workspace}</section> : null}
+          <section aria-label="Summary" className="space-y-4 lg:sticky lg:top-24">
             {result ? <CalculatorSaveSlot /> : null}
             {result ? <CalculatorShareSlot /> : null}
             {result ?? (
@@ -136,10 +136,17 @@ export function CalculatorShell({
               </div>
             )}
             {result ? <ConstructionWhatNextSlot /> : null}
-            {breakdown}
-            {assumptions}
+            {dashboardGrid ? null : breakdown}
+            {dashboardGrid ? null : assumptions}
           </section>
         </div>
+
+        {dashboardGrid && breakdown ? (
+          <section aria-label="Construction cost breakdown">{breakdown}</section>
+        ) : null}
+        {dashboardGrid && assumptions ? (
+          <section aria-label="Assumptions">{assumptions}</section>
+        ) : null}
 
         {extra}
 

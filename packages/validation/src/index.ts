@@ -68,6 +68,7 @@ export * from './cost-optimization';
 export * from './cement-calculator';
 export * from './material-quantity-calculator';
 export * from './construction-planner-handoff';
+export * from './construction-plot-setback';
 export * from './construction-project-timeline';
 export * from './construction-hub-next-actions';
 export * from './construction-material-comparison';

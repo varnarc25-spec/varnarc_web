@@ -222,44 +222,44 @@ export function ConstructionCostDonut({
       ? `/construction/boq?builtUpArea=${Math.round(areaSqft)}`
       : '/construction/boq');
   return (
-    <aside className={cn(cx.card, 'space-y-4 p-4')}>
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-          Estimated materials
-        </p>
-        <p className="mt-1 text-2xl font-extrabold tabular-nums text-[#0b1f3a]">
-          {formatInr(materialCost)}
-        </p>
-        <p className="text-xs text-slate-500">{materialPct}% of estimated total</p>
-        {quantityHref ? (
-          <Link href={quantityHref} className={cn(cx.link, 'mt-2 inline-block')}>
-            View quantity breakdown →
-          </Link>
-        ) : null}
-      </div>
-      <div
-        className="mx-auto h-36 w-36 shrink-0 rounded-full"
-        style={{ background: donut, aspectRatio: '1 / 1' }}
-        role="img"
-        aria-label={`Materials ${materialPct}%, labour ${labourPct}%, other ${otherPct}%`}
-      >
-        <div className="m-[1.35rem] flex h-[calc(100%-2.7rem)] w-[calc(100%-2.7rem)] flex-col items-center justify-center rounded-full bg-white text-center">
-          <span className="text-lg font-extrabold text-[#0b1f3a]">{materialPct}%</span>
-          <span className="text-[10px] text-slate-500">Materials</span>
+    <aside className={cn(cx.card, 'space-y-3 p-4')}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Summary</p>
+      <div className="flex items-center gap-4">
+        <div
+          className="h-24 w-24 shrink-0 rounded-full"
+          style={{ background: donut, aspectRatio: '1 / 1' }}
+          role="img"
+          aria-label={`Materials ${materialPct}%, labour ${labourPct}%, other ${otherPct}%`}
+        >
+          <div className="m-[0.85rem] flex h-[calc(100%-1.7rem)] w-[calc(100%-1.7rem)] flex-col items-center justify-center rounded-full bg-white text-center">
+            <span className="text-base font-extrabold text-[#0b1f3a]">{materialPct}%</span>
+            <span className="text-[9px] text-slate-500">Materials</span>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <p className="text-xl font-extrabold tabular-nums text-[#0b1f3a]">
+            {formatInr(materialCost)}
+          </p>
+          <p className="text-xs text-slate-500">Estimated materials</p>
+          <ul className="mt-2 space-y-0.5 text-xs text-slate-600">
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#0b1f3a]" /> Materials {materialPct}%
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#f97316]" /> Labour {labourPct}%
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-slate-300" /> Other {otherPct}%
+            </li>
+          </ul>
         </div>
       </div>
-      <ul className="space-y-1 text-xs text-slate-600">
-        <li className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#0b1f3a]" /> Materials {materialPct}%
-        </li>
-        <li className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#f97316]" /> Labour {labourPct}%
-        </li>
-        <li className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-slate-300" /> Other {otherPct}%
-        </li>
-      </ul>
-      <a href="#cost-breakdown" className={cx.link}>
+      {quantityHref ? (
+        <Link href={quantityHref} className={cn(cx.link, 'inline-block')}>
+          View quantity breakdown →
+        </Link>
+      ) : null}
+      <a href="#cost-breakdown" className={cn(cx.link, 'block')}>
         View detailed breakdown
       </a>
       <Link href={boqHref} className={cn(cx.accentBtn, 'w-full')}>

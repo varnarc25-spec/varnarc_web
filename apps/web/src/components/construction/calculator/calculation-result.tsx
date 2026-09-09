@@ -26,7 +26,7 @@ export function CalculationResult({
         {actions}
       </ResultCard>
       {metrics?.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {metrics.map((m) => (
             <MetricCard
               key={m.id ?? m.label}

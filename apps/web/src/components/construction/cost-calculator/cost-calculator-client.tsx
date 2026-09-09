@@ -15,6 +15,12 @@ import {
   type ConstructionPlannerHandoff,
   COST_CALC_VERSION,
   DEFAULT_CONSTRUCTION_LOCATION_NAME,
+  PLOT_SETBACK_DISCLAIMER,
+  calculateBuiltUpFromPlot,
+  convertLinearValue,
+  defaultPlotDimensions,
+  defaultSetbacksForLocation,
+  linearUnitFromAreaUnit,
 } from '@varnarc/validation';
 import {
   CalculationBreakdown,
@@ -102,6 +108,13 @@ type FormState = {
   labourPercent: string;
   miscPercent: string;
   budgetInr: string;
+  plotLength: string;
+  plotWidth: string;
+  setbackFront: string;
+  setbackRear: string;
+  setbackLeft: string;
+  setbackRight: string;
+  setbacksDirty: boolean;
 };
 
 const DEFAULT_FORM: FormState = {
@@ -127,6 +140,21 @@ const DEFAULT_FORM: FormState = {
   labourPercent: '',
   miscPercent: '',
   budgetInr: '3000000',
+  plotLength: String(defaultPlotDimensions('ft').length),
+  plotWidth: String(defaultPlotDimensions('ft').width),
+  setbackFront: String(
+    defaultSetbacksForLocation(DEFAULT_CONSTRUCTION_LOCATION_NAME, 'ft').setbacks.front,
+  ),
+  setbackRear: String(
+    defaultSetbacksForLocation(DEFAULT_CONSTRUCTION_LOCATION_NAME, 'ft').setbacks.rear,
+  ),
+  setbackLeft: String(
+    defaultSetbacksForLocation(DEFAULT_CONSTRUCTION_LOCATION_NAME, 'ft').setbacks.left,
+  ),
+  setbackRight: String(
+    defaultSetbacksForLocation(DEFAULT_CONSTRUCTION_LOCATION_NAME, 'ft').setbacks.right,
+  ),
+  setbacksDirty: false,
 };
 
 function parseInitial(params?: Record<string, string | undefined>): FormState {
@@ -310,6 +338,7 @@ export function ConstructionCostCalculatorClient({
     initialShareInputs ? formFromShareInputs(initialShareInputs) : parseInitial(initialParams),
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showFromPlot, setShowFromPlot] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConstructionCostResult | null>(() => {
     try {
@@ -396,8 +425,71 @@ export function ConstructionCostCalculatorClient({
   }, [initialParams, initialShareInputs]);
 
   const setField = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      if (key === 'location' && !prev.setbacksDirty) {
+        const unit = linearUnitFromAreaUnit(prev.areaUnit);
+        const next = defaultSetbacksForLocation(String(value), unit);
+        return {
+          ...prev,
+          location: value as FormState['location'],
+          setbackFront: String(next.setbacks.front),
+          setbackRear: String(next.setbacks.rear),
+          setbackLeft: String(next.setbacks.left),
+          setbackRight: String(next.setbacks.right),
+        };
+      }
+      if (key === 'areaUnit' && (value === 'sqft' || value === 'sqm')) {
+        const from = linearUnitFromAreaUnit(prev.areaUnit);
+        const to = linearUnitFromAreaUnit(value);
+        if (from !== to) {
+          const conv = (raw: string) => {
+            const n = Number(raw);
+            if (!Number.isFinite(n) || n <= 0) return raw;
+            return String(convertLinearValue(n, from, to));
+          };
+          return {
+            ...prev,
+            areaUnit: value,
+            plotLength: conv(prev.plotLength),
+            plotWidth: conv(prev.plotWidth),
+            setbackFront: conv(prev.setbackFront),
+            setbackRear: conv(prev.setbackRear),
+            setbackLeft: conv(prev.setbackLeft),
+            setbackRight: conv(prev.setbackRight),
+          };
+        }
+      }
+      return { ...prev, [key]: value };
+    });
   }, []);
+
+  const plotLinearUnit = linearUnitFromAreaUnit(form.areaUnit);
+  const plotSketch = useMemo(
+    () =>
+      calculateBuiltUpFromPlot({
+        plotLength: Number(form.plotLength),
+        plotWidth: Number(form.plotWidth),
+        floors: Math.max(1, Math.round(Number(form.floors) || 1)),
+        setbacks: {
+          front: Number(form.setbackFront),
+          rear: Number(form.setbackRear),
+          left: Number(form.setbackLeft),
+          right: Number(form.setbackRight),
+        },
+        linearUnit: plotLinearUnit,
+      }),
+    [
+      form.plotLength,
+      form.plotWidth,
+      form.floors,
+      form.setbackFront,
+      form.setbackRear,
+      form.setbackLeft,
+      form.setbackRight,
+      plotLinearUnit,
+    ],
+  );
+  const plotDefaults = defaultSetbacksForLocation(form.location, plotLinearUnit);
 
   function runCalculate() {
     setError(null);
@@ -696,6 +788,156 @@ export function ConstructionCostCalculatorClient({
         className="sm:col-span-2"
       />
 
+      {form.mode === 'forward' ? (
+        <div className="sm:col-span-2 space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3 sm:p-4">
+          <button
+            type="button"
+            className={cn(cx.link, 'text-left')}
+            onClick={() => setShowFromPlot((v) => !v)}
+            aria-expanded={showFromPlot}
+          >
+            {showFromPlot ? 'Hide plot size helper' : 'Calculate built-up from plot size'}
+          </button>
+          {showFromPlot ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CalculatorInput
+                id="plotLength"
+                label={`Plot length (${plotLinearUnit})`}
+                type="number"
+                min={1}
+                step="any"
+                value={form.plotLength}
+                onChange={(e) => setField('plotLength', e.target.value)}
+              />
+              <CalculatorInput
+                id="plotWidth"
+                label={`Plot width (${plotLinearUnit})`}
+                type="number"
+                min={1}
+                step="any"
+                value={form.plotWidth}
+                onChange={(e) => setField('plotWidth', e.target.value)}
+              />
+              <p className="sm:col-span-2 text-xs text-slate-600">
+                Typical setbacks for {plotDefaults.locationLabel} — edit to match your sanction
+                drawing.
+              </p>
+              <CalculatorInput
+                id="setbackFront"
+                label={`Front setback (${plotLinearUnit})`}
+                type="number"
+                min={0}
+                step="any"
+                value={form.setbackFront}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    setbackFront: e.target.value,
+                    setbacksDirty: true,
+                  }))
+                }
+              />
+              <CalculatorInput
+                id="setbackRear"
+                label={`Rear setback (${plotLinearUnit})`}
+                type="number"
+                min={0}
+                step="any"
+                value={form.setbackRear}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    setbackRear: e.target.value,
+                    setbacksDirty: true,
+                  }))
+                }
+              />
+              <CalculatorInput
+                id="setbackLeft"
+                label={`Left setback (${plotLinearUnit})`}
+                type="number"
+                min={0}
+                step="any"
+                value={form.setbackLeft}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    setbackLeft: e.target.value,
+                    setbacksDirty: true,
+                  }))
+                }
+              />
+              <CalculatorInput
+                id="setbackRight"
+                label={`Right setback (${plotLinearUnit})`}
+                type="number"
+                min={0}
+                step="any"
+                value={form.setbackRight}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    setbackRight: e.target.value,
+                    setbacksDirty: true,
+                  }))
+                }
+              />
+              {plotSketch.valid ? (
+                <p className="sm:col-span-2 text-sm text-[#0b1f3a]">
+                  Plot {plotSketch.plotArea.toLocaleString('en-IN')} {plotSketch.areaUnit} · ground
+                  coverage {plotSketch.groundCoverage.toLocaleString('en-IN')} (
+                  {plotSketch.coverageLength} × {plotSketch.coverageWidth} {plotLinearUnit}) ·
+                  suggested built-up{' '}
+                  <strong>
+                    {plotSketch.suggestedBuiltUp.toLocaleString('en-IN')} {plotSketch.areaUnit}
+                  </strong>{' '}
+                  for {Math.max(1, Math.round(Number(form.floors) || 1))} floor
+                  {Math.max(1, Math.round(Number(form.floors) || 1)) > 1 ? 's' : ''}.
+                </p>
+              ) : (
+                <p className={cn('sm:col-span-2', cx.error)}>{plotSketch.error}</p>
+              )}
+              <div className="sm:col-span-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={cx.secondaryBtn}
+                  disabled={!plotSketch.valid}
+                  onClick={() => {
+                    if (!plotSketch.valid) return;
+                    setField('builtUpArea', String(plotSketch.suggestedBuiltUp));
+                  }}
+                >
+                  Use this built-up
+                </button>
+                <button
+                  type="button"
+                  className={cx.link}
+                  onClick={() => {
+                    const next = defaultSetbacksForLocation(form.location, plotLinearUnit);
+                    const dims = defaultPlotDimensions(plotLinearUnit);
+                    setForm((prev) => ({
+                      ...prev,
+                      plotLength: String(dims.length),
+                      plotWidth: String(dims.width),
+                      setbackFront: String(next.setbacks.front),
+                      setbackRear: String(next.setbacks.rear),
+                      setbackLeft: String(next.setbacks.left),
+                      setbackRight: String(next.setbacks.right),
+                      setbacksDirty: false,
+                    }));
+                  }}
+                >
+                  Reset setbacks to city default
+                </button>
+              </div>
+              <p className="sm:col-span-2 text-xs leading-relaxed text-slate-500">
+                {PLOT_SETBACK_DISCLAIMER}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="sm:col-span-2">
         <button
           type="button"
@@ -849,8 +1091,16 @@ export function ConstructionCostCalculatorClient({
     </CalculatorForm>
   );
 
-  const resultNode = result ? (
+  const summaryNode = result ? (
     <div className="space-y-4 print:space-y-3">
+      <ConstructionCostDonut
+        materialCost={result.materialCost}
+        labourCost={result.labourCost}
+        otherCost={result.miscellaneousCost}
+        areaSqft={result.areaSqft}
+        quantityHref={quantityHref}
+        boqHref={boqPlannerHref}
+      />
       <ConstructionRateAttribution display={result.rateDisplay} />
       <CalculationResult
         label={result.mode === 'reverse' ? 'Approximate buildable area' : 'Estimated total cost'}
@@ -1000,16 +1250,24 @@ export function ConstructionCostCalculatorClient({
         </div>
         {actionMsg ? <p className="text-xs text-slate-600">{actionMsg}</p> : null}
       </div>
+    </div>
+  ) : null;
 
-      <div id="cost-breakdown">
-        <CalculationBreakdown
-          title="Cost breakdown"
-          caption="Percentage and ₹ values — planning allocations, not contractor invoices."
-          rows={breakdownRows}
-        />
+  const breakdownNode = result ? (
+    <div className="space-y-6">
+      <div>
+        <h2 id="construction-cost-breakdown-heading" className="text-lg font-bold text-[#0b1f3a]">
+          Construction cost breakdown
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Percentage and ₹ values — planning allocations, not contractor invoices.
+        </p>
       </div>
-      <CalculationBreakdown title="Phase-wise cost" rows={phaseRows} />
-      <CalculationBreakdown title="Floor-wise cost" rows={floorRows} />
+      <div id="cost-breakdown" className="grid gap-4 lg:grid-cols-3">
+        <CalculationBreakdown title="Cost breakdown" rows={breakdownRows} />
+        <CalculationBreakdown title="Phase-wise cost" rows={phaseRows} />
+        <CalculationBreakdown title="Floor-wise cost" rows={floorRows} />
+      </div>
 
       <aside className={cn(cx.card, 'bg-slate-50 p-4 sm:p-5')} aria-labelledby="maj-assumptions">
         <h3 id="maj-assumptions" className="text-sm font-bold text-[#0b1f3a]">
@@ -1063,7 +1321,7 @@ export function ConstructionCostCalculatorClient({
         workspace={
           result && materialLines.length ? (
             <div className="space-y-3">
-              <h2 className="text-sm font-bold text-[#0b1f3a]">Prices used in this estimate</h2>
+              <h2 className="text-sm font-bold text-[#0b1f3a]">Materials</h2>
               <p className="text-xs leading-relaxed text-slate-600">
                 These are national planning rates (ESTIMATED_FALLBACK), not live market or official
                 city SOR prices. Enter your contractor rate below to override this estimate only —
@@ -1077,24 +1335,11 @@ export function ConstructionCostCalculatorClient({
             </div>
           ) : undefined
         }
-        result={
-          result ? (
-            <div className="space-y-4">
-              <ConstructionCostDonut
-                materialCost={result.materialCost}
-                labourCost={result.labourCost}
-                otherCost={result.miscellaneousCost}
-                areaSqft={result.areaSqft}
-                quantityHref={quantityHref}
-                boqHref={boqPlannerHref}
-              />
-              {resultNode}
-            </div>
-          ) : undefined
-        }
+        result={summaryNode}
+        breakdown={breakdownNode}
         extra={
           result ? (
-            <div className="space-y-4">
+            <div className="space-y-8">
               <div className="space-y-2">
                 <h2 className="text-sm font-bold text-[#0b1f3a]">
                   Quality specifications ({result.qualityTierCode})
@@ -1104,7 +1349,7 @@ export function ConstructionCostCalculatorClient({
                   quality tier used for a detailed BOQ — they do not change the shell multiplier
                   model.
                 </p>
-                <ul className="grid gap-2 sm:grid-cols-2">
+                <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   {result.qualitySpecifications.map((spec) => (
                     <li key={spec.categoryKey} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
                       {spec.label}
