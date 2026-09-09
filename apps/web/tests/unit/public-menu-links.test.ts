@@ -26,4 +26,18 @@ describe('publicMenuLinks', () => {
       }),
     ).toEqual([]);
   });
+
+  it('maps CMS Blog /blog links to /articles', () => {
+    expect(
+      publicMenuLinks({
+        items: [
+          { label: 'Home', href: '/', sortOrder: 1, isActive: true },
+          { label: 'Blog', href: '/blog', sortOrder: 2, isActive: true },
+        ],
+      }),
+    ).toEqual([
+      { label: 'Home', href: '/' },
+      { label: 'Blog', href: '/articles' },
+    ]);
+  });
 });

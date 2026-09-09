@@ -32,6 +32,16 @@ const nextConfig: NextConfig = withSecurityHeaders(
           permanent: true,
         },
         {
+          source: '/blog',
+          destination: '/articles',
+          permanent: true,
+        },
+        {
+          source: '/blog/:path*',
+          destination: '/articles/:path*',
+          permanent: true,
+        },
+        {
           source: '/pages/term-conditions',
           destination: '/terms',
           permanent: true,
