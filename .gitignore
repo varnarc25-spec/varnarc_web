@@ -34,3 +34,4 @@ packages/database/src/generated
 # misc
 *.tsbuildinfo
 .vercel
+backups/

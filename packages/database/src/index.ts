@@ -24,3 +24,13 @@ export type { Repositories };
 export * from '@prisma/client';
 export * from './pagination';
 export * from './repositories';
+export {
+  defaultBackupFilename,
+  dumpConnectionUrl,
+  isPgDumpAvailable,
+  neonPoolerToDirect,
+  spawnPgDump,
+  summarizeDumpConnection,
+  writePgDumpFile,
+} from './pg-backup';
+export type { DumpConnectionSummary, PgDumpHandle } from './pg-backup';

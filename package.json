@@ -26,6 +26,8 @@
     "db:seed:homepage": "pnpm --filter @varnarc/database seed:homepage",
     "db:seed:calculators": "pnpm --filter @varnarc/database seed:calculators",
     "db:seed:calculator-articles": "pnpm --filter @varnarc/database seed:calculator-articles",
+    "db:backup": "pnpm --filter @varnarc/database backup",
+    "db:restore": "pnpm --filter @varnarc/database restore",
     "catalog:import": "tsx scripts/catalog/import.ts",
     "catalog:reindex": "pnpm --filter @varnarc/database exec tsx scripts/reindex-search.ts",
     "docker:up": "DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml up --build",

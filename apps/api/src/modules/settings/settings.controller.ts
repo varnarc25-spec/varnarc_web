@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Param,
+  Post,
+  Put,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PERMISSIONS } from '@varnarc/auth';
 import {
@@ -34,11 +44,15 @@ import { CurrentUserDecorator } from '../../auth/decorators/current-user.decorat
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { ok, okCursor } from '../../common/utils/response';
 import { SettingsService } from './settings.service';
+import { DatabaseBackupService } from './database-backup.service';
 
 @ApiTags('settings')
 @Controller('settings')
 export class SettingsController {
-  constructor(private readonly service: SettingsService) {}
+  constructor(
+    private readonly service: SettingsService,
+    private readonly databaseBackupService: DatabaseBackupService,
+  ) {}
 
   @Get()
   @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
@@ -181,6 +195,19 @@ export class SettingsController {
     @Body(new ZodValidationPipe(adsenseSettingsSchema)) body: AdsenseSettingsInput,
   ) {
     return ok(await this.service.setAdsense(body, user.id));
+  }
+
+  @Get('database')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  async database() {
+    return ok(await this.databaseBackupService.status());
+  }
+
+  @Get('database/backup')
+  @RequirePermissions(PERMISSIONS.SETTINGS_MANAGE)
+  @Header('Content-Type', 'application/sql; charset=utf-8')
+  async downloadDatabaseBackup(): Promise<StreamableFile> {
+    return this.databaseBackupService.createDump();
   }
 
   @Get('gcs')

@@ -40,6 +40,11 @@ export default async function SettingsHubPage() {
       description: 'Google Cloud Storage bucket and credentials for media uploads.',
     },
     {
+      href: '/settings/database',
+      title: 'Database',
+      description: 'Download a full Neon dump and restore it on VPS PostgreSQL.',
+    },
+    {
       href: '/settings/contact-messages',
       title: 'Contact inbox',
       description: 'Stored contact form submissions and delivery status.',

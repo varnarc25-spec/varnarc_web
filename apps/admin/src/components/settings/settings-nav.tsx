@@ -31,6 +31,7 @@ const groups = [
     label: 'System',
     links: [
       { href: '/settings/maintenance', label: 'Maintenance' },
+      { href: '/settings/database', label: 'Database' },
       { href: '/settings/security', label: 'Security' },
       { href: '/settings/features', label: 'Feature flags' },
       { href: '/settings/advanced', label: 'Advanced' },

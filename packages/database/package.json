@@ -23,6 +23,8 @@
     "seed:age-calculator": "tsx --env-file=../../.env src/seed-age-calculator-only.ts",
     "seed:calculators": "tsx --env-file=../../.env src/seed-calculators-only.ts",
     "seed:calculator-articles": "tsx --env-file=../../.env src/seed-calculator-articles-only.ts",
+    "backup": "tsx --env-file=../../.env scripts/backup-database.ts",
+    "restore": "tsx --env-file=../../.env scripts/restore-database.ts",
     "bootstrap-super-admin": "tsx --env-file=../../.env scripts/bootstrap-super-admin.ts"
   },
   "dependencies": {
