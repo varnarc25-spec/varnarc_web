@@ -71,7 +71,7 @@ function TrustIcon({ name }: { name: (typeof TRUST_ITEMS)[number]['icon'] }) {
   );
 }
 
-function HouseIllustration() {
+export function HouseIllustration() {
   return (
     <svg
       viewBox="0 0 280 160"

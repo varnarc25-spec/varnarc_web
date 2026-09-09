@@ -1092,15 +1092,19 @@ export function ConstructionCostCalculatorClient({
   );
 
   const summaryNode = result ? (
+    <ConstructionCostDonut
+      materialCost={result.materialCost}
+      labourCost={result.labourCost}
+      otherCost={result.miscellaneousCost}
+      areaSqft={result.areaSqft}
+      quantityHref={quantityHref}
+      boqHref={boqPlannerHref}
+      compact
+    />
+  ) : null;
+
+  const resultDetailNode = result ? (
     <div className="space-y-4 print:space-y-3">
-      <ConstructionCostDonut
-        materialCost={result.materialCost}
-        labourCost={result.labourCost}
-        otherCost={result.miscellaneousCost}
-        areaSqft={result.areaSqft}
-        quantityHref={quantityHref}
-        boqHref={boqPlannerHref}
-      />
       <ConstructionRateAttribution display={result.rateDisplay} />
       <CalculationResult
         label={result.mode === 'reverse' ? 'Approximate buildable area' : 'Estimated total cost'}
@@ -1302,6 +1306,28 @@ export function ConstructionCostCalculatorClient({
         lastUpdated="Aug 2026"
         areaSqft={(result?.areaSqft ?? Number(form.builtUpArea)) || undefined}
         form={formNode}
+        workspaceToolbar={
+          result && materialLines.length ? (
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-[#0b1f3a]">Material Quantity Calculator</h2>
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-slate-600">
+                  These are national planning rates (ESTIMATED_FALLBACK), not live market or
+                  official city SOR prices. Enter your contractor rate below to override this
+                  estimate only — global admin rates are never changed.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link href={costToMaterialsHref} className={cx.secondaryBtn}>
+                  Edit local prices
+                </Link>
+                <Link href={boqPlannerHref} className={cx.primaryBtn}>
+                  Send to BOQ
+                </Link>
+              </div>
+            </div>
+          ) : null
+        }
         summary={
           result ? (
             <ConstructionProjectSummaryBar
@@ -1321,21 +1347,17 @@ export function ConstructionCostCalculatorClient({
         workspace={
           result && materialLines.length ? (
             <div className="space-y-3">
-              <h2 className="text-sm font-bold text-[#0b1f3a]">Materials</h2>
-              <p className="text-xs leading-relaxed text-slate-600">
-                These are national planning rates (ESTIMATED_FALLBACK), not live market or official
-                city SOR prices. Enter your contractor rate below to override this estimate only —
-                global admin rates are never changed.
-              </p>
               <ConstructionMaterialLinesTable
                 lines={materialLines}
                 quantityHref={quantityHref}
                 rateDisplay={result.rateDisplay}
+                compact
               />
             </div>
           ) : undefined
         }
         result={summaryNode}
+        resultDetail={resultDetailNode}
         breakdown={breakdownNode}
         extra={
           result ? (
@@ -1358,6 +1380,7 @@ export function ConstructionCostCalculatorClient({
                 </ul>
               </div>
               <ConstructionBoqPreview
+                boqHref={boqPlannerHref}
                 rows={result.phaseBreakdown.map((row) => ({
                   id: row.id,
                   label: row.label,
@@ -1432,6 +1455,23 @@ export function ConstructionCostCalculatorClient({
           </div>
         }
         faqs={COST_CALC_FAQS}
+        relatedGuides={[
+          {
+            label: 'Step-by-step house construction guide',
+            href: '/construction/guides',
+            category: 'Guides',
+          },
+          {
+            label: 'Construction cost by city',
+            href: '/construction/construction-cost',
+            category: 'Cost',
+          },
+          {
+            label: 'How Varnarc estimates build cost',
+            href: '/construction/cost-calculator#methodology',
+            category: 'Methodology',
+          },
+        ]}
         relatedTools={[
           { label: 'Material calculator', href: '/construction/material-calculator' },
           { label: 'Cement calculator', href: '/construction/cement-calculator' },

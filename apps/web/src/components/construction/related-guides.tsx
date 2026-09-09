@@ -9,12 +9,14 @@ export function RelatedGuides({
   description,
   viewAllHref,
   viewAllLabel = 'View all guides →',
+  columns = 2,
 }: {
   items: Array<ConstructionLinkItem & { category?: string | null; readMinutes?: number }>;
   title?: string;
   description?: string;
   viewAllHref?: string;
   viewAllLabel?: string;
+  columns?: 1 | 2;
 }) {
   if (!items.length) return null;
 
@@ -25,7 +27,7 @@ export function RelatedGuides({
       description={description}
       action={viewAllHref ? { href: viewAllHref, label: viewAllLabel } : undefined}
     >
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className={columns === 1 ? 'grid gap-3' : 'grid gap-3 sm:grid-cols-2'}>
         {items.map((item) => {
           const guideKey = item.href.split('/').filter(Boolean).pop();
           return (

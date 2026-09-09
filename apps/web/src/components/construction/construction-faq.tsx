@@ -10,11 +10,13 @@ export function ConstructionFAQ({
   title = 'Frequently asked questions',
   viewAllHref,
   viewAllLabel = 'View all FAQs →',
+  columns = 2,
 }: {
   faqs: ConstructionFaqItem[];
   title?: string;
   viewAllHref?: string;
   viewAllLabel?: string;
+  columns?: 1 | 2;
 }) {
   if (!faqs.length) return null;
 
@@ -24,7 +26,13 @@ export function ConstructionFAQ({
       title={title}
       action={viewAllHref ? { href: viewAllHref, label: viewAllLabel } : undefined}
     >
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3">
+      <div
+        className={
+          columns === 1
+            ? 'grid grid-cols-1 gap-2'
+            : 'grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3'
+        }
+      >
         {faqs.map((faq) => (
           <details
             key={faq.id}
