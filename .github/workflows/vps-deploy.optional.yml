@@ -1,0 +1,33 @@
+name: VPS deploy (optional)
+
+# Optional helper. First production deploy should be done over SSH by hand
+# (see DEPLOYMENT.md). This workflow does not store VPS passwords or private keys
+# in the repository. Configure GitHub Environment secrets on the GitHub side:
+#   VPS_HOST, VPS_USER, VPS_PORT (20063), VPS_SSH_KEY
+#
+# Create a deploy-only SSH key on the VPS (authorized_keys), then store the
+# PRIVATE key in GitHub Actions secrets — never commit it.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: vps-production
+    steps:
+      - name: SSH pull and rebuild
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/varnarc/project
+            git fetch origin
+            git pull --ff-only origin main
+            docker compose -f docker/docker-compose.vps.yml --env-file .env.production build
+            docker compose -f docker/docker-compose.vps.yml --env-file .env.production up -d
+            docker compose -f docker/docker-compose.vps.yml --env-file .env.production ps

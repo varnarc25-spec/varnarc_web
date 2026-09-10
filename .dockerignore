@@ -22,6 +22,9 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
+docker/nginx/certs/*
+!docker/nginx/certs/.gitkeep
 
 # Logs and OS
 **/*.log

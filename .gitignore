@@ -11,10 +11,13 @@ build
 coverage
 
 # env
-# .env
+.env
 .env.*
 !.env.example
+!.env.production.example
 deploy/gcp/secrets.env
+docker/nginx/certs/*
+!docker/nginx/certs/.gitkeep
 
 # logs / OS
 *.log

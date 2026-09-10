@@ -1,0 +1,211 @@
+# Production VPS stack (Ubuntu + Docker Compose).
+# Does not replace docker/docker-compose.yml (local/Cloud Run companion).
+#
+# From monorepo root (this directory's parent = project/):
+#   cp .env.production.example .env.production   # then edit secrets on the VPS
+#   docker compose -f docker/docker-compose.vps.yml --env-file .env.production up -d --build
+#
+# Published host ports: 80 and 443 (Nginx only).
+# PostgreSQL, Redis, Web, Admin, and API are internal.
+
+name: varnarc-vps
+
+networks:
+  varnarc_edge:
+    driver: bridge
+  varnarc_internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
+  redis_data:
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '5'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-varnarc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: ${POSTGRES_DB:-varnarc}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - varnarc_internal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-varnarc} -d ${POSTGRES_DB:-varnarc}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --bind 0.0.0.0 --protected-mode yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - varnarc_internal
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    logging: *default-logging
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+      args:
+        REPO_URL: ${REPO_URL:-https://github.com/varnarc25-spec/varnarc_web}
+        GIT_REF: ${GIT_REF:-main}
+    restart: unless-stopped
+    env_file:
+      - ../.env.production
+    environment:
+      NODE_ENV: production
+      PORT: '4000'
+      API_PORT: '4000'
+      REDIS_URL: redis://redis:6379
+      SEARCH_ENGINE: ${SEARCH_ENGINE:-postgres-fts}
+    networks:
+      - varnarc_internal
+      - varnarc_edge
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/api/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    logging: *default-logging
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        REPO_URL: ${REPO_URL:-https://github.com/varnarc25-spec/varnarc_web}
+        GIT_REF: ${GIT_REF:-main}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://varnarc.com}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://varnarc.com/api/v1}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-https://admin.varnarc.com}
+        NEXT_PUBLIC_AUTH0_CONFIGURED: ${NEXT_PUBLIC_AUTH0_CONFIGURED:-false}
+        NEXT_PUBLIC_AUTH0_CLIENT_ID: ${NEXT_PUBLIC_AUTH0_CLIENT_ID:-}
+        NEXT_PUBLIC_CMP_DOMAIN_KEY: ${NEXT_PUBLIC_CMP_DOMAIN_KEY:-}
+        NEXT_PUBLIC_CMP_ENV: ${NEXT_PUBLIC_CMP_ENV:-production}
+        NEXT_PUBLIC_CMP_SDK_URL: ${NEXT_PUBLIC_CMP_SDK_URL:-}
+        NEXT_PUBLIC_CMP_TEST_SCRIPTS: ${NEXT_PUBLIC_CMP_TEST_SCRIPTS:-false}
+        NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
+    restart: unless-stopped
+    env_file:
+      - ../.env.production
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+      API_URL: http://api:4000/api/v1
+      APP_BASE_URL: ${APP_BASE_URL:-https://varnarc.com}
+    networks:
+      - varnarc_edge
+      - varnarc_internal
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    logging: *default-logging
+
+  admin:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin
+      args:
+        REPO_URL: ${REPO_URL:-https://github.com/varnarc25-spec/varnarc_web}
+        GIT_REF: ${GIT_REF:-main}
+        NEXT_PUBLIC_ADMIN_URL: ${NEXT_PUBLIC_ADMIN_URL:-https://admin.varnarc.com}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://varnarc.com/api/v1}
+    restart: unless-stopped
+    env_file:
+      - ../.env.production
+    environment:
+      NODE_ENV: production
+      PORT: '3001'
+      HOSTNAME: 0.0.0.0
+      API_URL: http://api:4000/api/v1
+    networks:
+      - varnarc_edge
+      - varnarc_internal
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    logging: *default-logging
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - varnarc_edge
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1/nginx-health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging: *default-logging
